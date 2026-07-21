@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Paper Map UI Dev Sandbox</title>
+    <link rel="stylesheet" href="style.css">
+
+    <script>
+        window.__f4seCache = null;
+
+        window.MapInterop = {
+            loadMarkers: function (jsonString) {
+                console.log('[HTML Inline Stub] InteropCall routed to MapInterop.loadMarkers');
+                if (window.__loadMarkersRegister) {
+                    window.__loadMarkersRegister(jsonString);
+                } else {
+                    console.log('[HTML Inline Stub] Bundle not ready. Caching payload...');
+                    window.__f4seCache = jsonString;
+                }
+            }
+        };
+
+        window.loadMarkers = window.MapInterop.loadMarkers;
+    </script>
+
+    <script type="module" src="src/main.js"></script>
+</head>
+
+<body>
+    <div id="screen-container">
+        <div id="map-viewport">
+            <img src="assets/maps/commonwealth/default.png" id="map-bg" draggable="false" />
+            <div id="marker-layer"></div>
+            <div id="quest-layer"></div>
+            <div id="player-layer"></div>
+        </div>
+    </div>
+
+    <div id="map-marker-popover">
+        <h3 id="popover-title"></h3>
+        <button id="popover-btn">FAST TRAVEL</button>
+    </div>
+
+    <div id="ft-modal-overlay" class="modal-overlay">
+        <div class="modal-box">
+            <p id="modal-text">Do you want to fast travel to this location?</p>
+            <div class="modal-actions">
+                <button id="modal-confirm-btn">YES</button>
+                <button id="modal-cancel-btn">NO</button>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

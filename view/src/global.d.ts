@@ -1,0 +1,30 @@
+import { MapConfig } from './types/map.js';
+
+export { };
+
+declare global {
+    interface Window {
+        DEFAULT_COMMONWEALTH_CONFIG?: MapConfig;
+
+        GetDiscoveredMapMarkersAsJSON?: (jsonString: string) => void;
+        requestFreshMapData?: (arg: string) => void;
+
+        requestClose?: () => void;
+        triggerEngineSound?: (soundName: string) => void;
+
+        requestFastTravel?: (payloadString: string) => void;
+        checkFastTravel?: (payloadString: string) => void;
+
+        onFastTravelFailed?: (jsonString: string) => void;
+        onFastTravelCheckResult?: (jsonString: string) => void;
+
+        __loadMarkersRegister?: (jsonString: string) => void;
+        __f4seCache?: string | null;
+        repositionActivePopover?: () => void;
+        closeActivePopover?: () => void;
+        MapInterop?: {
+            updateWorkshopStats?: (jsonString: string) => void;
+            toggleActiveTheme?: (themeName: string) => void;
+        };
+    }
+}

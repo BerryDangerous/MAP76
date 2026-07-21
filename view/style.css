@@ -1,0 +1,333 @@
+/* ==========================================================================
+   1. GLOBAL RESETS & BASE CANVAS LAYOUT
+   ========================================================================== */
+
+* {
+    box-sizing: border-box;
+    user-select: none;
+}
+
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgb(10, 10, 10);
+    overflow: hidden;
+}
+
+#screen-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+}
+
+
+/* ==========================================================================
+   2. VIEWPORT & BACKGROUND CANVAS LAYER
+   ========================================================================== */
+
+#map-viewport {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vmax;
+    height: 100vmax;
+    transform-origin: 0 0;
+    will-change: transform;
+    cursor: grab;
+    pointer-events: auto;
+}
+
+#map-bg {
+    width: 100%;
+    height: 100%;
+    display: block;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+
+/* ==========================================================================
+   3. MAP MARKER LAYERS & ELEMENTS
+   ========================================================================== */
+
+#marker-layer,
+#quest-layer,
+#player-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+#marker-layer {
+    z-index: 10;
+}
+
+#player-layer {
+    z-index: 14;
+    pointer-events: none;
+}
+
+#quest-layer {
+    z-index: 15;
+    pointer-events: none;
+}
+
+.marker-container {
+    position: absolute;
+    transform-origin: center center !important;
+    pointer-events: auto !important;
+    display: block;
+    width: 0;
+    height: 0;
+    will-change: transform;
+}
+
+.marker-container img {
+    position: absolute;
+    left: 0;
+    top: 0;
+    transform: translate(-50%, -50%);
+    transform-origin: center center !important;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+    display: block;
+    pointer-events: auto;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+.marker-container.is-hovered,
+.marker-container.menu-active {
+    z-index: 100;
+}
+
+.marker-container[data-marker-type="location"] img {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+}
+
+.quest-marker img:not(.altitude-arrow),
+.custom-waypoint-marker img:not(.altitude-arrow) {
+    max-width: 28px;
+    max-height: 34px;
+    object-fit: contain;
+    position: absolute;
+    left: 0;
+    top: 0;
+    transform: translate(-50%, -50%);
+    z-index: 15;
+    pointer-events: auto;
+    cursor: pointer;
+}
+
+.player-marker-vector {
+    position: absolute;
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+    will-change: transform;
+}
+
+.quest-marker .altitude-arrow {
+    position: absolute;
+    width: 11px;
+    height: 11px;
+    object-fit: contain;
+    left: 0;
+    top: -20px;
+    transform: translate(-50%, -4px);
+    z-index: 16;
+    pointer-events: none;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+}
+
+.quest-marker .altitude-arrow.door-offset {
+    transform: translate(-50%, -8px);
+}
+
+.quest-marker,
+.custom-waypoint-marker,
+#player-marker {
+    will-change: opacity;
+}
+
+.quest-marker.is-edge-clamped,
+.custom-waypoint-marker.is-edge-clamped {
+    z-index: 100;
+}
+
+
+/* ==========================================================================
+   4. NAMETAG TOOLTIPS
+   ========================================================================== */
+
+.marker-nametag {
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%, 0);
+    top: 14px;
+    background: rgba(20, 20, 20, 0.92);
+    color: #fff;
+    padding: 4px 8px;
+    border: 1px solid #666;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    white-space: nowrap;
+    pointer-events: none;
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    z-index: 1000;
+}
+
+.marker-container.is-hovered:not(.hide-tooltip-override) .marker-nametag {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+.marker-container.menu-active .marker-nametag {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+}
+
+
+/* ==========================================================================
+   5. MAP MARKER POPOVER COMPONENT
+   ========================================================================== */
+
+#map-marker-popover {
+    position: fixed;
+    display: none;
+    z-index: 999;
+    background: #1a1a1a;
+    border: 2px solid #fff;
+    color: #fff;
+    padding: 16px;
+    font-family: 'Courier New', monospace;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    width: max-content !important;
+    min-width: 200px !important;
+    max-width: 600px !important;
+    box-sizing: border-box !important;
+}
+
+#popover-title {
+    text-align: center;
+    margin: 0 0 14px 0;
+    font-size: 24px;
+    font-weight: bold;
+    width: 100%;
+    white-space: normal;
+    word-wrap: break-word;
+}
+
+#popover-btn {
+    display: block;
+    margin: 0 auto;
+    padding: 8px 16px;
+    background: #fff;
+    color: #000;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 20px;
+}
+
+
+/* ==========================================================================
+   6. FAST TRAVEL CONFIRMATION MODAL COMPONENT
+   ========================================================================== */
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.75);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    pointer-events: auto;
+}
+
+.modal-box {
+    background: #1a1a1a;
+    border: 2px solid #fff;
+    padding: 24px 32px;
+    font-family: 'Courier New', monospace;
+    text-align: center;
+    min-width: 320px;
+    max-width: 500px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.9);
+}
+
+#modal-text {
+    color: #fff;
+    font-size: 18px;
+    line-height: 1.4;
+    margin: 0 0 24px 0;
+    text-transform: uppercase;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+}
+
+.modal-actions button {
+    padding: 8px 24px;
+    font-family: 'Courier New', monospace;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+    transition: background 0.1s ease;
+}
+
+#modal-confirm-btn {
+    background: #fff;
+    color: #000;
+}
+
+#modal-confirm-btn:hover {
+    background: #a8a8a8;
+}
+
+#modal-cancel-btn {
+    background: #333;
+    color: #fff;
+    border: 1px solid #666;
+}
+
+#modal-cancel-btn:hover {
+    background: #444;
+    border-color: #999;
+}
+
+
+/* ==========================================================================
+   7. CUSTOM POINTER CURSOR
+   ========================================================================== */
+
+#custom-map-cursor {
+    position: fixed;
+    width: 60px;
+    height: 60px;
+    pointer-events: none;
+    z-index: 20000;
+    display: none;
+    transform-origin: 50% 0%;
+    transform: translate(-50%, 0%) rotate(-18.5deg);
+}
