@@ -12,8 +12,18 @@ namespace PaperMap::UI::DTO
         float maxX;
         float minY;
         float maxY;
+        int16_t nwCellX;
+        int16_t nwCellY;
+        int16_t seCellX;
+        int16_t seCellY;
+        uint32_t usableWidth;
+        uint32_t usableHeight;
+        float mapScale;
+        float mapOffsetX;
+        float mapOffsetY;
+        float mapOffsetZ;
     };
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(GameBounds, minX, maxX, minY, maxY)
+    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(GameBounds, minX, maxX, minY, maxY, nwCellX, nwCellY, seCellX, seCellY, usableWidth, usableHeight, mapScale, mapOffsetX, mapOffsetY, mapOffsetZ)
 
     struct PlayerDTO
     {
@@ -21,14 +31,16 @@ namespace PaperMap::UI::DTO
         float y;
         float z;
         uint32_t worldspace;
+        std::string worldspaceEditorID;
         float angle;
     };
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(PlayerDTO, x, y, z, worldspace, angle)
+    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(PlayerDTO, x, y, z, worldspace, worldspaceEditorID, angle)
 
     struct POIMarker
     {
         uint32_t formId;
         uint32_t worldspace;
+        std::string worldspaceEditorID;
         float x;
         float y;
         uint32_t type;
@@ -44,6 +56,7 @@ namespace PaperMap::UI::DTO
         j = nlohmann::json{
             {"formId", p.formId},
             {"worldspace", p.worldspace},
+            {"worldspaceEditorID", p.worldspaceEditorID},
             {"x", p.x},
             {"y", p.y},
             {"type", p.type},
@@ -64,8 +77,9 @@ namespace PaperMap::UI::DTO
         float z;
         bool isDoor;
         uint32_t worldspace;
+        std::string worldspaceEditorID;
     };
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(QuestTarget, x, y, z, isDoor, worldspace)
+    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(QuestTarget, x, y, z, isDoor, worldspace, worldspaceEditorID)
 
     struct QuestObjective
     {
@@ -89,10 +103,11 @@ namespace PaperMap::UI::DTO
     struct CustomWaypoint
     {
         uint32_t worldspace;
+        std::string worldspaceEditorID;
         float x;
         float y;
     };
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(CustomWaypoint, worldspace, x, y)
+    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(CustomWaypoint, worldspace, worldspaceEditorID, x, y)
 
     struct MapPayload
     {

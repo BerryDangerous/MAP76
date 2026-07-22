@@ -12,6 +12,16 @@ namespace PaperMap::Engine
         float maxX;
         float minY;
         float maxY;
+        int16_t nwCellX{0};
+        int16_t nwCellY{0};
+        int16_t seCellX{0};
+        int16_t seCellY{0};
+        uint32_t usableWidth{0};
+        uint32_t usableHeight{0};
+        float mapScale{1.0f};
+        float mapOffsetX{0.0f};
+        float mapOffsetY{0.0f};
+        float mapOffsetZ{0.0f};
     };
 
     /**

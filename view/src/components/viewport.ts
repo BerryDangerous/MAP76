@@ -1,10 +1,28 @@
 import { mapState } from '../core/state.js';
 import { GameBounds } from '../types/map.js';
+import { CELL_SIZE_UNITS } from '../core/constants.js';
 
 const viewport = document.getElementById('map-viewport') as HTMLElement;
 const container = document.getElementById('screen-container') as HTMLElement;
 
 export const MapViewport = {
+    /**
+     * Computes the effective world space coordinate bounding box for a given worldspace payload.
+     */
+    getEffectiveBounds(bounds: GameBounds) {
+        const nwCellX = bounds.nwCellX;
+        const seCellX = bounds.seCellX;
+        const nwCellY = bounds.nwCellY;
+        const seCellY = bounds.seCellY;
+
+        const minX = (nwCellX !== undefined) ? nwCellX * CELL_SIZE_UNITS : bounds.minX;
+        const maxX = (seCellX !== undefined) ? seCellX * CELL_SIZE_UNITS : bounds.maxX;
+        const maxY = (nwCellY !== undefined) ? nwCellY * CELL_SIZE_UNITS : bounds.maxY;
+        const minY = (seCellY !== undefined) ? seCellY * CELL_SIZE_UNITS : bounds.minY;
+
+        return { minX, maxX, minY, maxY };
+    },
+
     /**
      * Normalizes game grid units into screen percentage numbers 
      * using active worldspace boundaries and precise gutter metrics.
@@ -13,11 +31,22 @@ export const MapViewport = {
         const config = mapState.activeMapConfig;
         if (!config) return { x: 0, y: 0, z: 0 };
 
-        const totalWidth = bounds.maxX - bounds.minX;
-        const totalHeight = bounds.maxY - bounds.minY;
+        let effectiveX = gameX;
+        let effectiveY = gameY;
+        if (bounds.mapScale !== undefined && bounds.mapScale !== 0 && bounds.mapScale !== 1.0) {
+            effectiveX = (gameX + (bounds.mapOffsetX ?? 0)) * bounds.mapScale;
+            effectiveY = (gameY + (bounds.mapOffsetY ?? 0)) * bounds.mapScale;
+        } else if (bounds.mapOffsetX || bounds.mapOffsetY) {
+            effectiveX = gameX + (bounds.mapOffsetX ?? 0);
+            effectiveY = gameY + (bounds.mapOffsetY ?? 0);
+        }
+
+        const { minX, maxX, minY, maxY } = this.getEffectiveBounds(bounds);
+        const totalWidth = maxX - minX;
+        const totalHeight = maxY - minY;
         
-        const rawPctX = (gameX - bounds.minX) / totalWidth;
-        const rawPctY = (gameY - bounds.minY) / totalHeight;
+        const rawPctX = (effectiveX - minX) / totalWidth;
+        const rawPctY = (effectiveY - minY) / totalHeight;
         
         const usableWidthPct = 1.0 - config.gutters.left - config.gutters.right;
         const usableHeightPct = 1.0 - config.gutters.top - config.gutters.bottom;

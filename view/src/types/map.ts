@@ -3,6 +3,16 @@ export interface GameBounds {
     maxX: number;
     minY: number;
     maxY: number;
+    nwCellX?: number;
+    nwCellY?: number;
+    seCellX?: number;
+    seCellY?: number;
+    usableWidth?: number;
+    usableHeight?: number;
+    mapScale?: number;
+    mapOffsetX?: number;
+    mapOffsetY?: number;
+    mapOffsetZ?: number;
 }
 
 export interface MapGutters {
@@ -10,6 +20,18 @@ export interface MapGutters {
     right: number;
     top: number;
     bottom: number;
+}
+
+export interface CellBoundsOverride {
+    nwCellX: number;
+    nwCellY: number;
+    seCellX: number;
+    seCellY: number;
+}
+
+export interface MapPosition {
+    x: number;
+    y: number;
 }
 
 export interface MapConfig {
@@ -35,5 +57,6 @@ export interface PlayerData {
     y: number;
     z: number;
     worldspace: number;
+    worldspaceEditorID?: string;
     angle: number;
 }

@@ -10,6 +10,7 @@ namespace PaperMap::Engine::Player
     {
         RE::NiPoint3 position{0.0f, 0.0f, 0.0f};
         uint32_t worldspaceFormID{0};
+        std::string worldspaceEditorID;
         float headingDegrees{0.0f};
     };
 

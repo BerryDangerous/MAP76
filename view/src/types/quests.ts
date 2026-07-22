@@ -4,6 +4,7 @@ export interface QuestTarget {
     z: number;
     isDoor: boolean;
     worldspace: number;
+    worldspaceEditorID?: string;
 }
 
 export interface QuestObjective {

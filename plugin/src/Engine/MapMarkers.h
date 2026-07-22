@@ -17,6 +17,7 @@ namespace PaperMap::Engine::MapMarkers
         bool canFastTravel;
         bool discovered;
         uint32_t worldspaceFormId;
+        std::string worldspaceEditorID;
         RE::NiPoint3 position;
     };
 

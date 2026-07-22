@@ -119,6 +119,7 @@ namespace PaperMap::Engine::QuestManager
                         targetPin.position = refr->GetPosition();
                         targetPin.isDoor = GetPipboyBool(markerUiObj, "OnDoor", false);
                         targetPin.worldspaceFormID = markerWorld ? markerWorld->formID : 0;
+                        targetPin.worldspaceEditorID = (markerWorld && markerWorld->GetFormEditorID()) ? markerWorld->GetFormEditorID() : "";
 
                         targetsArray.push_back(targetPin);
                     }

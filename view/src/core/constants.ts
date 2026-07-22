@@ -92,6 +92,56 @@ export const ENGINE_MARKER_TYPES: Record<number, string> = {
     // 90: 'teammate'
 };
 
+export const FORM_ID_INDEX_MASK = 0x00FFFFFF;
+
 export const MARKER_ICON_QUEST_TARGET = 83;
 export const MARKER_ICON_QUEST_DOOR = 84;
 export const MARKER_ICON_CUSTOM_WAYPOINT = 100;
+
+export const CELL_SIZE_UNITS = 4096.0;
+
+export const DEFAULT_BLANK_CONFIG = {
+    mapName: "Custom Worldspace",
+    worldspaceID: 0,
+    texturePath: "assets/maps/blank.svg",
+    gutters: {
+        left: 0.02685546875,
+        right: 0.0283203125,
+        top: 0.02685546875,
+        bottom: 0.0283203125
+    }
+};
+
+export const WORLDSPACE_CONFIGS: Record<string, { mapName: string; texturePath: string; gutters: { left: number; right: number; top: number; bottom: number } }> = {
+    "Commonwealth": {
+        mapName: "Commonwealth",
+        texturePath: "assets/maps/commonwealth/default.png",
+        gutters: {
+            left: 0.02685546875,
+            right: 0.0283203125,
+            top: 0.02685546875,
+            bottom: 0.0283203125
+        }
+    },
+    "DLC03FarHarbor": {
+        mapName: "Far Harbor",
+        texturePath: "assets/maps/dlc03farharbor/default.png",
+        gutters: {
+            left: 0.00920067,
+            right: 0.03374173,
+            top: 0.02515624,
+            bottom: 0.00958931
+        }
+    },
+    "NukaWorld": {
+        mapName: "Nuka-World",
+        texturePath: "assets/maps/nukaworld/default.png",
+        gutters: {
+            left: -0.045,
+            right: -0.095,
+            top: 0.0005,
+            bottom: -0.155
+        }
+    }
+};
+

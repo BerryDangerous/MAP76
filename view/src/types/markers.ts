@@ -1,6 +1,7 @@
 export interface POIMarker {
     formId: number;
     worldspace: number;
+    worldspaceEditorID?: string;
     x: number;
     y: number;
     type: number;
@@ -13,6 +14,7 @@ export interface POIMarker {
 
 export interface CustomWaypoint {
     worldspace: number;
+    worldspaceEditorID?: string;
     x: number;
     y: number;
 }

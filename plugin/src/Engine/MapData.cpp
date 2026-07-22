@@ -134,10 +134,25 @@ namespace PaperMap::Engine
             auto *mapData = reinterpret_cast<RE::WORLD_MAP_DATA *>(&currentWorld->worldMapData);
             if (mapData)
             {
+                bounds.nwCellX = mapData->nwCellX;
+                bounds.nwCellY = mapData->nwCellY;
+                bounds.seCellX = mapData->seCellX;
+                bounds.seCellY = mapData->seCellY;
+                bounds.usableWidth = mapData->usableWidth;
+                bounds.usableHeight = mapData->usableHeight;
                 bounds.minX = static_cast<float>(mapData->nwCellX) * Constants::Map::CELL_SIZE_UNITS;
                 bounds.maxY = static_cast<float>(mapData->nwCellY) * Constants::Map::CELL_SIZE_UNITS;
                 bounds.maxX = static_cast<float>(mapData->seCellX) * Constants::Map::CELL_SIZE_UNITS;
                 bounds.minY = static_cast<float>(mapData->seCellY) * Constants::Map::CELL_SIZE_UNITS;
+            }
+
+            auto *offsetData = &currentWorld->worldMapOffsetData;
+            if (offsetData)
+            {
+                bounds.mapScale = offsetData->mapScale;
+                bounds.mapOffsetX = offsetData->mapOffsetX;
+                bounds.mapOffsetY = offsetData->mapOffsetY;
+                bounds.mapOffsetZ = offsetData->mapOffsetZ;
             }
         }
 

@@ -59,6 +59,7 @@ namespace
         markerElement.canFastTravel = (rawFlags & PaperMap::Constants::Marker::FLAG_FAST_TRAVEL) != 0;
         markerElement.discovered = (rawFlags & PaperMap::Constants::Marker::FLAG_DISCOVERED) != 0;
         markerElement.worldspaceFormId = markerWorld ? markerWorld->formID : 0;
+        markerElement.worldspaceEditorID = (markerWorld && markerWorld->GetFormEditorID()) ? markerWorld->GetFormEditorID() : "";
         markerElement.position = markerPosition;
 
         return markerElement;

@@ -20,6 +20,7 @@ namespace PaperMap::Engine::QuestManager
         RE::NiPoint3 position;
         bool isDoor;
         uint32_t worldspaceFormID;
+        std::string worldspaceEditorID;
     };
 
     /**

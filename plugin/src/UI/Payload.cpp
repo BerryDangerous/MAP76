@@ -19,7 +19,17 @@ namespace PaperMap::UI::Payload
                 engineBounds.minX,
                 engineBounds.maxX,
                 engineBounds.minY,
-                engineBounds.maxY
+                engineBounds.maxY,
+                engineBounds.nwCellX,
+                engineBounds.nwCellY,
+                engineBounds.seCellX,
+                engineBounds.seCellY,
+                engineBounds.usableWidth,
+                engineBounds.usableHeight,
+                engineBounds.mapScale,
+                engineBounds.mapOffsetX,
+                engineBounds.mapOffsetY,
+                engineBounds.mapOffsetZ
             };
 
             Engine::Player::State enginePlayer = Engine::Player::GetCurrentState();
@@ -28,6 +38,7 @@ namespace PaperMap::UI::Payload
                 enginePlayer.position.y,
                 enginePlayer.position.z,
                 enginePlayer.worldspaceFormID,
+                enginePlayer.worldspaceEditorID,
                 enginePlayer.headingDegrees
             };
 
@@ -41,6 +52,7 @@ namespace PaperMap::UI::Payload
                     payload.markers.push_back(DTO::POIMarker{
                         marker.formId,
                         marker.worldspaceFormId,
+                        marker.worldspaceEditorID,
                         marker.position.x,
                         marker.position.y,
                         marker.iconType,
@@ -78,7 +90,8 @@ namespace PaperMap::UI::Payload
                                 target.position.y,
                                 target.position.z,
                                 target.isDoor,
-                                target.worldspaceFormID
+                                target.worldspaceFormID,
+                                target.worldspaceEditorID
                             });
                         }
                         questDto.objectives.push_back(objDto);

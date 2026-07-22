@@ -18,6 +18,7 @@ namespace PaperMap::Engine::Player
 
         auto *world = PaperMap::Engine::GetReferenceWorldspace(player, &state.position);
         state.worldspaceFormID = world ? world->formID : 0;
+        state.worldspaceEditorID = (world && world->GetFormEditorID()) ? world->GetFormEditorID() : "";
 
         if (auto *camera = RE::PlayerCamera::GetSingleton())
         {

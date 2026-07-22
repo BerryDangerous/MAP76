@@ -1,16 +1,12 @@
 import { mapState } from '../core/state.js';
 import { ThemeEngine } from '../systems/theme.js';
-import { GameBounds, PlayerData } from '../types/map.js';
+import { GameBounds, PlayerData, MapPosition } from '../types/map.js';
 import { CustomWaypoint, POIMarker } from '../types/markers.js';
 import { F4SEMapPayload } from '../types/payloads.js';
 import { QuestItem } from '../types/quests.js';
 import { MapViewport } from './viewport.js';
 import { MARKER_ICON_QUEST_TARGET, MARKER_ICON_QUEST_DOOR, MARKER_ICON_CUSTOM_WAYPOINT } from '../core/constants.js';
-
-interface MapPosition {
-    x: number;
-    y: number;
-}
+import { isSameWorldspace } from '../utils/worldspace.js';
 
 type MarkerType = 'location' | 'quest' | 'waypoint';
 
@@ -23,8 +19,14 @@ function getMarkerLayer(): HTMLElement | null {
 }
 
 export function loadMarkers(payload: F4SEMapPayload) {
+    if (!payload) return;
+
+    if (payload.player && payload.player.worldspace !== undefined) {
+        ThemeEngine.updateWorldspaceConfig(payload.player.worldspace, payload.player.worldspaceEditorID);
+    }
+
     const config = mapState.activeMapConfig;
-    if (!config || !payload) return;
+    if (!config) return;
 
     const playerLayer = getPlayerLayer();
     const markerLayer = getMarkerLayer();
@@ -63,7 +65,7 @@ function getQuestLayer(): HTMLElement | null {
 
 function renderPlayer(player: PlayerData | undefined, worldspaceID: number, bounds: GameBounds) {
     mapState.player.active = false;
-    if (!player || player.worldspace !== worldspaceID) return;
+    if (!player || !isSameWorldspace(player.worldspace, worldspaceID)) return;
 
     const pos = MapViewport.gameToMapCoords(player.x, player.y, player.z, bounds);
     const pImg = document.createElement('img');
@@ -87,19 +89,21 @@ function renderLocationMarkers(markers: POIMarker[], worldspaceID: number, bound
     const markerLayer = getMarkerLayer();
     if (!markerLayer) return;
 
+    const { minX: bMinX, maxX: bMaxX, minY: bMinY, maxY: bMaxY } = MapViewport.getEffectiveBounds(bounds);
+
     markers.forEach(m => {
-        if (m.worldspace !== worldspaceID) return;
+        if (!isSameWorldspace(m.worldspace, worldspaceID)) return;
 
         const shouldRender = m.visible || m.discovered || m.canFastTravel;
         if (!shouldRender) return;
 
         let x = m.x;
         let y = m.y;
-        const isClamped = (x < bounds.minX || x > bounds.maxX || y < bounds.minY || y > bounds.maxY);
+        const isClamped = (x < bMinX || x > bMaxX || y < bMinY || y > bMaxY);
 
         if (isClamped) {
-            x = Math.max(bounds.minX, Math.min(bounds.maxX, x));
-            y = Math.max(bounds.minY, Math.min(bounds.maxY, y));
+            x = Math.max(bMinX, Math.min(bMaxX, x));
+            y = Math.max(bMinY, Math.min(bMaxY, y));
         }
 
         const pos = MapViewport.gameToMapCoords(x, y, 0, bounds);
@@ -134,7 +138,7 @@ function renderQuestMarkers(quests: QuestItem[], worldspaceID: number, bounds: G
             const markerTooltipText = objective.text ? objective.text : quest.questName;
 
             objective.targets.forEach(target => {
-                if (target.worldspace !== worldspaceID) return;
+                if (!isSameWorldspace(target.worldspace, worldspaceID)) return;
 
                 const pos = MapViewport.gameToMapCoords(target.x, target.y, target.z, bounds);
 
@@ -177,7 +181,7 @@ function renderQuestMarkers(quests: QuestItem[], worldspaceID: number, bounds: G
 }
 
 function renderCustomWaypoint(wp: CustomWaypoint | null, worldspaceID: number, bounds: GameBounds, questLayer: HTMLElement) {
-    if (!wp || wp.worldspace !== worldspaceID) return;
+    if (!wp || !isSameWorldspace(wp.worldspace, worldspaceID)) return;
 
     const pos = MapViewport.gameToMapCoords(wp.x, wp.y, 0, bounds);
     const container = createMarkerContainer('waypoint', 'Custom Marker', pos);
