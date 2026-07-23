@@ -25,8 +25,27 @@ export const EngineBridge = {
             const payload = JSON.stringify({ formId });
             window.checkFastTravel(payload);
         }
+    },
+    setCustomMarker(x: number, y: number) {
+        if (typeof window.setCustomMarker === 'function') {
+            const payload = JSON.stringify({ x, y });
+            window.setCustomMarker(payload);
+        }
+    },
+    removeCustomMarker() {
+        if (typeof window.removeCustomMarker === 'function') {
+            window.removeCustomMarker('');
+        }
     }
 };
+
+export function setCustomMarker(x: number, y: number): void {
+    EngineBridge.setCustomMarker(x, y);
+}
+
+export function removeCustomMarker(): void {
+    EngineBridge.removeCustomMarker();
+}
 
 export function initializeF4SEBindings(onDataReceived: (payload: F4SEMapPayload) => void) {
     const processPayload = (jsonString: string) => {

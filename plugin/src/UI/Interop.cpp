@@ -79,6 +79,37 @@ namespace PaperMap::UI
                 REX::ERROR("Error processing checkFastTravel callback: {}", e.what());
             }
         }
+
+        void HandleSetCustomMarker(const char *arg)
+        {
+            try
+            {
+                if (!arg) return;
+                auto parsedJson = nlohmann::json::parse(arg);
+                if (parsedJson.contains("x") && parsedJson.contains("y"))
+                {
+                    float x = parsedJson["x"].get<float>();
+                    float y = parsedJson["y"].get<float>();
+                    PaperMap::UI::Actions::SetCustomMarker(x, y);
+                }
+            }
+            catch (const std::exception &e)
+            {
+                REX::ERROR("Error processing setCustomMarker callback: {}", e.what());
+            }
+        }
+
+        void HandleRemoveCustomMarker(const char *)
+        {
+            try
+            {
+                PaperMap::UI::Actions::RemoveCustomMarker();
+            }
+            catch (const std::exception &e)
+            {
+                REX::ERROR("Error processing removeCustomMarker callback: {}", e.what());
+            }
+        }
     }
 }
 
@@ -113,6 +144,8 @@ namespace PaperMap::UI
         State::g_api->BindUIEvent(view, "requestFreshMapData", HandleRequestFreshMapData);
         State::g_api->BindUIEvent(view, "requestFastTravel", HandleRequestFastTravel);
         State::g_api->BindUIEvent(view, "checkFastTravel", HandleCheckFastTravel);
+        State::g_api->BindUIEvent(view, "setCustomMarker", HandleSetCustomMarker);
+        State::g_api->BindUIEvent(view, "removeCustomMarker", HandleRemoveCustomMarker);
     }
 
     void OnCloseRequestedFromJS(const char *a_argument)
@@ -199,5 +232,10 @@ namespace PaperMap::UI
             State::g_api->Unfocus(State::g_view);
             State::g_api->Hide(State::g_view);
         }
+    }
+
+    void TriggerFreshMapDataSync()
+    {
+        HandleRequestFreshMapData(nullptr);
     }
 }

@@ -66,6 +66,22 @@ namespace PaperMap::Engine::PipboyUtils
         return *primitive;
     }
 
+    float GetPipboyFloat(RE::PipboyObject *a_obj, const RE::BSFixedString &a_key, float a_fallback)
+    {
+        if (!a_obj)
+        {
+            return a_fallback;
+        }
+
+        auto *val = a_obj->GetMember<RE::PipboyValue *>(a_key);
+        if (!val || val->GetType() != RE::PipboyValue::kFloat)
+        {
+            return a_fallback;
+        }
+
+        return *reinterpret_cast<const float*>(reinterpret_cast<uintptr_t>(val) + 0x18);
+    }
+
     RE::PipboyArray *GetPipboyArray(RE::PipboyObject *a_obj, const RE::BSFixedString &a_key)
     {
         if (!a_obj)

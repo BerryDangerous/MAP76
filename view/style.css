@@ -113,7 +113,8 @@ body, html {
 }
 
 .quest-marker img:not(.altitude-arrow),
-.custom-waypoint-marker img:not(.altitude-arrow) {
+.custom-marker img:not(.altitude-arrow),
+.power-armor-marker img:not(.altitude-arrow) {
     max-width: 28px;
     max-height: 34px;
     object-fit: contain;
@@ -134,7 +135,8 @@ body, html {
     will-change: transform;
 }
 
-.quest-marker .altitude-arrow {
+.quest-marker .altitude-arrow,
+.power-armor-marker .altitude-arrow {
     position: absolute;
     width: 11px;
     height: 11px;
@@ -153,13 +155,15 @@ body, html {
 }
 
 .quest-marker,
-.custom-waypoint-marker,
+.custom-marker,
+.power-armor-marker,
 #player-marker {
     will-change: opacity;
 }
 
 .quest-marker.is-edge-clamped,
-.custom-waypoint-marker.is-edge-clamped {
+.custom-marker.is-edge-clamped,
+.power-armor-marker.is-edge-clamped {
     z-index: 100;
 }
 
@@ -286,6 +290,11 @@ body, html {
     gap: 24px;
 }
 
+.modal-actions.modal-vertical {
+    flex-direction: column;
+    width: 100%;
+}
+
 .modal-actions button {
     padding: 8px 24px;
     font-family: 'Courier New', monospace;
@@ -294,6 +303,11 @@ body, html {
     cursor: pointer;
     border: none;
     transition: background 0.1s ease;
+}
+
+.modal-actions.modal-vertical button {
+    width: 100%;
+    display: block;
 }
 
 #modal-confirm-btn {
@@ -330,4 +344,80 @@ body, html {
     display: none;
     transform-origin: 50% 0%;
     transform: translate(-50%, 0%) rotate(-18.5deg);
+}
+
+/* ==========================================================================
+   8. CUSTOM MARKER MODAL & MARKER COMPONENT
+   ========================================================================== */
+
+.custom-marker-modal {
+    position: fixed;
+    z-index: 10000;
+    background: #1a1a1a;
+    border: 2px solid #fff;
+    color: #fff;
+    padding: 16px 22px;
+    font-family: 'Courier New', monospace;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.7);
+    transform: translate(-50%, -100%);
+    margin-top: -14px;
+    min-width: 220px;
+}
+
+.custom-marker-modal-title {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 14px;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.custom-marker-modal-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.custom-marker-modal-actions button {
+    padding: 10px 18px;
+    font-family: 'Courier New', monospace;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+    transition: background 0.15s ease;
+}
+
+.btn-modal-confirm {
+    background: #fff;
+    color: #000;
+}
+
+.btn-modal-confirm:hover {
+    background: #cccccc;
+}
+
+.btn-modal-remove {
+    background: #800000;
+    color: #fff;
+    border: 1px solid #ff4d4d !important;
+}
+
+.btn-modal-remove:hover {
+    background: #a00000;
+}
+
+.btn-modal-cancel {
+    background: #333;
+    color: #fff;
+    border: 1px solid #666 !important;
+}
+
+.btn-modal-cancel:hover {
+    background: #444;
+}
+
+.custom-marker {
+    z-index: 95;
 }

@@ -44,4 +44,9 @@ namespace PaperMap::UI
      * @param a_argument Optional payload argument string.
      */
     void OnCloseRequestedFromJS(const char *a_argument);
+
+    /**
+     * @brief Triggers an immediate map payload generation and pushes it to JavaScript via loadMarkers.
+     */
+    void TriggerFreshMapDataSync();
 }

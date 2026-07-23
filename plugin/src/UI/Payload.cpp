@@ -5,6 +5,8 @@
 #include "Engine/MapMarkers.h"
 #include "Engine/QuestManager.h"
 #include "Engine/Player.h"
+#include "Engine/Memory.h"
+#include "Engine/PipboyUtils.h"
 
 namespace PaperMap::UI::Payload
 {
@@ -100,7 +102,89 @@ namespace PaperMap::UI::Payload
                 }
             }
 
-            payload.custom_waypoint = std::nullopt;
+            payload.custom_marker = std::nullopt;
+            payload.power_armor = std::nullopt;
+
+            auto *playerRef = RE::PlayerCharacter::GetSingleton();
+            if (playerRef)
+            {
+                auto *playerWorld = PaperMap::Engine::GetReferenceWorldspace(playerRef);
+
+                if (auto paHandle = playerRef->lastUsedPowerArmor)
+                {
+                    if (auto paPtr = paHandle.get())
+                    {
+                        auto *paRefr = paPtr.get();
+                        if (paRefr && PaperMap::Engine::Memory::IsReferenceSafe(paRefr) && !paRefr->IsDisabled())
+                        {
+                            RE::NiPoint3 paPos = paRefr->GetPosition();
+                            auto *paWorld = PaperMap::Engine::GetReferenceWorldspace(paRefr, &paPos);
+
+                            if (playerWorld && paWorld && playerWorld->formID != paWorld->formID)
+                            {
+                                if (pipboyManager && pipboyManager->mapData.worldPowerArmorMarker)
+                                {
+                                    auto *pam = pipboyManager->mapData.worldPowerArmorMarker;
+                                    bool pamVis = PaperMap::Engine::PipboyUtils::GetPipboyBool(pam, "Visible", false);
+                                    if (pamVis)
+                                    {
+                                        float pamX = PaperMap::Engine::PipboyUtils::GetPipboyFloat(pam, "X", paPos.x);
+                                        float pamY = PaperMap::Engine::PipboyUtils::GetPipboyFloat(pam, "Y", paPos.y);
+                                        paPos.x = pamX;
+                                        paPos.y = pamY;
+                                        paWorld = playerWorld;
+                                    }
+                                }
+                            }
+
+                            DTO::PowerArmorMarker paMarker{};
+                            paMarker.worldspace = paWorld ? paWorld->formID : 0;
+                            paMarker.worldspaceEditorID = (paWorld && paWorld->GetFormEditorID()) ? paWorld->GetFormEditorID() : "";
+                            paMarker.x = paPos.x;
+                            paMarker.y = paPos.y;
+                            paMarker.z = paPos.z;
+                            payload.power_armor = paMarker;
+                        }
+                    }
+                }
+
+                if (auto wpHandle = playerRef->playerMapMarker)
+                {
+                    if (auto wpPtr = wpHandle.get())
+                    {
+                        auto *wpRefr = wpPtr.get();
+                        if (wpRefr && PaperMap::Engine::Memory::IsReferenceSafe(wpRefr) && !wpRefr->IsDisabled())
+                        {
+                            RE::NiPoint3 wpPos = wpRefr->GetPosition();
+                            auto *wpWorld = PaperMap::Engine::GetReferenceWorldspace(wpRefr, &wpPos);
+
+                            if (playerWorld && wpWorld && playerWorld->formID != wpWorld->formID)
+                            {
+                                if (pipboyManager && pipboyManager->mapData.worldCustomMarker)
+                                {
+                                    auto *wcm = pipboyManager->mapData.worldCustomMarker;
+                                    bool wcmVis = PaperMap::Engine::PipboyUtils::GetPipboyBool(wcm, "Visible", false);
+                                    if (wcmVis)
+                                    {
+                                        float wcmX = PaperMap::Engine::PipboyUtils::GetPipboyFloat(wcm, "X", wpPos.x);
+                                        float wcmY = PaperMap::Engine::PipboyUtils::GetPipboyFloat(wcm, "Y", wpPos.y);
+                                        wpPos.x = wcmX;
+                                        wpPos.y = wcmY;
+                                        wpWorld = playerWorld;
+                                    }
+                                }
+                            }
+
+                            DTO::CustomMarker markerDto{};
+                            markerDto.worldspace = wpWorld ? wpWorld->formID : 0;
+                            markerDto.worldspaceEditorID = (wpWorld && wpWorld->GetFormEditorID()) ? wpWorld->GetFormEditorID() : "";
+                            markerDto.x = wpPos.x;
+                            markerDto.y = wpPos.y;
+                            payload.custom_marker = markerDto;
+                        }
+                    }
+                }
+            }
 
             nlohmann::json rootPayload = payload;
             return rootPayload.dump(-1, ' ', false, nlohmann::json::error_handler_t::replace);
@@ -108,7 +192,7 @@ namespace PaperMap::UI::Payload
         catch (const std::exception &e)
         {
             REX::ERROR("Exception in GetMapPayloadAsJSON parsing layer: {}", e.what());
-            return "{\"bounds\":null,\"markers\":[],\"quests\":[],\"player\":null,\"custom_waypoint\":null}";
+            return "{\"bounds\":null,\"markers\":[],\"quests\":[],\"player\":null,\"custom_marker\":null,\"power_armor\":null}";
         }
     }
 }

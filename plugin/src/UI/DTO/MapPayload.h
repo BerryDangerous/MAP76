@@ -100,21 +100,32 @@ namespace PaperMap::UI::DTO
     };
     NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(QuestItem, questName, description, isTracked, isMisc, type, objectives)
 
-    struct CustomWaypoint
+    struct CustomMarker
     {
         uint32_t worldspace;
         std::string worldspaceEditorID;
         float x;
         float y;
     };
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(CustomWaypoint, worldspace, worldspaceEditorID, x, y)
+    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(CustomMarker, worldspace, worldspaceEditorID, x, y)
+
+    struct PowerArmorMarker
+    {
+        uint32_t worldspace;
+        std::string worldspaceEditorID;
+        float x;
+        float y;
+        float z;
+    };
+    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(PowerArmorMarker, worldspace, worldspaceEditorID, x, y, z)
 
     struct MapPayload
     {
         GameBounds bounds;
         std::vector<POIMarker> markers;
         std::vector<QuestItem> quests;
-        std::optional<CustomWaypoint> custom_waypoint;
+        std::optional<CustomMarker> custom_marker;
+        std::optional<PowerArmorMarker> power_armor;
         std::optional<PlayerDTO> player;
     };
 
@@ -132,13 +143,21 @@ namespace PaperMap::UI::DTO
         {
             j["player"] = nullptr;
         }
-        if (p.custom_waypoint)
+        if (p.custom_marker)
         {
-            j["custom_waypoint"] = *p.custom_waypoint;
+            j["custom_marker"] = *p.custom_marker;
         }
         else
         {
-            j["custom_waypoint"] = nullptr;
+            j["custom_marker"] = nullptr;
+        }
+        if (p.power_armor)
+        {
+            j["power_armor"] = *p.power_armor;
+        }
+        else
+        {
+            j["power_armor"] = nullptr;
         }
     }
 }

@@ -7,6 +7,7 @@ export const mapState = {
     panX: 0,
     panY: 0,
     isDragging: false,
+    wasDragged: false,
     startX: 0,
     startY: 0,
 

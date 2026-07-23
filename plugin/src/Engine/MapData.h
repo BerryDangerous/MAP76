@@ -42,6 +42,13 @@ namespace PaperMap::Engine
     RE::TESWorldSpace *GetReferenceWorldspace(RE::TESObjectREFR *a_refr, RE::NiPoint3* a_position = nullptr);
 
     /**
+     * @brief Resolves the exterior location map marker reference associated with a reference's BGSLocation chain.
+     * @param a_refr Target reference object.
+     * @return Resolved exterior location marker reference pointer, or nullptr if none found.
+     */
+    RE::TESObjectREFR *GetWorldLocationMarker(RE::TESObjectREFR *a_refr);
+
+    /**
      * @brief Extracts the underlying quest FormID linked to a UI map marker object.
      * @param a_markerObj Pip-Boy UI marker object.
      * @return Resolved quest FormID, or 0 if unlinked/invalid.

@@ -12,11 +12,20 @@ export interface POIMarker {
     customIcon?: string;
 }
 
-export interface CustomWaypoint {
+export interface CustomMarker {
     worldspace: number;
     worldspaceEditorID?: string;
     x: number;
     y: number;
 }
 
-export type MarkerType = 'location' | 'quest' | 'waypoint';
+export interface PowerArmorMarker {
+    worldspace: number;
+    worldspaceEditorID?: string;
+    x: number;
+    y: number;
+    z: number;
+}
+
+export type MarkerType = 'location' | 'quest' | 'customMarker' | 'powerarmor';
+

@@ -15,6 +15,9 @@ declare global {
         requestFastTravel?: (payloadString: string) => void;
         checkFastTravel?: (payloadString: string) => void;
 
+        setCustomMarker?: (payloadString: string) => void;
+        removeCustomMarker?: (arg: string) => void;
+
         onFastTravelFailed?: (jsonString: string) => void;
         onFastTravelCheckResult?: (jsonString: string) => void;
 

@@ -180,6 +180,42 @@ namespace PaperMap::Engine
         return world;
     }
 
+    RE::TESObjectREFR *GetWorldLocationMarker(RE::TESObjectREFR *a_refr)
+    {
+        if (!a_refr)
+        {
+            return nullptr;
+        }
+
+        auto *cell = a_refr->GetParentCell();
+        if (!cell)
+        {
+            cell = a_refr->GetSaveParentCell();
+        }
+
+        if (cell)
+        {
+            if (auto *location = cell->GetLocation())
+            {
+                auto *currentLoc = location;
+                while (currentLoc)
+                {
+                    auto markerHandle = currentLoc->worldLocMarker;
+                    if (markerHandle)
+                    {
+                        if (auto markerRef = markerHandle.get())
+                        {
+                            return markerRef.get();
+                        }
+                    }
+                    currentLoc = currentLoc->parentLoc;
+                }
+            }
+        }
+
+        return nullptr;
+    }
+
     uint32_t GetQuestFormIDFromMarker(RE::PipboyObject *a_markerObj)
     {
         if (!a_markerObj)

@@ -1,6 +1,7 @@
 import { mapState } from '../core/state.js';
 import { GameBounds } from '../types/map.js';
 import { CELL_SIZE_UNITS } from '../core/constants.js';
+import { showCustomMarkerModal, closeCustomMarkerModal } from './customMarkerModal.js';
 
 const viewport = document.getElementById('map-viewport') as HTMLElement;
 const container = document.getElementById('screen-container') as HTMLElement;
@@ -55,6 +56,43 @@ export const MapViewport = {
         const pctY = (config.gutters.top + ((1.0 - rawPctY) * usableHeightPct)) * 100;
         
         return { x: pctX, y: pctY, z: gameZ };
+    },
+
+    /**
+     * Converts screen pixel coordinates (e.g. mouse event clientX, clientY) back to world space coordinates (gameX, gameY).
+     */
+    screenToGameCoords(screenX: number, screenY: number, bounds: GameBounds) {
+        const config = mapState.activeMapConfig;
+        if (!config) return { x: 0, y: 0 };
+
+        const baseSize = Math.max(window.innerWidth, window.innerHeight);
+        const mapCurrentSize = baseSize * mapState.zoom;
+
+        const pctX = (screenX - mapState.panX) / mapCurrentSize;
+        const pctY = (screenY - mapState.panY) / mapCurrentSize;
+
+        const usableWidthPct = 1.0 - config.gutters.left - config.gutters.right;
+        const usableHeightPct = 1.0 - config.gutters.top - config.gutters.bottom;
+
+        const rawPctX = (pctX - config.gutters.left) / usableWidthPct;
+        const rawPctY = 1.0 - ((pctY - config.gutters.top) / usableHeightPct);
+
+        const { minX, maxX, minY, maxY } = this.getEffectiveBounds(bounds);
+        const totalWidth = maxX - minX;
+        const totalHeight = maxY - minY;
+
+        let gameX = minX + (rawPctX * totalWidth);
+        let gameY = minY + (rawPctY * totalHeight);
+
+        if (bounds.mapScale !== undefined && bounds.mapScale !== 0 && bounds.mapScale !== 1.0) {
+            gameX = (gameX / bounds.mapScale) - (bounds.mapOffsetX ?? 0);
+            gameY = (gameY / bounds.mapScale) - (bounds.mapOffsetY ?? 0);
+        } else if (bounds.mapOffsetX || bounds.mapOffsetY) {
+            gameX = gameX - (bounds.mapOffsetX ?? 0);
+            gameY = gameY - (bounds.mapOffsetY ?? 0);
+        }
+
+        return { x: gameX, y: gameY };
     },
 
     /**
@@ -137,10 +175,20 @@ export const MapViewport = {
             this.updateViewportTransform();
         }, { passive: false });
 
+        let dragStartX = 0;
+        let dragStartY = 0;
+
         viewport.addEventListener('mousedown', (e: MouseEvent) => {
             if (e.button !== 0) return;
             e.preventDefault();
+            closeCustomMarkerModal();
+            if (window.closeActivePopover) {
+                window.closeActivePopover();
+            }
             mapState.isDragging = true;
+            mapState.wasDragged = false;
+            dragStartX = e.clientX;
+            dragStartY = e.clientY;
             mapState.startX = e.clientX - mapState.panX;
             mapState.startY = e.clientY - mapState.panY;
             viewport.style.cursor = 'grabbing';
@@ -148,8 +196,11 @@ export const MapViewport = {
 
         window.addEventListener('mousemove', (e: MouseEvent) => {
             if (!mapState.isDragging) return;
-            if (window.closeActivePopover) {
-                window.closeActivePopover();
+            if (Math.abs(e.clientX - dragStartX) > 5 || Math.abs(e.clientY - dragStartY) > 5) {
+                mapState.wasDragged = true;
+                if (window.closeActivePopover) {
+                    window.closeActivePopover();
+                }
             }
             mapState.panX = e.clientX - mapState.startX;
             mapState.panY = e.clientY - mapState.startY;
@@ -160,6 +211,15 @@ export const MapViewport = {
             if (!mapState.isDragging) return;
             mapState.isDragging = false;
             viewport.style.cursor = 'grab';
+        });
+
+        container.addEventListener('contextmenu', (e: MouseEvent) => {
+            e.preventDefault();
+            const bounds = mapState.currentPayloadBounds;
+            if (!bounds) return;
+
+            const gameCoords = MapViewport.screenToGameCoords(e.clientX, e.clientY, bounds);
+            showCustomMarkerModal(gameCoords, { x: e.clientX, y: e.clientY }, container);
         });
 
         window.addEventListener('dragstart', (e) => e.preventDefault());

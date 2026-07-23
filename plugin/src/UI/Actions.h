@@ -24,4 +24,14 @@ namespace PaperMap::UI::Actions
      * @param a_formId FormID of target destination marker reference.
      */
     void ExecuteFastTravel(uint32_t a_formId);
+
+    /**
+     * @brief Sets or moves the player custom marker to specified world coordinates.
+     */
+    void SetCustomMarker(float a_x, float a_y);
+
+    /**
+     * @brief Removes the player custom marker if active.
+     */
+    void RemoveCustomMarker();
 }

@@ -32,6 +32,15 @@ namespace PaperMap::Engine::PipboyUtils
     bool GetPipboyBool(RE::PipboyObject *a_obj, const RE::BSFixedString &a_key, bool a_fallback = false);
 
     /**
+     * @brief Safely extracts a float value from a Pip-Boy UI object by key.
+     * @param a_obj Source Pip-Boy object.
+     * @param a_key Property key name.
+     * @param a_fallback Default float value if key is absent or invalid.
+     * @return Extracted float or fallback value.
+     */
+    float GetPipboyFloat(RE::PipboyObject *a_obj, const RE::BSFixedString &a_key, float a_fallback = 0.0f);
+
+    /**
      * @brief Safely extracts a PipboyArray pointer from a Pip-Boy UI object by key.
      * @param a_obj Source Pip-Boy object.
      * @param a_key Property key name.

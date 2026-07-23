@@ -2,7 +2,10 @@
 #include "PCH.h"
 #include "UI/Actions.h"
 #include "UI/Interop.h"
+#include "Engine/MapData.h"
 #include "Constants.h"
+#include "RE/N/NEW_REFR_DATA.h"
+#include "RE/T/TESDataHandler.h"
 
 namespace PaperMap::UI::Actions
 {
@@ -76,6 +79,79 @@ namespace PaperMap::UI::Actions
                 }
             }
             return false;
+        }
+
+        void SetEngineCustomMarker(float a_x, float a_y)
+        {
+            auto *player = RE::PlayerCharacter::GetSingleton();
+            if (!player)
+            {
+                return;
+            }
+
+            auto *tes = RE::TES::GetSingleton();
+            auto *activeWorld = tes ? tes->worldSpace : nullptr;
+
+            RE::TESObjectREFR *markerRef = player->playerMapMarker ? player->playerMapMarker.get().get() : nullptr;
+
+            if (markerRef)
+            {
+                auto *currentWorld = PaperMap::Engine::GetReferenceWorldspace(markerRef);
+                if (currentWorld && activeWorld && currentWorld->formID != activeWorld->formID)
+                {
+                    markerRef->Disable();
+                    player->playerMapMarker.reset();
+                    markerRef = nullptr;
+                }
+            }
+
+            if (!markerRef)
+            {
+                auto *markerForm = RE::TESForm::GetFormByID<RE::TESBoundObject>(0x34);
+                auto *dataHandler = RE::TESDataHandler::GetSingleton();
+                auto *cell = activeWorld ? activeWorld->persistentCell : nullptr;
+
+                if (markerForm && dataHandler && cell)
+                {
+                    RE::NEW_REFR_DATA refrData{};
+                    refrData.location = { a_x, a_y, 0.0f };
+                    refrData.object = markerForm;
+                    refrData.world = activeWorld;
+                    refrData.forcePersist = true;
+
+                    auto handle = dataHandler->CreateReferenceAtLocation(refrData);
+                    if (auto ptr = handle.get())
+                    {
+                        markerRef = ptr.get();
+                        player->playerMapMarker = handle;
+                    }
+                }
+            }
+
+            if (markerRef)
+            {
+                markerRef->data.location.x = a_x;
+                markerRef->data.location.y = a_y;
+                markerRef->Enable(false);
+            }
+        }
+
+        void RemoveEngineCustomMarker()
+        {
+            auto *player = RE::PlayerCharacter::GetSingleton();
+            if (!player)
+            {
+                return;
+            }
+
+            if (auto handle = player->playerMapMarker)
+            {
+                if (auto ptr = handle.get())
+                {
+                    ptr->Disable();
+                }
+                player->playerMapMarker.reset();
+            }
         }
     }
 
@@ -176,5 +252,27 @@ namespace PaperMap::UI::Actions
         }
 
         QueueFastTravel(player, markerRef->GetHandle(), true);
+    }
+
+    void SetCustomMarker(float a_x, float a_y)
+    {
+        if (auto *task = F4SE::GetTaskInterface())
+        {
+            task->AddTask([a_x, a_y]() {
+                SetEngineCustomMarker(a_x, a_y);
+                PaperMap::UI::TriggerFreshMapDataSync();
+            });
+        }
+    }
+
+    void RemoveCustomMarker()
+    {
+        if (auto *task = F4SE::GetTaskInterface())
+        {
+            task->AddTask([]() {
+                RemoveEngineCustomMarker();
+                PaperMap::UI::TriggerFreshMapDataSync();
+            });
+        }
     }
 }

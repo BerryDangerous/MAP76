@@ -85,7 +85,7 @@ export const ENGINE_MARKER_TYPES: Record<number, string> = {
     83: 'quest',
     84: 'quest-door',
     // 85: 'quest-multiple,
-    86: 'waypoint', // PlayerSet
+    86: 'custom-marker',
     87: 'player-location',
     88: 'power-armor'
     // 89: 'dogmeat,
@@ -96,7 +96,8 @@ export const FORM_ID_INDEX_MASK = 0x00FFFFFF;
 
 export const MARKER_ICON_QUEST_TARGET = 83;
 export const MARKER_ICON_QUEST_DOOR = 84;
-export const MARKER_ICON_CUSTOM_WAYPOINT = 100;
+export const MARKER_ICON_CUSTOM_MARKER = 86;
+export const MARKER_ICON_POWER_ARMOR = 88;
 
 export const CELL_SIZE_UNITS = 4096.0;
 

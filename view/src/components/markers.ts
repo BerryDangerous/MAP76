@@ -1,14 +1,12 @@
 import { mapState } from '../core/state.js';
 import { ThemeEngine } from '../systems/theme.js';
 import { GameBounds, PlayerData, MapPosition } from '../types/map.js';
-import { CustomWaypoint, POIMarker } from '../types/markers.js';
+import { CustomMarker, POIMarker, PowerArmorMarker, MarkerType } from '../types/markers.js';
 import { F4SEMapPayload } from '../types/payloads.js';
 import { QuestItem } from '../types/quests.js';
 import { MapViewport } from './viewport.js';
-import { MARKER_ICON_QUEST_TARGET, MARKER_ICON_QUEST_DOOR, MARKER_ICON_CUSTOM_WAYPOINT } from '../core/constants.js';
+import { MARKER_ICON_QUEST_TARGET, MARKER_ICON_QUEST_DOOR, MARKER_ICON_CUSTOM_MARKER, MARKER_ICON_POWER_ARMOR } from '../core/constants.js';
 import { isSameWorldspace } from '../utils/worldspace.js';
-
-type MarkerType = 'location' | 'quest' | 'waypoint';
 
 function getPlayerLayer(): HTMLElement | null {
     return document.getElementById('player-layer');
@@ -45,7 +43,8 @@ export function loadMarkers(payload: F4SEMapPayload) {
     renderLocationMarkers(payload.markers, config.worldspaceID, bounds);
     if (questLayer) {
         renderQuestMarkers(payload.quests, config.worldspaceID, bounds, questLayer);
-        renderCustomWaypoint(payload.custom_waypoint, config.worldspaceID, bounds, questLayer);
+        renderCustomMarker(payload.custom_marker, config.worldspaceID, bounds, questLayer);
+        renderPowerArmor(payload.power_armor, config.worldspaceID, bounds, questLayer);
     }
 
     MapViewport.updateViewportTransform();
@@ -180,17 +179,55 @@ function renderQuestMarkers(quests: QuestItem[], worldspaceID: number, bounds: G
     });
 }
 
-function renderCustomWaypoint(wp: CustomWaypoint | null, worldspaceID: number, bounds: GameBounds, questLayer: HTMLElement) {
-    if (!wp || !isSameWorldspace(wp.worldspace, worldspaceID)) return;
+function renderCustomMarker(marker: CustomMarker | null | undefined, worldspaceID: number, bounds: GameBounds, questLayer: HTMLElement) {
+    if (!marker) return;
 
-    const pos = MapViewport.gameToMapCoords(wp.x, wp.y, 0, bounds);
-    const container = createMarkerContainer('waypoint', 'Custom Marker', pos);
-    container.classList.add('custom-waypoint-marker');
+    if (!isSameWorldspace(marker.worldspace, worldspaceID)) {
+        return;
+    }
+
+    const pos = MapViewport.gameToMapCoords(marker.x, marker.y, 0, bounds);
+    const container = createMarkerContainer('customMarker', 'Custom Marker', pos);
+    container.classList.add('custom-marker');
 
     const img = document.createElement('img');
-    img.src = ThemeEngine.getMarkerIconUrl(MARKER_ICON_CUSTOM_WAYPOINT);
+    img.src = ThemeEngine.getMarkerIconUrl(MARKER_ICON_CUSTOM_MARKER);
 
     const tag = createMarkerTag('Custom Marker');
+
+    container.appendChild(img);
+    container.appendChild(tag);
+    questLayer.appendChild(container);
+    mapState.animatedElements.push(container);
+}
+
+function renderPowerArmor(pa: PowerArmorMarker | null | undefined, worldspaceID: number, bounds: GameBounds, questLayer: HTMLElement) {
+    if (!pa) return;
+
+    if (!isSameWorldspace(pa.worldspace, worldspaceID)) {
+        return;
+    }
+
+    const pos = MapViewport.gameToMapCoords(pa.x, pa.y, pa.z ?? 0, bounds);
+    const container = createMarkerContainer('powerarmor', 'Power Armor', pos);
+    container.classList.add('power-armor-marker');
+
+    const img = document.createElement('img');
+    img.src = ThemeEngine.getMarkerIconUrl(MARKER_ICON_POWER_ARMOR);
+
+    if (mapState.player.active) {
+        const zThreshold = 500;
+        const zDelta = (pa.z ?? 0) - mapState.player.z;
+
+        if (Math.abs(zDelta) > zThreshold) {
+            const arrowImg = document.createElement('img');
+            arrowImg.className = 'altitude-arrow';
+            arrowImg.src = zDelta > 0 ? 'assets/icons/default/quest-altitude-up.svg' : 'assets/icons/default/quest-altitude-down.svg';
+            container.appendChild(arrowImg);
+        }
+    }
+
+    const tag = createMarkerTag('Power Armor');
 
     container.appendChild(img);
     container.appendChild(tag);
