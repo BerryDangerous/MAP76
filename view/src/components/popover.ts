@@ -1,22 +1,47 @@
 import { MapViewport } from './viewport.js';
 import { EngineBridge } from '../core/bridge.js';
-import { FastTravelFailPayload } from '../types/payloads.js';
+import { FastTravelFailPayload, SettlementData } from '../types/payloads.js';
 import { mapState } from '../core/state.js';
-import { showCustomMarkerModal, closeCustomMarkerModal } from './customMarkerModal.js';
+import { showCustomMarkerModal } from './customMarkerModal.js';
 import { showFastTravelConfirmationModal, showFastTravelErrorModal, closeFastTravelModal } from './fastTravelModal.js';
+import { renderSettlementCardContent } from './settlementCard.js';
+import { isSupplyLinesViewActive } from './supplyLines.js';
+import { getPotentialVassalMarkerFormIds } from './markers.js';
 
 const popoverEl = document.getElementById('map-marker-popover') as HTMLElement;
-const popoverTitleEl = document.getElementById('popover-title') as HTMLElement;
-const popoverBtn = document.getElementById('popover-btn') as HTMLButtonElement;
+let popoverTitleEl: HTMLElement | null = null;
+let popoverBtn: HTMLButtonElement | null = null;
 
 export let activeHoveredMarker: HTMLElement | null = null;
 export let activeOpenedMarker: HTMLElement | null = null;
 let selectedFormId: number | null = null;
 
+function resetPopoverHTML(): void {
+    popoverEl.innerHTML = `
+        <h3 id="popover-title"></h3>
+        <button id="popover-btn">FAST TRAVEL</button>
+    `;
+    popoverTitleEl = document.getElementById('popover-title') as HTMLElement;
+    popoverBtn = document.getElementById('popover-btn') as HTMLButtonElement;
+
+    popoverBtn?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (selectedFormId === null) return;
+        
+        const locationName = activeOpenedMarker?.dataset.displayName || 'location';
+        showFastTravelConfirmationModal(locationName, () => {
+            EngineBridge.requestFastTravel(selectedFormId!);
+            PopoverManager.closeActivePopover();
+        });
+    });
+}
+
 export const PopoverManager = {
     initEvents() {
         const layerContainer = document.getElementById('screen-container');
         if (!layerContainer || !popoverEl) return;
+
+        resetPopoverHTML();
 
         layerContainer.addEventListener('mouseover', (e: MouseEvent) => {
             if (activeOpenedMarker) return;
@@ -27,6 +52,25 @@ export const PopoverManager = {
             activeHoveredMarker = target;
             target.classList.add('is-hovered');
 
+            if (target.dataset.isRaiderOutpost === 'true') {
+                const formId = target.dataset.formId ? parseInt(target.dataset.formId) : null;
+                if (formId && mapState.lastPayload) {
+                    const potentialVassalIds = getPotentialVassalMarkerFormIds(formId, mapState.lastPayload);
+                    
+                    document.querySelectorAll('.marker-container').forEach(el => {
+                        const markerEl = el as HTMLElement;
+                        const mFormId = markerEl.dataset.formId ? parseInt(markerEl.dataset.formId) : null;
+                        if (mFormId && potentialVassalIds.has(mFormId)) {
+                            const img = markerEl.querySelector('img');
+                            if (img && markerEl.dataset.potentialVassalIconUrl) {
+                                img.src = markerEl.dataset.potentialVassalIconUrl;
+                                markerEl.classList.add('is-potential-vassal');
+                            }
+                        }
+                    });
+                }
+            }
+
             MapViewport.updateViewportTransform();
         });
 
@@ -35,6 +79,17 @@ export const PopoverManager = {
 
             const target = (e.target as HTMLElement).closest('.marker-container') as HTMLElement;
             if (!activeHoveredMarker || target !== activeHoveredMarker) return;
+
+            if (target.dataset.isRaiderOutpost === 'true') {
+                document.querySelectorAll('.marker-container.is-potential-vassal').forEach(el => {
+                    const markerEl = el as HTMLElement;
+                    const img = markerEl.querySelector('img');
+                    if (img && markerEl.dataset.defaultIconUrl) {
+                        img.src = markerEl.dataset.defaultIconUrl;
+                    }
+                    markerEl.classList.remove('is-potential-vassal');
+                });
+            }
 
             activeHoveredMarker.classList.remove('is-hovered');
 
@@ -62,22 +117,30 @@ export const PopoverManager = {
                 target.classList.remove('is-hovered');
                 target.classList.add('menu-active');
 
-                if (popoverTitleEl) {
-                    popoverTitleEl.textContent = target.dataset.displayName || '';
-                }
-
                 popoverEl.style.display = 'block';
                 target.classList.add('hide-tooltip-override');
 
-                if (popoverBtn) {
-                    if (canTravel) {
-                        popoverBtn.disabled = false;
-                        popoverBtn.style.opacity = '1.0';
-                        popoverBtn.innerText = "FAST TRAVEL";
-                    } else {
-                        popoverBtn.disabled = true;
-                        popoverBtn.style.opacity = '0.4';
-                        popoverBtn.innerText = "UNDISCOVERED";
+                const settlements = mapState.lastPayload?.settlements;
+                const ownedSettlement = settlements?.find((w: SettlementData) => w.owned && (w.markerFormId === selectedFormId || w.formId === selectedFormId || w.locationFormId === selectedFormId));
+
+                if (ownedSettlement) {
+                    renderSettlementCardContent(popoverEl, ownedSettlement, selectedFormId!, canTravel);
+                } else {
+                    resetPopoverHTML();
+                    if (popoverTitleEl) {
+                        popoverTitleEl.textContent = target.dataset.displayName || '';
+                    }
+
+                    if (popoverBtn) {
+                        if (canTravel) {
+                            popoverBtn.disabled = false;
+                            popoverBtn.style.opacity = '1.0';
+                            popoverBtn.innerText = "FAST TRAVEL";
+                        } else {
+                            popoverBtn.disabled = true;
+                            popoverBtn.style.opacity = '0.4';
+                            popoverBtn.innerText = "UNDISCOVERED";
+                        }
                     }
                 }
 
@@ -89,25 +152,14 @@ export const PopoverManager = {
                 if (!bounds) return;
 
                 this.closeActivePopover();
+
+                if (isSupplyLinesViewActive()) {
+                    return;
+                }
+
                 const worldCoords = MapViewport.screenToGameCoords(e.clientX, e.clientY, bounds);
                 showCustomMarkerModal(worldCoords, { x: e.clientX, y: e.clientY }, layerContainer as HTMLElement);
             }
-        });
-
-        popoverBtn?.addEventListener('click', (e) => {
-            e.stopPropagation();
-            if (selectedFormId === null) return;
-            
-            const locationName = activeOpenedMarker?.dataset.displayName || 'location';
-            showFastTravelConfirmationModal(locationName, () => {
-                EngineBridge.requestFastTravel(selectedFormId!);
-                this.closeActivePopover();
-            });
-        });
-
-        document.addEventListener('click', (e: MouseEvent) => {
-            if (popoverEl.contains(e.target as Node)) return;
-            this.closeActivePopover();
         });
 
         window.addEventListener('FastTravelFailed', (e: Event) => {

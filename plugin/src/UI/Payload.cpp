@@ -4,6 +4,7 @@
 #include "Engine/MapData.h"
 #include "Engine/MapMarkers.h"
 #include "Engine/QuestManager.h"
+#include "Engine/WorkshopManager.h"
 #include "Engine/Player.h"
 #include "Engine/Memory.h"
 #include "Engine/PipboyUtils.h"
@@ -100,6 +101,39 @@ namespace PaperMap::UI::Payload
                     }
                     payload.quests.push_back(questDto);
                 }
+
+                payload.dlc04VassalDistance = Engine::WorkshopManager::GetVassalDistanceGlobal();
+                std::vector<Engine::WorkshopManager::SettlementData> engineWorkshops = Engine::WorkshopManager::CollectAllWorkshops(pipboyManager);
+
+                payload.settlements.reserve(engineWorkshops.size());
+                for (const auto &ws : engineWorkshops)
+                {
+                    DTO::SettlementDTO dto{
+                        .formId = ws.formId,
+                        .locationFormId = ws.locationFormId,
+                        .markerFormId = ws.markerFormId,
+                        .worldspace = ws.worldSpaceFormId,
+                        .name = ws.name,
+                        .owned = ws.owned,
+                        .raider = ws.raider,
+                        .vassal = ws.vassal,
+                        .vr = ws.vr,
+                        .population = ws.population,
+                        .happiness = ws.happiness,
+                        .food = ws.food,
+                        .water = ws.water,
+                        .power = ws.power,
+                        .defense = ws.defense,
+                        .beds = ws.beds,
+                        .linkedLocationFormIds = ws.linkedLocationFormIds};
+
+                    if (ws.excludedFromVassal)
+                    {
+                        dto.excludedFromVassal = true;
+                    }
+
+                    payload.settlements.push_back(dto);
+                }
             }
 
             payload.custom_marker = std::nullopt;
@@ -192,7 +226,7 @@ namespace PaperMap::UI::Payload
         catch (const std::exception &e)
         {
             REX::ERROR("Exception in GetMapPayloadAsJSON parsing layer: {}", e.what());
-            return "{\"bounds\":null,\"markers\":[],\"quests\":[],\"player\":null,\"custom_marker\":null,\"power_armor\":null}";
+            return "{\"bounds\":null,\"markers\":[],\"quests\":[],\"settlements\":[],\"player\":null,\"custom_marker\":null,\"power_armor\":null}";
         }
     }
 }

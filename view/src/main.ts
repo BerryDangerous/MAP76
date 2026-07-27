@@ -3,11 +3,24 @@ import { initializeF4SEBindings, EngineBridge } from './core/bridge.js';
 import { ThemeEngine } from './systems/theme.js';
 import { AnimationEngine } from './systems/animation.js';
 import { MapViewport } from './components/viewport.js';
-import { loadMarkers } from './components/markers.js';
+import { loadMarkers, applySupplyLinesVisibilityFilter } from './components/markers.js';
 import { PopoverManager } from './components/popover.js';
+import { toggleSupplyLinesView, setSupplyLinesViewActive } from './components/supplyLines.js';
+import { closeCustomMarkerModal } from './components/customMarkerModal.js';
+import { closeFastTravelModal } from './components/fastTravelModal.js';
 import { F4SEMapPayload } from './types/payloads.js';
 
 ThemeEngine.initMapConfig();
+
+export function resetUIState(): void {
+    PopoverManager.closeActivePopover();
+    setSupplyLinesViewActive(false);
+    applySupplyLinesVisibilityFilter();
+    closeCustomMarkerModal();
+    closeFastTravelModal();
+}
+
+(window as any).resetUIState = resetUIState;
 
 initializeF4SEBindings((payload: F4SEMapPayload) => {
     loadMarkers(payload);
@@ -44,9 +57,15 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 
     window.addEventListener('keydown', (e: KeyboardEvent) => {
-        if (e.key === 'Escape' || e.key === 'Tab' || e.key.toLowerCase() === 'm') {
+        const keyLower = e.key.toLowerCase();
+        if (e.key === 'Escape' || e.key === 'Tab' || keyLower === 'm') {
             console.log(`Intercepted close request via Key: (${e.key}). Signaling engine...`);
+            resetUIState();
             EngineBridge.closeMap();
+        } else if (keyLower === 'c') {
+            console.log('Toggling Supply Lines View...');
+            toggleSupplyLinesView();
+            applySupplyLinesVisibilityFilter();
         }
     });
 });

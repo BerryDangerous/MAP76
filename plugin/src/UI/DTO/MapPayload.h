@@ -119,14 +119,64 @@ namespace PaperMap::UI::DTO
     };
     NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(PowerArmorMarker, worldspace, worldspaceEditorID, x, y, z)
 
+    struct SettlementDTO
+    {
+        uint32_t formId;
+        uint32_t locationFormId;
+        uint32_t markerFormId;
+        uint32_t worldspace;
+        std::string name;
+        bool owned;
+        bool raider;
+        bool vassal;
+        std::optional<bool> excludedFromVassal;
+        bool vr;
+        uint32_t population;
+        uint32_t happiness;
+        float food;
+        float water;
+        float power;
+        float defense;
+        float beds;
+        std::vector<uint32_t> linkedLocationFormIds;
+    };
+
+    inline void to_json(nlohmann::json &j, const SettlementDTO &s)
+    {
+        j = nlohmann::json{
+            {"formId", s.formId},
+            {"locationFormId", s.locationFormId},
+            {"markerFormId", s.markerFormId},
+            {"worldspace", s.worldspace},
+            {"name", s.name},
+            {"owned", s.owned},
+            {"raider", s.raider},
+            {"vassal", s.vassal},
+            {"vr", s.vr},
+            {"population", s.population},
+            {"happiness", s.happiness},
+            {"food", s.food},
+            {"water", s.water},
+            {"power", s.power},
+            {"defense", s.defense},
+            {"beds", s.beds},
+            {"linkedLocationFormIds", s.linkedLocationFormIds}};
+        if (s.excludedFromVassal)
+        {
+            j["excludedFromVassal"] = *s.excludedFromVassal;
+        }
+    }
+
     struct MapPayload
     {
         GameBounds bounds;
         std::vector<POIMarker> markers;
         std::vector<QuestItem> quests;
+        std::vector<SettlementDTO> settlements;
         std::optional<CustomMarker> custom_marker;
         std::optional<PowerArmorMarker> power_armor;
         std::optional<PlayerDTO> player;
+        std::optional<float> dlc04VassalDistance;
     };
 
     inline void to_json(nlohmann::json &j, const MapPayload &p)
@@ -134,7 +184,8 @@ namespace PaperMap::UI::DTO
         j = nlohmann::json{
             {"bounds", p.bounds},
             {"markers", p.markers},
-            {"quests", p.quests}};
+            {"quests", p.quests},
+            {"settlements", p.settlements}};
         if (p.player)
         {
             j["player"] = *p.player;
@@ -158,6 +209,10 @@ namespace PaperMap::UI::DTO
         else
         {
             j["power_armor"] = nullptr;
+        }
+        if (p.dlc04VassalDistance)
+        {
+            j["dlc04VassalDistance"] = *p.dlc04VassalDistance;
         }
     }
 }

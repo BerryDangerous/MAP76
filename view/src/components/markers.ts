@@ -5,8 +5,9 @@ import { CustomMarker, POIMarker, PowerArmorMarker, MarkerType } from '../types/
 import { F4SEMapPayload } from '../types/payloads.js';
 import { QuestItem } from '../types/quests.js';
 import { MapViewport } from './viewport.js';
-import { MARKER_ICON_QUEST_TARGET, MARKER_ICON_QUEST_DOOR, MARKER_ICON_CUSTOM_MARKER, MARKER_ICON_POWER_ARMOR } from '../core/constants.js';
+import { MARKER_ICON_QUEST_TARGET, MARKER_ICON_QUEST_DOOR, MARKER_ICON_CUSTOM_MARKER, MARKER_ICON_POWER_ARMOR, MARKER_ICON_RAIDER_OUTPOST, MARKER_ICON_VASSAL_SETTLEMENT, MARKER_ICON_POTENTIAL_VASSAL_SETTLEMENT } from '../core/constants.js';
 import { isSameWorldspace } from '../utils/worldspace.js';
+import { renderSupplyLines, isSupplyLinesViewActive } from './supplyLines.js';
 
 function getPlayerLayer(): HTMLElement | null {
     return document.getElementById('player-layer');
@@ -16,8 +17,84 @@ function getMarkerLayer(): HTMLElement | null {
     return document.getElementById('marker-layer');
 }
 
+function getQuestLayer(): HTMLElement | null {
+    let questLayer = document.getElementById('quest-layer');
+    const markerLayer = getMarkerLayer();
+    const playerLayer = getPlayerLayer();
+    if (!questLayer && markerLayer && playerLayer) {
+        questLayer = document.createElement('div');
+        questLayer.id = 'quest-layer';
+        markerLayer.parentNode?.insertBefore(questLayer, playerLayer);
+    }
+    return questLayer;
+}
+
+export function applySupplyLinesVisibilityFilter(): void {
+    const isSupplyLineMode = isSupplyLinesViewActive();
+    const questLayer = getQuestLayer();
+    if (questLayer) {
+        questLayer.style.display = isSupplyLineMode ? 'none' : '';
+    }
+
+    const markerLayer = getMarkerLayer();
+    if (markerLayer) {
+        const containers = markerLayer.querySelectorAll('.marker-container');
+        containers.forEach(el => {
+            const htmlEl = el as HTMLElement;
+            if (isSupplyLineMode) {
+                const isOwnedWorkshop = htmlEl.dataset.isOwnedWorkshop === 'true';
+                htmlEl.style.display = isOwnedWorkshop ? '' : 'none';
+            } else {
+                htmlEl.style.display = '';
+            }
+        });
+    }
+}
+
+export function getPotentialVassalMarkerFormIds(
+    outpostMarkerFormId: number, 
+    payload: F4SEMapPayload | null
+): Set<number> {
+    const potentialFormIds = new Set<number>();
+    if (!payload || !payload.settlements || !payload.markers || !payload.dlc04VassalDistance) {
+        return potentialFormIds;
+    }
+
+    const vassalDistance = payload.dlc04VassalDistance;
+    const vassalDistSq = vassalDistance * vassalDistance;
+
+    const raiderSettlement = payload.settlements.find(s => 
+        s.raider && (s.markerFormId === outpostMarkerFormId || s.formId === outpostMarkerFormId || s.locationFormId === outpostMarkerFormId)
+    );
+    if (!raiderSettlement) return potentialFormIds;
+
+    const outpostMarker = payload.markers.find(m => m.formId === raiderSettlement.markerFormId);
+    if (!outpostMarker) return potentialFormIds;
+
+    payload.settlements.forEach(s => {
+        if (s.raider || s.vassal || s.excludedFromVassal) return;
+
+        const sMarker = payload.markers.find(m => m.formId === s.markerFormId);
+        if (!sMarker) return;
+
+        if (!isSameWorldspace(sMarker.worldspace, outpostMarker.worldspace)) return;
+
+        const dx = sMarker.x - outpostMarker.x;
+        const dy = sMarker.y - outpostMarker.y;
+        const distSq = dx * dx + dy * dy;
+
+        if (distSq <= vassalDistSq) {
+            potentialFormIds.add(sMarker.formId);
+        }
+    });
+
+    return potentialFormIds;
+}
+
 export function loadMarkers(payload: F4SEMapPayload) {
     if (!payload) return;
+
+    mapState.lastPayload = payload;
 
     if (payload.player && payload.player.worldspace !== undefined) {
         ThemeEngine.updateWorldspaceConfig(payload.player.worldspace, payload.player.worldspaceEditorID);
@@ -40,26 +117,17 @@ export function loadMarkers(payload: F4SEMapPayload) {
     if (questLayer) questLayer.innerHTML = '';
 
     renderPlayer(payload.player, config.worldspaceID, bounds);
-    renderLocationMarkers(payload.markers, config.worldspaceID, bounds);
+    renderLocationMarkers(payload.markers, config.worldspaceID, bounds, payload);
     if (questLayer) {
         renderQuestMarkers(payload.quests, config.worldspaceID, bounds, questLayer);
         renderCustomMarker(payload.custom_marker, config.worldspaceID, bounds, questLayer);
         renderPowerArmor(payload.power_armor, config.worldspaceID, bounds, questLayer);
     }
 
-    MapViewport.updateViewportTransform();
-}
+    renderSupplyLines(payload);
+    applySupplyLinesVisibilityFilter();
 
-function getQuestLayer(): HTMLElement | null {
-    let questLayer = document.getElementById('quest-layer');
-    const markerLayer = getMarkerLayer();
-    const playerLayer = getPlayerLayer();
-    if (!questLayer && markerLayer && playerLayer) {
-        questLayer = document.createElement('div');
-        questLayer.id = 'quest-layer';
-        markerLayer.parentNode?.insertBefore(questLayer, playerLayer);
-    }
-    return questLayer;
+    MapViewport.updateViewportTransform();
 }
 
 function renderPlayer(player: PlayerData | undefined, worldspaceID: number, bounds: GameBounds) {
@@ -84,7 +152,7 @@ function renderPlayer(player: PlayerData | undefined, worldspaceID: number, boun
     mapState.animatedElements.push(pImg);
 }
 
-function renderLocationMarkers(markers: POIMarker[], worldspaceID: number, bounds: GameBounds) {
+function renderLocationMarkers(markers: POIMarker[], worldspaceID: number, bounds: GameBounds, payload?: F4SEMapPayload) {
     const markerLayer = getMarkerLayer();
     if (!markerLayer) return;
 
@@ -113,8 +181,25 @@ function renderLocationMarkers(markers: POIMarker[], worldspaceID: number, bound
 
         container.dataset.formId = m.formId.toString();
 
+        const isOwnedWorkshop = payload?.settlements?.some(w => w.owned && (w.markerFormId === m.formId || w.formId === m.formId || w.locationFormId === m.formId));
+        container.dataset.isOwnedWorkshop = isOwnedWorkshop ? 'true' : 'false';
+
+        const isRaiderOutpost = payload?.settlements?.some(w => w.raider && (w.markerFormId === m.formId || w.formId === m.formId || w.locationFormId === m.formId));
+        const isVassal = payload?.settlements?.some(w => w.vassal && (w.markerFormId === m.formId || w.formId === m.formId || w.locationFormId === m.formId));
+        // The engine returns the default icon, not the runtime icon
+        const iconType = isRaiderOutpost ? MARKER_ICON_RAIDER_OUTPOST :
+                         isVassal ? MARKER_ICON_VASSAL_SETTLEMENT :
+                         m.type;
+
+        const defaultIconUrl = ThemeEngine.getMarkerIconUrl(iconType, (m.discovered || m.canFastTravel), m.customIcon);
+        container.dataset.defaultIconUrl = defaultIconUrl;
+
+        const potentialVassalIconUrl = ThemeEngine.getMarkerIconUrl(MARKER_ICON_POTENTIAL_VASSAL_SETTLEMENT, (m.discovered || m.canFastTravel), m.customIcon);
+        container.dataset.potentialVassalIconUrl = potentialVassalIconUrl;
+        container.dataset.isRaiderOutpost = isRaiderOutpost ? 'true' : 'false';
+
         const img = document.createElement('img');
-        img.src = ThemeEngine.getMarkerIconUrl(m.type, (m.discovered || m.canFastTravel), m.customIcon);
+        img.src = defaultIconUrl;
         container.dataset.canFastTravel = m.canFastTravel.toString();
         const tag = createMarkerTag(m.name);
 

@@ -65,7 +65,7 @@ export const ENGINE_MARKER_TYPES: Record<number, string> = {
     63: 'sentinel',
     64: 'uss-constitution',
     65: 'mechanist',
-    66: 'raider-settlement',
+    66: 'raider-outpost',
     67: 'vassal-settlement',
     68: 'potential-vassal-settlement',
     69: 'bottling-plant',
@@ -94,6 +94,9 @@ export const ENGINE_MARKER_TYPES: Record<number, string> = {
 
 export const FORM_ID_INDEX_MASK = 0x00FFFFFF;
 
+export const MARKER_ICON_RAIDER_OUTPOST = 66;
+export const MARKER_ICON_VASSAL_SETTLEMENT = 67;
+export const MARKER_ICON_POTENTIAL_VASSAL_SETTLEMENT = 68;
 export const MARKER_ICON_QUEST_TARGET = 83;
 export const MARKER_ICON_QUEST_DOOR = 84;
 export const MARKER_ICON_CUSTOM_MARKER = 86;

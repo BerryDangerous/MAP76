@@ -47,4 +47,11 @@ namespace PaperMap::Engine::PipboyUtils
      * @return Pointer to PipboyArray or nullptr if key is absent or invalid.
      */
     RE::PipboyArray *GetPipboyArray(RE::PipboyObject *a_obj, const RE::BSFixedString &a_key);
+
+    /**
+     * @brief Evaluates a PipboyValue object or primitive and normalizes its numerical value to a float.
+     * @param a_value Pointer to generic PipboyValue.
+     * @return Value cast to float, or 0.0f if invalid or non-numeric.
+     */
+    float ExtractNumericValue(RE::PipboyValue *a_value);
 }

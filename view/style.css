@@ -421,3 +421,72 @@ body, html {
 .custom-marker {
     z-index: 95;
 }
+
+
+/* ==========================================================================
+   9. SETTLEMENT CARD
+   ========================================================================== */
+
+.settlement-card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 220px;
+}
+
+.settlement-card-header {
+    font-weight: bold;
+    font-size: 24px;
+}
+
+.settlement-card-stats-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 4px 12px;
+    font-size: 18px;
+    margin: 4px 0;
+}
+
+.settlement-fast-travel-btn {
+    margin-top: 6px;
+    padding: 8px 16px;
+    width: 100%;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.settlement-fast-travel-btn.can-travel {
+    opacity: 1.0;
+}
+
+.settlement-fast-travel-btn.cannot-travel {
+    opacity: 0.4;
+}
+
+
+/* ==========================================================================
+   10. SUPPLY LINES
+   ========================================================================== */
+
+#supply-lines-layer {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 2;
+    display: none;
+}
+
+#supply-lines-layer.is-active {
+    display: block;
+}
+
+.supply-line {
+    stroke: #ffffff;
+    stroke-width: 2.5;
+    stroke-dasharray: 6 4;
+    opacity: 0.85;
+}

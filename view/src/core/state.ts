@@ -1,4 +1,5 @@
 import { MapConfig, GameBounds } from '../types/map.js';
+import { F4SEMapPayload } from '../types/payloads.js';
 
 export const mapState = {
     zoom: 1.0,
@@ -34,6 +35,7 @@ export const mapState = {
 
     // Cache holding the latest pipeline calculations
     currentPayloadBounds: null as GameBounds | null,
+    lastPayload: null as F4SEMapPayload | null,
 
     animatedElements: [] as HTMLElement[]
 };

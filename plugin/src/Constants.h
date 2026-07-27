@@ -87,4 +87,19 @@ namespace PaperMap::Constants
             "FarHarbor"          // 10
         };
     }
+
+    namespace Workshop
+    {
+        constexpr uint32_t WORKSHOP_PARENT_QUEST_FORM_ID = 0x0002058E;
+
+        constexpr std::string_view GLOBAL_DLC04_RAID_VASSAL_DISTANCE = "DLC04RaidVassalDistance";
+
+        constexpr std::string_view KEYWORD_CARAVAN_START = "WorkshopLinkCaravanStart";
+        constexpr std::string_view KEYWORD_CARAVAN_END = "WorkshopLinkCaravanEnd";
+        constexpr std::string_view KEYWORD_RAIDER_SETTLEMENT = "WorkshopType02";
+        constexpr std::string_view KEYWORD_VASSAL_SETTLEMENT = "WorkshopType02Vassal";
+        constexpr std::string_view KEYWORD_VASSAL_EXCLUDED = "WorkshopType02AlwaysExclude";
+        constexpr std::string_view KEYWORD_SETTLEMENT = "LocTypeWorkshopSettlement";
+        constexpr std::string_view KEYWORD_VR_WORKSHOP = "VRWorkshopShared_Keyword_WorkshopTypeVR";
+    }
 }

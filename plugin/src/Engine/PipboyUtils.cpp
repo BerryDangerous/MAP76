@@ -97,4 +97,42 @@ namespace PaperMap::Engine::PipboyUtils
 
         return reinterpret_cast<RE::PipboyArray *>(val);
     }
+
+    float ExtractNumericValue(RE::PipboyValue *value)
+    {
+        if (!value)
+            return 0.0f;
+
+        switch (value->GetType())
+        {
+        case RE::PipboyValue::kObject:
+        {
+            auto *object = reinterpret_cast<RE::PipboyObject *>(value);
+            uint32_t uintVal = PipboyUtils::GetPipboyUint32(object, "Value", 0);
+            if (uintVal == 0)
+                uintVal = PipboyUtils::GetPipboyUint32(object, "value", 0);
+            if (uintVal > 0)
+                return static_cast<float>(uintVal);
+
+            float floatVal = PipboyUtils::GetPipboyFloat(object, "Value", 0.0f);
+            if (floatVal == 0.0f)
+                floatVal = PipboyUtils::GetPipboyFloat(object, "value", 0.0f);
+            return floatVal;
+        }
+        case RE::PipboyValue::kFloat:
+        {
+            return *reinterpret_cast<const float *>(reinterpret_cast<const uintptr_t>(value) + Constants::PIPBOY_VALUE_PAYLOAD_OFFSET);
+        }
+        case RE::PipboyValue::kUint32:
+        case RE::PipboyValue::kInt32:
+        case RE::PipboyValue::kUint8:
+        case RE::PipboyValue::kInt8:
+        {
+            auto rawVal = *reinterpret_cast<const uint32_t *>(reinterpret_cast<const uintptr_t>(value) + Constants::PIPBOY_VALUE_PAYLOAD_OFFSET);
+            return static_cast<float>(rawVal);
+        }
+        default:
+            return 0.0f;
+        }
+    }
 }

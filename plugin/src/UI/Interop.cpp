@@ -218,7 +218,7 @@ namespace PaperMap::UI
             }
             State::g_api->Show(State::g_view);
             State::g_api->Focus(State::g_view, true);
-            State::g_api->Invoke(State::g_view, "if (window.requestFreshMapData) { window.requestFreshMapData(''); }");
+            State::g_api->Invoke(State::g_view, "if (window.resetUIState) { window.resetUIState(); } if (window.requestFreshMapData) { window.requestFreshMapData(''); }");
         }
         else
         {
@@ -229,6 +229,7 @@ namespace PaperMap::UI
                     mainLoop->freezeTime = false;
                 }
             }
+            State::g_api->Invoke(State::g_view, "if (window.resetUIState) { window.resetUIState(); }");
             State::g_api->Unfocus(State::g_view);
             State::g_api->Hide(State::g_view);
         }
