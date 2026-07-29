@@ -43,3 +43,10 @@ export interface FastTravelFailPayload {
 export interface FastTravelCheckPayload {
     status: FastTravelStatus;
 }
+
+export interface FrameTickPayload {
+    hour: number;
+    day: number;
+    month: number;
+    year: number;
+}

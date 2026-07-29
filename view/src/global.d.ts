@@ -20,6 +20,7 @@ declare global {
 
         onFastTravelFailed?: (jsonString: string) => void;
         onFastTravelCheckResult?: (jsonString: string) => void;
+        onFrameTick?: (jsonString: string) => void;
 
         __loadMarkersRegister?: (jsonString: string) => void;
         __f4seCache?: string | null;

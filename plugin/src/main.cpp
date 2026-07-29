@@ -3,6 +3,7 @@
 #include "Engine/MapData.h"
 #include "UI/Interop.h"
 #include "Hooks/WindowProc.h"
+#include "Hooks/MainUpdate.h"
 #include "Engine/QuestManager.h"
 
 /**
@@ -21,6 +22,7 @@ void OnF4SEMessage(F4SE::MessagingInterface::Message *a_msg)
         {
             REX::ERROR("f4map: Failed to acquire PrismaUI API surface!");
         }
+        PaperMap::Hooks::InstallMainUpdateHook();
         break;
     }
     case F4SE::MessagingInterface::kPostLoadGame:

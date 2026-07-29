@@ -32,9 +32,13 @@ namespace PaperMap::UI::DTO
         float z;
         uint32_t worldspace;
         std::string worldspaceEditorID;
+        std::string worldspaceFullName;
         float angle;
+        float caps;
+        float currentWeight;
+        float maxWeight;
     };
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(PlayerDTO, x, y, z, worldspace, worldspaceEditorID, angle)
+    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(PlayerDTO, x, y, z, worldspace, worldspaceEditorID, worldspaceFullName, angle, caps, currentWeight, maxWeight)
 
     struct POIMarker
     {

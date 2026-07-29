@@ -42,7 +42,11 @@ namespace PaperMap::UI::Payload
                 enginePlayer.position.z,
                 enginePlayer.worldspaceFormID,
                 enginePlayer.worldspaceEditorID,
-                enginePlayer.headingDegrees
+                enginePlayer.worldspaceFullName,
+                enginePlayer.headingDegrees,
+                enginePlayer.caps,
+                enginePlayer.currentWeight,
+                enginePlayer.maxWeight
             };
 
             auto *pipboyManager = RE::PipboyDataManager::GetSingleton();

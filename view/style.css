@@ -490,3 +490,41 @@ body, html {
     stroke-dasharray: 6 4;
     opacity: 0.85;
 }
+
+/* ==========================================================================
+   11. INFO CARD
+   ========================================================================== */
+
+#info-card {
+    position: absolute;
+    bottom: 24px;
+    left: 24px;
+    z-index: 1000;
+    background: #000000;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 10px 14px;
+    font-family: monospace, sans-serif;
+    font-size: 20px;
+    color: #e0e0e0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    pointer-events: none;
+}
+
+#info-card .info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+#info-card .info-label {
+    color: #8a9ba8;
+    font-weight: bold;
+}
+
+#info-card #info-weight.overburdened {
+    color: #ff4d4d;
+    font-weight: bold;
+}

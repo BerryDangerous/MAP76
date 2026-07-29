@@ -8,6 +8,7 @@ import { PopoverManager } from './components/popover.js';
 import { toggleSupplyLinesView, setSupplyLinesViewActive } from './components/supplyLines.js';
 import { closeCustomMarkerModal } from './components/customMarkerModal.js';
 import { closeFastTravelModal } from './components/fastTravelModal.js';
+import { InfoCard } from './components/infoCard.js';
 import { F4SEMapPayload } from './types/payloads.js';
 
 ThemeEngine.initMapConfig();
@@ -24,6 +25,14 @@ export function resetUIState(): void {
 
 initializeF4SEBindings((payload: F4SEMapPayload) => {
     loadMarkers(payload);
+    InfoCard.init(payload.player);
+});
+
+window.addEventListener('FrameTick', (e: Event) => {
+    const customEvent = e as CustomEvent;
+    if (customEvent.detail) {
+        InfoCard.update(customEvent.detail);
+    }
 });
 
 function initCustomCursor() {

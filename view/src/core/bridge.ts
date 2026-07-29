@@ -82,6 +82,15 @@ export function initializeF4SEBindings(onDataReceived: (payload: F4SEMapPayload)
         }
     };
 
+    window.onFrameTick = (jsonString: string) => {
+        try {
+            const data = JSON.parse(jsonString);
+            window.dispatchEvent(new CustomEvent('FrameTick', { detail: data }));
+        } catch (err) {
+            console.error("[Bridge] Failed to parse onFrameTick payload", err);
+        }
+    };
+
     const earlyCache = window.__f4seCache;
     if (earlyCache) {
         console.log(`[Bridge] Processing cached startup array stream. Length: ${earlyCache.length}`);

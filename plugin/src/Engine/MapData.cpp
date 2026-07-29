@@ -3,6 +3,8 @@
 #include "Engine/PipboyUtils.h"
 #include "Engine/Memory.h"
 #include "Constants.h"
+#include "RE/E/ExtraTeleport.h"
+#include "RE/D/DoorTeleportData.h"
 
 namespace
 {
@@ -46,16 +48,23 @@ namespace
 
     RE::TESWorldSpace* ResolveInteriorFallback(RE::TESObjectREFR* a_refr, RE::NiPoint3* a_position)
     {
+        auto* pipboyManager = RE::PipboyDataManager::GetSingleton();
+
         if (a_refr->formID == PaperMap::Constants::FormID::PLAYER)
         {
-            auto* pipboyManager = RE::PipboyDataManager::GetSingleton();
             if (pipboyManager && a_position)
             {
                 *a_position = pipboyManager->mapData.playerLastWorldPosition;
             }
         }
 
-        if (auto* cell = a_refr->GetParentCell())
+        auto* cell = a_refr->GetParentCell();
+        if (!cell)
+        {
+            cell = a_refr->GetSaveParentCell();
+        }
+
+        if (cell)
         {
             if (auto* location = cell->GetLocation())
             {
@@ -65,10 +74,19 @@ namespace
                     auto markerHandle = currentLoc->worldLocMarker;
                     if (markerHandle)
                     {
-                        auto markerRef = markerHandle.get();
+                        RE::TESObjectREFR* markerRef = nullptr;
+                        if (auto ptr = markerHandle.get())
+                        {
+                            markerRef = ptr.get();
+                        }
+                        if (!markerRef && markerHandle.get_handle() != 0)
+                        {
+                            markerRef = RE::TESForm::GetFormByID<RE::TESObjectREFR>(markerHandle.get_handle());
+                        }
+
                         if (markerRef)
                         {
-                            auto* cellWorld = GetDirectWorldspace(markerRef.get());
+                            auto* cellWorld = GetDirectWorldspace(markerRef);
                             if (cellWorld)
                             {
                                 return cellWorld;
@@ -76,6 +94,78 @@ namespace
                         }
                     }
                     currentLoc = currentLoc->parentLoc;
+                }
+            }
+
+            RE::TESWorldSpace* candidateWorld = nullptr;
+            auto* cellLoc = cell->GetLocation();
+            for (auto& refPtr : cell->references)
+            {
+                if (auto* ref = refPtr.get())
+                {
+                    if (ref->extraList)
+                    {
+                        if (auto* extraTeleport = ref->extraList->GetByType<RE::ExtraTeleport>())
+                        {
+                            if (extraTeleport->teleportData && extraTeleport->teleportData->linkedDoor.get_handle() != 0)
+                            {
+                                auto linkedHandle = extraTeleport->teleportData->linkedDoor;
+                                RE::TESObjectREFR* destDoor = nullptr;
+                                if (auto ptr = linkedHandle.get())
+                                {
+                                    destDoor = ptr.get();
+                                }
+                                if (!destDoor)
+                                {
+                                    destDoor = RE::TESForm::GetFormByID<RE::TESObjectREFR>(linkedHandle.get_handle());
+                                }
+
+                                if (destDoor)
+                                {
+                                    if (auto* exteriorWorld = GetDirectWorldspace(destDoor))
+                                    {
+                                        if (cellLoc)
+                                        {
+                                            if (auto* destCell = destDoor->GetParentCell())
+                                            {
+                                                if (auto* destLoc = destCell->GetLocation())
+                                                {
+                                                    if (cellLoc == destLoc || cellLoc->IsChild(destLoc) || cellLoc->IsParent(destLoc))
+                                                    {
+                                                        return exteriorWorld;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        if (!candidateWorld)
+                                        {
+                                            candidateWorld = exteriorWorld;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if (candidateWorld)
+            {
+                return candidateWorld;
+            }
+        }
+
+        if (pipboyManager && pipboyManager->mapData.worldPlayerMarker)
+        {
+            uint32_t worldFormID = PaperMap::Engine::PipboyUtils::GetPipboyUint32(pipboyManager->mapData.worldPlayerMarker, "WorldspaceID", 0);
+            if (worldFormID == 0)
+            {
+                worldFormID = PaperMap::Engine::PipboyUtils::GetPipboyUint32(pipboyManager->mapData.worldPlayerMarker, "Worldspace", 0);
+            }
+            if (worldFormID != 0)
+            {
+                if (auto* wspace = RE::TESForm::GetFormByID<RE::TESWorldSpace>(worldFormID))
+                {
+                    return wspace;
                 }
             }
         }
