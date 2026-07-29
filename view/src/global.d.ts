@@ -1,3 +1,4 @@
+/// <reference types="vite/client" />
 import { MapConfig } from './types/map.js';
 
 export { };
@@ -22,6 +23,7 @@ declare global {
         onFastTravelCheckResult?: (jsonString: string) => void;
         onFrameTick?: (jsonString: string) => void;
 
+        loadMarkers?: (jsonString: string) => void;
         __loadMarkersRegister?: (jsonString: string) => void;
         __f4seCache?: string | null;
         repositionActivePopover?: () => void;

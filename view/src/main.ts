@@ -61,7 +61,11 @@ window.addEventListener('DOMContentLoaded', () => {
     MapViewport.centerInitialViewport();
     AnimationEngine.startLoop();
 
-    if (window.requestFreshMapData) {
+    if (import.meta.env.DEV) {
+        import('./dev/mock.js').then(({ initMockData }) => {
+            initMockData();
+        });
+    } else if (window.requestFreshMapData) {
         window.requestFreshMapData(""); 
     }
 

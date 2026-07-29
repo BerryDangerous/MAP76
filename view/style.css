@@ -339,6 +339,7 @@ body, html {
     position: fixed;
     width: 60px;
     height: 60px;
+    object-fit: contain;
     pointer-events: none;
     z-index: 20000;
     display: none;
