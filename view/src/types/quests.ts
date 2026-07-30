@@ -14,6 +14,7 @@ export interface QuestObjective {
 }
 
 export interface QuestItem {
+    formId: number;
     questName: string;
     description: string;
     type:

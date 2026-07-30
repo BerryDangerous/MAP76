@@ -9,6 +9,9 @@ import { toggleSupplyLinesView, setSupplyLinesViewActive } from './components/su
 import { closeCustomMarkerModal } from './components/customMarkerModal.js';
 import { closeFastTravelModal } from './components/fastTravelModal.js';
 import { InfoCard } from './components/infoCard.js';
+import { QuestList } from './components/questList.js';
+import { QuestCard } from './components/questCard.js';
+import { FocusManager } from './systems/focusManager.js';
 import { F4SEMapPayload } from './types/payloads.js';
 
 ThemeEngine.initMapConfig();
@@ -19,6 +22,7 @@ export function resetUIState(): void {
     applySupplyLinesVisibilityFilter();
     closeCustomMarkerModal();
     closeFastTravelModal();
+    QuestCard.close();
 }
 
 (window as any).resetUIState = resetUIState;
@@ -26,6 +30,8 @@ export function resetUIState(): void {
 initializeF4SEBindings((payload: F4SEMapPayload) => {
     loadMarkers(payload);
     InfoCard.init(payload.player);
+    QuestList.init();
+    QuestCard.init();
 });
 
 window.addEventListener('FrameTick', (e: Event) => {
@@ -71,14 +77,55 @@ window.addEventListener('DOMContentLoaded', () => {
 
     window.addEventListener('keydown', (e: KeyboardEvent) => {
         const keyLower = e.key.toLowerCase();
-        if (e.key === 'Escape' || e.key === 'Tab' || keyLower === 'm') {
-            console.log(`Intercepted close request via Key: (${e.key}). Signaling engine...`);
+
+        if (e.key === 'Tab' || e.key === 'Escape') {
+            e.preventDefault();
+        }
+
+        if (keyLower === 'm') {
+            console.log('Closing map via M key...');
             resetUIState();
             EngineBridge.closeMap();
-        } else if (keyLower === 'c') {
-            console.log('Toggling Supply Lines View...');
-            toggleSupplyLinesView();
-            applySupplyLinesVisibilityFilter();
+            return;
+        }
+
+        if (e.key === 'Escape' || e.key === 'Tab') {
+            const currentFocus = FocusManager.getFocus();
+            if (currentFocus === 'QUEST_CARD') {
+                console.log('[KeyHandler] Closing QuestCard via Escape/Tab');
+                QuestCard.close();
+                FocusManager.setFocus('MAP');
+                return;
+            } else if (currentFocus === 'QUEST_LIST') {
+                console.log('[KeyHandler] Collapsing QuestList via Escape/Tab');
+                QuestList.collapse();
+                FocusManager.setFocus('MAP');
+                return;
+            } else {
+                console.log('[KeyHandler] Focus is MAP. Closing map via Escape/Tab');
+                resetUIState();
+                EngineBridge.closeMap();
+                return;
+            }
+        }
+
+        const handledByFocus = FocusManager.handleKeyDown(e);
+        if (handledByFocus) {
+            return;
+        }
+
+        if (FocusManager.getFocus() === 'MAP') {
+            if (e.key === 'ArrowRight') {
+                console.log('[Map] Right arrow pressed while on MAP focus. Expanding Quest List.');
+                QuestList.expand();
+            } else if (keyLower === 'c') {
+                console.log('Toggling Supply Lines View...');
+                toggleSupplyLinesView();
+                applySupplyLinesVisibilityFilter();
+            } else if (keyLower === 't') {
+                console.log('Toggling Quest List Theme (Dev Mode)...');
+                // QuestList.toggleTheme();
+            }
         }
     });
 });

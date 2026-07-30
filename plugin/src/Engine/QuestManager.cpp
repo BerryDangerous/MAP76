@@ -187,6 +187,7 @@ namespace PaperMap::Engine::QuestManager
             std::string summaryText = ResolveQuestSummary(realQuest);
 
             QuestData questNode{};
+            questNode.formId = realQuest->formID;
             questNode.questName = RE::TESFullName::GetFullName(*realQuest);
             questNode.description = summaryText;
             questNode.isTracked = a_target.liveTrackingState;

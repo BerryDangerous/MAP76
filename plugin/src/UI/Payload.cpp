@@ -76,6 +76,7 @@ namespace PaperMap::UI::Payload
                 for (const auto& quest : engineQuests)
                 {
                     DTO::QuestItem questDto{};
+                    questDto.formId = quest.formId;
                     questDto.questName = quest.questName;
                     questDto.description = quest.description;
                     questDto.isTracked = quest.isTracked;

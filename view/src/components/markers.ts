@@ -228,6 +228,10 @@ function renderQuestMarkers(quests: QuestItem[], worldspaceID: number, bounds: G
 
                 const container = createMarkerContainer('quest', markerTooltipText, pos);
                 container.classList.add('quest-marker');
+                container.dataset.markerType = 'quest';
+                if (quest.formId !== undefined) {
+                    container.dataset.formId = quest.formId.toString();
+                }
 
                 const img = document.createElement('img');
                 img.src = ThemeEngine.getMarkerIconUrl(target.isDoor ? MARKER_ICON_QUEST_DOOR : MARKER_ICON_QUEST_TARGET, true);

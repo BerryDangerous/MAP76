@@ -12,6 +12,8 @@ export const mapState = {
     startX: 0,
     startY: 0,
 
+    savedViewport: null as { zoom: number; panX: number; panY: number } | null,
+
     currentTheme: 'default',
     activeMapConfig: {
         mapName: "Commonwealth",

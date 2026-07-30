@@ -1,7 +1,9 @@
 import { mapState } from '../core/state.js';
-import { GameBounds } from '../types/map.js';
+import { GameBounds, MapPosition } from '../types/map.js';
 import { CELL_SIZE_UNITS } from '../core/constants.js';
 import { showCustomMarkerModal, closeCustomMarkerModal } from './customMarkerModal.js';
+import { QuestCard } from './questCard.js';
+import { QuestList } from './questList.js';
 
 const viewport = document.getElementById('map-viewport') as HTMLElement;
 const container = document.getElementById('screen-container') as HTMLElement;
@@ -140,6 +142,10 @@ export const MapViewport = {
         if (window.repositionActivePopover) {
             window.repositionActivePopover();
         }
+
+        if (QuestCard.isOpen() && QuestCard.activeAnchorMarker) {
+            QuestCard.positionNearMarker(QuestCard.activeAnchorMarker);
+        }
     },
 
     centerInitialViewport() {
@@ -147,6 +153,53 @@ export const MapViewport = {
         const baseSize = Math.max(window.innerWidth, window.innerHeight);
         mapState.panX = (window.innerWidth - baseSize) / 2;
         mapState.panY = (window.innerHeight - baseSize) / 2;
+        this.updateViewportTransform();
+    },
+
+    saveCurrentViewport() {
+        if (!mapState.savedViewport) {
+            mapState.savedViewport = {
+                zoom: mapState.zoom,
+                panX: mapState.panX,
+                panY: mapState.panY
+            };
+        }
+    },
+
+    restoreSavedViewport() {
+        if (mapState.savedViewport) {
+            mapState.zoom = mapState.savedViewport.zoom;
+            mapState.panX = mapState.savedViewport.panX;
+            mapState.panY = mapState.savedViewport.panY;
+            mapState.savedViewport = null;
+            this.updateViewportTransform();
+        }
+    },
+
+    centerOnMapCoords(gameX: number, gameY: number, bounds: GameBounds, targetZoom: number = 2.5) {
+        if (!viewport) return;
+
+        this.saveCurrentViewport();
+
+        mapState.zoom = targetZoom;
+
+        const baseSize = Math.max(window.innerWidth, window.innerHeight);
+        const currentViewportSize = baseSize * mapState.zoom;
+
+        const screenPos = this.gameToMapCoords(gameX, gameY, 0, bounds);
+
+        const pixelOnBaseX = (screenPos.x / 100) * baseSize;
+        const pixelOnBaseY = (screenPos.y / 100) * baseSize;
+
+        const pixelOnZoomedX = pixelOnBaseX * mapState.zoom;
+        const pixelOnZoomedY = pixelOnBaseY * mapState.zoom;
+
+        const screenCenterX = window.innerWidth / 2;
+        const screenCenterY = window.innerHeight / 2;
+
+        mapState.panX = screenCenterX - pixelOnZoomedX;
+        mapState.panY = screenCenterY - pixelOnZoomedY;
+
         this.updateViewportTransform();
     },
 
@@ -158,11 +211,35 @@ export const MapViewport = {
         container.addEventListener('wheel', (e: WheelEvent) => {
             e.preventDefault();
             const zoomIntensity = 0.15;
-            const mouseX = e.clientX;
-            const mouseY = e.clientY;
+            let zoomPointX = e.clientX;
+            let zoomPointY = e.clientY;
             
-            const mapTargetX = (mouseX - mapState.panX) / mapState.zoom;
-            const mapTargetY = (mouseY - mapState.panY) / mapState.zoom;
+            // When QuestCard is open, zoom in relation to the quest marker position instead of cursor
+            if (QuestCard.isOpen()) {
+                let markerEl: HTMLElement | null = QuestCard.activeAnchorMarker;
+                if (!markerEl) {
+                    const questFormId = QuestCard.activeQuest?.formId;
+                    const questName = QuestCard.activeQuest?.questName;
+                    const questMarkers = document.querySelectorAll('.quest-marker');
+                    for (const el of questMarkers) {
+                        const htmlEl = el as HTMLElement;
+                        if ((questFormId && htmlEl.dataset.formId === questFormId.toString()) || htmlEl.dataset.displayName === questName) {
+                            markerEl = htmlEl;
+                            break;
+                        }
+                    }
+                }
+
+                if (markerEl) {
+                    const imgEl = markerEl.querySelector('img');
+                    const mRect = imgEl ? imgEl.getBoundingClientRect() : markerEl.getBoundingClientRect();
+                    zoomPointX = mRect.left + (mRect.width / 2);
+                    zoomPointY = mRect.top + (mRect.height / 2);
+                }
+            }
+
+            const mapTargetX = (zoomPointX - mapState.panX) / mapState.zoom;
+            const mapTargetY = (zoomPointY - mapState.panY) / mapState.zoom;
             
             if (e.deltaY < 0) {
                 mapState.zoom = Math.min(mapState.maxZoomIn, mapState.zoom + zoomIntensity);
@@ -170,8 +247,17 @@ export const MapViewport = {
                 mapState.zoom = Math.max(mapState.maxZoomOut, mapState.zoom - zoomIntensity);
             }
             
-            mapState.panX = mouseX - (mapTargetX * mapState.zoom);
-            mapState.panY = mouseY - (mapTargetY * mapState.zoom);
+            mapState.panX = zoomPointX - (mapTargetX * mapState.zoom);
+            mapState.panY = zoomPointY - (mapTargetY * mapState.zoom);
+
+            if (mapState.savedViewport) {
+                mapState.savedViewport = {
+                    zoom: mapState.zoom,
+                    panX: mapState.panX,
+                    panY: mapState.panY
+                };
+            }
+
             this.updateViewportTransform();
         }, { passive: false });
 
@@ -201,9 +287,20 @@ export const MapViewport = {
                 if (window.closeActivePopover) {
                     window.closeActivePopover();
                 }
+                QuestCard.close();
+                QuestList.collapse();
             }
             mapState.panX = e.clientX - mapState.startX;
             mapState.panY = e.clientY - mapState.startY;
+
+            if (mapState.savedViewport) {
+                mapState.savedViewport = {
+                    zoom: mapState.zoom,
+                    panX: mapState.panX,
+                    panY: mapState.panY
+                };
+            }
+
             this.updateViewportTransform();
         });
 

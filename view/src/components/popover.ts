@@ -7,6 +7,8 @@ import { showFastTravelConfirmationModal, showFastTravelErrorModal, closeFastTra
 import { renderSettlementCardContent } from './settlementCard.js';
 import { isSupplyLinesViewActive } from './supplyLines.js';
 import { getPotentialVassalMarkerFormIds } from './markers.js';
+import { QuestCard } from './questCard.js';
+import { FocusManager } from '../systems/focusManager.js';
 
 const popoverEl = document.getElementById('map-marker-popover') as HTMLElement;
 let popoverTitleEl: HTMLElement | null = null;
@@ -91,7 +93,9 @@ export const PopoverManager = {
                 });
             }
 
-            activeHoveredMarker.classList.remove('is-hovered');
+            if (target !== QuestCard.activeAnchorMarker) {
+                activeHoveredMarker.classList.remove('is-hovered');
+            }
 
             MapViewport.updateViewportTransform();
             activeHoveredMarker = null;
@@ -100,6 +104,19 @@ export const PopoverManager = {
         layerContainer.addEventListener('click', (e: MouseEvent) => {
             const target = (e.target as HTMLElement).closest('.marker-container') as HTMLElement;
             if (target && target.classList.contains('marker-container')) {
+                if (target.dataset.markerType === 'quest') {
+                    e.stopPropagation();
+                    this.closeActivePopover();
+                    const questFormId = target.dataset.formId ? parseInt(target.dataset.formId) : null;
+                    const quests = mapState.lastPayload?.quests || [];
+                    const matchingQuest = quests.find(q => (questFormId && q.formId === questFormId) || q.questName === target.dataset.displayName);
+                    if (matchingQuest) {
+                        QuestCard.open(matchingQuest, target);
+                        FocusManager.setFocus('QUEST_CARD');
+                    }
+                    return;
+                }
+
                 if (target.dataset.markerType !== 'location') {
                     return; 
                 }
@@ -152,6 +169,7 @@ export const PopoverManager = {
                 if (!bounds) return;
 
                 this.closeActivePopover();
+                QuestCard.close();
 
                 if (isSupplyLinesViewActive()) {
                     return;

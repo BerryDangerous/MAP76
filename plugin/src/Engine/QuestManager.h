@@ -38,6 +38,7 @@ namespace PaperMap::Engine::QuestManager
      */
     struct QuestData
     {
+        uint32_t formId;
         std::string questName;
         std::string description;
         bool isTracked;
