@@ -49,9 +49,10 @@ namespace PaperMap::Engine
     RE::TESObjectREFR *GetWorldLocationMarker(RE::TESObjectREFR *a_refr);
 
     /**
-     * @brief Extracts the underlying quest FormID linked to a UI map marker object.
+     * @brief Checks if a Pip-Boy UI map marker object is linked to a target quest FormID.
      * @param a_markerObj Pip-Boy UI marker object.
-     * @return Resolved quest FormID, or 0 if unlinked/invalid.
+     * @param a_questFormID Target quest FormID.
+     * @return true if linked, false otherwise.
      */
-    uint32_t GetQuestFormIDFromMarker(RE::PipboyObject *a_markerObj);
+    bool IsMarkerLinkedToQuest(RE::PipboyObject *a_markerObj, uint32_t a_questFormID);
 }

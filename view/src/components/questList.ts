@@ -233,7 +233,7 @@ export const QuestList = {
             MapViewport.restoreSavedViewport();
             return;
         }
-        const activeObj = quest.objectives.find(o => o.status === 1) || quest.objectives[0];
+        const activeObj = quest.objectives.find(o => o.state === 1) || quest.objectives[0];
         if (!activeObj || !activeObj.targets || activeObj.targets.length === 0) {
             MapViewport.restoreSavedViewport();
             return;
@@ -500,8 +500,8 @@ export const QuestList = {
 
     isQuestCompleted(quest: QuestItem): boolean {
         if (!quest.objectives || quest.objectives.length === 0) return false;
-        const hasActive = quest.objectives.some(o => o.status === 1);
-        const hasCompleted = quest.objectives.some(o => o.status === 2 || o.status === 3);
+        const hasActive = quest.objectives.some(o => o.state === 1);
+        const hasCompleted = quest.objectives.some(o => o.state === 2 || o.state === 3);
         return !hasActive && hasCompleted;
     },
 
@@ -528,7 +528,7 @@ export const QuestList = {
 
         let displayName = quest.questName;
         if ((quest.isMisc || quest.type === 'Misc') && quest.objectives && quest.objectives.length > 0) {
-            const activeObj = quest.objectives.find(o => o.status === 1) || quest.objectives[0];
+            const activeObj = quest.objectives.find(o => o.state === 1) || quest.objectives[0];
             if (activeObj && activeObj.text) {
                 displayName = activeObj.text;
             }

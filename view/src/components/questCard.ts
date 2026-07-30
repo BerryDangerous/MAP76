@@ -186,21 +186,19 @@ export const QuestCard = {
         if (!card || !this.activeQuest) return;
 
         const quest = this.activeQuest;
-        const descriptionText = quest.description && quest.description.trim().length > 0 
-            ? quest.description 
-            : "No detailed description available for this entry.";
-        
-        const journalText = "Investigated area coordinates. Checked local records and broadcast signals.";
+        const journalText = quest.journal && quest.journal.trim().length > 0 
+            ? quest.journal 
+            : "No description available for this entry.";
 
-        const validObjectives = (quest.objectives || []).filter(o => o.status !== 0);
+        const validObjectives = (quest.objectives || []).filter(o => o.state !== 0);
 
         const objectivesHtml = validObjectives.length > 0 ? validObjectives.map(obj => {
             let statusClass = 'active';
             let iconText = '';
-            if (obj.status === 2) {
+            if (obj.state === 2) {
                 statusClass = 'completed';
                 iconText = '✓';
-            } else if (obj.status === 3) {
+            } else if (obj.state === 3) {
                 statusClass = 'failed';
                 iconText = '✕';
             }
@@ -212,7 +210,7 @@ export const QuestCard = {
             `;
         }).join('') : '<div class="qc-objective-item active"><div class="qc-obj-text">No active objectives listed</div></div>';
 
-        const isCompleted = quest.objectives && quest.objectives.length > 0 && quest.objectives.every(o => o.status === 2 || o.status === 3);
+        const isCompleted = quest.objectives && quest.objectives.length > 0 && quest.objectives.every(o => o.state === 2 || o.state === 3);
         this.buttonCount = isCompleted ? 1 : 3;
 
         let buttonsHtml = '';
@@ -239,14 +237,6 @@ export const QuestCard = {
              <div class="qc-title">${this.escapeHtml(quest.questName)}</div>
           </div>
           <div class="qc-body">
-             <!-- Quest Description Section -->
-             <div class="qc-section">
-                <div class="qc-section-box">
-                  <div class="qc-section-title">QUEST DESCRIPTION</div>
-                  <div class="qc-section-text">${this.escapeHtml(descriptionText)}</div>
-               </div>
-             </div>
-
              <!-- Journal Section -->
              <div class="qc-section">
                 <div class="qc-section-box">

@@ -18,10 +18,10 @@ namespace PaperMap::Engine::PipboyUtils
             return a_fallback;
         }
 
-        const char **strPtr = reinterpret_cast<const char **>(reinterpret_cast<uintptr_t>(val) + Constants::PIPBOY_VALUE_PAYLOAD_OFFSET);
-        if (strPtr && *strPtr && Memory::IsValidStringPointer(*strPtr))
+        auto *fixedStr = reinterpret_cast<const RE::BSFixedString *>(reinterpret_cast<uintptr_t>(val) + Constants::PIPBOY_VALUE_PAYLOAD_OFFSET);
+        if (fixedStr && fixedStr->c_str() && Memory::IsValidStringPointer(fixedStr->c_str()))
         {
-            return std::string(*strPtr);
+            return std::string(fixedStr->c_str());
         }
 
         return a_fallback;

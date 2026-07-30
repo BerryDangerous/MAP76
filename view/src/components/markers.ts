@@ -216,7 +216,7 @@ function renderQuestMarkers(quests: QuestItem[], worldspaceID: number, bounds: G
         if (!quest.objectives) return;
 
         quest.objectives.forEach(objective => {
-            if (objective.status !== 1) return;
+            if (objective.state !== 1) return;
             if (!objective.targets) return;
 
             const markerTooltipText = objective.text ? objective.text : quest.questName;

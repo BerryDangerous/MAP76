@@ -290,28 +290,32 @@ export const mockPayload: F4SEMapPayload = {
         {
             questName: "Out of Time",
             type: "Main",
-            description: "I've reached Concord, the closest neighborhood next to my old home. Maybe there are other survivors here?",
+            journal: "I've reached Concord, the closest neighborhood next to my old home. Maybe there are other survivors here?",
             isMisc: false,
             isTracked: true,
             formId:117802,
             objectives: [
                 {
-                    status: 2,
+                    index: 0,
+                    state: 2,
                     targets: [],
                     text: "Exit Vault 111"
                 },
                 {
-                    status: 3,
+                    index: 1,
+                    state: 3,
                     targets: [],
                     text: "Talk to Codsworth"
                 },
                 {
-                    status: 3,
+                    index: 2,
+                    state: 3,
                     targets: [],
                     text: "Search the Neighborhood with Codsworth"
                 },
                 {
-                    status: 1,
+                    index: 3,
+                    state: 1,
                     targets: [
                         {
                             x: -57011,
@@ -329,18 +333,20 @@ export const mockPayload: F4SEMapPayload = {
         {
             questName: "All Aboard",
             type: "Side",
-            description: "I tuned into an old Nuka-Cola family radio station on my Pip-Boy. It was looping a jingle and advertisement for a place called Nuka-World. The broadcast mentioned a Nuka-World Transit Center with transportation to take me there. I should find it and see if I can still reach the amusement park.",
+            journal: "I tuned into an old Nuka-Cola family radio station on my Pip-Boy. It was looping a jingle and advertisement for a place called Nuka-World. The broadcast mentioned a Nuka-World Transit Center with transportation to take me there. I should find it and see if I can still reach the amusement park.",
             isMisc: false,
             isTracked: false,
             formId:100665344,
             objectives: [
                 {
-                    status: 0,
+                    index: 0,
+                    state: 0,
                     targets: [],
                     text: "Listen to the Nuka-Cola Family Radio"
                 },
                 {
-                    status: 1,
+                    index: 1,
+                    state: 1,
                     targets: [
                         {
                             x: -111604,
@@ -354,12 +360,14 @@ export const mockPayload: F4SEMapPayload = {
                     text: "Travel to the Nuka-World Transit Center"
                 },
                 {
-                    status: 0,
+                    index: 2,
+                    state: 0,
                     targets: [],
                     text: "Speak to Harvey"
                 },
                 {
-                    status: 0,
+                    index: 3,
+                    state: 0,
                     targets: [],
                     text: "Take the Nuka-Express to Nuka-World"
                 }
@@ -368,13 +376,14 @@ export const mockPayload: F4SEMapPayload = {
         {
             questName: "MacCready",
             type: "Misc",
-            description: "",
+            journal: "",
             isMisc: true,
             isTracked: false,
             formId:1138867,
             objectives: [
                 {
-                    status: 1,
+                    index: 0,
+                    state: 1,
                     targets: [
                         {
                             x: 20826,

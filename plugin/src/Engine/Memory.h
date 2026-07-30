@@ -16,6 +16,14 @@ namespace PaperMap::Engine::Memory
     bool IsReferenceSafe(RE::TESObjectREFR *a_refr);
 
     /**
+     * @brief Safely probes a reference's 3D position without requiring a display name.
+     * @param a_refr Target reference object.
+     * @param a_outPos Output point struct populated with 3D coordinates if safe.
+     * @return true if valid and position probed safely, false otherwise.
+     */
+    bool IsRefrPositionSafe(RE::TESObjectREFR *a_refr, RE::NiPoint3 &a_outPos);
+
+    /**
      * @brief Checks if a raw pointer points to readable string memory.
      *
      * Prevents crashes by avoiding the zero-page protected range and using SEH

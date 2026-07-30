@@ -11,6 +11,64 @@ namespace PaperMap::Engine::QuestManager
 
     namespace
     {
+        namespace ObjectiveState
+        {
+            constexpr uint32_t DORMANT = 0;
+            constexpr uint32_t ACTIVE = 1;
+            constexpr uint32_t COMPLETED = 2;
+            constexpr uint32_t FAILED = 3;
+        }
+
+        constexpr uint32_t UNKNOWN_OBJECTIVE_INDEX = 0xFFFFFFFF;
+
+        /**
+         * @brief Safely attempts to resolve a TESQuest form from a FormID,
+         *        accounting for Creation Club ESL FormID remapping.
+         */
+        RE::TESQuest *ResolveQuestForm(uint32_t a_formID)
+        {
+            if (a_formID == 0)
+            {
+                return nullptr;
+            }
+
+            auto *form = RE::TESForm::GetFormByID(a_formID);
+
+            // Fallback for ESL / Light plugins (FormIDs starting with 0xFE)
+            if (!form && (a_formID & 0xFF000000) == 0xFE000000)
+            {
+                form = RE::TESForm::GetFormByID(a_formID & Constants::FormID::FORM_ID_INDEX_MASK);
+            }
+
+            if (form && form->formType.underlying() == Constants::Quest::FORM_TYPE_ID)
+            {
+                return static_cast<RE::TESQuest *>(form);
+            }
+
+            return nullptr;
+        }
+
+        /**
+         * @brief Extracts the numerical objective state (Dormant, Active, Completed, Failed)
+         *        from a Pip-Boy objective UI object.
+         */
+        uint32_t ResolveObjectiveState(RE::PipboyObject *a_objUiObj)
+        {
+            if (GetPipboyBool(a_objUiObj, "completed", false))
+            {
+                return ObjectiveState::COMPLETED;
+            }
+            if (GetPipboyBool(a_objUiObj, "failed", false))
+            {
+                return ObjectiveState::FAILED;
+            }
+            if (GetPipboyBool(a_objUiObj, "enabled", false))
+            {
+                return ObjectiveState::ACTIVE;
+            }
+            return ObjectiveState::DORMANT;
+        }
+
         /**
          * @brief Resolves whether a Pip-Boy quest object is a standard quest or a
          *        "Miscellaneous" folder containing multiple sub-quests, unwrapping them.
@@ -37,29 +95,32 @@ namespace PaperMap::Engine::QuestManager
                         uint32_t subQuestFormID = GetPipboyUint32(subObjObj, "formID", 0);
                         bool isSubQuestTracked = GetPipboyBool(subObjObj, "active", false);
 
-                        if (subQuestFormID != 0)
+                        if (auto *subForm = ResolveQuestForm(subQuestFormID))
                         {
-                            auto *subForm = RE::TESForm::GetFormByID(subQuestFormID);
-                            if (subForm && subForm->formType.underlying() == Constants::Quest::FORM_TYPE_ID)
-                            {
-                                a_outRecords.push_back({static_cast<RE::TESQuest *>(subForm),
-                                                        isSubQuestTracked,
-                                                        true});
-                            }
+                            a_outRecords.push_back({subForm, subObjObj, isSubQuestTracked, true});
                         }
                     }
                 }
             }
             else
             {
-                auto *baseForm = RE::TESForm::GetFormByID(questFormID);
-                if (baseForm && baseForm->formType.underlying() == Constants::Quest::FORM_TYPE_ID)
+                if (auto *baseForm = ResolveQuestForm(questFormID))
                 {
-                    a_outRecords.push_back({static_cast<RE::TESQuest *>(baseForm),
-                                            isTrackedByPlayer,
-                                            false});
+                    a_outRecords.push_back({baseForm, a_questObj, isTrackedByPlayer, false});
                 }
             }
+        }
+
+        /**
+         * @brief Extracts objective target index from a marker UI object across potential engine keys.
+         */
+        uint32_t GetMarkerObjectiveIndex(RE::PipboyObject *a_markerUiObj)
+        {
+            return GetPipboyUint32(a_markerUiObj, "Obj",
+                   GetPipboyUint32(a_markerUiObj, "obj",
+                   GetPipboyUint32(a_markerUiObj, "index",
+                   GetPipboyUint32(a_markerUiObj, "indexID",
+                   GetPipboyUint32(a_markerUiObj, "objective", UNKNOWN_OBJECTIVE_INDEX)))));
         }
 
         /**
@@ -67,8 +128,9 @@ namespace PaperMap::Engine::QuestManager
          *        3D coordinates if they correspond to the active objective.
          */
         std::vector<ObjectiveTargetData> CollectObjectiveTargets(
-            RE::BGSQuestObjective *a_objective,
+            uint32_t a_objectiveIndex,
             uint32_t a_questFormID,
+            bool a_isMiscSub,
             RE::PipboyDataManager *a_pipboyManager)
         {
             std::vector<ObjectiveTargetData> targetsArray;
@@ -76,53 +138,38 @@ namespace PaperMap::Engine::QuestManager
 
             for (auto it = questMap.begin(); it != questMap.end(); ++it)
             {
-                RE::ObjectRefHandle handle = it->first;
-                if (!handle)
-                {
-                    continue;
-                }
-
-                auto refrPtr = handle.get();
-                if (!refrPtr)
-                {
-                    continue;
-                }
-
-                auto *refr = refrPtr.get();
-                if (!refr || !Memory::IsReferenceSafe(refr))
-                {
-                    continue;
-                }
-
                 RE::PipboyObject *markerUiObj = it->second;
                 if (!markerUiObj)
                 {
                     continue;
                 }
 
-                uint32_t markerQuestID = GetQuestFormIDFromMarker(markerUiObj);
-                const std::string markerObjectiveText = GetPipboyString(markerUiObj, "Name", "");
-                
-                // Compare lower 24 bits to support remapped ESL FormIDs safely
-                const bool isStandardQuestMatch = (a_questFormID != 0) && 
-                    ((markerQuestID & Constants::FormID::FORM_ID_INDEX_MASK) == (a_questFormID & Constants::FormID::FORM_ID_INDEX_MASK));
-                const bool isMiscQuestCandidate = (a_questFormID == 0) && (markerQuestID != 0);
-
-                if (isStandardQuestMatch || isMiscQuestCandidate)
+                if (!IsMarkerLinkedToQuest(markerUiObj, a_questFormID))
                 {
-                    const bool isMatchingObjectiveTarget = (markerObjectiveText == a_objective->displayText.c_str());
+                    continue;
+                }
 
-                    if (isMatchingObjectiveTarget)
-                    {
-                        auto *markerWorld = GetReferenceWorldspace(refr);
-                        ObjectiveTargetData targetPin{};
-                        targetPin.position = refr->GetPosition();
-                        targetPin.isDoor = GetPipboyBool(markerUiObj, "OnDoor", false);
-                        targetPin.worldspaceFormID = markerWorld ? markerWorld->formID : 0;
-                        targetPin.worldspaceEditorID = (markerWorld && markerWorld->GetFormEditorID()) ? markerWorld->GetFormEditorID() : "";
+                RE::ObjectRefHandle handle = it->first;
+                auto refrPtr = handle ? handle.get() : nullptr;
+                auto *refr = refrPtr ? refrPtr.get() : nullptr;
 
-                        targetsArray.push_back(targetPin);
-                    }
+                ObjectiveTargetData targetPin{};
+                if (!refr || !Memory::IsRefrPositionSafe(refr, targetPin.position))
+                {
+                    continue;
+                }
+
+                uint32_t markerObjIndex = GetMarkerObjectiveIndex(markerUiObj);
+
+                if (a_isMiscSub || markerObjIndex == UNKNOWN_OBJECTIVE_INDEX || markerObjIndex == a_objectiveIndex)
+                {
+                    auto *markerWorld = GetReferenceWorldspace(refr, &targetPin.position);
+
+                    targetPin.isDoor = GetPipboyBool(markerUiObj, "OnDoor", false);
+                    targetPin.worldspaceFormID = markerWorld ? markerWorld->formID : 0;
+                    targetPin.worldspaceEditorID = (markerWorld && markerWorld->GetFormEditorID()) ? markerWorld->GetFormEditorID() : "";
+
+                    targetsArray.push_back(targetPin);
                 }
             }
 
@@ -130,20 +177,23 @@ namespace PaperMap::Engine::QuestManager
         }
 
         /**
-         * @brief Formats an individual objective, including its current state and targets.
+         * @brief Serializes a single objective object from Pip-Boy data into DTO data.
          */
-        ObjectiveData SerializeObjective(
-            RE::BGSQuestObjective *a_objective,
+        ObjectiveData SerializeObjectiveData(
+            RE::PipboyObject *a_objUiObj,
+            uint32_t a_defaultIndex,
             uint32_t a_questFormID,
+            bool a_isMiscSub,
             RE::PipboyDataManager *a_pipboyManager)
         {
             ObjectiveData objNode{};
-            objNode.text = a_objective->displayText.c_str();
-            objNode.status = static_cast<uint32_t>(a_objective->state);
+            objNode.index = GetPipboyUint32(a_objUiObj, "index", GetPipboyUint32(a_objUiObj, "indexID", GetPipboyUint32(a_objUiObj, "Obj", a_defaultIndex)));
+            objNode.text = GetPipboyString(a_objUiObj, "text", "");
+            objNode.state = ResolveObjectiveState(a_objUiObj);
 
-            if (objNode.status == Constants::Quest::OBJECTIVE_STATE_ACTIVE)
+            if (objNode.state == ObjectiveState::ACTIVE)
             {
-                objNode.targets = CollectObjectiveTargets(a_objective, a_questFormID, a_pipboyManager);
+                objNode.targets = CollectObjectiveTargets(objNode.index, a_questFormID, a_isMiscSub, a_pipboyManager);
             }
 
             return objNode;
@@ -158,22 +208,8 @@ namespace PaperMap::Engine::QuestManager
             return "Side";
         }
 
-        std::string ResolveQuestSummary(RE::TESQuest *a_quest)
-        {
-            if (a_quest->currentInstanceID != 0)
-            {
-                RE::BSString formattedSummary;
-                RE::BGSQuestInstanceText::ParseString(&formattedSummary, a_quest, a_quest->currentInstanceID);
-                if (formattedSummary.c_str())
-                {
-                    return formattedSummary.c_str();
-                }
-            }
-            return "";
-        }
-
         /**
-         * @brief Translates an engine quest record into structural data.
+         * @brief Translates a Pip-Boy quest UI object into structural data.
          */
         QuestData SerializeQuest(
             const QuestRecordTarget &a_target,
@@ -181,26 +217,42 @@ namespace PaperMap::Engine::QuestManager
             RE::PipboyDataManager *a_pipboyManager)
         {
             auto *realQuest = a_target.questForm;
-            int32_t rawQuestType = static_cast<int32_t>(realQuest->data.questType);
+            auto *questObj = a_target.pipboyObj;
 
+            int32_t rawQuestType = static_cast<int32_t>(realQuest->data.questType);
             std::string questTypeString = MapQuestType(rawQuestType);
-            std::string summaryText = ResolveQuestSummary(realQuest);
 
             QuestData questNode{};
             questNode.formId = realQuest->formID;
-            questNode.questName = RE::TESFullName::GetFullName(*realQuest);
-            questNode.description = summaryText;
+            questNode.questName = GetPipboyString(questObj, "text", std::string(RE::TESFullName::GetFullName(*realQuest)));
+            if (questNode.questName.empty())
+            {
+                questNode.questName = RE::TESFullName::GetFullName(*realQuest);
+            }
+            questNode.journal = GetPipboyString(questObj, "desc", "");
             questNode.isTracked = a_target.liveTrackingState;
             questNode.isMisc = a_target.isMiscSub;
             questNode.type = questTypeString;
 
-            for (auto *objective : realQuest->objectives)
+            if (a_target.isMiscSub)
             {
-                if (!objective)
+                questNode.objectives.push_back(SerializeObjectiveData(questObj, 0, realQuest->formID, true, a_pipboyManager));
+            }
+            else
+            {
+                auto *uiObjectivesList = GetPipboyArray(questObj, "objectives");
+                if (uiObjectivesList)
                 {
-                    continue;
+                    uint32_t defaultObjIndex = 0;
+                    for (auto *subObjectiveVal : uiObjectivesList->elements)
+                    {
+                        if (subObjectiveVal && subObjectiveVal->GetType() == RE::PipboyValue::kObject)
+                        {
+                            auto *objUiObj = reinterpret_cast<RE::PipboyObject *>(subObjectiveVal);
+                            questNode.objectives.push_back(SerializeObjectiveData(objUiObj, defaultObjIndex++, realQuest->formID, false, a_pipboyManager));
+                        }
+                    }
                 }
-                questNode.objectives.push_back(SerializeObjective(objective, a_originalQuestFormID, a_pipboyManager));
             }
 
             return questNode;

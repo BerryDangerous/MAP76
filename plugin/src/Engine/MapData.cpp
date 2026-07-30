@@ -306,24 +306,37 @@ namespace PaperMap::Engine
         return nullptr;
     }
 
-    uint32_t GetQuestFormIDFromMarker(RE::PipboyObject *a_markerObj)
+    bool IsMarkerLinkedToQuest(RE::PipboyObject *a_markerObj, uint32_t a_questFormID)
     {
-        if (!a_markerObj)
+        if (!a_markerObj || a_questFormID == 0)
         {
-            return 0;
+            return false;
+        }
+
+        uint32_t targetIndex = a_questFormID & Constants::FormID::FORM_ID_INDEX_MASK;
+
+        uint32_t singleID = PipboyUtils::GetPipboyUint32(a_markerObj, "formID", PipboyUtils::GetPipboyUint32(a_markerObj, "questID", 0));
+        if (singleID != 0 && (singleID & Constants::FormID::FORM_ID_INDEX_MASK) == targetIndex)
+        {
+            return true;
         }
 
         RE::PipboyArray *qIdArray = GetQuestIdMember(a_markerObj);
         if (qIdArray && !qIdArray->elements.empty())
         {
-            RE::PipboyValue *innerElement = qIdArray->elements[0];
-            if (innerElement && (innerElement->GetType() == RE::PipboyValue::kUint32 || innerElement->GetType() == RE::PipboyValue::kInt32))
+            for (auto *innerElement : qIdArray->elements)
             {
-                auto formID = *reinterpret_cast<uint32_t *>(reinterpret_cast<uintptr_t>(innerElement) + Constants::PIPBOY_VALUE_PAYLOAD_OFFSET);
-                return formID;
+                if (innerElement && (innerElement->GetType() == RE::PipboyValue::kUint32 || innerElement->GetType() == RE::PipboyValue::kInt32))
+                {
+                    auto formID = *reinterpret_cast<uint32_t *>(reinterpret_cast<uintptr_t>(innerElement) + Constants::PIPBOY_VALUE_PAYLOAD_OFFSET);
+                    if ((formID & Constants::FormID::FORM_ID_INDEX_MASK) == targetIndex)
+                    {
+                        return true;
+                    }
+                }
             }
         }
 
-        return 0;
+        return false;
     }
 }

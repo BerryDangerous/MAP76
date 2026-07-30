@@ -39,6 +39,27 @@ namespace PaperMap::Engine::Memory
         }
     }
 
+    bool IsRefrPositionSafe(RE::TESObjectREFR *a_refr, RE::NiPoint3 &a_outPos)
+    {
+        if (!a_refr || reinterpret_cast<uintptr_t>(a_refr) < Constants::MIN_VALID_USER_PTR)
+        {
+            return false;
+        }
+        __try
+        {
+            if (a_refr->IsDeleted())
+            {
+                return false;
+            }
+            a_outPos = a_refr->GetPosition();
+            return true;
+        }
+        __except (EXCEPTION_EXECUTE_HANDLER)
+        {
+            return false;
+        }
+    }
+
     bool IsValidStringPointer(const char *ptr)
     {
         const bool isInProtectedNullRange = !ptr || reinterpret_cast<uintptr_t>(ptr) < Constants::MIN_VALID_USER_PTR;

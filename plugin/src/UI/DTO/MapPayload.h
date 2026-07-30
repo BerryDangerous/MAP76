@@ -87,23 +87,24 @@ namespace PaperMap::UI::DTO
 
     struct QuestObjective
     {
+        uint32_t index;
         std::string text;
-        uint32_t status;
+        uint32_t state;
         std::vector<QuestTarget> targets;
     };
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(QuestObjective, text, status, targets)
+    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(QuestObjective, index, text, state, targets)
 
     struct QuestItem
     {
         uint32_t formId;
         std::string questName;
-        std::string description;
+        std::string journal;
         bool isTracked;
         bool isMisc;
         std::string type;
         std::vector<QuestObjective> objectives;
     };
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(QuestItem, formId, questName, description, isTracked, isMisc, type, objectives)
+    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(QuestItem, formId, questName, journal, isTracked, isMisc, type, objectives)
 
     struct CustomMarker
     {

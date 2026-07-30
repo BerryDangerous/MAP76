@@ -8,15 +8,16 @@ export interface QuestTarget {
 }
 
 export interface QuestObjective {
+    index: number;
     text: string;
-    status: number; // 0=Inactive, 1=Active, 2=Completed, 3=Failed
+    state: number; // 0=Inactive, 1=Active, 2=Completed, 3=Failed
     targets: QuestTarget[];
 }
 
 export interface QuestItem {
     formId: number;
     questName: string;
-    description: string;
+    journal: string;
     type:
     "Side" |              // 0
     "Main" |              // 1

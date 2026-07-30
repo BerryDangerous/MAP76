@@ -78,7 +78,7 @@ namespace PaperMap::UI::Payload
                     DTO::QuestItem questDto{};
                     questDto.formId = quest.formId;
                     questDto.questName = quest.questName;
-                    questDto.description = quest.description;
+                    questDto.journal = quest.journal;
                     questDto.isTracked = quest.isTracked;
                     questDto.isMisc = quest.isMisc;
                     questDto.type = quest.type;
@@ -87,8 +87,9 @@ namespace PaperMap::UI::Payload
                     for (const auto& objective : quest.objectives)
                     {
                         DTO::QuestObjective objDto{};
+                        objDto.index = objective.index;
                         objDto.text = objective.text;
-                        objDto.status = objective.status;
+                        objDto.state = objective.state;
 
                         objDto.targets.reserve(objective.targets.size());
                         for (const auto& target : objective.targets)

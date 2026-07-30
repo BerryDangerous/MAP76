@@ -8,6 +8,7 @@ namespace PaperMap::Engine::QuestManager
     struct QuestRecordTarget
     {
         RE::TESQuest *questForm;
+        RE::PipboyObject *pipboyObj;
         bool liveTrackingState;
         bool isMiscSub;
     };
@@ -28,8 +29,9 @@ namespace PaperMap::Engine::QuestManager
      */
     struct ObjectiveData
     {
+        uint32_t index;
         std::string text;
-        uint32_t status;
+        uint32_t state;
         std::vector<ObjectiveTargetData> targets;
     };
 
@@ -40,7 +42,7 @@ namespace PaperMap::Engine::QuestManager
     {
         uint32_t formId;
         std::string questName;
-        std::string description;
+        std::string journal;
         bool isTracked;
         bool isMisc;
         std::string type;
