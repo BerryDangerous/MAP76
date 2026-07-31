@@ -3,6 +3,7 @@ import { QuestItem } from '../types/quests.js';
 import { FocusManager } from '../systems/focusManager.js';
 import { MapViewport } from './viewport.js';
 import { QuestCard } from './questCard.js';
+import { toggleQuestActive } from '../core/bridge.js';
 
 export type QuestFilterTab = 'ALL' | 'MAIN' | 'SIDE' | 'MISC';
 
@@ -222,6 +223,9 @@ export const QuestList = {
     toggleQuestActive(quest: QuestItem): void {
         quest.isTracked = !quest.isTracked;
         console.log(`[QuestList] Toggled active status for quest "${quest.questName}" -> ${quest.isTracked}`);
+        if (quest.formId !== undefined) {
+            toggleQuestActive(quest.formId);
+        }
         if (quest.isTracked) {
             this.centerSelectedQuestTarget(quest);
         }
@@ -508,7 +512,7 @@ export const QuestList = {
     filterQuests(quests: QuestItem[], tab: QuestFilterTab): QuestItem[] {
         if (tab === 'ALL') return quests;
         if (tab === 'MAIN') return quests.filter(q => q.type === 'Main');
-        if (tab === 'SIDE') return quests.filter(q => q.type === 'Side');
+        if (tab === 'SIDE') return quests.filter(q => q.type !== 'Main' && q.type !== 'Misc' && !q.isMisc);
         if (tab === 'MISC') return quests.filter(q => q.isMisc || q.type === 'Misc');
         return quests;
     },

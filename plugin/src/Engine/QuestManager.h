@@ -55,5 +55,8 @@ namespace PaperMap::Engine::QuestManager
     std::vector<QuestData> CollectAll(RE::PipboyDataManager *a_pipboyManager);
 
     void ActivateAllUserFacingQuests();
+    void SetQuestActiveViaVM(RE::TESQuest *a_quest, bool a_active, RE::BSTSmartPointer<RE::BSScript::IStackCallbackFunctor> a_callback = nullptr);
+    void ToggleQuestActive(uint32_t a_formId);
+    void MakeOnlyQuestActive(uint32_t a_formId);
     void ForceQuestActiveViaVM(RE::TESQuest *a_quest);
 }

@@ -3,6 +3,7 @@
 #include "UI/Actions.h"
 #include "UI/Interop.h"
 #include "Engine/MapData.h"
+#include "Engine/QuestManager.h"
 #include "Constants.h"
 #include "RE/N/NEW_REFR_DATA.h"
 #include "RE/T/TESDataHandler.h"
@@ -272,6 +273,26 @@ namespace PaperMap::UI::Actions
             task->AddTask([]() {
                 RemoveEngineCustomMarker();
                 PaperMap::UI::TriggerFreshMapDataSync();
+            });
+        }
+    }
+
+    void ToggleQuestActive(uint32_t a_formId)
+    {
+        if (auto *task = F4SE::GetTaskInterface())
+        {
+            task->AddTask([a_formId]() {
+                PaperMap::Engine::QuestManager::ToggleQuestActive(a_formId);
+            });
+        }
+    }
+
+    void MakeOnlyQuestActive(uint32_t a_formId)
+    {
+        if (auto *task = F4SE::GetTaskInterface())
+        {
+            task->AddTask([a_formId]() {
+                PaperMap::Engine::QuestManager::MakeOnlyQuestActive(a_formId);
             });
         }
     }

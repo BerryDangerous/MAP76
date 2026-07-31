@@ -36,6 +36,24 @@ export const EngineBridge = {
         if (typeof window.removeCustomMarker === 'function') {
             window.removeCustomMarker('');
         }
+    },
+    toggleQuestActive(formId: number) {
+        if (typeof window.toggleQuestActive === 'function') {
+            const payload = JSON.stringify({ formId });
+            window.toggleQuestActive(payload);
+            if (window.requestFreshMapData) window.requestFreshMapData("");
+        } else {
+            console.warn(`[Bridge] toggleQuestActive not bound by engine for FormID: ${formId}`);
+        }
+    },
+    makeOnlyQuestActive(formId: number) {
+        if (typeof window.makeOnlyQuestActive === 'function') {
+            const payload = JSON.stringify({ formId });
+            window.makeOnlyQuestActive(payload);
+            if (window.requestFreshMapData) window.requestFreshMapData("");
+        } else {
+            console.warn(`[Bridge] makeOnlyQuestActive not bound by engine for FormID: ${formId}`);
+        }
     }
 };
 
@@ -45,6 +63,14 @@ export function setCustomMarker(x: number, y: number): void {
 
 export function removeCustomMarker(): void {
     EngineBridge.removeCustomMarker();
+}
+
+export function toggleQuestActive(formId: number): void {
+    EngineBridge.toggleQuestActive(formId);
+}
+
+export function makeOnlyQuestActive(formId: number): void {
+    EngineBridge.makeOnlyQuestActive(formId);
 }
 
 export function initializeF4SEBindings(onDataReceived: (payload: F4SEMapPayload) => void) {

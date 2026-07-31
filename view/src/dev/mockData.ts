@@ -374,7 +374,7 @@ export const mockPayload: F4SEMapPayload = {
             ]
         },
         {
-            questName: "MacCready",
+            questName: "Talk to MacCready",
             type: "Misc",
             journal: "",
             isMisc: true,

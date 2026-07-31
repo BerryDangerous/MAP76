@@ -19,6 +19,9 @@ declare global {
         setCustomMarker?: (payloadString: string) => void;
         removeCustomMarker?: (arg: string) => void;
 
+        toggleQuestActive?: (payloadString: string) => void;
+        makeOnlyQuestActive?: (payloadString: string) => void;
+
         onFastTravelFailed?: (jsonString: string) => void;
         onFastTravelCheckResult?: (jsonString: string) => void;
         onFrameTick?: (jsonString: string) => void;

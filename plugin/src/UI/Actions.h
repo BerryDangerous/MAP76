@@ -34,4 +34,13 @@ namespace PaperMap::UI::Actions
      * @brief Removes the player custom marker if active.
      */
     void RemoveCustomMarker();
+    /**
+     * @brief Toggles active/tracking status of a quest by formId.
+     */
+    void ToggleQuestActive(uint32_t a_formId);
+
+    /**
+     * @brief Sets target quest to active, deactivating all other user facing quests.
+     */
+    void MakeOnlyQuestActive(uint32_t a_formId);
 }

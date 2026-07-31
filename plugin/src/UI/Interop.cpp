@@ -110,6 +110,42 @@ namespace PaperMap::UI
                 REX::ERROR("Error processing removeCustomMarker callback: {}", e.what());
             }
         }
+
+        void HandleToggleQuestActive(const char *arg)
+        {
+            try
+            {
+                if (!arg) return;
+                auto parsedJson = nlohmann::json::parse(arg);
+                if (parsedJson.contains("formId") && parsedJson["formId"].is_number())
+                {
+                    uint32_t formId = parsedJson["formId"].get<uint32_t>();
+                    PaperMap::UI::Actions::ToggleQuestActive(formId);
+                }
+            }
+            catch (const std::exception &e)
+            {
+                REX::ERROR("Error processing toggleQuestActive callback: {}", e.what());
+            }
+        }
+
+        void HandleMakeOnlyQuestActive(const char *arg)
+        {
+            try
+            {
+                if (!arg) return;
+                auto parsedJson = nlohmann::json::parse(arg);
+                if (parsedJson.contains("formId") && parsedJson["formId"].is_number())
+                {
+                    uint32_t formId = parsedJson["formId"].get<uint32_t>();
+                    PaperMap::UI::Actions::MakeOnlyQuestActive(formId);
+                }
+            }
+            catch (const std::exception &e)
+            {
+                REX::ERROR("Error processing makeOnlyQuestActive callback: {}", e.what());
+            }
+        }
     }
 }
 
@@ -146,6 +182,8 @@ namespace PaperMap::UI
         State::g_api->BindUIEvent(view, "checkFastTravel", HandleCheckFastTravel);
         State::g_api->BindUIEvent(view, "setCustomMarker", HandleSetCustomMarker);
         State::g_api->BindUIEvent(view, "removeCustomMarker", HandleRemoveCustomMarker);
+        State::g_api->BindUIEvent(view, "toggleQuestActive", HandleToggleQuestActive);
+        State::g_api->BindUIEvent(view, "makeOnlyQuestActive", HandleMakeOnlyQuestActive);
     }
 
     void OnCloseRequestedFromJS(const char *a_argument)

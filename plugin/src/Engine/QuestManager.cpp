@@ -3,7 +3,13 @@
 #include "Engine/PipboyUtils.h"
 #include "Engine/Memory.h"
 #include "Engine/MapData.h"
+#include "UI/Interop.h"
 #include "Constants.h"
+
+namespace RE::BSScript
+{
+    IStackCallbackFunctor::~IStackCallbackFunctor() = default;
+}
 
 namespace PaperMap::Engine::QuestManager
 {
@@ -391,6 +397,175 @@ namespace PaperMap::Engine::QuestManager
             }
 
             ForceQuestActiveViaVM(quest);
+        }
+    }
+
+    namespace
+    {
+        class QuestActiveCallback : public RE::BSScript::IStackCallbackFunctor
+        {
+        public:
+            explicit QuestActiveCallback(std::shared_ptr<std::atomic<uint32_t>> a_counter = nullptr)
+                : _counter(std::move(a_counter))
+            {}
+
+            virtual void CallQueued() override {}
+            virtual void CallCanceled() override {}
+            virtual void StartMultiDispatch() override {}
+            virtual void EndMultiDispatch() override {}
+            virtual void operator()(RE::BSScript::Variable) override
+            {
+                if (_counter)
+                {
+                    if (_counter->fetch_sub(1) == 1)
+                    {
+                        PaperMap::UI::TriggerFreshMapDataSync();
+                    }
+                }
+                else
+                {
+                    PaperMap::UI::TriggerFreshMapDataSync();
+                }
+            }
+            virtual bool CanSave() override { return false; }
+
+        private:
+            std::shared_ptr<std::atomic<uint32_t>> _counter;
+        };
+    }
+
+    void SetQuestActiveViaVM(RE::TESQuest *a_quest, bool a_active, RE::BSTSmartPointer<RE::BSScript::IStackCallbackFunctor> a_callback)
+    {
+        if (!a_quest)
+        {
+            return;
+        }
+
+        auto *gameVM = RE::GameVM::GetSingleton();
+        if (!gameVM)
+        {
+            return;
+        }
+
+        auto vmSmartPtr = gameVM->GetVM();
+        RE::BSScript::IVirtualMachine *vm = vmSmartPtr ? vmSmartPtr.get() : nullptr;
+        if (!vm)
+        {
+            return;
+        }
+
+        const auto &handles = vm->GetObjectHandlePolicy();
+        std::size_t questHandle = handles.GetHandleForObject(static_cast<std::uint32_t>(RE::ENUM_FORM_ID::kQUST), a_quest);
+
+        if (questHandle == handles.EmptyHandle())
+        {
+            return;
+        }
+
+        RE::BSTSmartPointer<RE::BSScript::IStackCallbackFunctor> callback = a_callback;
+        if (!callback)
+        {
+            callback = RE::BSTSmartPointer<RE::BSScript::IStackCallbackFunctor>(new QuestActiveCallback());
+        }
+
+        vm->DispatchMethodCall(
+            questHandle,
+            RE::BSFixedString("Quest"),
+            RE::BSFixedString("SetActive"),
+            [a_active](RE::BSScrapArray<RE::BSScript::Variable> &a_outArgs)
+            {
+                RE::BSScript::Variable activeArg;
+                RE::BSScript::PackVariable(activeArg, a_active);
+                a_outArgs.push_back(activeArg);
+                return true;
+            },
+            callback
+        );
+    }
+
+    void ToggleQuestActive(uint32_t a_formId)
+    {
+        auto *quest = RE::TESForm::GetFormByID<RE::TESQuest>(a_formId);
+        if (!quest)
+        {
+            return;
+        }
+
+        uint32_t flags = quest->data.flags;
+        uint32_t kActive = static_cast<uint32_t>(RE::QuestFlag::kActive);
+        bool currentlyActive = (flags & kActive) != 0;
+
+        SetQuestActiveViaVM(quest, !currentlyActive);
+    }
+
+    void MakeOnlyQuestActive(uint32_t a_formId)
+    {
+        auto *targetQuest = RE::TESForm::GetFormByID<RE::TESQuest>(a_formId);
+        if (!targetQuest)
+        {
+            return;
+        }
+
+        auto *dataHandler = RE::TESDataHandler::GetSingleton();
+        if (!dataHandler)
+        {
+            return;
+        }
+
+        auto &questArray = dataHandler->GetFormArray<RE::TESQuest>();
+        uint32_t kEnabled = static_cast<uint32_t>(RE::QuestFlag::kEnabled);
+        uint32_t kCompleted = static_cast<uint32_t>(RE::QuestFlag::kCompleted);
+        uint32_t kFailed = static_cast<uint32_t>(RE::QuestFlag::kFailed);
+        uint32_t kActive = static_cast<uint32_t>(RE::QuestFlag::kActive);
+
+        std::vector<RE::TESQuest *> questsToActivate;
+        std::vector<RE::TESQuest *> questsToDeactivate;
+
+        for (auto *quest : questArray)
+        {
+            if (!quest)
+            {
+                continue;
+            }
+
+            uint32_t flags = quest->data.flags;
+            if ((flags & kEnabled) == 0 || (flags & kCompleted) != 0 || (flags & kFailed) != 0)
+            {
+                continue;
+            }
+
+            if (quest->formID == a_formId)
+            {
+                if ((flags & kActive) == 0)
+                {
+                    questsToActivate.push_back(quest);
+                }
+            }
+            else if ((flags & kActive) != 0)
+            {
+                questsToDeactivate.push_back(quest);
+            }
+        }
+
+        uint32_t totalOps = static_cast<uint32_t>(questsToActivate.size() + questsToDeactivate.size());
+        if (totalOps == 0)
+        {
+            PaperMap::UI::TriggerFreshMapDataSync();
+            return;
+        }
+
+        auto counter = std::make_shared<std::atomic<uint32_t>>(totalOps);
+
+        for (auto *q : questsToDeactivate)
+        {
+            RE::BSTSmartPointer<RE::BSScript::IStackCallbackFunctor> cb(new QuestActiveCallback(counter));
+            SetQuestActiveViaVM(q, false, cb);
+        }
+
+        for (auto *q : questsToActivate)
+        {
+            RE::BSTSmartPointer<RE::BSScript::IStackCallbackFunctor> cb(new QuestActiveCallback(counter));
+            SetQuestActiveViaVM(q, true, cb);
         }
     }
 }
