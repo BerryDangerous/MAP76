@@ -4,6 +4,12 @@ import { FocusManager } from '../systems/focusManager.js';
 import { MapViewport } from './viewport.js';
 import { QuestCard } from './questCard.js';
 import { toggleQuestActive } from '../core/bridge.js';
+import { SelectableListController } from '../ui/selectableListController.js';
+import { TabBar } from '../ui/tabBar.js';
+import { CollapsiblePanel } from '../ui/collapsiblePanel.js';
+import { CustomScrollbar } from '../ui/customScrollbar.js';
+import { KeybindsSystem } from '../systems/keybinds.js';
+import { DockControlsSystem, DockCorner } from '../systems/dockControls.js';
 
 export type QuestFilterTab = 'ALL' | 'MAIN' | 'SIDE' | 'MISC';
 
@@ -11,21 +17,103 @@ export interface QuestListState {
     currentTab: QuestFilterTab;
     theme: '76';
     isCollapsed: boolean;
-    selectedIndex: number;
     hoverIndex: number;
     selectedQuestId: number | string | null;
+    dockCorner: DockCorner;
 }
-
-const TABS: QuestFilterTab[] = ['ALL', 'MAIN', 'SIDE', 'MISC'];
 
 const questListState: QuestListState = {
     currentTab: 'ALL',
     theme: '76',
     isCollapsed: true,
-    selectedIndex: -1,
     hoverIndex: -1,
-    selectedQuestId: null
+    selectedQuestId: null,
+    dockCorner: 'top-left'
 };
+
+const listController = new SelectableListController<QuestItem>({
+    getItems: () => QuestList.getVisibleQuests(),
+    getItemId: (quest) => quest.formId ?? quest.questName,
+    containerSupplier: () => document.getElementById('quest-list-panel'),
+    itemSelector: '.ql-item',
+    onSelectionChange: (selectedQuest) => {
+        if (questListState.isCollapsed) return;
+
+        if (selectedQuest) {
+            questListState.selectedQuestId = selectedQuest.formId ?? selectedQuest.questName;
+            QuestList.notifyQuestFocused(selectedQuest);
+            QuestCard.open(selectedQuest);
+        } else {
+            questListState.selectedQuestId = null;
+            QuestCard.close();
+        }
+
+        if (customScrollbar) {
+            customScrollbar.updateThumbPosition();
+        }
+    },
+    onItemClick: (quest, index) => {
+        const container = document.getElementById('quest-list-panel');
+        if (!container) return;
+
+        FocusManager.setFocus('QUEST_LIST');
+
+        if (index === -2) {
+            QuestList.collapse();
+            return;
+        }
+
+        if (index === -1 || questListState.isCollapsed) {
+            if (quest) {
+                questListState.selectedQuestId = quest.formId ?? quest.questName;
+            }
+            const isBottomDocked = questListState.dockCorner.startsWith('bottom');
+            const panelRect = container.getBoundingClientRect();
+            const items = container.querySelectorAll('.ql-item');
+            const itemEl = (index >= 0 && items[index]) ? items[index] as HTMLElement : null;
+            const itemRect = itemEl ? itemEl.getBoundingClientRect() : panelRect;
+            const targetRelativeOffset = isBottomDocked ? (panelRect.bottom - itemRect.bottom) : (itemRect.top - panelRect.top);
+
+            QuestList.expand(targetRelativeOffset);
+            return;
+        }
+
+        listController.setSelectedIndex(index, false);
+        if (quest) {
+            QuestList.toggleQuestActive(quest);
+        }
+    },
+    onItemHover: (quest, index) => {
+        if ((QuestList as any)._ignoreHover) return;
+        if (questListState.isCollapsed) {
+            if (questListState.hoverIndex !== index) {
+                questListState.hoverIndex = index;
+                QuestList.updateSelection();
+            }
+        } else {
+            if (listController.getSelectedIndex() !== index) {
+                listController.setSelectedIndex(index, true, false);
+            }
+        }
+    }
+});
+
+const tabBar = new TabBar<QuestFilterTab>({
+    tabs: [
+        { id: 'ALL', label: 'ALL' },
+        { id: 'MAIN', label: 'MAIN' },
+        { id: 'SIDE', label: 'SIDE' },
+        { id: 'MISC', label: 'MISC' }
+    ],
+    activeTabId: 'ALL',
+    onTabChange: (tabId) => {
+        QuestList.setFilterTab(tabId);
+    }
+});
+
+let collapsiblePanel: CollapsiblePanel | null = null;
+let customScrollbar: CustomScrollbar | null = null;
+let isLayoutMounted = false;
 
 export const QuestList = {
     getState(): QuestListState {
@@ -42,70 +130,43 @@ export const QuestList = {
 
     setFilterTab(tab: QuestFilterTab): void {
         questListState.currentTab = tab;
-        questListState.selectedIndex = 0;
+        listController.setSelectedIndex(0, false);
         this.render();
         this.updateSelection();
     },
 
-    expand(targetRelativeTop: number | null = null): void {
+    expand(targetRelativeOffset: number | null = null): void {
         if (!questListState.isCollapsed) return;
         questListState.isCollapsed = false;
 
         (this as any)._ignoreHover = true;
         setTimeout(() => { (this as any)._ignoreHover = false; }, 200);
 
+        if (collapsiblePanel) {
+            collapsiblePanel.setCollapsed(false);
+        }
+
         const expandedQuests = this.getVisibleQuests();
+        let targetIndex = 0;
         if (questListState.selectedQuestId !== null) {
             const foundIdx = expandedQuests.findIndex(q => (q.formId ?? q.questName) === questListState.selectedQuestId);
-            questListState.selectedIndex = foundIdx !== -1 ? foundIdx : 0;
+            targetIndex = foundIdx !== -1 ? foundIdx : 0;
         } else if (expandedQuests.length > 0) {
-            questListState.selectedIndex = 0;
+            targetIndex = 0;
             questListState.selectedQuestId = expandedQuests[0].formId ?? expandedQuests[0].questName;
         } else {
-            questListState.selectedIndex = -1;
+            targetIndex = -1;
             questListState.selectedQuestId = null;
         }
 
-        const targetIndex = questListState.selectedIndex;
+        listController.setSelectedIndex(targetIndex, false, false);
 
         FocusManager.setFocus('QUEST_LIST');
         this.render();
         this.updateSelection(false);
 
-        if (targetRelativeTop !== null && targetIndex !== -1) {
-            // Execute synchronously to prevent 1-frame blink of content and scrollbar
-            const container = document.getElementById('quest-list-panel');
-            if (container) {
-                const listEl = container.querySelector('.ql-items-list') as HTMLElement;
-                const items = container.querySelectorAll('.ql-item');
-                const selectedItem = items[targetIndex] as HTMLElement;
-                
-                if (listEl && selectedItem) {
-                    // This forces a synchronous layout calculation
-                    const panelRect = container.getBoundingClientRect();
-                    const listRect = listEl.getBoundingClientRect();
-                    const itemRect = selectedItem.getBoundingClientRect();
-                    
-                    const currentRelativeTop = itemRect.top - panelRect.top;
-                    const delta = currentRelativeTop - targetRelativeTop;
-                    let desiredScrollTop = listEl.scrollTop + delta;
-                    
-                    // maxScrollTop: scroll position where item's top hits the list's top edge
-                    const maxScrollTop = listEl.scrollTop + (itemRect.top - listRect.top);
-                    
-                    // Use the expected expanded height (332px) to avoid transition states of listRect.bottom
-                    const expectedListHeight = 332;
-                    const minScrollTop = maxScrollTop + itemRect.height - expectedListHeight;
-                    
-                    desiredScrollTop = Math.max(0, Math.min(desiredScrollTop, maxScrollTop));
-                    desiredScrollTop = Math.max(desiredScrollTop, minScrollTop);
-                    
-                    listEl.scrollTop = desiredScrollTop;
-                    
-                    // Force the thumb to sync synchronously before the browser paints
-                    listEl.dispatchEvent(new Event('scroll'));
-                }
-            }
+        if (targetRelativeOffset !== null && targetIndex !== -1) {
+            listController.scrollItemToRelativeOffset(targetIndex, targetRelativeOffset);
         }
     },
 
@@ -117,6 +178,10 @@ export const QuestList = {
         }
         questListState.isCollapsed = true;
         questListState.hoverIndex = -1;
+        if (collapsiblePanel) {
+            collapsiblePanel.setCollapsed(true);
+        }
+
         QuestCard.close();
         MapViewport.restoreSavedViewport();
         FocusManager.setFocus('MAP');
@@ -159,58 +224,45 @@ export const QuestList = {
 
     handleKeyDown(e: KeyboardEvent): boolean {
         if (questListState.isCollapsed) {
+            if (DockControlsSystem.isExpandKey(e, questListState.dockCorner)) {
+                this.expand();
+                return true;
+            }
             return false;
         }
 
-        const key = e.key;
-        const keyLower = key.toLowerCase();
         const quests = this.getVisibleQuests();
 
-        if (key === 'ArrowLeft') {
+        if (DockControlsSystem.isCollapseKey(e, questListState.dockCorner)) {
             this.collapse();
             return true;
         }
 
-        if (key === 'ArrowRight') {
-            console.log('[QuestList] ArrowRight pressed. Transferring focus to QUEST_CARD.');
+        if (KeybindsSystem.isAction(e, 'NAV_RIGHT')) {
             FocusManager.setFocus('QUEST_CARD');
             return true;
         }
 
-        if (keyLower === 'z') {
-            const currIdx = TABS.indexOf(questListState.currentTab);
-            if (currIdx > 0) {
-                this.setFilterTab(TABS[currIdx - 1]);
-            }
+        if (tabBar.handleKeyDown(e)) {
             return true;
         }
 
-        if (keyLower === 'c') {
-            const currIdx = TABS.indexOf(questListState.currentTab);
-            if (currIdx < TABS.length - 1) {
-                this.setFilterTab(TABS[currIdx + 1]);
-            }
-            return true;
-        }
-
-        if (key === 'ArrowDown') {
+        if (KeybindsSystem.isAction(e, 'NAV_DOWN')) {
             if (quests.length > 0) {
-                questListState.selectedIndex = Math.min(quests.length - 1, questListState.selectedIndex + 1);
-                this.updateSelection();
+                listController.navigateNext();
             }
             return true;
         }
 
-        if (key === 'ArrowUp') {
+        if (KeybindsSystem.isAction(e, 'NAV_UP')) {
             if (quests.length > 0) {
-                questListState.selectedIndex = Math.max(0, questListState.selectedIndex - 1);
-                this.updateSelection();
+                listController.navigatePrev();
             }
             return true;
         }
 
-        if (keyLower === 't') {
-            const selectedQuest = quests[questListState.selectedIndex];
+        if (KeybindsSystem.isAction(e, 'TOGGLE_TRACKING')) {
+            const selectedQuest = listController.getSelectedItem();
             if (selectedQuest) {
                 this.toggleQuestActive(selectedQuest);
             }
@@ -222,18 +274,17 @@ export const QuestList = {
 
     toggleQuestActive(quest: QuestItem): void {
         quest.isTracked = !quest.isTracked;
-        console.log(`[QuestList] Toggled active status for quest "${quest.questName}" -> ${quest.isTracked}`);
         if (quest.formId !== undefined) {
             toggleQuestActive(quest.formId);
         }
         if (quest.isTracked) {
-            this.centerSelectedQuestTarget(quest);
+            this.notifyQuestFocused(quest);
         }
         this.render();
     },
 
-    centerSelectedQuestTarget(quest: QuestItem): void {
-        if (!quest.isTracked || !quest.objectives || quest.objectives.length === 0) {
+    notifyQuestFocused(quest: QuestItem | null): void {
+        if (!quest || !quest.isTracked || !quest.objectives || quest.objectives.length === 0) {
             MapViewport.restoreSavedViewport();
             return;
         }
@@ -244,11 +295,7 @@ export const QuestList = {
         }
 
         const target = activeObj.targets[0];
-        const bounds = mapState.currentPayloadBounds;
-        if (bounds) {
-            console.log(`[QuestList] Centering viewport on active quest target (${target.x}, ${target.y}) for "${quest.questName}"`);
-            MapViewport.centerOnMapCoords(target.x, target.y, bounds);
-        }
+        MapViewport.centerOnWorldCoords(target.x, target.y);
     },
 
     getVisibleQuests(): QuestItem[] {
@@ -262,18 +309,79 @@ export const QuestList = {
         return [...uncompleted, ...completed];
     },
 
+    mountLayout(container: HTMLElement): void {
+        container.innerHTML = `
+          <div class="ql-header">
+             <div class="ql-title">QUESTS</div>
+             <div class="ql-collapse-btn">
+               <span class="ql-collapse-text">COLLAPSE</span>
+               <span class="ql-btn-icon"></span>
+            </div>
+          </div>
+          <div class="ql-sub-header">
+             <span class="ql-tab-nav-icon">Z)</span>
+             <div class="ql-tabs-bar"></div>
+             <span class="ql-tab-nav-icon">C)</span>
+          </div>
+          <div class="ql-body">
+             <div class="ql-items-list"></div>
+             <div class="ql-scrollbar">
+               <div class="ql-scrollbar-thumb"></div>
+            </div>
+          </div>
+        `;
+
+        const tabsBarContainer = container.querySelector('.ql-tabs-bar') as HTMLElement;
+        if (tabsBarContainer) {
+            tabBar.mount(tabsBarContainer);
+        }
+
+        collapsiblePanel = new CollapsiblePanel({
+            panelElement: container,
+            collapseBtnElement: container.querySelector('.ql-collapse-btn') as HTMLElement,
+            dockCorner: questListState.dockCorner,
+            initiallyCollapsed: questListState.isCollapsed,
+            onToggle: (collapsed) => {
+                if (collapsed) this.collapse();
+                else this.expand();
+            }
+        });
+
+        isLayoutMounted = true;
+    },
+
     render(): void {
         const container = document.getElementById('quest-list-panel');
         if (!container) return;
 
-        const existingList = container.querySelector('.ql-items-list') as HTMLElement;
-        const wasCollapsed = container.getAttribute('data-collapsed') === 'true';
-        const isCollapsed = questListState.isCollapsed;
-        const savedScrollTop = (existingList && wasCollapsed === isCollapsed) ? existingList.scrollTop : 0;
+        DockControlsSystem.applyDockPosition(container, questListState.dockCorner);
 
+        if (!isLayoutMounted) {
+            this.mountLayout(container);
+        }
+
+        const isCollapsed = questListState.isCollapsed;
         container.setAttribute('data-collapsed', String(isCollapsed));
         container.setAttribute('data-theme', questListState.theme);
 
+        const collapseTextEl = container.querySelector('.ql-collapse-text');
+        if (collapseTextEl) {
+            collapseTextEl.textContent = isCollapsed ? 'EXPAND' : 'COLLAPSE';
+        }
+
+        const subHeader = container.querySelector('.ql-sub-header') as HTMLElement;
+        if (subHeader) {
+            subHeader.style.display = isCollapsed ? 'none' : 'flex';
+        }
+
+        if (collapsiblePanel) {
+            collapsiblePanel.updateGlyph();
+        }
+
+        const listEl = container.querySelector('.ql-items-list') as HTMLElement;
+        if (!listEl) return;
+
+        const savedScrollTop = listEl.scrollTop;
         const itemsToRender = this.getVisibleQuests();
         let itemsHtml = '';
 
@@ -293,170 +401,31 @@ export const QuestList = {
             itemsHtml += completed.map(q => this.renderQuestItem(q, currentItemIndex++)).join('');
         }
 
-        const collapseText = isCollapsed ? 'EXPAND' : 'COLLAPSE';
-        const collapseIcon = isCollapsed ? 'U' : 'T';
+        listEl.innerHTML = itemsHtml;
+        listEl.scrollTop = savedScrollTop;
 
-        container.innerHTML = `
-          <div class="ql-header">
-             <div class="ql-title">QUESTS</div>
-             <div class="ql-collapse-btn">
-               <span class="ql-collapse-text">${collapseText}</span>
-               <span class="ql-btn-icon">${collapseIcon}</span>
-            </div>
-          </div>
-          ${!isCollapsed ? `
-          <div class="ql-sub-header">
-             <span class="ql-tab-nav-icon">Z)</span>
-             <div class="ql-tabs-bar">
-               <div class="ql-tab ${questListState.currentTab === 'ALL' ? 'active' : ''}" data-tab="ALL">
-                 <span class="ql-tab-text">ALL</span>
-              </div>
-               <div class="ql-tab ${questListState.currentTab === 'MAIN' ? 'active' : ''}" data-tab="MAIN">
-                 <span class="ql-tab-text">MAIN</span>
-              </div>
-               <div class="ql-tab ${questListState.currentTab === 'SIDE' ? 'active' : ''}" data-tab="SIDE">
-                 <span class="ql-tab-text">SIDE</span>
-              </div>
-               <div class="ql-tab ${questListState.currentTab === 'MISC' ? 'active' : ''}" data-tab="MISC">
-                 <span class="ql-tab-text">MISC</span>
-              </div>
-            </div>
-             <span class="ql-tab-nav-icon">C)</span>
-          </div>
-          ` : ''}
-          <div class="ql-body">
-             <div class="ql-items-list">
-               ${itemsHtml}
-            </div>
-             <div class="ql-scrollbar">
-               <div class="ql-scrollbar-thumb"></div>
-            </div>
-          </div>
-        `;
+        const track = container.querySelector('.ql-scrollbar') as HTMLElement;
+        const thumb = container.querySelector('.ql-scrollbar-thumb') as HTMLElement;
 
-        const newList = container.querySelector('.ql-items-list') as HTMLElement;
-        if (newList) {
-            newList.scrollTop = savedScrollTop;
+        if (track && thumb) {
+            if (!customScrollbar) {
+                customScrollbar = new CustomScrollbar({
+                    container,
+                    content: listEl,
+                    track,
+                    thumb
+                });
+            }
+            customScrollbar.updateThumbPosition();
         }
 
-        this.bindEvents(itemsToRender);
+        listController.bindEventDelegation();
         this.updateSelection(false);
-    },
-
-    bindEvents(itemsToRender: QuestItem[]): void {
-        const container = document.getElementById('quest-list-panel');
-        if (!container) return;
-
-        container.onclick = (e: MouseEvent) => {
-            e.stopPropagation();
-            const target = e.target as HTMLElement;
-
-            if (target.closest('.ql-collapse-btn')) {
-                this.toggleCollapse();
-                return;
-            }
-
-            const tabBtn = target.closest('[data-tab]') as HTMLElement;
-            if (tabBtn) {
-                const tab = tabBtn.getAttribute('data-tab') as QuestFilterTab;
-                if (tab) {
-                    this.setFilterTab(tab);
-                }
-                return;
-            }
-
-            const itemEl = target.closest('[data-quest-index]') as HTMLElement;
-            if (itemEl) {
-                const index = parseInt(itemEl.getAttribute('data-quest-index') || '0', 10);
-
-                if (questListState.isCollapsed) {
-                    const quest = itemsToRender[index];
-                    if (quest) {
-                        questListState.selectedQuestId = quest.formId ?? quest.questName;
-                    }
-                    
-                    const panelRect = container.getBoundingClientRect();
-                    const itemRect = itemEl.getBoundingClientRect();
-                    const targetRelativeTop = itemRect.top - panelRect.top;
-
-                    this.expand(targetRelativeTop);
-                    return;
-                }
-
-                questListState.selectedIndex = index;
-                const quest = itemsToRender[index];
-                if (quest) {
-                    this.toggleQuestActive(quest);
-                    this.centerSelectedQuestTarget(quest);
-                }
-            } else if (questListState.isCollapsed) {
-                this.expand();
-            }
-        };
-
-        const listEl = container.querySelector('.ql-items-list') as HTMLElement;
-        if (listEl) {
-            listEl.onmouseover = (e: MouseEvent) => {
-                if ((this as any)._ignoreHover) return;
-                const itemEl = (e.target as HTMLElement).closest('[data-quest-index]') as HTMLElement;
-                if (itemEl) {
-                    const index = parseInt(itemEl.getAttribute('data-quest-index') || '0', 10);
-                    if (questListState.isCollapsed) {
-                        if (questListState.hoverIndex !== index) {
-                            questListState.hoverIndex = index;
-                            this.updateSelection();
-                        }
-                    } else {
-                        if (questListState.selectedIndex !== index) {
-                            questListState.selectedIndex = index;
-                            this.updateSelection();
-                        }
-                    }
-                }
-            };
-
-            listEl.onmouseleave = () => {
-                questListState.hoverIndex = -1;
-                if (questListState.isCollapsed) {
-                    this.updateSelection();
-                }
-            };
-        }
-
-        const thumbEl = container.querySelector('.ql-scrollbar-thumb') as HTMLElement;
-        const scrollbarContainer = container.querySelector('.ql-scrollbar') as HTMLElement;
-        if (listEl && thumbEl && scrollbarContainer) {
-            const syncThumb = () => {
-                const scrollHeight = listEl.scrollHeight;
-                const clientHeight = listEl.clientHeight;
-                const scrollTop = listEl.scrollTop;
-
-                if (scrollHeight <= clientHeight) {
-                    scrollbarContainer.style.display = 'none';
-                } else {
-                    scrollbarContainer.style.display = 'flex';
-                    const trackHeight = scrollbarContainer.clientHeight || clientHeight;
-                    const ratio = trackHeight / scrollHeight;
-                    const thumbHeight = Math.max(30, trackHeight * ratio);
-                    const maxTop = trackHeight - thumbHeight;
-                    const topPos = (scrollTop / (scrollHeight - clientHeight)) * maxTop;
-
-                    thumbEl.style.height = `${thumbHeight}px`;
-                    thumbEl.style.top = `${topPos}px`;
-                }
-            };
-
-            listEl.addEventListener('scroll', syncThumb);
-            syncThumb();
-            setTimeout(syncThumb, 0);
-        }
     },
 
     updateSelection(autoScroll: boolean = true): void {
         const container = document.getElementById('quest-list-panel');
         if (!container) return;
-
-        const quests = this.getVisibleQuests();
 
         if (questListState.isCollapsed) {
             const items = container.querySelectorAll('.ql-item');
@@ -468,38 +437,13 @@ export const QuestList = {
                 }
             });
             QuestCard.close();
+            if (customScrollbar) {
+                customScrollbar.updateThumbPosition();
+            }
             return;
         }
 
-        if (quests.length > 0) {
-            questListState.selectedIndex = Math.max(0, Math.min(quests.length - 1, questListState.selectedIndex));
-            const selectedQuest = quests[questListState.selectedIndex];
-            if (selectedQuest) {
-                questListState.selectedQuestId = selectedQuest.formId ?? selectedQuest.questName;
-            }
-        } else {
-            questListState.selectedQuestId = null;
-        }
-
-        const items = container.querySelectorAll('.ql-item');
-        items.forEach((item, idx) => {
-            if (idx === questListState.selectedIndex) {
-                item.classList.add('selected');
-                if (autoScroll) {
-                    (item as HTMLElement).scrollIntoView({ block: 'nearest' });
-                }
-            } else {
-                item.classList.remove('selected');
-            }
-        });
-
-        const selectedQuest = quests[questListState.selectedIndex];
-        if (selectedQuest) {
-            this.centerSelectedQuestTarget(selectedQuest);
-            QuestCard.open(selectedQuest);
-        } else {
-            QuestCard.close();
-        }
+        listController.setSelectedIndex(listController.getSelectedIndex(), true, autoScroll);
     },
 
     isQuestCompleted(quest: QuestItem): boolean {
@@ -520,7 +464,7 @@ export const QuestList = {
     renderQuestItem(quest: QuestItem, index: number): string {
         const isCompleted = this.isQuestCompleted(quest);
         const isActive = quest.isTracked;
-        const isSelected = !questListState.isCollapsed && index === questListState.selectedIndex;
+        const isSelected = !questListState.isCollapsed && index === listController.getSelectedIndex();
         const keyAttr = quest.formId !== undefined ? `data-quest-formid="${quest.formId}"` : `data-quest-name="${this.escapeHtml(quest.questName)}"`;
         
         let statusClass = 'inactive';

@@ -13,6 +13,7 @@ import { QuestList } from './components/questList.js';
 import { QuestCard } from './components/questCard.js';
 import { FocusManager } from './systems/focusManager.js';
 import { F4SEMapPayload } from './types/payloads.js';
+import { DockControlsSystem } from './systems/dockControls.js';
 
 ThemeEngine.initMapConfig();
 
@@ -115,16 +116,13 @@ window.addEventListener('DOMContentLoaded', () => {
         }
 
         if (FocusManager.getFocus() === 'MAP') {
-            if (e.key === 'ArrowRight') {
-                console.log('[Map] Right arrow pressed while on MAP focus. Expanding Quest List.');
+            const dockCorner = QuestList.getState().dockCorner;
+            if (DockControlsSystem.isExpandKey(e, dockCorner)) {
                 QuestList.expand();
             } else if (keyLower === 'c') {
                 console.log('Toggling Supply Lines View...');
                 toggleSupplyLinesView();
                 applySupplyLinesVisibilityFilter();
-            } else if (keyLower === 't') {
-                console.log('Toggling Quest List Theme (Dev Mode)...');
-                // QuestList.toggleTheme();
             }
         }
     });

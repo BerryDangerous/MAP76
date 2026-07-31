@@ -559,8 +559,6 @@ body, html {
 
 #quest-list-panel {
     position: fixed;
-    top: 10px;
-    left: 10px;
     width: 450px;
     max-height: 402px;
     z-index: 1000;
@@ -858,11 +856,6 @@ body, html {
     background-color: rgba(24, 28, 29, 0.95);
     border: 1px solid rgba(255, 255, 203, 0.2);
     box-shadow: -4px 4px 16px rgba(0, 0, 0, 0.6);
-}
-
-#quest-card-panel:not([data-anchored="true"]) {
-    top: 10px;
-    left: 470px;
 }
 
 #quest-card-panel.focused {

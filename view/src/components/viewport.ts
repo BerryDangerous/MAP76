@@ -203,6 +203,13 @@ export const MapViewport = {
         this.updateViewportTransform();
     },
 
+    centerOnWorldCoords(gameX: number, gameY: number, targetZoom: number = 2.5): void {
+        const bounds = mapState.currentPayloadBounds;
+        if (bounds) {
+            this.centerOnMapCoords(gameX, gameY, bounds, targetZoom);
+        }
+    },
+
     initEvents() {
         if (!container || !viewport) return;
 
