@@ -257,43 +257,23 @@ namespace PaperMap::UI::Actions
 
     void SetCustomMarker(float a_x, float a_y)
     {
-        if (auto *task = F4SE::GetTaskInterface())
-        {
-            task->AddTask([a_x, a_y]() {
-                SetEngineCustomMarker(a_x, a_y);
-                PaperMap::UI::TriggerFreshMapDataSync();
-            });
-        }
+        SetEngineCustomMarker(a_x, a_y);
+        PaperMap::UI::TriggerFreshMapDataSync();
     }
 
     void RemoveCustomMarker()
     {
-        if (auto *task = F4SE::GetTaskInterface())
-        {
-            task->AddTask([]() {
-                RemoveEngineCustomMarker();
-                PaperMap::UI::TriggerFreshMapDataSync();
-            });
-        }
+        RemoveEngineCustomMarker();
+        PaperMap::UI::TriggerFreshMapDataSync();
     }
 
     void ToggleQuestActive(uint32_t a_formId)
     {
-        if (auto *task = F4SE::GetTaskInterface())
-        {
-            task->AddTask([a_formId]() {
-                PaperMap::Engine::QuestManager::ToggleQuestActive(a_formId);
-            });
-        }
+        PaperMap::Engine::QuestManager::ToggleQuestActive(a_formId);
     }
 
     void MakeOnlyQuestActive(uint32_t a_formId)
     {
-        if (auto *task = F4SE::GetTaskInterface())
-        {
-            task->AddTask([a_formId]() {
-                PaperMap::Engine::QuestManager::MakeOnlyQuestActive(a_formId);
-            });
-        }
+        PaperMap::Engine::QuestManager::MakeOnlyQuestActive(a_formId);
     }
 }

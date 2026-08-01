@@ -5,6 +5,8 @@
 #include "UI/Actions.h"
 #include "UI/Interop.h"
 #include "UI/Payload.h"
+#include <thread>
+#include <chrono>
 
 namespace PaperMap::UI
 {
@@ -28,14 +30,19 @@ namespace PaperMap::UI
 
         void HandleRequestFreshMapData(const char *arg)
         {
-            std::string freshMapJson = PaperMap::UI::Payload::GetMapPayloadAsJSON();
-
-            REX::INFO("f4map: Live Thread Snapshot Payload -> Stream Length: {}", freshMapJson.length());
-            REX::INFO("f4map: Content: {}", freshMapJson);
-
-            if (PaperMap::UI::State::g_api && PaperMap::UI::State::g_view)
+            if (auto *task = F4SE::GetTaskInterface())
             {
-                PaperMap::UI::State::g_api->InteropCall(PaperMap::UI::State::g_view, "loadMarkers", freshMapJson.c_str());
+                task->AddTask([]() {
+                    std::string freshMapJson = PaperMap::UI::Payload::GetMapPayloadAsJSON();
+
+                    REX::INFO("f4map: Live Thread Snapshot Payload -> Stream Length: {}", freshMapJson.length());
+                    REX::INFO("f4map: Content: {}", freshMapJson);
+
+                    if (PaperMap::UI::State::g_api && PaperMap::UI::State::g_view)
+                    {
+                        PaperMap::UI::State::g_api->InteropCall(PaperMap::UI::State::g_view, "loadMarkers", freshMapJson.c_str());
+                    }
+                });
             }
         }
 
@@ -49,7 +56,25 @@ namespace PaperMap::UI
                 if (parsedJson.contains("formId") && parsedJson["formId"].is_number())
                 {
                     uint32_t formId = parsedJson["formId"].get<uint32_t>();
-                    PaperMap::UI::Actions::ExecuteFastTravel(formId);
+                    if (auto *task = F4SE::GetTaskInterface())
+                    {
+                        task->AddTask([formId]() {
+                            if (PaperMap::UI::State::g_mapIsOpen.load())
+                            {
+                                PaperMap::UI::TogglePaperMap();
+                            }
+
+                            std::thread([formId]() {
+                                std::this_thread::sleep_for(std::chrono::milliseconds(150));
+                                if (auto *innerTask = F4SE::GetTaskInterface())
+                                {
+                                    innerTask->AddTask([formId]() {
+                                        PaperMap::UI::Actions::ExecuteFastTravel(formId);
+                                    });
+                                }
+                            }).detach();
+                        });
+                    }
                 }
             }
             catch (const std::exception &e)
@@ -60,23 +85,28 @@ namespace PaperMap::UI
 
         void HandleCheckFastTravel(const char *arg)
         {
-            try
+            if (auto *task = F4SE::GetTaskInterface())
             {
-                auto *player = RE::PlayerCharacter::GetSingleton();
-                std::string status = PaperMap::UI::Actions::VerifyFastTravelConditions(player);
+                task->AddTask([]() {
+                    try
+                    {
+                        auto *player = RE::PlayerCharacter::GetSingleton();
+                        std::string status = PaperMap::UI::Actions::VerifyFastTravelConditions(player);
 
-                if (PaperMap::UI::State::g_api && PaperMap::UI::State::g_view)
-                {
-                    nlohmann::json response;
-                    response["status"] = status;
+                        if (PaperMap::UI::State::g_api && PaperMap::UI::State::g_view)
+                        {
+                            nlohmann::json response;
+                            response["status"] = status;
 
-                    std::string responseStr = response.dump();
-                    PaperMap::UI::State::g_api->InteropCall(PaperMap::UI::State::g_view, "onFastTravelCheckResult", responseStr.c_str());
-                }
-            }
-            catch (const std::exception &e)
-            {
-                REX::ERROR("Error processing checkFastTravel callback: {}", e.what());
+                            std::string responseStr = response.dump();
+                            PaperMap::UI::State::g_api->InteropCall(PaperMap::UI::State::g_view, "onFastTravelCheckResult", responseStr.c_str());
+                        }
+                    }
+                    catch (const std::exception &e)
+                    {
+                        REX::ERROR("Error processing checkFastTravel callback: {}", e.what());
+                    }
+                });
             }
         }
 
@@ -90,7 +120,12 @@ namespace PaperMap::UI
                 {
                     float x = parsedJson["x"].get<float>();
                     float y = parsedJson["y"].get<float>();
-                    PaperMap::UI::Actions::SetCustomMarker(x, y);
+                    if (auto *task = F4SE::GetTaskInterface())
+                    {
+                        task->AddTask([x, y]() {
+                            PaperMap::UI::Actions::SetCustomMarker(x, y);
+                        });
+                    }
                 }
             }
             catch (const std::exception &e)
@@ -101,13 +136,18 @@ namespace PaperMap::UI
 
         void HandleRemoveCustomMarker(const char *)
         {
-            try
+            if (auto *task = F4SE::GetTaskInterface())
             {
-                PaperMap::UI::Actions::RemoveCustomMarker();
-            }
-            catch (const std::exception &e)
-            {
-                REX::ERROR("Error processing removeCustomMarker callback: {}", e.what());
+                task->AddTask([]() {
+                    try
+                    {
+                        PaperMap::UI::Actions::RemoveCustomMarker();
+                    }
+                    catch (const std::exception &e)
+                    {
+                        REX::ERROR("Error processing removeCustomMarker callback: {}", e.what());
+                    }
+                });
             }
         }
 
@@ -120,7 +160,12 @@ namespace PaperMap::UI
                 if (parsedJson.contains("formId") && parsedJson["formId"].is_number())
                 {
                     uint32_t formId = parsedJson["formId"].get<uint32_t>();
-                    PaperMap::UI::Actions::ToggleQuestActive(formId);
+                    if (auto *task = F4SE::GetTaskInterface())
+                    {
+                        task->AddTask([formId]() {
+                            PaperMap::UI::Actions::ToggleQuestActive(formId);
+                        });
+                    }
                 }
             }
             catch (const std::exception &e)
@@ -138,7 +183,12 @@ namespace PaperMap::UI
                 if (parsedJson.contains("formId") && parsedJson["formId"].is_number())
                 {
                     uint32_t formId = parsedJson["formId"].get<uint32_t>();
-                    PaperMap::UI::Actions::MakeOnlyQuestActive(formId);
+                    if (auto *task = F4SE::GetTaskInterface())
+                    {
+                        task->AddTask([formId]() {
+                            PaperMap::UI::Actions::MakeOnlyQuestActive(formId);
+                        });
+                    }
                 }
             }
             catch (const std::exception &e)
@@ -191,12 +241,15 @@ namespace PaperMap::UI
         if (!State::g_api)
             return;
 
-        F4SE::GetTaskInterface()->AddTask([]()
-                                          {
-            if (State::g_mapIsOpen.load())
-            {
-                TogglePaperMap();
-            } });
+        if (auto *task = F4SE::GetTaskInterface())
+        {
+            task->AddUITask([]() {
+                if (State::g_mapIsOpen.load())
+                {
+                    TogglePaperMap();
+                }
+            });
+        }
     }
 
     bool IsPlayerInMenuMode()
