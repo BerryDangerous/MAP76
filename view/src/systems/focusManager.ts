@@ -7,7 +7,7 @@ export interface FocusComponent {
      */
     handleKeyDown: (e: KeyboardEvent) => boolean;
     onFocusGained?: () => void;
-    onFocusLost?: () => void;
+    onFocusLost?: (newFocusId?: FocusOwner) => void;
 }
 
 class FocusManagerSystem {
@@ -29,12 +29,13 @@ class FocusManagerSystem {
     setFocus(id: FocusOwner): void {
         if (this.currentFocus === id) return;
 
-        const prevComponent = this.components.get(this.currentFocus);
-        if (prevComponent && prevComponent.onFocusLost) {
-            prevComponent.onFocusLost();
-        }
-
+        const prevFocus = this.currentFocus;
         this.currentFocus = id;
+
+        const prevComponent = this.components.get(prevFocus);
+        if (prevComponent && prevComponent.onFocusLost) {
+            prevComponent.onFocusLost(id);
+        }
 
         const newComponent = this.components.get(id);
         if (newComponent && newComponent.onFocusGained) {

@@ -50,7 +50,7 @@ export class CollapsiblePanel {
     }
 
     public updateGlyph(): void {
-        const icon = this.options.panelElement.querySelector('.ql-btn-icon');
+        const icon = this.options.panelElement.querySelector('.cp-btn-icon');
         if (icon) {
             icon.textContent = DockControlsSystem.getGlyph(this.dockCorner, this.isCollapsed);
         }

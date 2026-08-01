@@ -21,9 +21,9 @@ export class StatusItemList {
                 iconText = '✕';
             }
             return `
-                <div class="qc-objective-item ${statusClass}">
-                    <div class="qc-obj-text">${this.escapeHtml(obj.text)}</div>
-                    ${iconText ? `<div class="qc-obj-icon">${iconText}</div>` : ''}
+                <div class="status-item ${statusClass}">
+                    <div class="status-item-text">${this.escapeHtml(obj.text)}</div>
+                    ${iconText ? `<div class="status-item-icon">${iconText}</div>` : ''}
                 </div>
             `;
         }).join('');

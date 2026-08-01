@@ -101,7 +101,7 @@ export class SelectableListController<T> {
         const container = this.options.containerSupplier();
         if (!container) return;
 
-        const selector = this.options.itemSelector || '.ql-item';
+        const selector = this.options.itemSelector || '.sl-item';
 
         container.onclick = (e: MouseEvent) => {
             e.stopPropagation();
@@ -133,7 +133,7 @@ export class SelectableListController<T> {
             }
         };
 
-        const listEl = container.querySelector('.ql-items-list') as HTMLElement || container;
+        const listEl = container.querySelector('.sl-items-list') as HTMLElement || container;
         listEl.onmouseover = (e: MouseEvent) => {
             const target = e.target as HTMLElement;
             const itemEl = target.closest(selector) as HTMLElement;
@@ -157,7 +157,7 @@ export class SelectableListController<T> {
         const container = this.options.containerSupplier();
         if (!container) return;
 
-        const selector = this.options.itemSelector || '.ql-item';
+        const selector = this.options.itemSelector || '.sl-item';
         const items = container.querySelectorAll(selector);
 
         items.forEach((item, idx) => {
@@ -194,8 +194,8 @@ export class SelectableListController<T> {
         const container = this.options.containerSupplier();
         if (!container) return;
 
-        const listEl = container.querySelector('.ql-items-list') as HTMLElement;
-        const selector = this.options.itemSelector || '.ql-item';
+        const listEl = container.querySelector('.sl-items-list') as HTMLElement;
+        const selector = this.options.itemSelector || '.sl-item';
         const items = container.querySelectorAll(selector);
         const selectedItem = items[index] as HTMLElement;
 

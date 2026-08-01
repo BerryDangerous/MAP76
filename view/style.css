@@ -189,6 +189,10 @@ body, html {
     z-index: 100;
 }
 
+.custom-marker {
+    z-index: 95;
+}
+
 
 /* ==========================================================================
    4. NAMETAG TOOLTIPS
@@ -227,50 +231,7 @@ body, html {
 
 
 /* ==========================================================================
-   5. MAP MARKER POPOVER COMPONENT
-   ========================================================================== */
-
-#map-marker-popover {
-    position: fixed;
-    display: none;
-    z-index: 999;
-    background: #1a1a1a;
-    border: 2px solid #fff;
-    color: #fff;
-    padding: 16px;
-    font-family: 'Courier New', monospace;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-    width: max-content !important;
-    min-width: 200px !important;
-    max-width: 600px !important;
-    box-sizing: border-box !important;
-}
-
-#popover-title {
-    text-align: center;
-    margin: 0 0 14px 0;
-    font-size: 24px;
-    font-weight: bold;
-    width: 100%;
-    white-space: normal;
-    word-wrap: break-word;
-}
-
-#popover-btn {
-    display: block;
-    margin: 0 auto;
-    padding: 8px 16px;
-    background: #fff;
-    color: #000;
-    border: none;
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 20px;
-}
-
-
-/* ==========================================================================
-   6. FAST TRAVEL CONFIRMATION MODAL COMPONENT
+   5. FAST TRAVEL CONFIRMATION MODAL COMPONENT
    ========================================================================== */
 
 .modal-overlay {
@@ -354,7 +315,7 @@ body, html {
 
 
 /* ==========================================================================
-   7. CUSTOM POINTER CURSOR
+   6. CUSTOM POINTER CURSOR
    ========================================================================== */
 
 #custom-map-cursor {
@@ -369,127 +330,9 @@ body, html {
     transform: translate(-50%, 0%) rotate(-18.5deg);
 }
 
-/* ==========================================================================
-   8. CUSTOM MARKER MODAL & MARKER COMPONENT
-   ========================================================================== */
-
-.custom-marker-modal {
-    position: fixed;
-    z-index: 10000;
-    background: #1a1a1a;
-    border: 2px solid #fff;
-    color: #fff;
-    padding: 16px 22px;
-    font-family: 'Courier New', monospace;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.7);
-    transform: translate(-50%, -100%);
-    margin-top: -14px;
-    min-width: 220px;
-}
-
-.custom-marker-modal-title {
-    font-size: 20px;
-    font-weight: bold;
-    margin-bottom: 14px;
-    text-align: center;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.custom-marker-modal-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.custom-marker-modal-actions button {
-    padding: 10px 18px;
-    font-family: 'Courier New', monospace;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    border: none;
-    transition: background 0.15s ease;
-}
-
-.btn-modal-confirm {
-    background: #fff;
-    color: #000;
-}
-
-.btn-modal-confirm:hover {
-    background: #cccccc;
-}
-
-.btn-modal-remove {
-    background: #800000;
-    color: #fff;
-    border: 1px solid #ff4d4d !important;
-}
-
-.btn-modal-remove:hover {
-    background: #a00000;
-}
-
-.btn-modal-cancel {
-    background: #333;
-    color: #fff;
-    border: 1px solid #666 !important;
-}
-
-.btn-modal-cancel:hover {
-    background: #444;
-}
-
-.custom-marker {
-    z-index: 95;
-}
-
 
 /* ==========================================================================
-   9. SETTLEMENT CARD
-   ========================================================================== */
-
-.settlement-card {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    min-width: 220px;
-}
-
-.settlement-card-header {
-    font-weight: bold;
-    font-size: 24px;
-}
-
-.settlement-card-stats-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 4px 12px;
-    font-size: 18px;
-    margin: 4px 0;
-}
-
-.settlement-fast-travel-btn {
-    margin-top: 6px;
-    padding: 8px 16px;
-    width: 100%;
-    font-size: 18px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-.settlement-fast-travel-btn.can-travel {
-    opacity: 1.0;
-}
-
-.settlement-fast-travel-btn.cannot-travel {
-    opacity: 0.4;
-}
-
-
-/* ==========================================================================
-   10. SUPPLY LINES
+   7. SUPPLY LINES
    ========================================================================== */
 
 #supply-lines-layer {
@@ -515,7 +358,7 @@ body, html {
 }
 
 /* ==========================================================================
-   11. INFO CARD
+   8. INFO CARD
    ========================================================================== */
 
 #info-card {
@@ -554,54 +397,33 @@ body, html {
 
 
 /* ==========================================================================
-   12. QUEST LIST COMPONENT
+   9. COLLAPSIBLE PANEL
    ========================================================================== */
 
-#quest-list-panel {
+.collapsible-panel {
     position: fixed;
-    width: 450px;
-    max-height: 402px;
     z-index: 1000;
     display: flex;
     flex-direction: column;
     pointer-events: auto;
-    font-family: inherit;
+    color: #ffffcb;
+    font-family: 'PibotoCondensed', sans-serif;
     transition: max-height 0.2s ease;
 }
 
-#quest-list-panel[data-collapsed="true"] {
+.collapsible-panel[data-collapsed="true"] {
     height: auto;
-    max-height: 402px;
 }
 
-#quest-list-panel[data-collapsed="true"] .ql-body {
-    height: auto;
-    max-height: 372px;
-}
-
-#quest-list-panel[data-collapsed="true"] .ql-items-list {
-    max-height: 362px;
-}
-
-#quest-list-panel[data-collapsed="false"] {
-    height: 402px;
-}
-
-#quest-list-panel[data-theme="76"],
-#quest-list-panel {
-    color: #ffffcb;
-    font-family: 'PibotoCondensed', sans-serif;
-}
-
-#quest-list-panel .ql-btn-icon {
+.collapsible-panel .cp-btn-icon {
     font-family: 'ControllerButtons', sans-serif;
 }
 
-#quest-list-panel .ql-collapse-btn:hover .ql-btn-icon {
+.collapsible-panel .cp-collapse-btn:hover .cp-btn-icon {
     font-family: 'ControllerButtonsInverted', sans-serif;
 }
 
-#quest-list-panel .ql-header {
+.collapsible-panel .cp-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -613,7 +435,7 @@ body, html {
     cursor: pointer;
 }
 
-#quest-list-panel .ql-title {
+.collapsible-panel .cp-title {
     color: #f5cb5b;
     font-weight: bold;
     font-size: 18px;
@@ -622,7 +444,7 @@ body, html {
     text-shadow: 1.5px 1.5px 0 #000000;
 }
 
-#quest-list-panel .ql-collapse-btn {
+.collapsible-panel .cp-collapse-btn {
     display: flex;
     gap: 5px;
     align-items: flex-start;
@@ -630,7 +452,7 @@ body, html {
     cursor: pointer;
 }
 
-#quest-list-panel .ql-collapse-text {
+.collapsible-panel .cp-collapse-text {
     color: #ffffcb;
     font-weight: bold;
     font-size: 16px;
@@ -639,7 +461,7 @@ body, html {
     text-shadow: 1.5px 1.5px 0 #000000;
 }
 
-#quest-list-panel .ql-collapse-btn .ql-btn-icon {
+.collapsible-panel .cp-collapse-btn .cp-btn-icon {
     color: #ffffcb;
     font-size: 16px;
     line-height: 1.2;
@@ -647,7 +469,12 @@ body, html {
     text-shadow: 1.5px 1.5px 0 #000000;
 }
 
-#quest-list-panel .ql-sub-header {
+
+/* ==========================================================================
+   10. TAB BAR
+   ========================================================================== */
+
+.tb-sub-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -657,7 +484,7 @@ body, html {
     background-color: rgba(0, 0, 0, 0.75);
 }
 
-#quest-list-panel .ql-sub-header .ql-tab-nav-icon {
+.tb-sub-header .tb-nav-icon {
     font-family: 'PibotoCondensed', sans-serif;
     color: #ffffcb;
     font-size: 16px;
@@ -666,7 +493,7 @@ body, html {
     text-shadow: 1.5px 1.5px 0 #000000;
 }
 
-#quest-list-panel .ql-tabs-bar {
+.tb-tabs-bar {
     display: flex;
     gap: 10px;
     align-items: flex-start;
@@ -676,7 +503,7 @@ body, html {
     padding: 0 20px
 }
 
-#quest-list-panel .ql-tab {
+.tb-tab {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -686,23 +513,36 @@ body, html {
     cursor: pointer;
 }
 
-#quest-list-panel .ql-tab.active {
+.tb-tab.active {
     background-color: #f5cb5b;
 }
 
-#quest-list-panel .ql-tab-text {
+.tb-tab-text {
     font-weight: bold;
     font-size: 14px;
     line-height: 1.2;
     color: #f5cb5b;
 }
 
-#quest-list-panel .ql-tab.active .ql-tab-text {
+.tb-tab.active .tb-tab-text {
     color: #000000;
 }
 
-/* Body / List */
-#quest-list-panel .ql-body {
+
+/* ==========================================================================
+   11. SELECTABLE LIST
+   ========================================================================== */
+
+.selectable-list[data-collapsed="true"] .sl-body {
+    height: auto;
+    max-height: 372px;
+}
+
+.selectable-list[data-collapsed="true"] .sl-items-list {
+    max-height: 362px;
+}
+
+.selectable-list .sl-body {
     display: flex;
     padding: 5px;
     gap: 5px;
@@ -714,7 +554,7 @@ body, html {
     overflow: hidden;
 }
 
-#quest-list-panel .ql-items-list {
+.selectable-list .sl-items-list {
     display: flex;
     flex-direction: column;
     gap: 5px;
@@ -727,11 +567,11 @@ body, html {
     scrollbar-width: none;
 }
 
-#quest-list-panel .ql-items-list::-webkit-scrollbar {
+.selectable-list .sl-items-list::-webkit-scrollbar {
     display: none;
 }
 
-#quest-list-panel .ql-empty {
+.selectable-list .sl-empty {
     color: #ffffcb;
     opacity: 0.6;
     padding: 10px;
@@ -740,7 +580,7 @@ body, html {
     width: 100%;
 }
 
-#quest-list-panel .ql-item {
+.selectable-list .sl-item {
     display: flex;
     padding: 12px;
     gap: 10px;
@@ -754,25 +594,25 @@ body, html {
     border: 1px solid transparent;
 }
 
-#quest-list-panel .ql-item.selected {
+.selectable-list .sl-item.selected {
     background-color: #f5cb5b;
     border-color: #f5cb5b;
 }
 
-#quest-list-panel .ql-item.selected .ql-item-title {
+.selectable-list .sl-item.selected .sl-item-title {
     color: #000000;
     text-shadow: none;
 }
 
-#quest-list-panel .ql-item.selected .ql-marker-box.active {
+.selectable-list .sl-item.selected .sl-marker-box.active {
     background-color: #000000;
 }
 
-#quest-list-panel.focused {
+.selectable-list.focused {
     outline: 1px solid rgba(245, 203, 91, 0.4);
 }
 
-#quest-list-panel .ql-item-content {
+.selectable-list .sl-item-content {
     display: flex;
     gap: 10px;
     align-items: center;
@@ -781,7 +621,7 @@ body, html {
     height: 25px;
 }
 
-#quest-list-panel .ql-marker-box {
+.selectable-list .sl-marker-box {
     position: relative;
     width: 10px;
     height: 10px;
@@ -790,11 +630,11 @@ body, html {
     background-color: transparent;
 }
 
-#quest-list-panel .ql-marker-box.active {
+.selectable-list .sl-marker-box.active {
     background-color: rgba(255, 255, 203, 0.75);
 }
 
-#quest-list-panel .ql-item-title {
+.selectable-list .sl-item-title {
     color: #ffffcb;
     font-size: 18px;
     line-height: 1.2;
@@ -804,11 +644,11 @@ body, html {
     text-overflow: ellipsis;
 }
 
-#quest-list-panel .ql-item.completed {
+.selectable-list .sl-item.completed {
     opacity: 0.75;
 }
 
-#quest-list-panel .ql-separator {
+.selectable-list .sl-separator {
     position: relative;
     margin: 5px 0;
     width: 100%;
@@ -817,7 +657,7 @@ body, html {
     background-color: #262626;
 }
 
-#quest-list-panel .ql-scrollbar {
+.selectable-list .sl-scrollbar {
     position: relative;
     width: 10px;
     height: auto;
@@ -827,7 +667,7 @@ body, html {
     flex-shrink: 0;
 }
 
-#quest-list-panel .ql-scrollbar-thumb {
+.selectable-list .sl-scrollbar-thumb {
     position: absolute;
     top: 0;
     left: 0;
@@ -837,16 +677,12 @@ body, html {
 }
 
 
-
-
 /* ==========================================================================
-   13. QUEST CARD COMPONENT
+   12. FLOATING CARD
    ========================================================================== */
 
-#quest-card-panel {
+.floating-card {
     position: fixed;
-    width: 380px;
-    max-height: 520px;
     z-index: 1000;
     display: none;
     flex-direction: column;
@@ -858,11 +694,12 @@ body, html {
     box-shadow: -4px 4px 16px rgba(0, 0, 0, 0.6);
 }
 
-#quest-card-panel.focused {
+.floating-card[data-anchored]::before,
+.floating-card.focused {
     outline: 1px solid rgba(245, 203, 91, 0.4);
 }
 
-#quest-card-panel .qc-header {
+.fc-header {
     display: flex;
     align-items: center;
     justify-content: flex-start;
@@ -871,9 +708,10 @@ body, html {
     min-height: 30px;
     padding: 0 10px;
     background-color: rgba(0, 0, 0, 0.75);
+    box-sizing: border-box;
 }
 
-#quest-card-panel .qc-title {
+.fc-title {
     color: #f5cb5b;
     font-weight: bold;
     font-size: 18px;
@@ -884,7 +722,7 @@ body, html {
     text-overflow: ellipsis;
 }
 
-#quest-card-panel .qc-body {
+.fc-body {
     display: flex;
     flex-direction: column;
     padding: 10px;
@@ -893,13 +731,13 @@ body, html {
     max-height: 440px;
 }
 
-#quest-card-panel .qc-section {
+.fc-section {
     display: flex;
     flex-direction: column;
     gap: 4px;
 }
 
-#quest-card-panel .qc-section-title {
+.fc-section-title {
     color: #f5cb5b;
     font-weight: bold;
     font-size: 14px;
@@ -908,13 +746,13 @@ body, html {
     margin-bottom: 4px;
 }
 
-#quest-card-panel .qc-section-box {
+.fc-section-box {
     background-color: #181c1d;
     padding: 8px 10px;
     border-radius: 2px;
 }
 
-#quest-card-panel .qc-section-text {
+.fc-section-text {
     color: #ffffcb;
     font-size: 16px;
     line-height: 1.3;
@@ -922,82 +760,28 @@ body, html {
     word-break: break-word;
 }
 
-#quest-card-panel .qc-objectives-list {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    max-height: 125px;
-    overflow-y: auto;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(255, 255, 203, 0.4) transparent;
-}
-
-#quest-card-panel .qc-objectives-list::-webkit-scrollbar {
-    width: 6px;
-}
-
-#quest-card-panel .qc-objectives-list::-webkit-scrollbar-thumb {
-    background-color: rgba(255, 255, 203, 0.4);
-    border-radius: 3px;
-}
-
-#quest-card-panel .qc-objective-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 6px 10px;
-    background-color: #101314;
-    font-size: 15px;
-    color: #ffffcb;
-    overflow-wrap: break-word;
-    word-break: break-word;
-}
-
-#quest-card-panel .qc-obj-text {
-    overflow-wrap: break-word;
-    word-break: break-word;
-}
-
-#quest-card-panel .qc-objective-item.completed,
-#quest-card-panel .qc-objective-item.failed {
-    opacity: 0.6;
-}
-
-#quest-card-panel .qc-obj-icon {
-    font-weight: bold;
-    margin-left: 8px;
-}
-
-#quest-card-panel .qc-objective-item.completed .qc-obj-icon {
-    color: #f5cb5b;
-}
-
-#quest-card-panel .qc-objective-item.failed .qc-obj-icon {
-    color: #ff4d4d;
-}
-
-/* Bottom Bar */
-#quest-card-panel .qc-bottom-bar-container {
+.fc-bottom-bar-container {
     display: flex;
     justify-content: center;
     width: 100%;
     height: auto;
     padding: 6px 8px;
     background-color: rgba(0, 0, 0, 0.75);
+    box-sizing: border-box;
 }
 
-#quest-card-panel .qc-bottom-bar {
+.fc-bottom-bar {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
-    width: fit-content;
+    width: 100%;
     height: auto;
     background-color: transparent;
     gap: 6px;
 }
 
-#quest-card-panel .qc-action-btn {
+.fc-action-btn {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1010,12 +794,12 @@ body, html {
     box-sizing: border-box;
 }
 
-#quest-card-panel .qc-action-btn:hover,
-#quest-card-panel .qc-action-btn.selected {
+.fc-action-btn:hover,
+.fc-action-btn.selected {
     background-color: #f5cb5b;
 }
 
-#quest-card-panel .qc-btn-text {
+.fc-btn-text {
     font-weight: bold;
     font-size: 13px;
     line-height: 1.1;
@@ -1024,9 +808,151 @@ body, html {
     white-space: nowrap;
 }
 
-#quest-card-panel .qc-action-btn:hover .qc-btn-text,
-#quest-card-panel .qc-action-btn.selected .qc-btn-text {
+.fc-action-btn:hover .fc-btn-text,
+.fc-action-btn.selected .fc-btn-text {
     color: #000000;
 }
 
 
+/* ==========================================================================
+   13. STATUS ITEM LIST
+   ========================================================================== */
+
+.status-item-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-height: 125px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 203, 0.4) transparent;
+}
+
+.status-item-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.status-item-list::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 203, 0.4);
+    border-radius: 3px;
+}
+
+.status-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 10px;
+    background-color: #101314;
+    font-size: 15px;
+    color: #ffffcb;
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+.status-item-text {
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+.status-item.completed,
+.status-item.failed {
+    opacity: 0.6;
+}
+
+.status-item-icon {
+    font-weight: bold;
+    margin-left: 8px;
+}
+
+.status-item.completed .status-item-icon {
+    color: #f5cb5b;
+}
+
+.status-item.failed .status-item-icon {
+    color: #ff4d4d;
+}
+
+
+/* ==========================================================================
+   14. WORKSHOP STATS COMPONENT
+   ========================================================================== */
+
+.wc-stats-box {
+    background-color: #181c1d;
+    padding: 8px 10px;
+    border-radius: 2px;
+}
+
+.wc-stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    row-gap: 6px;
+    column-gap: 12px;
+}
+
+.wc-stat-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 22px;
+}
+
+.wc-stat-icon {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 2px rgba(255, 255, 203, 0.4));
+    flex-shrink: 0;
+}
+
+.wc-stat-value {
+    font-size: 15px;
+    font-weight: bold;
+    color: #ffffcb;
+    line-height: 1;
+}
+
+.wc-status-badge {
+    width: 14px;
+    height: 14px;
+    object-fit: contain;
+    flex-shrink: 0;
+    margin-left: -2px;
+}
+
+
+/* ==========================================================================
+   15. CUSTOM
+   ========================================================================== */
+
+#quest-list-panel {
+    width: 450px;
+    max-height: 402px;
+}
+
+#quest-list-panel[data-collapsed="true"] {
+    max-height: 402px;
+}
+
+#quest-list-panel[data-collapsed="false"] {
+    height: 402px;
+}
+
+#quest-card-panel {
+    width: 380px;
+    max-height: 520px;
+}
+
+#settlement-card-panel {
+    width: 280px;
+}
+
+#marker-card-panel,
+#custom-marker-card-panel {
+    width: 260px;
+}
+
+#marker-card-panel .fc-header,
+#custom-marker-card-panel .fc-header {
+    justify-content: center;
+}

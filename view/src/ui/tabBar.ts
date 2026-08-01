@@ -70,13 +70,13 @@ export class TabBar<T = string> {
         this.container.innerHTML = '';
         this.options.tabs.forEach(tab => {
             const tabEl = document.createElement('div');
-            tabEl.className = 'ql-tab';
+            tabEl.className = 'tb-tab';
             if (tab.id === this.options.activeTabId) {
                 tabEl.classList.add('active');
             }
 
             const textSpan = document.createElement('span');
-            textSpan.className = 'ql-tab-text';
+            textSpan.className = 'tb-tab-text';
             textSpan.textContent = tab.label;
             tabEl.appendChild(textSpan);
 

@@ -29,8 +29,7 @@ declare global {
         loadMarkers?: (jsonString: string) => void;
         __loadMarkersRegister?: (jsonString: string) => void;
         __f4seCache?: string | null;
-        repositionActivePopover?: () => void;
-        closeActivePopover?: () => void;
+
         MapInterop?: {
             updateWorkshopStats?: (jsonString: string) => void;
             toggleActiveTheme?: (themeName: string) => void;

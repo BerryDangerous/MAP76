@@ -72,6 +72,11 @@ export const ThemeEngine = {
         return `assets/icons/${activeTheme}/${semanticName}.svg`;
     },
 
+    getAssetIconUrl(iconName: string): string {
+        const activeTheme = mapState.currentTheme;
+        return `assets/icons/${activeTheme}/${iconName}.svg`;
+    },
+
     getPlayerIconUrl(): string {
         return `assets/icons/${mapState.currentTheme}/player-location.svg`;
     }

@@ -85,7 +85,7 @@ export class ActionButtonGroup {
         this.container.innerHTML = '';
         this.buttons.forEach((btn, index) => {
             const btnEl = document.createElement('div');
-            btnEl.className = 'qc-action-btn';
+            btnEl.className = 'fc-action-btn';
             if (index === this.selectedIndex) {
                 btnEl.classList.add('selected');
             }
@@ -94,16 +94,20 @@ export class ActionButtonGroup {
             }
 
             const labelSpan = document.createElement('span');
-            labelSpan.className = 'qc-btn-text';
+            labelSpan.className = 'fc-btn-text';
             labelSpan.textContent = btn.label;
             btnEl.appendChild(labelSpan);
 
             if (btn.badge) {
                 const badgeSpan = document.createElement('span');
-                badgeSpan.className = 'qc-btn-badge';
+                badgeSpan.className = 'fc-btn-badge';
                 badgeSpan.textContent = btn.badge;
                 btnEl.appendChild(badgeSpan);
             }
+
+            btnEl.addEventListener('mouseenter', () => {
+                this.setSelectedIndex(index);
+            });
 
             btnEl.addEventListener('click', (e) => {
                 e.stopPropagation();

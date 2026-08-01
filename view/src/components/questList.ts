@@ -35,7 +35,7 @@ const listController = new SelectableListController<QuestItem>({
     getItems: () => QuestList.getVisibleQuests(),
     getItemId: (quest) => quest.formId ?? quest.questName,
     containerSupplier: () => document.getElementById('quest-list-panel'),
-    itemSelector: '.ql-item',
+    itemSelector: '.sl-item',
     onSelectionChange: (selectedQuest) => {
         if (questListState.isCollapsed) return;
 
@@ -69,7 +69,7 @@ const listController = new SelectableListController<QuestItem>({
             }
             const isBottomDocked = questListState.dockCorner.startsWith('bottom');
             const panelRect = container.getBoundingClientRect();
-            const items = container.querySelectorAll('.ql-item');
+            const items = container.querySelectorAll('.sl-item');
             const itemEl = (index >= 0 && items[index]) ? items[index] as HTMLElement : null;
             const itemRect = itemEl ? itemEl.getBoundingClientRect() : panelRect;
             const targetRelativeOffset = isBottomDocked ? (panelRect.bottom - itemRect.bottom) : (itemRect.top - panelRect.top);
@@ -91,7 +91,7 @@ const listController = new SelectableListController<QuestItem>({
                 QuestList.updateSelection();
             }
         } else {
-            if (listController.getSelectedIndex() !== index) {
+            if (index !== -1 && listController.getSelectedIndex() !== index) {
                 listController.setSelectedIndex(index, true, false);
             }
         }
@@ -184,7 +184,9 @@ export const QuestList = {
 
         QuestCard.close();
         MapViewport.restoreSavedViewport();
-        FocusManager.setFocus('MAP');
+        if (FocusManager.getFocus() === 'QUEST_LIST') {
+            FocusManager.setFocus('MAP');
+        }
         this.render();
     },
 
@@ -202,17 +204,23 @@ export const QuestList = {
             handleKeyDown: (e: KeyboardEvent) => this.handleKeyDown(e),
             onFocusGained: () => {
                 const container = document.getElementById('quest-list-panel');
-                if (container) container.classList.add('focused');
+                if (container) { container.classList.add('focused'); container.classList.add('collapsible-panel'); }
             },
-            onFocusLost: () => {
+            onFocusLost: (newFocusId?: string) => {
                 const container = document.getElementById('quest-list-panel');
                 if (container) container.classList.remove('focused');
+                if (newFocusId !== 'QUEST_CARD' && !questListState.isCollapsed) {
+                    this.collapse();
+                }
             }
         });
 
         window.addEventListener('click', (e: MouseEvent) => {
             const container = document.getElementById('quest-list-panel');
-            if (container && !container.contains(e.target as Node)) {
+            const card = document.getElementById('quest-card-panel');
+            const targetNode = e.target as Node;
+            
+            if (container && !container.contains(targetNode) && (!card || !card.contains(targetNode))) {
                 if (!questListState.isCollapsed) {
                     this.collapse();
                 }
@@ -310,35 +318,37 @@ export const QuestList = {
     },
 
     mountLayout(container: HTMLElement): void {
+        container.classList.add('collapsible-panel');
+        container.classList.add('selectable-list');
         container.innerHTML = `
-          <div class="ql-header">
-             <div class="ql-title">QUESTS</div>
-             <div class="ql-collapse-btn">
-               <span class="ql-collapse-text">COLLAPSE</span>
-               <span class="ql-btn-icon"></span>
+          <div class="cp-header">
+             <div class="cp-title">QUESTS</div>
+             <div class="cp-collapse-btn">
+               <span class="cp-collapse-text">COLLAPSE</span>
+               <span class="cp-btn-icon"></span>
             </div>
           </div>
-          <div class="ql-sub-header">
-             <span class="ql-tab-nav-icon">Z)</span>
-             <div class="ql-tabs-bar"></div>
-             <span class="ql-tab-nav-icon">C)</span>
+          <div class="tb-sub-header">
+             <span class="tb-nav-icon">Z)</span>
+             <div class="tb-tabs-bar"></div>
+             <span class="tb-nav-icon">C)</span>
           </div>
-          <div class="ql-body">
-             <div class="ql-items-list"></div>
-             <div class="ql-scrollbar">
-               <div class="ql-scrollbar-thumb"></div>
+          <div class="sl-body">
+             <div class="sl-items-list"></div>
+             <div class="sl-scrollbar">
+               <div class="sl-scrollbar-thumb"></div>
             </div>
           </div>
         `;
 
-        const tabsBarContainer = container.querySelector('.ql-tabs-bar') as HTMLElement;
+        const tabsBarContainer = container.querySelector('.tb-tabs-bar') as HTMLElement;
         if (tabsBarContainer) {
             tabBar.mount(tabsBarContainer);
         }
 
         collapsiblePanel = new CollapsiblePanel({
             panelElement: container,
-            collapseBtnElement: container.querySelector('.ql-collapse-btn') as HTMLElement,
+            collapseBtnElement: container.querySelector('.cp-collapse-btn') as HTMLElement,
             dockCorner: questListState.dockCorner,
             initiallyCollapsed: questListState.isCollapsed,
             onToggle: (collapsed) => {
@@ -364,12 +374,12 @@ export const QuestList = {
         container.setAttribute('data-collapsed', String(isCollapsed));
         container.setAttribute('data-theme', questListState.theme);
 
-        const collapseTextEl = container.querySelector('.ql-collapse-text');
+        const collapseTextEl = container.querySelector('.cp-collapse-text');
         if (collapseTextEl) {
             collapseTextEl.textContent = isCollapsed ? 'EXPAND' : 'COLLAPSE';
         }
 
-        const subHeader = container.querySelector('.ql-sub-header') as HTMLElement;
+        const subHeader = container.querySelector('.tb-sub-header') as HTMLElement;
         if (subHeader) {
             subHeader.style.display = isCollapsed ? 'none' : 'flex';
         }
@@ -378,7 +388,7 @@ export const QuestList = {
             collapsiblePanel.updateGlyph();
         }
 
-        const listEl = container.querySelector('.ql-items-list') as HTMLElement;
+        const listEl = container.querySelector('.sl-items-list') as HTMLElement;
         if (!listEl) return;
 
         const savedScrollTop = listEl.scrollTop;
@@ -386,7 +396,7 @@ export const QuestList = {
         let itemsHtml = '';
 
         if (itemsToRender.length === 0) {
-            itemsHtml = isCollapsed ? `<div class="ql-empty">NO ACTIVE QUESTS</div>` : '<div class="ql-empty">NO QUESTS</div>';
+            itemsHtml = isCollapsed ? `<div class="sl-empty">NO ACTIVE QUESTS</div>` : '<div class="sl-empty">NO QUESTS</div>';
         } else if (isCollapsed) {
             itemsHtml = itemsToRender.map((q, idx) => this.renderQuestItem(q, idx)).join('');
         } else {
@@ -396,7 +406,7 @@ export const QuestList = {
             let currentItemIndex = 0;
             itemsHtml += uncompleted.map(q => this.renderQuestItem(q, currentItemIndex++)).join('');
             if (uncompleted.length > 0 && completed.length > 0) {
-                itemsHtml += `<div class="ql-separator"></div>`;
+                itemsHtml += `<div class="sl-separator"></div>`;
             }
             itemsHtml += completed.map(q => this.renderQuestItem(q, currentItemIndex++)).join('');
         }
@@ -404,8 +414,8 @@ export const QuestList = {
         listEl.innerHTML = itemsHtml;
         listEl.scrollTop = savedScrollTop;
 
-        const track = container.querySelector('.ql-scrollbar') as HTMLElement;
-        const thumb = container.querySelector('.ql-scrollbar-thumb') as HTMLElement;
+        const track = container.querySelector('.sl-scrollbar') as HTMLElement;
+        const thumb = container.querySelector('.sl-scrollbar-thumb') as HTMLElement;
 
         if (track && thumb) {
             if (!customScrollbar) {
@@ -428,7 +438,7 @@ export const QuestList = {
         if (!container) return;
 
         if (questListState.isCollapsed) {
-            const items = container.querySelectorAll('.ql-item');
+            const items = container.querySelectorAll('.sl-item');
             items.forEach((item, idx) => {
                 if (idx === questListState.hoverIndex) {
                     item.classList.add('selected');
@@ -483,10 +493,10 @@ export const QuestList = {
         }
 
         return `
-          <div class="ql-item ${statusClass} ${isSelected ? 'selected' : ''}" data-quest-index="${index}" ${keyAttr}>
-             <div class="ql-item-content">
-             <div class="ql-marker-box ${statusClass}"></div>
-             <div class="ql-item-title">${this.escapeHtml(displayName)}</div>
+          <div class="sl-item ${statusClass} ${isSelected ? 'selected' : ''}" data-quest-index="${index}" ${keyAttr}>
+             <div class="sl-item-content">
+             <div class="sl-marker-box ${statusClass}"></div>
+             <div class="sl-item-title">${this.escapeHtml(displayName)}</div>
             </div>
           </div>
         `;

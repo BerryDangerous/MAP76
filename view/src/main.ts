@@ -4,13 +4,15 @@ import { ThemeEngine } from './systems/theme.js';
 import { AnimationEngine } from './systems/animation.js';
 import { MapViewport } from './components/viewport.js';
 import { loadMarkers, applySupplyLinesVisibilityFilter } from './components/markers.js';
-import { PopoverManager } from './components/popover.js';
+import { MarkerInteractionManager } from './components/markerInteraction.js';
 import { toggleSupplyLinesView, setSupplyLinesViewActive } from './components/supplyLines.js';
-import { closeCustomMarkerModal } from './components/customMarkerModal.js';
+import { CustomMarkerCard } from './components/customMarkerCard.js';
 import { closeFastTravelModal } from './components/fastTravelModal.js';
 import { InfoCard } from './components/infoCard.js';
 import { QuestList } from './components/questList.js';
 import { QuestCard } from './components/questCard.js';
+import { SettlementCard } from './components/settlementCard.js';
+import { MarkerCard } from './components/markerCard.js';
 import { FocusManager } from './systems/focusManager.js';
 import { F4SEMapPayload } from './types/payloads.js';
 import { DockControlsSystem } from './systems/dockControls.js';
@@ -18,12 +20,13 @@ import { DockControlsSystem } from './systems/dockControls.js';
 ThemeEngine.initMapConfig();
 
 export function resetUIState(): void {
-    PopoverManager.closeActivePopover();
     setSupplyLinesViewActive(false);
     applySupplyLinesVisibilityFilter();
-    closeCustomMarkerModal();
+    CustomMarkerCard.close();
     closeFastTravelModal();
     QuestCard.close();
+    SettlementCard.close();
+    MarkerCard.close();
 }
 
 (window as any).resetUIState = resetUIState;
@@ -33,6 +36,9 @@ initializeF4SEBindings((payload: F4SEMapPayload) => {
     InfoCard.init(payload.player);
     QuestList.init();
     QuestCard.init();
+    SettlementCard.init();
+    MarkerCard.init();
+    CustomMarkerCard.init();
 });
 
 window.addEventListener('FrameTick', (e: Event) => {
@@ -64,7 +70,7 @@ function initCustomCursor() {
 window.addEventListener('DOMContentLoaded', () => {
     initCustomCursor();
     MapViewport.initEvents();
-    PopoverManager.initEvents();
+    MarkerInteractionManager.initEvents();
     MapViewport.centerInitialViewport();
     AnimationEngine.startLoop();
 

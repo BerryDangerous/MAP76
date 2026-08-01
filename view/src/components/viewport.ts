@@ -1,9 +1,12 @@
 import { mapState } from '../core/state.js';
 import { GameBounds, MapPosition } from '../types/map.js';
 import { CELL_SIZE_UNITS } from '../core/constants.js';
-import { showCustomMarkerModal, closeCustomMarkerModal } from './customMarkerModal.js';
 import { QuestCard } from './questCard.js';
-import { QuestList } from './questList.js';
+import { FloatingCard } from '../ui/floatingCard.js';
+import { FocusManager } from '../systems/focusManager.js';
+import { MarkerCard } from './markerCard.js';
+import { SettlementCard } from './settlementCard.js';
+import { CustomMarkerCard } from './customMarkerCard.js';
 
 const viewport = document.getElementById('map-viewport') as HTMLElement;
 const container = document.getElementById('screen-container') as HTMLElement;
@@ -139,13 +142,7 @@ export const MapViewport = {
             playerImg.style.transform = `translate(-50%, -50%) scale(${markerScale}) rotate(${mapState.player.angle}deg)`;
         }
 
-        if (window.repositionActivePopover) {
-            window.repositionActivePopover();
-        }
-
-        if (QuestCard.isOpen() && QuestCard.activeAnchorMarker) {
-            QuestCard.positionNearMarker(QuestCard.activeAnchorMarker);
-        }
+        FloatingCard.repositionAll();
     },
 
     centerInitialViewport() {
@@ -221,9 +218,10 @@ export const MapViewport = {
             let zoomPointX = e.clientX;
             let zoomPointY = e.clientY;
             
-            // When QuestCard is open, zoom in relation to the quest marker position instead of cursor
+            // When a card is open, zoom in relation to its marker position instead of cursor
+            let markerEl: HTMLElement | null = null;
             if (QuestCard.isOpen()) {
-                let markerEl: HTMLElement | null = QuestCard.activeAnchorMarker;
+                markerEl = QuestCard.activeAnchorMarker;
                 if (!markerEl) {
                     const questFormId = QuestCard.activeQuest?.formId;
                     const questName = QuestCard.activeQuest?.questName;
@@ -236,13 +234,19 @@ export const MapViewport = {
                         }
                     }
                 }
+            } else if (MarkerCard.isOpen()) {
+                markerEl = MarkerCard.activeAnchorMarker;
+            } else if (SettlementCard.isOpen()) {
+                markerEl = SettlementCard.activeAnchorMarker;
+            } else if (CustomMarkerCard.isOpen()) {
+                markerEl = CustomMarkerCard.activeAnchorMarker;
+            }
 
-                if (markerEl) {
-                    const imgEl = markerEl.querySelector('img');
-                    const mRect = imgEl ? imgEl.getBoundingClientRect() : markerEl.getBoundingClientRect();
-                    zoomPointX = mRect.left + (mRect.width / 2);
-                    zoomPointY = mRect.top + (mRect.height / 2);
-                }
+            if (markerEl) {
+                const imgEl = markerEl.querySelector('img');
+                const mRect = imgEl ? imgEl.getBoundingClientRect() : markerEl.getBoundingClientRect();
+                zoomPointX = mRect.left + (mRect.width / 2);
+                zoomPointY = mRect.top + (mRect.height / 2);
             }
 
             const mapTargetX = (zoomPointX - mapState.panX) / mapState.zoom;
@@ -274,10 +278,6 @@ export const MapViewport = {
         viewport.addEventListener('mousedown', (e: MouseEvent) => {
             if (e.button !== 0) return;
             e.preventDefault();
-            closeCustomMarkerModal();
-            if (window.closeActivePopover) {
-                window.closeActivePopover();
-            }
             mapState.isDragging = true;
             mapState.wasDragged = false;
             dragStartX = e.clientX;
@@ -291,11 +291,9 @@ export const MapViewport = {
             if (!mapState.isDragging) return;
             if (Math.abs(e.clientX - dragStartX) > 5 || Math.abs(e.clientY - dragStartY) > 5) {
                 mapState.wasDragged = true;
-                if (window.closeActivePopover) {
-                    window.closeActivePopover();
+                if (FocusManager.getFocus() !== 'MAP') {
+                    FocusManager.setFocus('MAP');
                 }
-                QuestCard.close();
-                QuestList.collapse();
             }
             mapState.panX = e.clientX - mapState.startX;
             mapState.panY = e.clientY - mapState.startY;
@@ -319,11 +317,6 @@ export const MapViewport = {
 
         container.addEventListener('contextmenu', (e: MouseEvent) => {
             e.preventDefault();
-            const bounds = mapState.currentPayloadBounds;
-            if (!bounds) return;
-
-            const gameCoords = MapViewport.screenToGameCoords(e.clientX, e.clientY, bounds);
-            showCustomMarkerModal(gameCoords, { x: e.clientX, y: e.clientY }, container);
         });
 
         window.addEventListener('dragstart', (e) => e.preventDefault());

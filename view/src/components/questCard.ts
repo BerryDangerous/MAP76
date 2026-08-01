@@ -1,5 +1,6 @@
 import { QuestItem } from '../types/quests.js';
 import { FocusManager } from '../systems/focusManager.js';
+import { MapViewport } from './viewport.js';
 import { QuestList } from './questList.js';
 import { toggleQuestActive, makeOnlyQuestActive } from '../core/bridge.js';
 import { ActionButtonConfig } from '../ui/actionButton.js';
@@ -25,10 +26,13 @@ export const QuestCard = {
                 }
                 this.updateButtonSelection();
             },
-            onFocusLost: () => {
+            onFocusLost: (newFocusId?: string) => {
                 const card = document.getElementById('quest-card-panel');
                 if (card) card.classList.remove('focused');
                 this.updateButtonSelection();
+                if (newFocusId === 'MAP' || newFocusId === 'SETTLEMENT_CARD' || newFocusId === 'MARKER_CARD') {
+                    this.close();
+                }
             }
         });
     },
@@ -66,7 +70,7 @@ export const QuestCard = {
 
     open(quest: QuestItem, anchorMarker?: HTMLElement): void {
         if (this.activeAnchorMarker && this.activeAnchorMarker !== anchorMarker) {
-            this.activeAnchorMarker.classList.remove('is-hovered');
+            this.activeAnchorMarker.classList.remove('menu-active');
             this.activeAnchorMarker.classList.remove('hide-tooltip-override');
         }
 
@@ -74,7 +78,7 @@ export const QuestCard = {
         this.activeAnchorMarker = anchorMarker || null;
 
         if (anchorMarker) {
-            anchorMarker.classList.add('is-hovered');
+            anchorMarker.classList.add('menu-active');
             anchorMarker.classList.add('hide-tooltip-override');
         }
 
@@ -107,7 +111,7 @@ export const QuestCard = {
 
         const cardEl = floatingCard.getElement();
         if (cardEl) {
-            const objListEl = cardEl.querySelector('.qc-objectives-list') as HTMLElement;
+            const objListEl = cardEl.querySelector('.status-item-list') as HTMLElement;
             if (objListEl) {
                 objListEl.scrollTop = objListEl.scrollHeight;
             }
@@ -128,9 +132,10 @@ export const QuestCard = {
 
     close(): void {
         if (this.activeAnchorMarker) {
-            this.activeAnchorMarker.classList.remove('is-hovered');
+            this.activeAnchorMarker.classList.remove('menu-active');
             this.activeAnchorMarker.classList.remove('hide-tooltip-override');
             this.activeAnchorMarker = null;
+            MapViewport.updateViewportTransform();
         }
 
         if (floatingCard) {
@@ -149,7 +154,7 @@ export const QuestCard = {
         if (!card) return;
 
         const isCardFocused = FocusManager.getFocus() === 'QUEST_CARD';
-        const buttons = card.querySelectorAll('.qc-action-btn');
+        const buttons = card.querySelectorAll('.fc-action-btn');
         const selectedIdx = floatingCard.getButtonGroup().getSelectedIndex();
 
         buttons.forEach((btn, idx) => {
@@ -169,19 +174,19 @@ export const QuestCard = {
         const hasObjectives = objectivesHtml.length > 0;
 
         const journalSectionHtml = hasJournal ? `
-            <div class="qc-section">
-                <div class="qc-section-box">
-                    <div class="qc-section-title">JOURNAL</div>
-                    <div class="qc-section-text">${this.escapeHtml(journalText)}</div>
+            <div class="fc-section">
+                <div class="fc-section-box">
+                    <div class="fc-section-title">JOURNAL</div>
+                    <div class="fc-section-text">${this.escapeHtml(journalText)}</div>
                 </div>
             </div>
         ` : '';
 
         const objectivesSectionHtml = hasObjectives ? `
-            <div class="qc-section">
-                <div class="qc-section-box">
-                    <div class="qc-section-title">OBJECTIVES</div>
-                    <div class="qc-objectives-list">
+            <div class="fc-section">
+                <div class="fc-section-box">
+                    <div class="fc-section-title">OBJECTIVES</div>
+                    <div class="status-item-list">
                         ${objectivesHtml}
                     </div>
                 </div>
@@ -198,11 +203,6 @@ export const QuestCard = {
         const isCompleted = quest.objectives && quest.objectives.length > 0 && quest.objectives.every(o => o.state === 2 || o.state === 3);
 
         return isCompleted ? [
-            {
-                id: 'pipboy',
-                label: 'SHOW IN PIP-BOY',
-                action: () => console.log(`[QuestCard] SHOW IN PIP-BOY clicked for completed quest ${quest.formId}`)
-            }
         ] : [
             {
                 id: 'toggleActive',
@@ -225,11 +225,6 @@ export const QuestCard = {
                         this.open(quest, this.activeAnchorMarker || undefined);
                     }
                 }
-            },
-            {
-                id: 'pipboy',
-                label: 'SHOW IN PIP-BOY',
-                action: () => console.log(`[QuestCard] SHOW IN PIP-BOY clicked for quest ${quest.formId}`)
             }
         ];
     },
