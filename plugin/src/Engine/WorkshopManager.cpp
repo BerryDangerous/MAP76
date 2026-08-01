@@ -70,7 +70,9 @@ namespace PaperMap::Engine::WorkshopManager
                 .formId = raw.formId,
                 .locationFormId = raw.locationFormId,
                 .markerFormId = raw.markerFormId,
+                .iconType = raw.iconType,
                 .worldSpaceFormId = raw.worldSpaceFormId,
+                .worldspaceFullName = raw.worldspaceFullName,
                 .name = raw.name,
                 .owned = raw.isOwned,
                 .raider = raw.isRaider,
@@ -225,9 +227,14 @@ namespace PaperMap::Engine::WorkshopManager
             if (auto *cell = rawData.workshopRef->GetParentCell())
             {
                 rawData.isInterior = cell->IsInterior();
-                if (!rawData.isInterior && cell->worldSpace)
+            }
+
+            if (auto *world = PaperMap::Engine::GetReferenceWorldspace(rawData.workshopRef))
+            {
+                rawData.worldSpaceFormId = world->formID;
+                if (world->GetFullName())
                 {
-                    rawData.worldSpaceFormId = cell->worldSpace->formID;
+                    rawData.worldspaceFullName = world->GetFullName();
                 }
             }
 
@@ -429,15 +436,26 @@ namespace PaperMap::Engine::WorkshopManager
                 }
             }
 
-            // Fallback: Resolve missing worldspace directly through marker ref
-            if (rawData.worldSpaceFormId == 0 && rawData.markerFormId != 0)
+            if (rawData.markerFormId != 0)
             {
                 if (auto *markerRef = RE::TESForm::GetFormByID<RE::TESObjectREFR>(rawData.markerFormId))
                 {
-                    auto position = markerRef->GetPosition();
-                    if (auto *markerWorld = GetReferenceWorldspace(markerRef, &position))
+                    if (rawData.worldSpaceFormId == 0)
                     {
-                        rawData.worldSpaceFormId = markerWorld->formID;
+                        auto position = markerRef->GetPosition();
+                        if (auto *markerWorld = GetReferenceWorldspace(markerRef, &position))
+                        {
+                            rawData.worldSpaceFormId = markerWorld->formID;
+                            if (markerWorld->GetFullName())
+                            {
+                                rawData.worldspaceFullName = markerWorld->GetFullName();
+                            }
+                        }
+                    }
+
+                    if (auto iconTypeOpt = PaperMap::Engine::MapMarkers::GetMarkerIconType(markerRef))
+                    {
+                        rawData.iconType = *iconTypeOpt;
                     }
                 }
             }

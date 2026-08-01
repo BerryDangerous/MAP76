@@ -25,4 +25,9 @@ namespace PaperMap::Engine::MapMarkers
      * @brief Collects all registered map markers from the Pip-Boy data manager.
      */
     std::vector<MarkerData> CollectAll(RE::PipboyDataManager *a_pipboyManager);
+
+    /**
+     * @brief Extracts the icon type directly from a map marker reference.
+     */
+    std::optional<uint16_t> GetMarkerIconType(RE::TESObjectREFR* a_refr);
 }

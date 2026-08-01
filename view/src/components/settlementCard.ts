@@ -7,22 +7,11 @@ import { ThemeEngine } from '../systems/theme.js';
 import { KeybindsSystem } from '../systems/keybinds.js';
 import { EngineBridge } from '../core/bridge.js';
 import { showFastTravelConfirmationModal } from './fastTravelModal.js';
-
+import { calculateSettlementRatings, SettlementDataWithRatings } from '../utils/settlementUtils.js';
+import { DockCorner } from '../systems/dockControls.js';
+import { WorkshopList } from './workshopList.js';
 
 let settlementCardInstance: FloatingCard | null = null;
-
-export interface SettlementDataWithRatings extends SettlementData {
-    ratings?: {
-        food?: number;
-        water?: number;
-        beds?: number;
-        power?: number;
-        defense?: number;
-        population?: number;
-        happiness?: number;
-        overallAlert?: boolean;
-    };
-}
 
 export const SettlementCard = {
     activeSettlement: null as SettlementDataWithRatings | null,
@@ -42,11 +31,11 @@ export const SettlementCard = {
                 }
                 this.updateButtonSelection();
             },
-            onFocusLost: () => {
+            onFocusLost: (newFocusId?: string) => {
                 const card = document.getElementById('settlement-card-panel');
                 if (card) card.classList.remove('focused');
                 this.updateButtonSelection();
-                if (settlementCardInstance && settlementCardInstance.isOpen()) {
+                if (newFocusId === 'MAP' || newFocusId === 'QUEST_CARD' || newFocusId === 'QUEST_LIST' || newFocusId === 'MARKER_CARD') {
                     this.close();
                 }
             }
@@ -54,6 +43,13 @@ export const SettlementCard = {
     },
 
     handleKeyDown(e: KeyboardEvent): boolean {
+        if (KeybindsSystem.isAction(e, 'NAV_LEFT')) {
+            if (WorkshopList && !WorkshopList.getState().isCollapsed) {
+                FocusManager.setFocus('WORKSHOP_LIST');
+            }
+            return true;
+        }
+
         if (e.key === 'Escape' || e.key === 'Tab') {
             FocusManager.setFocus('MAP');
             return true;
@@ -81,7 +77,7 @@ export const SettlementCard = {
         return false;
     },
 
-    open(settlement: SettlementDataWithRatings, markerFormId: number, canFastTravel: boolean, anchorMarker?: HTMLElement): void {
+    open(settlement: SettlementDataWithRatings, markerFormId: number, canFastTravel: boolean, anchorMarker?: HTMLElement, referencePanel?: HTMLElement, dockCorner?: DockCorner, takeFocus: boolean = true): void {
         if (this.activeAnchorMarker && this.activeAnchorMarker !== anchorMarker) {
             this.activeAnchorMarker.classList.remove('menu-active');
             this.activeAnchorMarker.classList.remove('hide-tooltip-override');
@@ -107,6 +103,8 @@ export const SettlementCard = {
                 bodyHtml: bodyHtml,
                 buttons: buttons,
                 anchorMarker: this.activeAnchorMarker,
+                referencePanel: referencePanel,
+                dockCorner: dockCorner,
                 onButtonSelectionChange: () => this.updateButtonSelection()
             });
         } else {
@@ -114,12 +112,16 @@ export const SettlementCard = {
                 title: settlement.name,
                 bodyHtml: bodyHtml,
                 buttons: buttons,
-                anchorMarker: this.activeAnchorMarker
+                anchorMarker: this.activeAnchorMarker,
+                referencePanel: referencePanel,
+                dockCorner: dockCorner
             });
         }
 
-        settlementCardInstance.open(this.activeAnchorMarker);
-        FocusManager.setFocus('SETTLEMENT_CARD');
+        settlementCardInstance.open(this.activeAnchorMarker || undefined, referencePanel, dockCorner);
+        if (takeFocus) {
+            FocusManager.setFocus('SETTLEMENT_CARD');
+        }
         this.updateButtonSelection();
     },
 
@@ -181,13 +183,7 @@ export const SettlementCard = {
         const alertUrl = ThemeEngine.getAssetIconUrl('workshop-alert');
         const increasingUrl = ThemeEngine.getAssetIconUrl('workshop-increasing');
 
-        const ratings = settlement.ratings || {};
-
-        const foodRating = ratings.food ?? (settlement.food < settlement.population ? -1 : 0);
-        const waterRating = ratings.water ?? (settlement.water < settlement.population ? -1 : 0);
-        const bedsRating = ratings.beds ?? (settlement.beds < settlement.population ? -1 : 0);
-        const defenseRating = ratings.defense ?? (settlement.defense < (settlement.food + settlement.water) ? -1 : 0);
-        const happinessRating = ratings.happiness ?? 0;
+        const resolvedRatings = calculateSettlementRatings(settlement);
 
         const renderMetricItem = (iconUrl: string, val: number | string, rating: number) => {
             let statusIcon = '';
@@ -206,21 +202,42 @@ export const SettlementCard = {
             `;
         };
 
+        let locationSectionHtml = '';
+        if (settlement.worldspaceFullName) {
+            locationSectionHtml = `
+            <div class="fc-section">
+                <div class="fc-section-box">
+                    <div class="fc-section-title">LOCATION</div>
+                    <div class="fc-section-text">${settlement.worldspaceFullName}</div>
+                </div>
+            </div>`;
+        }
+
         return `
             <div class="fc-section">
                 <div class="fc-section-box wc-stats-box">
+                    <div class="fc-section-title">STATS</div>
                     <div class="wc-stats-grid">
-                        ${renderMetricItem(populationUrl, settlement.population, ratings.population ?? 0)}
-                        ${renderMetricItem(happinessUrl, `${settlement.happiness}%`, happinessRating)}
-                        ${renderMetricItem(foodUrl, settlement.food, foodRating)}
-                        ${renderMetricItem(waterUrl, settlement.water, waterRating)}
-                        ${renderMetricItem(powerUrl, settlement.power, ratings.power ?? 0)}
-                        ${renderMetricItem(defenseUrl, settlement.defense, defenseRating)}
-                        ${renderMetricItem(bedsUrl, settlement.beds, bedsRating)}
+                        ${renderMetricItem(populationUrl, settlement.population, resolvedRatings.population)}
+                        ${renderMetricItem(happinessUrl, `${settlement.happiness}%`, resolvedRatings.happiness)}
+                        ${renderMetricItem(foodUrl, settlement.food, resolvedRatings.food)}
+                        ${renderMetricItem(waterUrl, settlement.water, resolvedRatings.water)}
+                        ${renderMetricItem(powerUrl, settlement.power, resolvedRatings.power)}
+                        ${renderMetricItem(defenseUrl, settlement.defense, resolvedRatings.defense)}
+                        ${renderMetricItem(bedsUrl, settlement.beds, resolvedRatings.beds)}
                     </div>
                 </div>
             </div>
+            ${locationSectionHtml}
         `;
+    },
+
+    escapeHtml(str: string): string {
+        return str.replace(/&/g, "&amp;")
+                  .replace(/</g, "&lt;")
+                  .replace(/>/g, "&gt;")
+                  .replace(/"/g, "&quot;")
+                  .replace(/'/g, "&#039;");
     },
 
     buildButtonConfigs(settlement: SettlementDataWithRatings): ActionButtonConfig[] {
@@ -257,7 +274,10 @@ export function renderSettlementCardContent(
     settlement: SettlementData,
     markerFormId: number,
     canFastTravel: boolean,
-    markerEl?: HTMLElement
+    markerEl?: HTMLElement,
+    referencePanel?: HTMLElement,
+    dockCorner?: DockCorner,
+    takeFocus: boolean = true
 ): void {
-    SettlementCard.open(settlement, markerFormId, canFastTravel, markerEl);
+    SettlementCard.open(settlement, markerFormId, canFastTravel, markerEl, referencePanel, dockCorner, takeFocus);
 }

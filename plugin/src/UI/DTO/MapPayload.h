@@ -130,7 +130,9 @@ namespace PaperMap::UI::DTO
         uint32_t formId;
         uint32_t locationFormId;
         uint32_t markerFormId;
+        uint16_t iconType;
         uint32_t worldspace;
+        std::string worldspaceFullName;
         std::string name;
         bool owned;
         bool raider;
@@ -153,7 +155,9 @@ namespace PaperMap::UI::DTO
             {"formId", s.formId},
             {"locationFormId", s.locationFormId},
             {"markerFormId", s.markerFormId},
+            {"iconType", s.iconType},
             {"worldspace", s.worldspace},
+            {"worldspaceFullName", s.worldspaceFullName},
             {"name", s.name},
             {"owned", s.owned},
             {"raider", s.raider},

@@ -33,9 +33,9 @@ export class DockControlsSystem {
         },
         'bottom-left': {
             corner: 'bottom-left',
-            collapseKey: 'ArrowDown',
+            collapseKey: 'ArrowLeft',
             expandKey: 'ArrowUp',
-            collapseGlyph: 'V',
+            collapseGlyph: 'T',
             expandGlyph: 'W'
         },
         'bottom-right': {
@@ -115,7 +115,7 @@ export class DockControlsSystem {
             card.style.top = `${refRect.top}px`;
             card.style.left = `${refRect.right + gap}px`;
         } else if (corner === 'bottom-left') {
-            card.style.bottom = `${window.innerHeight - refRect.bottom}px`;
+            card.style.top = `${refRect.top}px`;
             card.style.left = `${refRect.right + gap}px`;
         } else if (corner === 'top-right') {
             card.style.top = `${refRect.top}px`;

@@ -6,7 +6,9 @@ export interface SettlementData {
     formId: number;
     locationFormId: number;
     markerFormId: number;
+    iconType?: number;
     worldspace?: number;
+    worldspaceFullName?: string;
     name: string;
     owned: boolean;
     raider: boolean;

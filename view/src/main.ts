@@ -10,6 +10,7 @@ import { CustomMarkerCard } from './components/customMarkerCard.js';
 import { closeFastTravelModal } from './components/fastTravelModal.js';
 import { InfoCard } from './components/infoCard.js';
 import { QuestList } from './components/questList.js';
+import { WorkshopList } from './components/workshopList.js';
 import { QuestCard } from './components/questCard.js';
 import { SettlementCard } from './components/settlementCard.js';
 import { MarkerCard } from './components/markerCard.js';
@@ -35,6 +36,7 @@ initializeF4SEBindings((payload: F4SEMapPayload) => {
     loadMarkers(payload);
     InfoCard.init(payload.player);
     QuestList.init();
+    WorkshopList.init();
     QuestCard.init();
     SettlementCard.init();
     MarkerCard.init();
@@ -108,6 +110,11 @@ window.addEventListener('DOMContentLoaded', () => {
                 QuestList.collapse();
                 FocusManager.setFocus('MAP');
                 return;
+            } else if (currentFocus === 'WORKSHOP_LIST') {
+                console.log('[KeyHandler] Collapsing WorkshopList via Escape/Tab');
+                WorkshopList.collapse();
+                FocusManager.setFocus('MAP');
+                return;
             } else {
                 console.log('[KeyHandler] Focus is MAP. Closing map via Escape/Tab');
                 resetUIState();
@@ -122,9 +129,12 @@ window.addEventListener('DOMContentLoaded', () => {
         }
 
         if (FocusManager.getFocus() === 'MAP') {
-            const dockCorner = QuestList.getState().dockCorner;
-            if (DockControlsSystem.isExpandKey(e, dockCorner)) {
+            const questDockCorner = QuestList.getState().dockCorner;
+            const workshopDockCorner = WorkshopList.getState().dockCorner;
+            if (DockControlsSystem.isExpandKey(e, questDockCorner)) {
                 QuestList.expand();
+            } else if (DockControlsSystem.isExpandKey(e, workshopDockCorner)) {
+                WorkshopList.expand();
             } else if (keyLower === 'c') {
                 console.log('Toggling Supply Lines View...');
                 toggleSupplyLinesView();

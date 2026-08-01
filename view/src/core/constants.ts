@@ -94,6 +94,7 @@ export const ENGINE_MARKER_TYPES: Record<number, string> = {
 
 export const FORM_ID_INDEX_MASK = 0x00FFFFFF;
 
+export const MARKER_ICON_SETTLEMENT = 13;
 export const MARKER_ICON_RAIDER_OUTPOST = 66;
 export const MARKER_ICON_VASSAL_SETTLEMENT = 67;
 export const MARKER_ICON_POTENTIAL_VASSAL_SETTLEMENT = 68;

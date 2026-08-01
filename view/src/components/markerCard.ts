@@ -4,6 +4,9 @@ import { MapViewport } from './viewport.js';
 import { ActionButtonConfig } from '../ui/actionButton.js';
 import { EngineBridge } from '../core/bridge.js';
 import { showFastTravelConfirmationModal } from './fastTravelModal.js';
+import { DockCorner } from '../systems/dockControls.js';
+import { KeybindsSystem } from '../systems/keybinds.js';
+import { WorkshopList } from './workshopList.js';
 
 let markerCardInstance: FloatingCard | null = null;
 
@@ -25,11 +28,11 @@ export const MarkerCard = {
                 }
                 this.updateButtonSelection();
             },
-            onFocusLost: () => {
+            onFocusLost: (newFocusId?: string) => {
                 const card = document.getElementById('marker-card-panel');
                 if (card) card.classList.remove('focused');
                 this.updateButtonSelection();
-                if (markerCardInstance && markerCardInstance.isOpen()) {
+                if (newFocusId === 'MAP' || newFocusId === 'QUEST_CARD' || newFocusId === 'QUEST_LIST' || newFocusId === 'SETTLEMENT_CARD') {
                     this.close();
                 }
             }
@@ -37,6 +40,13 @@ export const MarkerCard = {
     },
 
     handleKeyDown(e: KeyboardEvent): boolean {
+        if (KeybindsSystem.isAction(e, 'NAV_LEFT')) {
+            if (WorkshopList && !WorkshopList.getState().isCollapsed) {
+                FocusManager.setFocus('WORKSHOP_LIST');
+            }
+            return true;
+        }
+
         if (e.key === 'Escape' || e.key === 'Tab') {
             FocusManager.setFocus('MAP');
             return true;
@@ -64,7 +74,7 @@ export const MarkerCard = {
         return false;
     },
 
-    open(title: string, markerFormId: number, canFastTravel: boolean, anchorMarker: HTMLElement): void {
+    open(title: string, markerFormId: number, canFastTravel: boolean, anchorMarker?: HTMLElement, referencePanel?: HTMLElement, dockCorner?: DockCorner, takeFocus: boolean = true): void {
         if (this.activeAnchorMarker && this.activeAnchorMarker !== anchorMarker) {
             this.activeAnchorMarker.classList.remove('menu-active');
             this.activeAnchorMarker.classList.remove('hide-tooltip-override');
@@ -73,10 +83,12 @@ export const MarkerCard = {
         this.activeMarkerName = title;
         this.activeMarkerFormId = markerFormId;
         this.canFastTravel = canFastTravel;
-        this.activeAnchorMarker = anchorMarker;
+        this.activeAnchorMarker = anchorMarker || null;
 
-        anchorMarker.classList.add('menu-active');
-        anchorMarker.classList.add('hide-tooltip-override');
+        if (anchorMarker) {
+            anchorMarker.classList.add('menu-active');
+            anchorMarker.classList.add('hide-tooltip-override');
+        }
 
         const buttons = this.buildButtonConfigs();
 
@@ -86,6 +98,8 @@ export const MarkerCard = {
                 title: title,
                 buttons: buttons,
                 anchorMarker: this.activeAnchorMarker,
+                referencePanel: referencePanel,
+                dockCorner: dockCorner,
                 onButtonSelectionChange: () => this.updateButtonSelection()
             });
         } else {
@@ -93,12 +107,16 @@ export const MarkerCard = {
                 title: title,
                 bodyHtml: '',
                 buttons: buttons,
-                anchorMarker: this.activeAnchorMarker
+                anchorMarker: this.activeAnchorMarker,
+                referencePanel: referencePanel,
+                dockCorner: dockCorner
             });
         }
 
-        markerCardInstance.open(this.activeAnchorMarker);
-        FocusManager.setFocus('MARKER_CARD');
+        markerCardInstance.open(this.activeAnchorMarker || undefined, referencePanel, dockCorner);
+        if (takeFocus) {
+            FocusManager.setFocus('MARKER_CARD');
+        }
         this.updateButtonSelection();
     },
 

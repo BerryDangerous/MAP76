@@ -29,12 +29,13 @@ namespace
         auto *markerData = extraData->mapMarkerData;
 
         uint8_t rawFlags = *reinterpret_cast<uint8_t *>(reinterpret_cast<char *>(markerData) + PaperMap::Constants::Marker::FLAGS_OFFSET);
-        uint16_t iconTypeNumber = *reinterpret_cast<uint16_t *>(reinterpret_cast<char *>(markerData) + PaperMap::Constants::Marker::ICON_OFFSET);
-
-        if (iconTypeNumber == PaperMap::Constants::Marker::CUSTOM_PIN_ICON_ID || iconTypeNumber > PaperMap::Constants::Marker::MAX_VALID_ICON_ID)
+        
+        auto iconTypeOpt = PaperMap::Engine::MapMarkers::GetMarkerIconType(a_refr);
+        if (!iconTypeOpt)
         {
             return std::nullopt;
         }
+        uint16_t iconTypeNumber = *iconTypeOpt;
 
         std::string markerName;
         auto *fullNameInterface = reinterpret_cast<RE::TESFullName *>(markerData);
@@ -99,5 +100,29 @@ namespace PaperMap::Engine::MapMarkers
         }
 
         return markers;
+    }
+
+    std::optional<uint16_t> GetMarkerIconType(RE::TESObjectREFR* a_refr)
+    {
+        if (!a_refr || !PaperMap::Engine::Memory::IsReferenceSafe(a_refr))
+        {
+            return std::nullopt;
+        }
+
+        auto *dataList = a_refr->extraList.get();
+        auto *extraData = dataList ? dataList->GetByType<RE::ExtraMapMarker>() : nullptr;
+        if (!extraData || !extraData->mapMarkerData)
+        {
+            return std::nullopt;
+        }
+
+        uint16_t iconTypeNumber = *reinterpret_cast<uint16_t *>(reinterpret_cast<char *>(extraData->mapMarkerData) + PaperMap::Constants::Marker::ICON_OFFSET);
+
+        if (iconTypeNumber == PaperMap::Constants::Marker::CUSTOM_PIN_ICON_ID || iconTypeNumber > PaperMap::Constants::Marker::MAX_VALID_ICON_ID)
+        {
+            return std::nullopt;
+        }
+
+        return iconTypeNumber;
     }
 }

@@ -2,6 +2,16 @@
    1. GLOBAL RESETS & BASE CANVAS LAYOUT
    ========================================================================== */
 
+:root {
+    --selected-marker-filter: invert(1);
+    --selected-status-filter: invert(1);
+}
+
+[data-theme="76"] {
+    --selected-marker-filter: invert(1); /* Set to 'none' once the full-color 76 marker icons are added */
+    --selected-status-filter: invert(1);
+}
+
 * {
     box-sizing: border-box;
     user-select: none;
@@ -364,7 +374,7 @@ body, html {
 #info-card {
     position: absolute;
     bottom: 24px;
-    left: 24px;
+    right: 24px;
     z-index: 1000;
     background: #000000;
     border: 1px solid rgba(255, 255, 255, 0.15);
@@ -676,6 +686,17 @@ body, html {
     background-color: rgba(255, 255, 203, 0.75);
 }
 
+.selectable-list .sl-item.selected .wl-subtitle {
+    color: #000000;
+}
+
+.selectable-list .sl-item.selected .wl-marker-icon {
+    filter: var(--selected-marker-filter);
+}
+
+.selectable-list .sl-item.selected .wl-status-badge {
+    filter: var(--selected-status-filter);
+}
 
 /* ==========================================================================
    12. FLOATING CARD
@@ -936,6 +957,23 @@ body, html {
 
 #quest-list-panel[data-collapsed="false"] {
     height: 402px;
+}
+
+#workshop-list-panel {
+    width: 350px;
+    max-height: 402px;
+}
+
+#workshop-list-panel[data-collapsed="true"] {
+    max-height: 402px;
+}
+
+#workshop-list-panel[data-collapsed="false"] {
+    height: 402px;
+}
+
+#workshop-list-panel .sl-body {
+    height: calc(100% - 30px);
 }
 
 #quest-card-panel {

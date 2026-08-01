@@ -199,6 +199,7 @@ export const mockPayload: F4SEMapPayload = {
             linkedLocationFormIds: [151467],
             locationFormId: 127528,
             markerFormId: 469576,
+            iconType: 12,
             name: "Sanctuary Hills",
             owned: true,
             population: 10,
@@ -207,7 +208,8 @@ export const mockPayload: F4SEMapPayload = {
             vassal: false,
             vr: false,
             water: 0.0,
-            worldspace: 60
+            worldspace: 60,
+            worldspaceFullName: "Commonwealth",
         },
         {
             beds: 0.0,
@@ -218,6 +220,7 @@ export const mockPayload: F4SEMapPayload = {
             linkedLocationFormIds: [127528],
             locationFormId: 151467,
             markerFormId: 151486,
+            iconType: 27,
             name: "Red Rocket Truck Stop",
             owned: true,
             population: 0,
@@ -226,7 +229,8 @@ export const mockPayload: F4SEMapPayload = {
             vassal: false,
             vr: false,
             water: 0.0,
-            worldspace: 60
+            worldspace: 60,
+            worldspaceFullName: "Commonwealth",
         },
         {
             beds: 0.0,
@@ -237,6 +241,7 @@ export const mockPayload: F4SEMapPayload = {
             linkedLocationFormIds: [],
             locationFormId: 151446,
             markerFormId: 151445,
+            iconType: 23,
             name: "Starlight Drive-In",
             owned: false,
             population: 0,
@@ -245,7 +250,8 @@ export const mockPayload: F4SEMapPayload = {
             vassal: false,
             vr: false,
             water: 0.0,
-            worldspace: 60
+            worldspace: 60,
+            worldspaceFullName: "Commonwealth",
         },
         {
             beds: 2.0,
@@ -256,6 +262,7 @@ export const mockPayload: F4SEMapPayload = {
             linkedLocationFormIds: [],
             locationFormId: 349186,
             markerFormId: 149850,
+            iconType: 42,
             name: "Outpost Zimonja",
             owned: true,
             population: 3,
@@ -264,7 +271,8 @@ export const mockPayload: F4SEMapPayload = {
             vassal: false,
             vr: false,
             water: 3.0,
-            worldspace: 60
+            worldspace: 60,
+            worldspaceFullName: "Commonwealth",
         },
         {
             beds: 3.0,
@@ -275,6 +283,7 @@ export const mockPayload: F4SEMapPayload = {
             linkedLocationFormIds: [],
             locationFormId: 635316,
             markerFormId: 635313,
+            iconType: 26,
             name: "Tenpines Bluff",
             owned: false,
             population: 2,
@@ -283,7 +292,8 @@ export const mockPayload: F4SEMapPayload = {
             vassal: true,
             vr: false,
             water: 3.0,
-            worldspace: 60
+            worldspace: 60,
+            worldspaceFullName: "Commonwealth",
         }
     ],
     quests: [
