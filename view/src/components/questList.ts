@@ -379,6 +379,15 @@ export const QuestList = {
             collapseTextEl.textContent = isCollapsed ? 'EXPAND' : 'COLLAPSE';
         }
 
+        const titleEl = container.querySelector('.cp-title');
+        if (titleEl) {
+            if (isCollapsed && questListState.currentTab !== 'ALL') {
+                titleEl.textContent = `QUESTS - ${questListState.currentTab}`;
+            } else {
+                titleEl.textContent = 'QUESTS';
+            }
+        }
+
         const subHeader = container.querySelector('.tb-sub-header') as HTMLElement;
         if (subHeader) {
             subHeader.style.display = isCollapsed ? 'none' : 'flex';
@@ -396,7 +405,8 @@ export const QuestList = {
         let itemsHtml = '';
 
         if (itemsToRender.length === 0) {
-            itemsHtml = isCollapsed ? `<div class="sl-empty">NO ACTIVE QUESTS</div>` : '<div class="sl-empty">NO QUESTS</div>';
+            const tabName = questListState.currentTab === 'ALL' ? '' : `${questListState.currentTab} `;
+            itemsHtml = isCollapsed ? `<div class="sl-empty">NO ACTIVE ${tabName}QUESTS</div>` : `<div class="sl-empty">NO ${tabName}QUESTS</div>`;
         } else if (isCollapsed) {
             itemsHtml = itemsToRender.map((q, idx) => this.renderQuestItem(q, idx)).join('');
         } else {
