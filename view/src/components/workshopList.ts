@@ -6,11 +6,10 @@ import { CollapsiblePanel } from '../ui/collapsiblePanel.js';
 import { CustomScrollbar } from '../ui/customScrollbar.js';
 import { KeybindsSystem } from '../systems/keybinds.js';
 import { DockControlsSystem, DockCorner } from '../systems/dockControls.js';
-import { SettlementDataWithRatings, calculateSettlementRatings } from '../utils/settlementUtils.js';
+import { SettlementDataWithRatings, getWorkshopIconType, getWorkshopBadgesHtml } from '../utils/settlementUtils.js';
 import { SettlementCard } from './settlementCard.js';
 import { MarkerCard } from './markerCard.js';
 import { ThemeEngine } from '../systems/theme.js';
-import { MARKER_ICON_RAIDER_OUTPOST, MARKER_ICON_VASSAL_SETTLEMENT, MARKER_ICON_SETTLEMENT } from '../core/constants.js';
 
 export interface WorkshopListState {
     theme: '76';
@@ -254,7 +253,7 @@ export const WorkshopList = {
 
         if (KeybindsSystem.isAction(e, 'NAV_BACK')) {
             this.collapse();
-        return true;
+            return true;
         }
 
         return false;
@@ -422,37 +421,11 @@ export const WorkshopList = {
         else if (workshop.vr) subtitle = 'VR Workshop';
 
         const marker = mapState.lastPayload?.markers?.find(m => m.formId === workshop.markerFormId);
-        
-        let iconType = MARKER_ICON_SETTLEMENT;
-        if (workshop.iconType !== undefined && workshop.iconType !== 0) {
-            iconType = workshop.iconType;
-        } else if (workshop.raider) {
-            iconType = MARKER_ICON_RAIDER_OUTPOST;
-        } else if (workshop.vassal) {
-            iconType = MARKER_ICON_VASSAL_SETTLEMENT;
-        } else if (marker) {
-            iconType = marker.type;
-        }
-
+        const iconType = getWorkshopIconType(workshop, marker);
         const customIcon = marker ? marker.customIcon : undefined;
         const markerIconUrl = ThemeEngine.getMarkerIconUrl(iconType, true, customIcon);
 
-        let typeIconHtml = '';
-        if (workshop.raider) {
-            typeIconHtml = `<img class="wl-status-badge" src="${ThemeEngine.getAssetIconUrl('workshop-raider-outpost')}" alt="Raider" style="width: 14px; height: 14px; object-fit: contain; margin-left: 4px;"/>`;
-        } else if (workshop.vassal) {
-            typeIconHtml = `<img class="wl-status-badge" src="${ThemeEngine.getAssetIconUrl('workshop-vassal-settlement')}" alt="Vassal" style="width: 14px; height: 14px; object-fit: contain; margin-left: 4px;"/>`;
-        }
-
-        const ratings = calculateSettlementRatings(workshop);
-        let statusIconHtml = '';
-        if (ratings.overallStatus === -1) {
-            const alertUrl = ThemeEngine.getAssetIconUrl('workshop-alert');
-            statusIconHtml = `<img class="wl-status-badge" src="${alertUrl}" alt="Alert" style="width: 14px; height: 14px; object-fit: contain; margin-left: 4px;"/>`;
-        } else if (ratings.overallStatus === 1) {
-            const increasingUrl = ThemeEngine.getAssetIconUrl('workshop-increasing');
-            statusIconHtml = `<img class="wl-status-badge" src="${increasingUrl}" alt="Increasing" style="width: 14px; height: 14px; object-fit: contain; margin-left: 4px;"/>`;
-        }
+        const badgesHtml = getWorkshopBadgesHtml(workshop);
 
         return `
           <div class="sl-item ${isSelected ? 'selected' : ''}" data-workshop-index="${index}" ${keyAttr} style="min-height: 44px; display: flex; align-items: center;">
@@ -461,8 +434,7 @@ export const WorkshopList = {
                  <div class="wl-text-container" style="display: flex; flex-direction: column; justify-content: center; flex: 1;">
                      <div class="sl-item-title" style="display: flex; align-items: center; gap: 5px; line-height: 1.2;">
                          ${this.escapeHtml(workshop.name)}
-                         ${statusIconHtml}
-                         ${typeIconHtml}
+                         ${badgesHtml}
                      </div>
                      <div class="wl-subtitle" style="font-size: 0.75em; opacity: 0.7; line-height: 1;">${subtitle}</div>
                  </div>
