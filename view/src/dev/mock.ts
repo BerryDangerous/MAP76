@@ -37,7 +37,6 @@ export function initMockData(): void {
             const data = JSON.parse(payloadString);
             mockPayload.custom_marker = {
                 worldspace: 60,
-                worldspaceEditorID: "Commonwealth",
                 x: data.x,
                 y: data.y
             };

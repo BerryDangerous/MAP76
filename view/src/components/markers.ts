@@ -97,7 +97,9 @@ export function loadMarkers(payload: F4SEMapPayload) {
     mapState.lastPayload = payload;
 
     if (payload.player && payload.player.worldspace !== undefined) {
-        ThemeEngine.updateWorldspaceConfig(payload.player.worldspace, payload.player.worldspaceEditorID);
+        const wsId = payload.player.worldspace;
+        const editorID = payload.worldspaces?.[wsId]?.editorID;
+        ThemeEngine.updateWorldspaceConfig(wsId, editorID);
     }
 
     const config = mapState.activeMapConfig;

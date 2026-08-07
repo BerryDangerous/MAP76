@@ -40,13 +40,22 @@ namespace PaperMap::UI::Payload
                 enginePlayer.position.x,
                 enginePlayer.position.y,
                 enginePlayer.position.z,
-                enginePlayer.worldspaceFormID,
-                enginePlayer.worldspaceEditorID,
-                enginePlayer.worldspaceFullName,
+                enginePlayer.worldspace,
                 enginePlayer.headingDegrees,
                 enginePlayer.caps,
                 enginePlayer.currentWeight,
                 enginePlayer.maxWeight
+            };
+
+            auto addWorldspace = [&](uint32_t wsId) {
+                if (wsId == 0 || payload.worldspaces.find(wsId) != payload.worldspaces.end()) return;
+                if (auto* wspace = RE::TESForm::GetFormByID<RE::TESWorldSpace>(wsId))
+                {
+                    DTO::WorldspaceDTO wsDto{};
+                    wsDto.editorID = wspace->GetFormEditorID() ? wspace->GetFormEditorID() : "";
+                    wsDto.fullName = wspace->GetFullName() ? wspace->GetFullName() : "";
+                    payload.worldspaces[wsId] = wsDto;
+                }
             };
 
             auto *pipboyManager = RE::PipboyDataManager::GetSingleton();
@@ -56,10 +65,10 @@ namespace PaperMap::UI::Payload
                 payload.markers.reserve(engineMarkers.size());
                 for (const auto& marker : engineMarkers)
                 {
+                    addWorldspace(marker.worldspace);
                     payload.markers.push_back(DTO::POIMarker{
                         marker.formId,
-                        marker.worldspaceFormId,
-                        marker.worldspaceEditorID,
+                        marker.worldspace,
                         marker.position.x,
                         marker.position.y,
                         marker.iconType,
@@ -94,13 +103,13 @@ namespace PaperMap::UI::Payload
                         objDto.targets.reserve(objective.targets.size());
                         for (const auto& target : objective.targets)
                         {
+                            addWorldspace(target.worldspace);
                             objDto.targets.push_back(DTO::QuestTarget{
                                 target.position.x,
                                 target.position.y,
                                 target.position.z,
                                 target.isDoor,
-                                target.worldspaceFormID,
-                                target.worldspaceEditorID
+                                target.worldspace
                             });
                         }
                         questDto.objectives.push_back(objDto);
@@ -114,13 +123,13 @@ namespace PaperMap::UI::Payload
                 payload.settlements.reserve(engineWorkshops.size());
                 for (const auto &ws : engineWorkshops)
                 {
+                    addWorldspace(ws.worldspace);
                     DTO::SettlementDTO dto{
                         .formId = ws.formId,
                         .locationFormId = ws.locationFormId,
                         .markerFormId = ws.markerFormId,
                         .iconType = ws.iconType,
-                        .worldspace = ws.worldSpaceFormId,
-                        .worldspaceFullName = ws.worldspaceFullName,
+                        .worldspace = ws.worldspace,
                         .name = ws.name,
                         .owned = ws.owned,
                         .raider = ws.raider,
@@ -151,6 +160,7 @@ namespace PaperMap::UI::Payload
             if (playerRef)
             {
                 auto *playerWorld = PaperMap::Engine::GetReferenceWorldspace(playerRef);
+                if (playerWorld) addWorldspace(playerWorld->formID);
 
                 if (auto paHandle = playerRef->lastUsedPowerArmor)
                 {
@@ -179,9 +189,9 @@ namespace PaperMap::UI::Payload
                                 }
                             }
 
+                            if (paWorld) addWorldspace(paWorld->formID);
                             DTO::PowerArmorMarker paMarker{};
                             paMarker.worldspace = paWorld ? paWorld->formID : 0;
-                            paMarker.worldspaceEditorID = (paWorld && paWorld->GetFormEditorID()) ? paWorld->GetFormEditorID() : "";
                             paMarker.x = paPos.x;
                             paMarker.y = paPos.y;
                             paMarker.z = paPos.z;
@@ -217,9 +227,9 @@ namespace PaperMap::UI::Payload
                                 }
                             }
 
+                            if (wpWorld) addWorldspace(wpWorld->formID);
                             DTO::CustomMarker markerDto{};
                             markerDto.worldspace = wpWorld ? wpWorld->formID : 0;
-                            markerDto.worldspaceEditorID = (wpWorld && wpWorld->GetFormEditorID()) ? wpWorld->GetFormEditorID() : "";
                             markerDto.x = wpPos.x;
                             markerDto.y = wpPos.y;
                             payload.custom_marker = markerDto;

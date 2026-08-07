@@ -20,13 +20,17 @@ export const mockPayload: F4SEMapPayload = {
     dlc04VassalDistance: 70000,
     custom_marker: {
         worldspace: 60,
-        worldspaceEditorID: "Commonwealth",
         x: 10000,
         y: 10000
     },
+    worldspaces: {
+        60: {
+            editorID: "Commonwealth",
+            fullName: "Commonwealth"
+        }
+    },
     power_armor: {
         worldspace: 60,
-        worldspaceEditorID: "Commonwealth",
         x: -47000,
         y: 670,
         z: 700
@@ -36,8 +40,6 @@ export const mockPayload: F4SEMapPayload = {
         y: 65000,
         z: 100,
         worldspace: 60,
-        worldspaceEditorID: "Commonwealth",
-        worldspaceFullName: "Commonwealth",
         angle: 45,
         caps: 1420,
         currentWeight: 185,
@@ -52,7 +54,6 @@ export const mockPayload: F4SEMapPayload = {
             type: 12,
             visible: true,
             worldspace: 60,
-            worldspaceEditorID: "Commonwealth",
             x: -80768.1875,
             y: 88174.8046875
         },
@@ -64,7 +65,6 @@ export const mockPayload: F4SEMapPayload = {
             type: 27,
             visible: true,
             worldspace: 60,
-            worldspaceEditorID: "Commonwealth",
             x: -69379.0,
             y: 80148.046875
         },
@@ -76,7 +76,6 @@ export const mockPayload: F4SEMapPayload = {
             type: 10,
             visible: true,
             worldspace: 60,
-            worldspaceEditorID: "Commonwealth",
             x: -60286.01171875,
             y: 72977.7890625
         },
@@ -88,7 +87,6 @@ export const mockPayload: F4SEMapPayload = {
             type: 15,
             visible: true,
             worldspace: 60,
-            worldspaceEditorID: "Commonwealth",
             x: -89271.984375,
             y: 91369.3046875
         },
@@ -100,7 +98,6 @@ export const mockPayload: F4SEMapPayload = {
             type: 2,
             visible: true,
             worldspace: 60,
-            worldspaceEditorID: "Commonwealth",
             x: -17464.94140625,
             y: -29950.375
         },
@@ -112,7 +109,6 @@ export const mockPayload: F4SEMapPayload = {
             type: 29,
             visible: true,
             worldspace: 60,
-            worldspaceEditorID: "Commonwealth",
             x: 20826.119140625,
             y: -11904.7138671875
         },
@@ -124,7 +120,6 @@ export const mockPayload: F4SEMapPayload = {
             type: 23,
             visible: true,
             worldspace: 60,
-            worldspaceEditorID: "Commonwealth",
             x: -39208.84765625,
             y: 57600.890625
         },
@@ -136,7 +131,6 @@ export const mockPayload: F4SEMapPayload = {
             type: 1,
             visible: true,
             worldspace: 60,
-            worldspaceEditorID: "Commonwealth",
             x: -33029.6953125,
             y: 41006.21875
         },
@@ -148,7 +142,6 @@ export const mockPayload: F4SEMapPayload = {
             type: 42,
             visible: true,
             worldspace: 60,
-            worldspaceEditorID: "Commonwealth",
             x: -10606.697265625,
             y: 100158.2421875
         },
@@ -160,7 +153,6 @@ export const mockPayload: F4SEMapPayload = {
             type: 26,
             visible: true,
             worldspace: 60,
-            worldspaceEditorID: "Commonwealth",
             x: -22154.76953125,
             y: 89056.078125
         },
@@ -172,7 +164,6 @@ export const mockPayload: F4SEMapPayload = {
             type: 73,
             visible: true,
             worldspace: 60,
-            worldspaceEditorID: "Commonwealth",
             x: -111604.2578125,
             y: 20804.873046875
         },
@@ -184,7 +175,6 @@ export const mockPayload: F4SEMapPayload = {
             type: 13,
             visible: true,
             worldspace: 60,
-            worldspaceEditorID: "Commonwealth",
             x: 80812.84375,
             y: 122126.3671875
         }
@@ -209,8 +199,7 @@ export const mockPayload: F4SEMapPayload = {
             vr: false,
             water: 0.0,
             worldspace: 60,
-            worldspaceFullName: "Commonwealth",
-        },
+            },
         {
             beds: 0.0,
             defense: 0.0,
@@ -230,8 +219,7 @@ export const mockPayload: F4SEMapPayload = {
             vr: false,
             water: 0.0,
             worldspace: 60,
-            worldspaceFullName: "Commonwealth",
-        },
+            },
         {
             beds: 0.0,
             defense: 0.0,
@@ -251,8 +239,7 @@ export const mockPayload: F4SEMapPayload = {
             vr: false,
             water: 0.0,
             worldspace: 60,
-            worldspaceFullName: "Commonwealth",
-        },
+            },
         {
             beds: 2.0,
             defense: 0.0,
@@ -272,8 +259,7 @@ export const mockPayload: F4SEMapPayload = {
             vr: false,
             water: 3.0,
             worldspace: 60,
-            worldspaceFullName: "Commonwealth",
-        },
+            },
         {
             beds: 3.0,
             defense: 0.0,
@@ -293,8 +279,7 @@ export const mockPayload: F4SEMapPayload = {
             vr: false,
             water: 3.0,
             worldspace: 60,
-            worldspaceFullName: "Commonwealth",
-        }
+            }
     ],
     quests: [
         {
@@ -333,7 +318,6 @@ export const mockPayload: F4SEMapPayload = {
                             z: 0,
                             isDoor: false,
                             worldspace: 60,
-                            worldspaceEditorID: "Commonwealth"
                         }
                     ],
                     text: "Investigate Concord"
@@ -364,7 +348,6 @@ export const mockPayload: F4SEMapPayload = {
                             z: 0,
                             isDoor: false,
                             worldspace: 60,
-                            worldspaceEditorID: "Commonwealth"
                         }
                     ],
                     text: "Travel to the Nuka-World Transit Center"
@@ -401,7 +384,6 @@ export const mockPayload: F4SEMapPayload = {
                             z: 0,
                             isDoor: true,
                             worldspace: 60,
-                            worldspaceEditorID: "Commonwealth"
                         }
                     ],
                     text: "Talk to MacCready"

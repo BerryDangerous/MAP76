@@ -17,9 +17,7 @@ namespace PaperMap::Engine::Player
         state.position = player->GetPosition();
 
         auto *world = PaperMap::Engine::GetReferenceWorldspace(player, &state.position);
-        state.worldspaceFormID = world ? world->formID : 0;
-        state.worldspaceEditorID = (world && world->GetFormEditorID()) ? world->GetFormEditorID() : "";
-        state.worldspaceFullName = (world && world->GetFullName()) ? world->GetFullName() : "";
+        state.worldspace = world ? world->formID : 0;
 
         if (auto *camera = RE::PlayerCamera::GetSingleton())
         {

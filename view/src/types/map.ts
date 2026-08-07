@@ -57,8 +57,6 @@ export interface PlayerData {
     y: number;
     z: number;
     worldspace: number;
-    worldspaceEditorID?: string;
-    worldspaceFullName: string;
     angle: number;
     caps?: number;
     currentWeight?: number;

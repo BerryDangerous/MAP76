@@ -8,7 +8,6 @@ export interface SettlementData {
     markerFormId: number;
     iconType?: number;
     worldspace?: number;
-    worldspaceFullName?: string;
     name: string;
     owned: boolean;
     raider: boolean;
@@ -25,11 +24,17 @@ export interface SettlementData {
     linkedLocationFormIds: number[];
 }
 
+export interface WorldspaceDTO {
+    editorID: string;
+    fullName: string;
+}
+
 export interface F4SEMapPayload {
     bounds: GameBounds;
     markers: POIMarker[];
     quests: QuestItem[];
     settlements?: SettlementData[];
+    worldspaces?: Record<number, WorldspaceDTO>;
     custom_marker?: CustomMarker | null;
     power_armor?: PowerArmorMarker | null;
     player?: PlayerData;

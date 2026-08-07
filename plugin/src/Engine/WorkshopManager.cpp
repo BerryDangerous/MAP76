@@ -71,8 +71,7 @@ namespace PaperMap::Engine::WorkshopManager
                 .locationFormId = raw.locationFormId,
                 .markerFormId = raw.markerFormId,
                 .iconType = raw.iconType,
-                .worldSpaceFormId = raw.worldSpaceFormId,
-                .worldspaceFullName = raw.worldspaceFullName,
+                .worldspace = raw.worldspace,
                 .name = raw.name,
                 .owned = raw.isOwned,
                 .raider = raw.isRaider,
@@ -231,11 +230,7 @@ namespace PaperMap::Engine::WorkshopManager
 
             if (auto *world = PaperMap::Engine::GetReferenceWorldspace(rawData.workshopRef))
             {
-                rawData.worldSpaceFormId = world->formID;
-                if (world->GetFullName())
-                {
-                    rawData.worldspaceFullName = world->GetFullName();
-                }
+                rawData.worldspace = world->formID;
             }
 
             rawData.locationFormId = GetLocationIdFromReference(rawData.workshopRef);
@@ -261,11 +256,11 @@ namespace PaperMap::Engine::WorkshopManager
                 {
                     rawData.markerFormId = markerRef->formID;
 
-                    if (rawData.worldSpaceFormId == 0)
+                    if (rawData.worldspace == 0)
                     {
                         if (auto *markerWorld = PaperMap::Engine::GetReferenceWorldspace(markerRef))
                         {
-                            rawData.worldSpaceFormId = markerWorld->formID;
+                            rawData.worldspace = markerWorld->formID;
                         }
                     }
                     return true;
@@ -440,16 +435,12 @@ namespace PaperMap::Engine::WorkshopManager
             {
                 if (auto *markerRef = RE::TESForm::GetFormByID<RE::TESObjectREFR>(rawData.markerFormId))
                 {
-                    if (rawData.worldSpaceFormId == 0)
+                    if (rawData.worldspace == 0)
                     {
                         auto position = markerRef->GetPosition();
                         if (auto *markerWorld = GetReferenceWorldspace(markerRef, &position))
                         {
-                            rawData.worldSpaceFormId = markerWorld->formID;
-                            if (markerWorld->GetFullName())
-                            {
-                                rawData.worldspaceFullName = markerWorld->GetFullName();
-                            }
+                            rawData.worldspace = markerWorld->formID;
                         }
                     }
 

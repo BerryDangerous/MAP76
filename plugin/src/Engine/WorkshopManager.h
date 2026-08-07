@@ -17,8 +17,7 @@ namespace PaperMap::Engine::WorkshopManager
         uint32_t locationFormId{0};
         uint32_t markerFormId{0};
         uint16_t iconType{0};
-        uint32_t worldSpaceFormId{0};
-        std::string worldspaceFullName;
+        uint32_t worldspace{0};
         std::string name;
         bool isOwned{false};
         bool isSettlement{false};
@@ -48,8 +47,7 @@ namespace PaperMap::Engine::WorkshopManager
         uint32_t locationFormId{0};
         uint32_t markerFormId{0};
         uint16_t iconType{0};
-        uint32_t worldSpaceFormId{0};
-        std::string worldspaceFullName;
+        uint32_t worldspace{0};
         std::string name;
         bool owned{false};
         bool raider{false};

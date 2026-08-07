@@ -1,4 +1,5 @@
 import { SettlementData } from '../types/payloads.js';
+import { mapState } from '../core/state.js';
 import { FocusManager } from '../systems/focusManager.js';
 import { MapViewport } from './viewport.js';
 import { FloatingCard } from '../ui/floatingCard.js';
@@ -176,12 +177,13 @@ export const SettlementCard = {
         };
 
         let locationSectionHtml = '';
-        if (settlement.worldspaceFullName) {
+        const wsFullName = (settlement.worldspace !== undefined && mapState.lastPayload?.worldspaces) ? mapState.lastPayload.worldspaces[settlement.worldspace]?.fullName : undefined;
+        if (wsFullName) {
             locationSectionHtml = `
             <div class="fc-section">
                 <div class="fc-section-box">
                     <div class="fc-section-title">LOCATION</div>
-                    <div class="fc-section-text">${settlement.worldspaceFullName}</div>
+                    <div class="fc-section-text">${wsFullName}</div>
                 </div>
             </div>`;
         }

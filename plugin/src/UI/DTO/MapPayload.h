@@ -31,20 +31,17 @@ namespace PaperMap::UI::DTO
         float y;
         float z;
         uint32_t worldspace;
-        std::string worldspaceEditorID;
-        std::string worldspaceFullName;
         float angle;
         float caps;
         float currentWeight;
         float maxWeight;
     };
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(PlayerDTO, x, y, z, worldspace, worldspaceEditorID, worldspaceFullName, angle, caps, currentWeight, maxWeight)
+    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(PlayerDTO, x, y, z, worldspace, angle, caps, currentWeight, maxWeight)
 
     struct POIMarker
     {
         uint32_t formId;
         uint32_t worldspace;
-        std::string worldspaceEditorID;
         float x;
         float y;
         uint32_t type;
@@ -60,7 +57,6 @@ namespace PaperMap::UI::DTO
         j = nlohmann::json{
             {"formId", p.formId},
             {"worldspace", p.worldspace},
-            {"worldspaceEditorID", p.worldspaceEditorID},
             {"x", p.x},
             {"y", p.y},
             {"type", p.type},
@@ -81,9 +77,8 @@ namespace PaperMap::UI::DTO
         float z;
         bool isDoor;
         uint32_t worldspace;
-        std::string worldspaceEditorID;
     };
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(QuestTarget, x, y, z, isDoor, worldspace, worldspaceEditorID)
+    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(QuestTarget, x, y, z, isDoor, worldspace)
 
     struct QuestObjective
     {
@@ -109,21 +104,19 @@ namespace PaperMap::UI::DTO
     struct CustomMarker
     {
         uint32_t worldspace;
-        std::string worldspaceEditorID;
         float x;
         float y;
     };
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(CustomMarker, worldspace, worldspaceEditorID, x, y)
+    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(CustomMarker, worldspace, x, y)
 
     struct PowerArmorMarker
     {
         uint32_t worldspace;
-        std::string worldspaceEditorID;
         float x;
         float y;
         float z;
     };
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(PowerArmorMarker, worldspace, worldspaceEditorID, x, y, z)
+    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(PowerArmorMarker, worldspace, x, y, z)
 
     struct SettlementDTO
     {
@@ -132,7 +125,6 @@ namespace PaperMap::UI::DTO
         uint32_t markerFormId;
         uint16_t iconType;
         uint32_t worldspace;
-        std::string worldspaceFullName;
         std::string name;
         bool owned;
         bool raider;
@@ -157,7 +149,6 @@ namespace PaperMap::UI::DTO
             {"markerFormId", s.markerFormId},
             {"iconType", s.iconType},
             {"worldspace", s.worldspace},
-            {"worldspaceFullName", s.worldspaceFullName},
             {"name", s.name},
             {"owned", s.owned},
             {"raider", s.raider},
@@ -177,12 +168,20 @@ namespace PaperMap::UI::DTO
         }
     }
 
+    struct WorldspaceDTO
+    {
+        std::string editorID;
+        std::string fullName;
+    };
+    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(WorldspaceDTO, editorID, fullName)
+
     struct MapPayload
     {
         GameBounds bounds;
         std::vector<POIMarker> markers;
         std::vector<QuestItem> quests;
         std::vector<SettlementDTO> settlements;
+        std::unordered_map<uint32_t, WorldspaceDTO> worldspaces;
         std::optional<CustomMarker> custom_marker;
         std::optional<PowerArmorMarker> power_armor;
         std::optional<PlayerDTO> player;
@@ -196,6 +195,13 @@ namespace PaperMap::UI::DTO
             {"markers", p.markers},
             {"quests", p.quests},
             {"settlements", p.settlements}};
+            
+        nlohmann::json wsJson = nlohmann::json::object();
+        for (const auto &[key, val] : p.worldspaces)
+        {
+            wsJson[std::to_string(key)] = val;
+        }
+        j["worldspaces"] = wsJson;
         if (p.player)
         {
             j["player"] = *p.player;

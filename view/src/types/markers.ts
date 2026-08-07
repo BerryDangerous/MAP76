@@ -1,7 +1,6 @@
 export interface POIMarker {
     formId: number;
     worldspace: number;
-    worldspaceEditorID?: string;
     x: number;
     y: number;
     type: number;
@@ -14,14 +13,12 @@ export interface POIMarker {
 
 export interface CustomMarker {
     worldspace: number;
-    worldspaceEditorID?: string;
     x: number;
     y: number;
 }
 
 export interface PowerArmorMarker {
     worldspace: number;
-    worldspaceEditorID?: string;
     x: number;
     y: number;
     z: number;

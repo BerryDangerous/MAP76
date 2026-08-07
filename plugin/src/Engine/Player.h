@@ -9,9 +9,7 @@ namespace PaperMap::Engine::Player
     struct State
     {
         RE::NiPoint3 position{0.0f, 0.0f, 0.0f};
-        uint32_t worldspaceFormID{0};
-        std::string worldspaceEditorID;
-        std::string worldspaceFullName;
+        uint32_t worldspace{0};
         float headingDegrees{0.0f};
         float caps{0.0f};
         float currentWeight{0.0f};
