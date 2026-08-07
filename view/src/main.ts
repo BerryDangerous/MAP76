@@ -14,6 +14,7 @@ import { WorkshopList } from './components/workshopList.js';
 import { QuestCard } from './components/questCard.js';
 import { SettlementCard } from './components/settlementCard.js';
 import { MarkerCard } from './components/markerCard.js';
+import { SearchPanel } from './components/searchPanel.js';
 import { FocusManager } from './systems/focusManager.js';
 import { F4SEMapPayload } from './types/payloads.js';
 import { DockControlsSystem } from './systems/dockControls.js';
@@ -31,6 +32,7 @@ export function resetUIState(): void {
     MarkerCard.close();
     QuestList.collapse();
     WorkshopList.collapse();
+    SearchPanel.collapse();
 }
 
 (window as any).resetUIState = resetUIState;
@@ -44,6 +46,7 @@ initializeF4SEBindings((payload: F4SEMapPayload) => {
     SettlementCard.init();
     MarkerCard.init();
     CustomMarkerCard.init();
+    SearchPanel.init();
 });
 
 window.addEventListener('FrameTick', (e: Event) => {

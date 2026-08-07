@@ -1,0 +1,147 @@
+export interface SearchBoxOptions {
+    container: HTMLElement;
+    placeholder?: string;
+    initialValue?: string;
+    onInput?: (text: string) => void;
+    onFocus?: () => void;
+    onBlur?: () => void;
+}
+
+export class SearchBox {
+    private container: HTMLElement;
+    private wrapperEl!: HTMLElement;
+    private inputEl!: HTMLInputElement;
+    private clearBtnEl!: HTMLElement;
+    private options: SearchBoxOptions;
+
+    constructor(options: SearchBoxOptions) {
+        this.options = options;
+        this.container = options.container;
+        this.init();
+    }
+
+    private init(): void {
+        this.wrapperEl = document.createElement('div');
+        this.wrapperEl.className = 'search-box-wrapper';
+
+        this.inputEl = document.createElement('input');
+        this.inputEl.type = 'text';
+        this.inputEl.className = 'search-box-input';
+        this.inputEl.setAttribute('spellcheck', 'false');
+
+        this.clearBtnEl = document.createElement('div');
+        this.clearBtnEl.className = 'search-box-clear-btn';
+        this.clearBtnEl.textContent = 'CLEAR';
+        this.clearBtnEl.tabIndex = -1;
+        
+        if (this.options.placeholder) {
+            this.inputEl.placeholder = this.options.placeholder;
+        }
+
+        if (this.options.initialValue) {
+            this.inputEl.value = this.options.initialValue;
+        }
+
+        this.inputEl.addEventListener('input', () => {
+            this.updateClearBtnVisibility();
+            if (this.options.onInput) {
+                this.options.onInput(this.inputEl.value);
+            }
+        });
+
+        this.inputEl.addEventListener('keydown', (e: KeyboardEvent) => {
+            if (e.key === 'ArrowRight' && this.inputEl.selectionStart === this.inputEl.value.length && this.inputEl.value.length > 0) {
+                this.clearBtnEl.focus();
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        });
+
+        this.clearBtnEl.addEventListener('keydown', (e: KeyboardEvent) => {
+            if (e.key === 'ArrowLeft') {
+                this.inputEl.focus();
+                e.preventDefault();
+                e.stopPropagation();
+            } else if (e.key === 'Enter' || e.key === ' ' || e.key.toLowerCase() === 'e') {
+                this.clear();
+                this.inputEl.focus();
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        });
+
+        this.clearBtnEl.addEventListener('click', (e: MouseEvent) => {
+            e.stopPropagation();
+            this.clear();
+            this.inputEl.focus();
+        });
+
+        this.wrapperEl.addEventListener('focusin', (e: FocusEvent) => {
+            const oldTarget = e.relatedTarget as Node;
+            if (!this.wrapperEl.contains(oldTarget)) {
+                if (this.options.onFocus) {
+                    this.options.onFocus();
+                }
+            }
+        });
+
+        this.wrapperEl.addEventListener('focusout', (e: FocusEvent) => {
+            const newTarget = e.relatedTarget as Node;
+            if (!this.wrapperEl.contains(newTarget)) {
+                if (this.options.onBlur) {
+                    this.options.onBlur();
+                }
+            }
+        });
+
+        this.wrapperEl.appendChild(this.inputEl);
+        this.wrapperEl.appendChild(this.clearBtnEl);
+        this.container.appendChild(this.wrapperEl);
+
+        this.updateClearBtnVisibility();
+    }
+
+    public clear(): void {
+        this.inputEl.value = '';
+        this.updateClearBtnVisibility();
+        this.inputEl.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+
+    private updateClearBtnVisibility(): void {
+        this.clearBtnEl.style.display = this.inputEl.value.length > 0 ? 'block' : 'none';
+    }
+
+    public focus(cursorAtEnd: boolean = true): void {
+        this.inputEl.focus();
+        if (cursorAtEnd) {
+            setTimeout(() => {
+                const len = this.inputEl.value.length;
+                this.inputEl.setSelectionRange(len, len);
+            }, 10);
+        }
+    }
+
+    public blur(): void {
+        if (document.activeElement === this.inputEl) {
+            this.inputEl.blur();
+        } else if (document.activeElement === this.clearBtnEl) {
+            this.clearBtnEl.blur();
+        }
+    }
+
+    public isFocused(): boolean {
+        return document.activeElement === this.inputEl || document.activeElement === this.clearBtnEl;
+    }
+
+    public getValue(): string {
+        return this.inputEl.value;
+    }
+
+    public setValue(value: string): void {
+        this.inputEl.value = value;
+    }
+
+    public getInputElement(): HTMLInputElement {
+        return this.inputEl;
+    }
+}

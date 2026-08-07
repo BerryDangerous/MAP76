@@ -675,7 +675,8 @@ body, html {
     border-color: #f5cb5b;
 }
 
-.selectable-list .sl-item.selected .sl-item-title {
+.selectable-list .sl-item.selected .sl-item-title,
+.selectable-list .sl-item.selected .sl-item-subtitle {
     color: #000000;
     text-shadow: none;
 }
@@ -694,7 +695,7 @@ body, html {
     align-items: center;
     justify-content: flex-start;
     width: 100%;
-    height: 25px;
+    min-height: 25px;
 }
 
 .selectable-list .sl-marker-box {
@@ -1007,9 +1008,90 @@ body, html {
     margin-left: -2px;
 }
 
+/* ==========================================================================
+   15. SEARCH PANEL
+   ========================================================================== */
+
+#search-panel {
+    width: 350px;
+}
+
+#search-panel[data-collapsed="true"] {
+    height: auto;
+    max-height: 30px;
+}
+
+#search-panel[data-collapsed="true"] .sl-body,
+#search-panel[data-collapsed="true"] .sp-search-bar-container {
+    display: none !important;
+}
+
+#search-panel[data-collapsed="false"] {
+    height: 402px;
+}
+
+.search-box-wrapper {
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.search-box-input {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    border: none;
+    color: #ffffcb;
+    padding: 4px 60px 4px 8px;
+    font-family: 'PibotoCondensed', sans-serif;
+    font-size: 16px;
+    outline: none;
+    margin: 4px 0;
+}
+
+.search-box-input::placeholder {
+    color: #ffffcb;
+    opacity: 0.5;
+}
+
+.search-box-input:focus {
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(245, 203, 91, 0.4);
+}
+
+.search-box-clear-btn {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 12px;
+    font-weight: bold;
+    display: none;
+    padding: 2px 6px;
+    outline: none;
+    user-select: none;
+}
+
+.search-box-clear-btn:focus, .search-box-clear-btn:hover {
+    background: rgba(0,0,0,0.6);
+    border: 1px solid rgba(245, 203, 91, 0.4);
+    color: #ffffcb;
+}
+
+#search-panel[data-input-focused="true"] .cp-collapse-btn {
+    opacity: 0.4;
+    transition: opacity 0.15s ease;
+}
+
+#search-panel[data-input-focused="true"] .cp-collapse-btn:hover {
+    opacity: 1;
+}
+
 
 /* ==========================================================================
-   15. CUSTOM
+   CUSTOM
    ========================================================================== */
 
 #quest-list-panel {

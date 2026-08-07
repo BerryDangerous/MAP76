@@ -26,9 +26,9 @@ export class DockControlsSystem {
         },
         'top-right': {
             corner: 'top-right',
-            collapseKey: 'ArrowUp',
+            collapseKey: 'ArrowRight',
             expandKey: 'ArrowDown',
-            collapseGlyph: 'W',
+            collapseGlyph: 'U',
             expandGlyph: 'V'
         },
         'bottom-left': {
