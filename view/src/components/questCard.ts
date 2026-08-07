@@ -8,6 +8,8 @@ import { KeybindsSystem } from '../systems/keybinds.js';
 import { StatusItemList } from '../ui/statusItemList.js';
 import { FloatingCard } from '../ui/floatingCard.js';
 import { DockCorner } from '../systems/dockControls.js';
+import { QuestUtils } from '../utils/questUtils.js';
+import { StringUtils } from '../utils/stringUtils.js';
 
 let floatingCard: FloatingCard | null = null;
 
@@ -159,7 +161,7 @@ export const QuestCard = {
             <div class="fc-section">
                 <div class="fc-section-box">
                     <div class="fc-section-title">JOURNAL</div>
-                    <div class="fc-section-text">${this.escapeHtml(journalText)}</div>
+                    <div class="fc-section-text">${StringUtils.escapeHtml(journalText)}</div>
                 </div>
             </div>
         ` : '';
@@ -182,7 +184,7 @@ export const QuestCard = {
     },
 
     buildButtonConfigs(quest: QuestItem): ActionButtonConfig[] {
-        const isCompleted = quest.objectives && quest.objectives.length > 0 && quest.objectives.every(o => o.state === 2 || o.state === 3);
+        const isCompleted = QuestUtils.isQuestCompleted(quest);
 
         return isCompleted ? [
         ] : [
@@ -209,18 +211,5 @@ export const QuestCard = {
                 }
             }
         ];
-    },
-
-    escapeHtml(str: string): string {
-        return str.replace(/[&<>"']/g, (m) => {
-            switch (m) {
-                case '&': return '&amp;';
-                case '<': return '&lt;';
-                case '>': return '&gt;';
-                case '"': return '&quot;';
-                case "'": return '&#039;';
-                default: return m;
-            }
-        });
     }
 };

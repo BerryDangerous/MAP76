@@ -6,8 +6,8 @@ import { F4SEMapPayload } from '../types/payloads.js';
 import { QuestItem } from '../types/quests.js';
 import { MapViewport } from './viewport.js';
 import { MARKER_ICON_QUEST_TARGET, MARKER_ICON_QUEST_DOOR, MARKER_ICON_CUSTOM_MARKER, MARKER_ICON_POWER_ARMOR, MARKER_ICON_RAIDER_OUTPOST, MARKER_ICON_VASSAL_SETTLEMENT, MARKER_ICON_POTENTIAL_VASSAL_SETTLEMENT } from '../core/constants.js';
-import { isSameWorldspace } from '../utils/worldspace.js';
 import { renderSupplyLines, isSupplyLinesViewActive } from './supplyLines.js';
+import { WorldspaceUtils } from '../utils/worldspaceUtils.js';
 
 function getPlayerLayer(): HTMLElement | null {
     return document.getElementById('player-layer');
@@ -77,7 +77,7 @@ export function getPotentialVassalMarkerFormIds(
         const sMarker = payload.markers.find(m => m.formId === s.markerFormId);
         if (!sMarker) return;
 
-        if (!isSameWorldspace(sMarker.worldspace, outpostMarker.worldspace)) return;
+        if (!WorldspaceUtils.isSameWorldspace(sMarker.worldspace, outpostMarker.worldspace)) return;
 
         const dx = sMarker.x - outpostMarker.x;
         const dy = sMarker.y - outpostMarker.y;
@@ -98,7 +98,7 @@ export function loadMarkers(payload: F4SEMapPayload) {
 
     if (payload.player && payload.player.worldspace !== undefined) {
         const wsId = payload.player.worldspace;
-        const editorID = payload.worldspaces?.[wsId]?.editorID;
+        const editorID = WorldspaceUtils.getWorldspaceEditorID(wsId);
         ThemeEngine.updateWorldspaceConfig(wsId, editorID);
     }
 
@@ -134,7 +134,7 @@ export function loadMarkers(payload: F4SEMapPayload) {
 
 function renderPlayer(player: PlayerData | undefined, worldspaceID: number, bounds: GameBounds) {
     mapState.player.active = false;
-    if (!player || !isSameWorldspace(player.worldspace, worldspaceID)) return;
+    if (!player || !WorldspaceUtils.isSameWorldspace(player.worldspace, worldspaceID)) return;
 
     const pos = MapViewport.gameToMapCoords(player.x, player.y, player.z, bounds);
     const pImg = document.createElement('img');
@@ -161,7 +161,7 @@ function renderLocationMarkers(markers: POIMarker[], worldspaceID: number, bound
     const { minX: bMinX, maxX: bMaxX, minY: bMinY, maxY: bMaxY } = MapViewport.getEffectiveBounds(bounds);
 
     markers.forEach(m => {
-        if (!isSameWorldspace(m.worldspace, worldspaceID)) return;
+        if (!WorldspaceUtils.isSameWorldspace(m.worldspace, worldspaceID)) return;
 
         const shouldRender = m.visible || m.discovered || m.canFastTravel;
         if (!shouldRender) return;
@@ -224,7 +224,7 @@ function renderQuestMarkers(quests: QuestItem[], worldspaceID: number, bounds: G
             const markerTooltipText = objective.text ? objective.text : quest.questName;
 
             objective.targets.forEach(target => {
-                if (!isSameWorldspace(target.worldspace, worldspaceID)) return;
+                if (!WorldspaceUtils.isSameWorldspace(target.worldspace, worldspaceID)) return;
 
                 const pos = MapViewport.gameToMapCoords(target.x, target.y, target.z, bounds);
 
@@ -273,7 +273,7 @@ function renderQuestMarkers(quests: QuestItem[], worldspaceID: number, bounds: G
 function renderCustomMarker(marker: CustomMarker | null | undefined, worldspaceID: number, bounds: GameBounds, questLayer: HTMLElement) {
     if (!marker) return;
 
-    if (!isSameWorldspace(marker.worldspace, worldspaceID)) {
+    if (!WorldspaceUtils.isSameWorldspace(marker.worldspace, worldspaceID)) {
         return;
     }
 
@@ -295,7 +295,7 @@ function renderCustomMarker(marker: CustomMarker | null | undefined, worldspaceI
 function renderPowerArmor(pa: PowerArmorMarker | null | undefined, worldspaceID: number, bounds: GameBounds, questLayer: HTMLElement) {
     if (!pa) return;
 
-    if (!isSameWorldspace(pa.worldspace, worldspaceID)) {
+    if (!WorldspaceUtils.isSameWorldspace(pa.worldspace, worldspaceID)) {
         return;
     }
 

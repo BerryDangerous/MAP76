@@ -11,6 +11,7 @@ import { showFastTravelConfirmationModal } from './fastTravelModal.js';
 import { calculateSettlementRatings, SettlementDataWithRatings } from '../utils/settlementUtils.js';
 import { DockCorner } from '../systems/dockControls.js';
 import { WorkshopList } from './workshopList.js';
+import { WorldspaceUtils } from '../utils/worldspaceUtils.js';
 
 let settlementCardInstance: FloatingCard | null = null;
 
@@ -177,7 +178,7 @@ export const SettlementCard = {
         };
 
         let locationSectionHtml = '';
-        const wsFullName = (settlement.worldspace !== undefined && mapState.lastPayload?.worldspaces) ? mapState.lastPayload.worldspaces[settlement.worldspace]?.fullName : undefined;
+        const wsFullName = WorldspaceUtils.getWorldspaceName(settlement.worldspace);
         if (wsFullName) {
             locationSectionHtml = `
             <div class="fc-section">
@@ -205,14 +206,6 @@ export const SettlementCard = {
             </div>
             ${locationSectionHtml}
         `;
-    },
-
-    escapeHtml(str: string): string {
-        return str.replace(/&/g, "&amp;")
-                  .replace(/</g, "&lt;")
-                  .replace(/>/g, "&gt;")
-                  .replace(/"/g, "&quot;")
-                  .replace(/'/g, "&#039;");
     },
 
     buildButtonConfigs(settlement: SettlementDataWithRatings): ActionButtonConfig[] {

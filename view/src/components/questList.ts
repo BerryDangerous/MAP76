@@ -10,6 +10,8 @@ import { CollapsiblePanel } from '../ui/collapsiblePanel.js';
 import { CustomScrollbar } from '../ui/customScrollbar.js';
 import { KeybindsSystem } from '../systems/keybinds.js';
 import { DockControlsSystem, DockCorner } from '../systems/dockControls.js';
+import { QuestUtils } from '../utils/questUtils.js';
+import { StringUtils } from '../utils/stringUtils.js';
 
 export type QuestFilterTab = 'ALL' | 'MAIN' | 'SIDE' | 'MISC';
 
@@ -316,10 +318,10 @@ export const QuestList = {
         const quests = mapState.lastPayload?.quests || [];
         const filtered = this.filterQuests(quests, questListState.currentTab);
         if (questListState.isCollapsed) {
-            return filtered.filter(q => q.isTracked && !this.isQuestCompleted(q));
+            return filtered.filter(q => q.isTracked && !QuestUtils.isQuestCompleted(q));
         }
-        const uncompleted = filtered.filter(q => !this.isQuestCompleted(q));
-        const completed = filtered.filter(q => this.isQuestCompleted(q));
+        const uncompleted = filtered.filter(q => !QuestUtils.isQuestCompleted(q));
+        const completed = filtered.filter(q => QuestUtils.isQuestCompleted(q));
         return [...uncompleted, ...completed];
     },
 
@@ -416,8 +418,8 @@ export const QuestList = {
         } else if (isCollapsed) {
             itemsHtml = itemsToRender.map((q, idx) => this.renderQuestItem(q, idx)).join('');
         } else {
-            const uncompleted = itemsToRender.filter(q => !this.isQuestCompleted(q));
-            const completed = itemsToRender.filter(q => this.isQuestCompleted(q));
+            const uncompleted = itemsToRender.filter(q => !QuestUtils.isQuestCompleted(q));
+            const completed = itemsToRender.filter(q => QuestUtils.isQuestCompleted(q));
 
             let currentItemIndex = 0;
             itemsHtml += uncompleted.map(q => this.renderQuestItem(q, currentItemIndex++)).join('');
@@ -472,13 +474,6 @@ export const QuestList = {
         listController.setSelectedIndex(listController.getSelectedIndex(), true, autoScroll);
     },
 
-    isQuestCompleted(quest: QuestItem): boolean {
-        if (!quest.objectives || quest.objectives.length === 0) return false;
-        const hasActive = quest.objectives.some(o => o.state === 1);
-        const hasCompleted = quest.objectives.some(o => o.state === 2 || o.state === 3);
-        return !hasActive && hasCompleted;
-    },
-
     filterQuests(quests: QuestItem[], tab: QuestFilterTab): QuestItem[] {
         if (tab === 'ALL') return quests;
         if (tab === 'MAIN') return quests.filter(q => q.type === 'Main');
@@ -488,10 +483,10 @@ export const QuestList = {
     },
 
     renderQuestItem(quest: QuestItem, index: number): string {
-        const isCompleted = this.isQuestCompleted(quest);
+        const isCompleted = QuestUtils.isQuestCompleted(quest);
         const isActive = quest.isTracked;
         const isSelected = !questListState.isCollapsed && index === listController.getSelectedIndex();
-        const keyAttr = quest.formId !== undefined ? `data-quest-formid="${quest.formId}"` : `data-quest-name="${this.escapeHtml(quest.questName)}"`;
+        const keyAttr = quest.formId !== undefined ? `data-quest-formid="${quest.formId}"` : `data-quest-name="${StringUtils.escapeHtml(quest.questName)}"`;
         
         let statusClass = 'inactive';
         if (isCompleted) {
@@ -512,22 +507,9 @@ export const QuestList = {
           <div class="sl-item ${statusClass} ${isSelected ? 'selected' : ''}" data-quest-index="${index}" ${keyAttr}>
              <div class="sl-item-content">
              <div class="sl-marker-box ${statusClass}"></div>
-             <div class="sl-item-title">${this.escapeHtml(displayName)}</div>
+             <div class="sl-item-title">${StringUtils.escapeHtml(displayName)}</div>
             </div>
           </div>
         `;
-    },
-
-    escapeHtml(str: string): string {
-        return str.replace(/[&<>"']/g, (m) => {
-            switch (m) {
-                case '&': return '&amp;';
-                case '<': return '&lt;';
-                case '>': return '&gt;';
-                case '"': return '&quot;';
-                case "'": return '&#039;';
-                default: return m;
-            }
-        });
     }
 };

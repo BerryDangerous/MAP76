@@ -92,3 +92,9 @@ export function getWorkshopBadgesHtml(workshop: SettlementDataWithRatings): stri
     return badgesHtml;
 }
 
+export function getWorkshopSubtitle(workshop: SettlementData): string {
+    if (workshop.raider) return 'Raider Outpost';
+    if (workshop.vassal) return 'Vassal Settlement';
+    if (workshop.vr) return 'VR Workshop';
+    return 'Settlement';
+}

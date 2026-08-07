@@ -1,6 +1,7 @@
 import { PlayerData } from '../types/map.js';
 import { FrameTickPayload } from '../types/payloads.js';
 import { mapState } from '../core/state.js';
+import { WorldspaceUtils } from '../utils/worldspaceUtils.js';
 
 export const InfoCard = {
     init(player?: PlayerData): void {
@@ -10,11 +11,8 @@ export const InfoCard = {
         const worldspaceEl = document.getElementById('info-worldspace');
         if (worldspaceEl) {
             let wsName = 'Unknown';
-            if (player && player.worldspace && mapState.lastPayload?.worldspaces) {
-                const ws = mapState.lastPayload.worldspaces[player.worldspace];
-                if (ws && ws.fullName) {
-                    wsName = ws.fullName;
-                }
+            if (player && player.worldspace !== undefined) {
+                wsName = WorldspaceUtils.getWorldspaceName(player.worldspace) || 'Unknown';
             }
             worldspaceEl.textContent = wsName;
         }

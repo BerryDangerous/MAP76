@@ -6,10 +6,11 @@ import { CollapsiblePanel } from '../ui/collapsiblePanel.js';
 import { CustomScrollbar } from '../ui/customScrollbar.js';
 import { KeybindsSystem } from '../systems/keybinds.js';
 import { DockControlsSystem, DockCorner } from '../systems/dockControls.js';
-import { SettlementDataWithRatings, getWorkshopIconType, getWorkshopBadgesHtml } from '../utils/settlementUtils.js';
+import { SettlementDataWithRatings, getWorkshopIconType, getWorkshopBadgesHtml, getWorkshopSubtitle } from '../utils/settlementUtils.js';
 import { SettlementCard } from './settlementCard.js';
 import { MarkerCard } from './markerCard.js';
 import { ThemeEngine } from '../systems/theme.js';
+import { StringUtils } from '../utils/stringUtils.js';
 
 export interface WorkshopListState {
     theme: '76';
@@ -415,10 +416,7 @@ export const WorkshopList = {
         const isSelected = !workshopListState.isCollapsed && index === listController.getSelectedIndex();
         const keyAttr = `data-marker-formid="${workshop.markerFormId}"`;
         
-        let subtitle = 'Settlement';
-        if (workshop.raider) subtitle = 'Raider Outpost';
-        else if (workshop.vassal) subtitle = 'Vassal Settlement';
-        else if (workshop.vr) subtitle = 'VR Workshop';
+        const subtitle = getWorkshopSubtitle(workshop);
 
         const marker = mapState.lastPayload?.markers?.find(m => m.formId === workshop.markerFormId);
         const iconType = getWorkshopIconType(workshop, marker);
@@ -433,7 +431,7 @@ export const WorkshopList = {
                  <img class="wl-marker-icon" src="${markerIconUrl}" alt="Icon" style="width: 24px; height: 24px; margin-right: 10px; object-fit: contain;" />
                  <div class="wl-text-container" style="display: flex; flex-direction: column; justify-content: center; flex: 1;">
                      <div class="sl-item-title" style="display: flex; align-items: center; gap: 5px; line-height: 1.2;">
-                         ${this.escapeHtml(workshop.name)}
+                         ${StringUtils.escapeHtml(workshop.name)}
                          ${badgesHtml}
                      </div>
                      <div class="wl-subtitle" style="font-size: 0.75em; opacity: 0.7; line-height: 1;">${subtitle}</div>
@@ -441,18 +439,5 @@ export const WorkshopList = {
             </div>
           </div>
         `;
-    },
-
-    escapeHtml(str: string): string {
-        return str.replace(/[&<>"']/g, (m) => {
-            switch (m) {
-                case '&': return '&amp;';
-                case '<': return '&lt;';
-                case '>': return '&gt;';
-                case '"': return '&quot;';
-                case "'": return '&#039;';
-                default: return m;
-            }
-        });
     }
 };
