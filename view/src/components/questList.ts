@@ -42,7 +42,8 @@ const listController = new SelectableListController<QuestItem>({
         if (selectedQuest) {
             questListState.selectedQuestId = selectedQuest.formId ?? selectedQuest.questName;
             QuestList.notifyQuestFocused(selectedQuest);
-            QuestCard.open(selectedQuest);
+            const container = document.getElementById('quest-list-panel');
+            QuestCard.open(selectedQuest, undefined, container || undefined, questListState.dockCorner, false, 'QUEST_LIST', () => QuestList.collapse());
         } else {
             questListState.selectedQuestId = null;
             QuestCard.close();
@@ -277,7 +278,12 @@ export const QuestList = {
             return true;
         }
 
-        return true;
+        if (KeybindsSystem.isAction(e, 'NAV_BACK')) {
+            this.collapse();
+            return true;
+        }
+
+        return false;
     },
 
     toggleQuestActive(quest: QuestItem): void {

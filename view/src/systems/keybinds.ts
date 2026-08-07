@@ -16,7 +16,7 @@ export const DEFAULT_KEYMAP: Record<KeyAction, string[]> = {
     NAV_DOWN: ['ArrowDown'],
     NAV_LEFT: ['ArrowLeft'],
     NAV_RIGHT: ['ArrowRight'],
-    NAV_BACK: ['Escape', 'Tab'],
+    NAV_BACK: ['Tab'],
     TAB_PREV: ['z', 'Z'],
     TAB_NEXT: ['c', 'C'],
     SELECT: ['Enter', ' ', 'e', 'E'],
@@ -31,7 +31,19 @@ export class KeybindsSystem {
     public static isAction(e: KeyboardEvent, action: KeyAction): boolean {
         const allowedKeys = this.keymap[action];
         if (!allowedKeys) return false;
-        return allowedKeys.includes(e.key);
+
+        const key = e.key;
+        const code = e.code;
+        const keyCode = e.keyCode;
+
+        return allowedKeys.some(k => {
+            if (k === key) return true;
+            if (key && k.toLowerCase() === key.toLowerCase()) return true;
+            if (code && k === code) return true;
+            if (k === 'Escape' && (code === 'Escape' || keyCode === 27 || key?.toLowerCase() === 'escape')) return true;
+            if (k === 'Tab' && (code === 'Tab' || keyCode === 9 || key?.toLowerCase() === 'tab')) return true;
+            return false;
+        });
     }
 
     public static getActionKeys(action: KeyAction): string[] {

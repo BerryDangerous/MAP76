@@ -17,6 +17,7 @@ import { MarkerCard } from './components/markerCard.js';
 import { FocusManager } from './systems/focusManager.js';
 import { F4SEMapPayload } from './types/payloads.js';
 import { DockControlsSystem } from './systems/dockControls.js';
+import { KeybindsSystem } from './systems/keybinds.js';
 
 ThemeEngine.initMapConfig();
 
@@ -28,6 +29,8 @@ export function resetUIState(): void {
     QuestCard.close();
     SettlementCard.close();
     MarkerCard.close();
+    QuestList.collapse();
+    WorkshopList.collapse();
 }
 
 (window as any).resetUIState = resetUIState;
@@ -85,46 +88,32 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 
     window.addEventListener('keydown', (e: KeyboardEvent) => {
-        const keyLower = e.key.toLowerCase();
+        if (e.key === 'Escape' || e.code === 'Escape' || e.keyCode === 27) {
+            e.preventDefault();
+            e.stopPropagation();
+            return;
+        }
 
-        if (e.key === 'Tab' || e.key === 'Escape') {
+        if (KeybindsSystem.isAction(e, 'NAV_BACK')) {
             e.preventDefault();
         }
 
-        if (keyLower === 'm') {
-            console.log('Closing map via M key...');
+        if (KeybindsSystem.isAction(e, 'CLOSE_MAP') && FocusManager.getFocus() === 'MAP') {
+            console.log('Closing map via CLOSE_MAP action...');
             resetUIState();
             EngineBridge.closeMap();
             return;
         }
 
-        if (e.key === 'Escape' || e.key === 'Tab') {
-            const currentFocus = FocusManager.getFocus();
-            if (currentFocus === 'QUEST_CARD') {
-                console.log('[KeyHandler] Closing QuestCard via Escape/Tab');
-                QuestCard.close();
-                FocusManager.setFocus('MAP');
-                return;
-            } else if (currentFocus === 'QUEST_LIST') {
-                console.log('[KeyHandler] Collapsing QuestList via Escape/Tab');
-                QuestList.collapse();
-                FocusManager.setFocus('MAP');
-                return;
-            } else if (currentFocus === 'WORKSHOP_LIST') {
-                console.log('[KeyHandler] Collapsing WorkshopList via Escape/Tab');
-                WorkshopList.collapse();
-                FocusManager.setFocus('MAP');
-                return;
-            } else {
-                console.log('[KeyHandler] Focus is MAP. Closing map via Escape/Tab');
-                resetUIState();
-                EngineBridge.closeMap();
-                return;
-            }
-        }
-
         const handledByFocus = FocusManager.handleKeyDown(e);
         if (handledByFocus) {
+            return;
+        }
+
+        if (KeybindsSystem.isAction(e, 'NAV_BACK')) {
+            console.log('[KeyHandler] Focus is MAP. Closing map via NAV_BACK');
+            resetUIState();
+            EngineBridge.closeMap();
             return;
         }
 
@@ -135,11 +124,24 @@ window.addEventListener('DOMContentLoaded', () => {
                 QuestList.expand();
             } else if (DockControlsSystem.isExpandKey(e, workshopDockCorner)) {
                 WorkshopList.expand();
-            } else if (keyLower === 'c') {
+            } else if (DockControlsSystem.isExpandKey(e, SearchPanel.getState().dockCorner)) {
+                SearchPanel.expand();
+            } else if (KeybindsSystem.isAction(e, 'TAB_NEXT')) {
                 console.log('Toggling Supply Lines View...');
                 toggleSupplyLinesView();
                 applySupplyLinesVisibilityFilter();
             }
+        }
+    });
+
+    window.addEventListener('keyup', (e: KeyboardEvent) => {
+        if (e.key === 'Escape' || e.code === 'Escape' || e.keyCode === 27) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Closing map via Escape keyup...');
+            resetUIState();
+            EngineBridge.closeMap();
+            return;
         }
     });
 });

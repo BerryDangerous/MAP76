@@ -252,7 +252,12 @@ export const WorkshopList = {
             return true;
         }
 
+        if (KeybindsSystem.isAction(e, 'NAV_BACK')) {
+            this.collapse();
         return true;
+        }
+
+        return false;
     },
 
     notifyWorkshopFocused(workshop: SettlementDataWithRatings | null): void {
@@ -274,12 +279,15 @@ export const WorkshopList = {
         const canFastTravel = marker ? marker.canFastTravel : workshop.owned;
         const container = document.getElementById('workshop-list-panel') || undefined;
 
+        const returnFocusId = 'WORKSHOP_LIST';
+        const onNavBack = () => this.collapse();
+
         if (workshop.vassal) {
             SettlementCard.close();
-            MarkerCard.open(workshop.name, workshop.markerFormId, canFastTravel, undefined, container, workshopListState.dockCorner, false);
+            MarkerCard.open(workshop.name, workshop.markerFormId, canFastTravel, undefined, container, workshopListState.dockCorner, false, returnFocusId, onNavBack);
         } else {
             MarkerCard.close();
-            SettlementCard.open(workshop, workshop.markerFormId, canFastTravel, undefined, container, workshopListState.dockCorner, false);
+            SettlementCard.open(workshop, workshop.markerFormId, canFastTravel, undefined, container, workshopListState.dockCorner, false, returnFocusId, onNavBack);
         }
     },
 

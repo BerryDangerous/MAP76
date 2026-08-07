@@ -7,6 +7,7 @@ import { ActionButtonConfig } from '../ui/actionButton.js';
 import { KeybindsSystem } from '../systems/keybinds.js';
 import { StatusItemList } from '../ui/statusItemList.js';
 import { FloatingCard } from '../ui/floatingCard.js';
+import { DockCorner } from '../systems/dockControls.js';
 
 let floatingCard: FloatingCard | null = null;
 
@@ -30,7 +31,7 @@ export const QuestCard = {
                 const card = document.getElementById('quest-card-panel');
                 if (card) card.classList.remove('focused');
                 this.updateButtonSelection();
-                if (newFocusId === 'MAP' || newFocusId === 'SETTLEMENT_CARD' || newFocusId === 'MARKER_CARD') {
+                if (newFocusId === 'MAP' || newFocusId === 'WORKSHOP_LIST' || newFocusId === 'SETTLEMENT_CARD' || newFocusId === 'MARKER_CARD') {
                     this.close();
                 }
             }
@@ -38,37 +39,10 @@ export const QuestCard = {
     },
 
     handleKeyDown(e: KeyboardEvent): boolean {
-        if (KeybindsSystem.isAction(e, 'NAV_LEFT')) {
-            if (!QuestList.getState().isCollapsed) {
-                FocusManager.setFocus('QUEST_LIST');
-            }
-            return true;
-        }
-
-        if (floatingCard) {
-            const buttonGroup = floatingCard.getButtonGroup();
-            if (KeybindsSystem.isAction(e, 'NAV_DOWN')) {
-                buttonGroup.navigateNext();
-                this.updateButtonSelection();
-                return true;
-            }
-
-            if (KeybindsSystem.isAction(e, 'NAV_UP')) {
-                buttonGroup.navigatePrev();
-                this.updateButtonSelection();
-                return true;
-            }
-
-            if (KeybindsSystem.isAction(e, 'SELECT')) {
-                buttonGroup.triggerSelected();
-                return true;
-            }
-        }
-
-        return true;
+        return floatingCard ? floatingCard.handleKeyDown(e) : false;
     },
 
-    open(quest: QuestItem, anchorMarker?: HTMLElement): void {
+    open(quest: QuestItem, anchorMarker?: HTMLElement, referencePanel?: HTMLElement, dockCorner?: DockCorner, takeFocus: boolean = true, returnFocusId?: string, onNavBack?: () => void): void {
         if (this.activeAnchorMarker && this.activeAnchorMarker !== anchorMarker) {
             this.activeAnchorMarker.classList.remove('menu-active');
             this.activeAnchorMarker.classList.remove('hide-tooltip-override');
@@ -82,8 +56,8 @@ export const QuestCard = {
             anchorMarker.classList.add('hide-tooltip-override');
         }
 
-        const questListContainer = document.getElementById('quest-list-panel');
-        const dockCorner = QuestList.getState().dockCorner;
+        const questListContainer = referencePanel || document.getElementById('quest-list-panel');
+        const dockCornerToUse = dockCorner || QuestList.getState().dockCorner;
 
         if (!floatingCard) {
             floatingCard = new FloatingCard({
@@ -93,7 +67,9 @@ export const QuestCard = {
                 buttons: this.buildButtonConfigs(quest),
                 anchorMarker: this.activeAnchorMarker,
                 referencePanel: questListContainer,
-                dockCorner: dockCorner,
+                dockCorner: dockCornerToUse,
+                returnFocusId: returnFocusId,
+                onNavBack: onNavBack,
                 onButtonSelectionChange: () => this.updateButtonSelection()
             });
         } else {
@@ -103,11 +79,17 @@ export const QuestCard = {
                 buttons: this.buildButtonConfigs(quest),
                 anchorMarker: this.activeAnchorMarker,
                 referencePanel: questListContainer,
-                dockCorner: dockCorner
+                dockCorner: dockCornerToUse,
+                returnFocusId: returnFocusId,
+                onNavBack: onNavBack
             });
         }
 
-        floatingCard.open(this.activeAnchorMarker, questListContainer, dockCorner);
+        floatingCard.open(this.activeAnchorMarker, questListContainer, dockCornerToUse);
+
+        if (takeFocus) {
+            FocusManager.setFocus('QUEST_CARD');
+        }
 
         const cardEl = floatingCard.getElement();
         if (cardEl) {

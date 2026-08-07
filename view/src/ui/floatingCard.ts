@@ -1,6 +1,8 @@
 import { ActionButtonGroup, ActionButtonConfig } from './actionButton.js';
 import { AnchorPositioner } from '../systems/anchorPositioner.js';
 import { DockControlsSystem, DockCorner } from '../systems/dockControls.js';
+import { FocusManager } from '../systems/focusManager.js';
+import { KeybindsSystem } from '../systems/keybinds.js';
 
 export interface FloatingCardOptions {
     id: string;
@@ -12,6 +14,8 @@ export interface FloatingCardOptions {
     referencePanel?: HTMLElement | null;
     dockCorner?: DockCorner;
     onButtonSelectionChange?: (index: number) => void;
+    returnFocusId?: string;
+    onNavBack?: () => void;
 }
 
 export class FloatingCard {
@@ -99,6 +103,59 @@ export class FloatingCard {
         if (this.cardElement) {
             this.cardElement.style.display = 'none';
             this.cardElement.removeAttribute('data-anchored');
+        }
+    }
+
+    public handleKeyDown(e: KeyboardEvent): boolean {
+        const { dockCorner, returnFocusId, onNavBack } = this.options;
+
+        const isRightDocked = dockCorner ? dockCorner.startsWith('top-right') || dockCorner.startsWith('bottom-right') : false;
+
+        if ((isRightDocked && (KeybindsSystem.isAction(e, 'NAV_RIGHT') || e.key === 'ArrowRight')) ||
+            (!isRightDocked && (KeybindsSystem.isAction(e, 'NAV_LEFT') || e.key === 'ArrowLeft'))) {
+            if (returnFocusId) {
+                FocusManager.setFocus(returnFocusId);
+                return true;
+            }
+        }
+
+        if (KeybindsSystem.isAction(e, 'NAV_BACK')) {
+            if (onNavBack) {
+                onNavBack();
+            } else {
+                this.close();
+                if (returnFocusId) {
+                    FocusManager.setFocus(returnFocusId);
+                } else {
+                    FocusManager.setFocus('MAP');
+                }
+            }
+            return true;
+        }
+
+        if (e.key === 'ArrowDown' || KeybindsSystem.isAction(e, 'NAV_DOWN')) {
+            this.buttonGroup.navigateNext();
+            this.notifyButtonSelectionChange();
+            return true;
+        }
+
+        if (e.key === 'ArrowUp' || KeybindsSystem.isAction(e, 'NAV_UP')) {
+            this.buttonGroup.navigatePrev();
+            this.notifyButtonSelectionChange();
+            return true;
+        }
+
+        if (e.key === 'Enter' || e.key === ' ' || KeybindsSystem.isAction(e, 'SELECT')) {
+            this.buttonGroup.triggerSelected();
+            return true;
+        }
+
+        return false;
+    }
+
+    private notifyButtonSelectionChange(): void {
+        if (this.options.onButtonSelectionChange) {
+            this.options.onButtonSelectionChange(this.buttonGroup.getSelectedIndex());
         }
     }
 

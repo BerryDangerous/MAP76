@@ -43,41 +43,10 @@ export const SettlementCard = {
     },
 
     handleKeyDown(e: KeyboardEvent): boolean {
-        if (KeybindsSystem.isAction(e, 'NAV_LEFT')) {
-            if (WorkshopList && !WorkshopList.getState().isCollapsed) {
-                FocusManager.setFocus('WORKSHOP_LIST');
-            }
-            return true;
-        }
-
-        if (e.key === 'Escape' || e.key === 'Tab') {
-            FocusManager.setFocus('MAP');
-            return true;
-        }
-
-        if (settlementCardInstance) {
-            const buttonGroup = settlementCardInstance.getButtonGroup();
-            if (KeybindsSystem.isAction(e, 'NAV_DOWN')) {
-                buttonGroup.navigateNext();
-                this.updateButtonSelection();
-                return true;
-            }
-
-            if (KeybindsSystem.isAction(e, 'NAV_UP')) {
-                buttonGroup.navigatePrev();
-                this.updateButtonSelection();
-                return true;
-            }
-
-            if (KeybindsSystem.isAction(e, 'SELECT')) {
-                buttonGroup.triggerSelected();
-                return true;
-            }
-        }
-        return false;
+        return settlementCardInstance ? settlementCardInstance.handleKeyDown(e) : false;
     },
 
-    open(settlement: SettlementDataWithRatings, markerFormId: number, canFastTravel: boolean, anchorMarker?: HTMLElement, referencePanel?: HTMLElement, dockCorner?: DockCorner, takeFocus: boolean = true): void {
+    open(settlement: SettlementDataWithRatings, markerFormId: number, canFastTravel: boolean, anchorMarker?: HTMLElement, referencePanel?: HTMLElement, dockCorner?: DockCorner, takeFocus: boolean = true, returnFocusId?: string, onNavBack?: () => void): void {
         if (this.activeAnchorMarker && this.activeAnchorMarker !== anchorMarker) {
             this.activeAnchorMarker.classList.remove('menu-active');
             this.activeAnchorMarker.classList.remove('hide-tooltip-override');
@@ -105,6 +74,8 @@ export const SettlementCard = {
                 anchorMarker: this.activeAnchorMarker,
                 referencePanel: referencePanel,
                 dockCorner: dockCorner,
+                returnFocusId: returnFocusId,
+                onNavBack: onNavBack,
                 onButtonSelectionChange: () => this.updateButtonSelection()
             });
         } else {
@@ -114,7 +85,9 @@ export const SettlementCard = {
                 buttons: buttons,
                 anchorMarker: this.activeAnchorMarker,
                 referencePanel: referencePanel,
-                dockCorner: dockCorner
+                dockCorner: dockCorner,
+                returnFocusId: returnFocusId,
+                onNavBack: onNavBack
             });
         }
 
@@ -277,7 +250,9 @@ export function renderSettlementCardContent(
     markerEl?: HTMLElement,
     referencePanel?: HTMLElement,
     dockCorner?: DockCorner,
-    takeFocus: boolean = true
+    takeFocus: boolean = true,
+    returnFocusId?: string,
+    onNavBack?: () => void
 ): void {
-    SettlementCard.open(settlement, markerFormId, canFastTravel, markerEl, referencePanel, dockCorner, takeFocus);
+    SettlementCard.open(settlement, markerFormId, canFastTravel, markerEl, referencePanel, dockCorner, takeFocus, returnFocusId, onNavBack);
 }

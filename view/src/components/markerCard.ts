@@ -40,41 +40,10 @@ export const MarkerCard = {
     },
 
     handleKeyDown(e: KeyboardEvent): boolean {
-        if (KeybindsSystem.isAction(e, 'NAV_LEFT')) {
-            if (WorkshopList && !WorkshopList.getState().isCollapsed) {
-                FocusManager.setFocus('WORKSHOP_LIST');
-            }
-            return true;
-        }
-
-        if (e.key === 'Escape' || e.key === 'Tab') {
-            FocusManager.setFocus('MAP');
-            return true;
-        }
-
-        if (markerCardInstance) {
-            const buttonGroup = markerCardInstance.getButtonGroup();
-            if (e.key === 'ArrowDown') {
-                buttonGroup.navigateNext();
-                this.updateButtonSelection();
-                return true;
-            }
-
-            if (e.key === 'ArrowUp') {
-                buttonGroup.navigatePrev();
-                this.updateButtonSelection();
-                return true;
-            }
-
-            if (e.key === 'Enter' || e.key === ' ') {
-                buttonGroup.triggerSelected();
-                return true;
-            }
-        }
-        return false;
+        return markerCardInstance ? markerCardInstance.handleKeyDown(e) : false;
     },
 
-    open(title: string, markerFormId: number, canFastTravel: boolean, anchorMarker?: HTMLElement, referencePanel?: HTMLElement, dockCorner?: DockCorner, takeFocus: boolean = true): void {
+    open(title: string, markerFormId: number, canFastTravel: boolean, anchorMarker?: HTMLElement, referencePanel?: HTMLElement, dockCorner?: DockCorner, takeFocus: boolean = true, returnFocusId?: string, onNavBack?: () => void): void {
         if (this.activeAnchorMarker && this.activeAnchorMarker !== anchorMarker) {
             this.activeAnchorMarker.classList.remove('menu-active');
             this.activeAnchorMarker.classList.remove('hide-tooltip-override');
@@ -100,6 +69,8 @@ export const MarkerCard = {
                 anchorMarker: this.activeAnchorMarker,
                 referencePanel: referencePanel,
                 dockCorner: dockCorner,
+                returnFocusId: returnFocusId,
+                onNavBack: onNavBack,
                 onButtonSelectionChange: () => this.updateButtonSelection()
             });
         } else {
@@ -109,7 +80,9 @@ export const MarkerCard = {
                 buttons: buttons,
                 anchorMarker: this.activeAnchorMarker,
                 referencePanel: referencePanel,
-                dockCorner: dockCorner
+                dockCorner: dockCorner,
+                returnFocusId: returnFocusId,
+                onNavBack: onNavBack
             });
         }
 

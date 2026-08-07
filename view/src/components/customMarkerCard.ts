@@ -33,32 +33,10 @@ export const CustomMarkerCard = {
     },
 
     handleKeyDown(e: KeyboardEvent): boolean {
-        if (e.key === 'Escape' || e.key === 'Tab') {
-            FocusManager.setFocus('MAP');
-            return true;
-        }
-
-        if (customMarkerCardInstance) {
-            const buttonGroup = customMarkerCardInstance.getButtonGroup();
-            if (e.key === 'ArrowDown') {
-                buttonGroup.navigateNext();
-                return true;
-            }
-
-            if (e.key === 'ArrowUp') {
-                buttonGroup.navigatePrev();
-                return true;
-            }
-
-            if (e.key === 'Enter' || e.key === ' ') {
-                buttonGroup.triggerSelected();
-                return true;
-            }
-        }
-        return false;
+        return customMarkerCardInstance ? customMarkerCardInstance.handleKeyDown(e) : false;
     },
 
-    openForExisting(anchorMarker: HTMLElement): void {
+    openForExisting(anchorMarker: HTMLElement, returnFocusId?: string, onNavBack?: () => void): void {
         this.activeAnchorMarker = anchorMarker;
         this.activeCoords = null;
         this.activeGameCoords = null;
@@ -73,21 +51,25 @@ export const CustomMarkerCard = {
                 id: 'custom-marker-card-panel',
                 title: 'Custom Marker',
                 buttons: this.buildButtonsForExisting(),
-                anchorMarker: anchorMarker
+                anchorMarker: anchorMarker,
+                returnFocusId: returnFocusId,
+                onNavBack: onNavBack
             });
         } else {
             customMarkerCardInstance.update({
                 title: 'Custom Marker',
                 buttons: this.buildButtonsForExisting(),
                 anchorMarker: anchorMarker,
-                coords: undefined
+                coords: undefined,
+                returnFocusId: returnFocusId,
+                onNavBack: onNavBack
             });
         }
 
         customMarkerCardInstance.open(anchorMarker);
     },
 
-    openForPlacement(gameCoords: { x: number, y: number }, pageCoords: { x: number, y: number }): void {
+    openForPlacement(gameCoords: { x: number, y: number }, pageCoords: { x: number, y: number }, returnFocusId?: string, onNavBack?: () => void): void {
         this.activeAnchorMarker = null;
         this.activeCoords = pageCoords;
         this.activeGameCoords = gameCoords;
@@ -100,14 +82,18 @@ export const CustomMarkerCard = {
                 id: 'custom-marker-card-panel',
                 title: title,
                 buttons: this.buildButtonsForPlacement(hasExistingMarker),
-                coords: pageCoords
+                coords: pageCoords,
+                returnFocusId: returnFocusId,
+                onNavBack: onNavBack
             });
         } else {
             customMarkerCardInstance.update({
                 title: title,
                 buttons: this.buildButtonsForPlacement(hasExistingMarker),
                 anchorMarker: null,
-                coords: pageCoords
+                coords: pageCoords,
+                returnFocusId: returnFocusId,
+                onNavBack: onNavBack
             });
         }
 
