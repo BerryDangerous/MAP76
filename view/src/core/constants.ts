@@ -150,3 +150,16 @@ export const WORLDSPACE_CONFIGS: Record<string, { mapName: string; texturePath: 
     }
 };
 
+
+import { FastTravelStatus } from '../types/map.js';
+
+export const FAST_TRAVEL_ERROR_MESSAGES: Record<FastTravelStatus, string> = {
+    [FastTravelStatus.SUCCESS]: "",
+    [FastTravelStatus.PLAYER_DEAD]: "You cannot fast travel while dead.",
+    [FastTravelStatus.COMBAT]: "You cannot fast travel while enemies are nearby.",
+    [FastTravelStatus.INTERIOR]: "You cannot fast travel from interior locations.",
+    [FastTravelStatus.SURVIVAL]: "Fast travel is disabled in Survival Mode.",
+    [FastTravelStatus.OVERBURDENED]: "You are carrying too much to fast travel.",
+    [FastTravelStatus.QUEST_LOCKED]: "Fast travel is temporarily disabled by active quests.",
+    [FastTravelStatus.UNKNOWN_ERROR]: "Fast travel unavailable at this moment."
+};

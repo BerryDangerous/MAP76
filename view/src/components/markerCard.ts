@@ -2,8 +2,7 @@ import { FocusManager } from '../systems/focusManager.js';
 import { FloatingCard } from '../ui/floatingCard.js';
 import { MapViewport } from './viewport.js';
 import { ActionButtonConfig } from '../ui/actionButton.js';
-import { EngineBridge } from '../core/bridge.js';
-import { showFastTravelConfirmationModal } from './fastTravelModal.js';
+import { MarkerInteractionManager } from './markerInteraction.js';
 import { DockCorner } from '../systems/dockControls.js';
 import { KeybindsSystem } from '../systems/keybinds.js';
 import { WorkshopList } from './workshopList.js';
@@ -148,10 +147,7 @@ export const MarkerCard = {
                     label: 'FAST TRAVEL',
                     action: () => {
                         if (this.activeMarkerFormId !== null) {
-                            showFastTravelConfirmationModal(this.activeMarkerName, () => {
-                                EngineBridge.requestFastTravel(this.activeMarkerFormId!);
-                                this.close();
-                            });
+                            MarkerInteractionManager.initiateFastTravel(this.activeMarkerFormId, this.activeMarkerName);
                         }
                     }
                 }

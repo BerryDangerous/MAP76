@@ -2,18 +2,27 @@ import { MapViewport } from './viewport.js';
 import { EngineBridge } from '../core/bridge.js';
 import { FastTravelFailPayload, SettlementData } from '../types/payloads.js';
 import { mapState } from '../core/state.js';
-import { showFastTravelErrorModal } from './fastTravelModal.js';
-import { renderSettlementCardContent } from './settlementCard.js';
+import { showFastTravelErrorModal } from './appModals.js';
+import { SettlementCard, renderSettlementCardContent } from './settlementCard.js';
 import { MarkerCard } from './markerCard.js';
 import { CustomMarkerCard } from './customMarkerCard.js';
 import { isSupplyLinesViewActive } from './supplyLines.js';
 import { getPotentialVassalMarkerFormIds } from './markers.js';
 import { QuestCard } from './questCard.js';
 import { FocusManager } from '../systems/focusManager.js';
+import { FastTravelCheckPayload } from '../types/payloads.js';
+import { FastTravelStatus } from '../types/map.js';
+import { showFastTravelConfirmationModal } from './appModals.js';
 
 export let activeHoveredMarker: HTMLElement | null = null;
+let pendingFastTravel: { formId: number, name: string } | null = null;
 
 export const MarkerInteractionManager = {
+    initiateFastTravel(formId: number, name: string) {
+        pendingFastTravel = { formId, name };
+        EngineBridge.checkFastTravelConditions(formId);
+    },
+
     initEvents() {
         const layerContainer = document.getElementById('screen-container');
         if (!layerContainer) return;
@@ -135,6 +144,26 @@ export const MarkerInteractionManager = {
                 CustomMarkerCard.openForPlacement(worldCoords, { x: e.clientX, y: e.clientY });
                 FocusManager.setFocus('CUSTOM_MARKER_CARD');
             }
+        });
+
+        window.addEventListener('FastTravelCheckResult', (e: Event) => {
+            if (!pendingFastTravel) return;
+            const detail = (e as CustomEvent<FastTravelCheckPayload>).detail;
+            
+            if (detail.status === FastTravelStatus.SUCCESS) {
+                const { formId, name } = pendingFastTravel;
+                showFastTravelConfirmationModal(name, () => {
+                    EngineBridge.requestFastTravel(formId);
+                    if (FocusManager.getFocus() === 'MARKER_CARD') {
+                        MarkerCard.close();
+                    } else if (FocusManager.getFocus() === 'SETTLEMENT_CARD') {
+                        SettlementCard.close();
+                    }
+                });
+            } else {
+                showFastTravelErrorModal(detail.status);
+            }
+            pendingFastTravel = null;
         });
 
         window.addEventListener('FastTravelFailed', (e: Event) => {

@@ -307,7 +307,7 @@ body, html {
 
 
 /* ==========================================================================
-   5. FAST TRAVEL CONFIRMATION MODAL COMPONENT
+   5. MODALS
    ========================================================================== */
 
 .modal-overlay {
@@ -317,7 +317,7 @@ body, html {
     width: 100vw;
     height: 100vh;
     background: rgba(0, 0, 0, 0.75);
-    display: none;
+    display: flex;
     justify-content: center;
     align-items: center;
     z-index: 10000;
@@ -354,39 +354,107 @@ body, html {
     width: 100%;
 }
 
-.modal-actions button {
+.modal-actions .btn {
     padding: 8px 24px;
     font-family: 'Courier New', monospace;
     font-size: 16px;
     font-weight: bold;
     cursor: pointer;
-    border: none;
+    border: 1px solid #666;
+    background: #333;
     transition: background 0.1s ease;
+    height: auto;
 }
 
-.modal-actions.modal-vertical button {
-    width: 100%;
-    display: block;
+.modal-actions .btn:hover,
+.modal-actions .btn:focus,
+.modal-actions .btn.selected {
+    background: #444;
+    border-color: #999;
 }
 
-#modal-confirm-btn {
+.modal-actions .btn:first-child {
     background: #fff;
-    color: #000;
+    border: none;
 }
 
-#modal-confirm-btn:hover {
+.modal-actions .btn:first-child:hover,
+.modal-actions .btn:first-child:focus,
+.modal-actions .btn:first-child.selected {
     background: #a8a8a8;
 }
 
-#modal-cancel-btn {
-    background: #333;
+.modal-actions .btn .btn-text {
     color: #fff;
-    border: 1px solid #666;
+    font-family: inherit;
+    font-size: inherit;
 }
 
-#modal-cancel-btn:hover {
-    background: #444;
-    border-color: #999;
+.modal-actions .btn:first-child .btn-text {
+    color: #000;
+}
+
+.modal-overlay[data-theme="76"] .modal-box {
+    background: rgba(10, 10, 10, 0.95);
+    border: 2px solid #e0c870;
+    color: #e0c870;
+    padding: 30px;
+    width: 400px;
+    max-width: 90vw;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.modal-overlay[data-theme="76"] #modal-text {
+    color: #e0c870;
+    font-family: 'PibotoCondensed', sans-serif;
+    font-size: 16px;
+    margin: 0;
+    text-transform: none;
+}
+
+.modal-overlay[data-theme="76"] .modal-actions {
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.modal-overlay[data-theme="76"] .modal-actions .btn {
+    padding: 0 20px;
+    font-family: 'PibotoCondensed', sans-serif;
+    font-size: 13px;
+    border: none;
+    background: transparent;
+    height: 26px;
+}
+
+.modal-overlay[data-theme="76"] .modal-actions .btn:first-child {
+    background: transparent;
+}
+
+.modal-overlay[data-theme="76"] .modal-actions .btn .btn-text {
+    font-family: 'PibotoCondensed', sans-serif;
+    font-size: 13px;
+    color: #f5cb5b;
+}
+
+.modal-overlay[data-theme="76"] .modal-actions .btn:first-child .btn-text {
+    color: #f5cb5b;
+}
+
+.modal-overlay[data-theme="76"] .modal-actions .btn:hover,
+.modal-overlay[data-theme="76"] .modal-actions .btn:focus,
+.modal-overlay[data-theme="76"] .modal-actions .btn.selected,
+.modal-overlay[data-theme="76"] .modal-actions .btn:first-child:hover,
+.modal-overlay[data-theme="76"] .modal-actions .btn:first-child:focus,
+.modal-overlay[data-theme="76"] .modal-actions .btn:first-child.selected {
+    background: #f5cb5b;
+}
+
+.modal-overlay[data-theme="76"] .modal-actions .btn:hover .btn-text,
+.modal-overlay[data-theme="76"] .modal-actions .btn:focus .btn-text,
+.modal-overlay[data-theme="76"] .modal-actions .btn.selected .btn-text {
+    color: #000;
 }
 
 
@@ -869,7 +937,12 @@ body, html {
     gap: 6px;
 }
 
-.fc-action-btn {
+
+/* ==========================================================================
+   BUTTON
+   ========================================================================== */
+
+.btn {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -880,25 +953,55 @@ body, html {
     cursor: pointer;
     padding: 0 20px;
     box-sizing: border-box;
+    outline: none;
 }
 
-.fc-action-btn:hover,
-.fc-action-btn.selected {
+.btn:hover,
+.btn.selected,
+.btn:focus {
     background-color: #f5cb5b;
 }
 
-.fc-btn-text {
+.btn-text {
     font-weight: bold;
     font-size: 13px;
     line-height: 1.1;
     color: #f5cb5b;
     text-align: center;
     white-space: nowrap;
+    font-family: 'PibotoCondensed', sans-serif;
 }
 
-.fc-action-btn:hover .fc-btn-text,
-.fc-action-btn.selected .fc-btn-text {
+.btn:hover .btn-text,
+.btn.selected .btn-text,
+.btn:focus .btn-text {
     color: #000000;
+}
+
+[data-theme="76"] .btn.selected,
+[data-theme="76"] .btn:focus {
+    background-color: #f5cb5b;
+    outline: none;
+}
+
+
+
+[data-theme="76"] .btn.selected .btn-text,
+[data-theme="76"] .btn:focus .btn-text {
+    color: #000000;
+}
+
+.btn.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.btn-large {
+    height: 40px;
+}
+
+.btn-large .btn-text {
+    font-size: 16px;
 }
 
 

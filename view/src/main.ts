@@ -7,7 +7,7 @@ import { loadMarkers, applySupplyLinesVisibilityFilter } from './components/mark
 import { MarkerInteractionManager } from './components/markerInteraction.js';
 import { toggleSupplyLinesView, setSupplyLinesViewActive } from './components/supplyLines.js';
 import { CustomMarkerCard } from './components/customMarkerCard.js';
-import { closeFastTravelModal } from './components/fastTravelModal.js';
+import { ModalManager } from './ui/modalManager.js';
 import { InfoCard } from './components/infoCard.js';
 import { QuestList } from './components/questList.js';
 import { WorkshopList } from './components/workshopList.js';
@@ -26,7 +26,7 @@ export function resetUIState(): void {
     setSupplyLinesViewActive(false);
     applySupplyLinesVisibilityFilter();
     CustomMarkerCard.close();
-    closeFastTravelModal();
+    ModalManager.close();
     QuestCard.close();
     SettlementCard.close();
     MarkerCard.close();

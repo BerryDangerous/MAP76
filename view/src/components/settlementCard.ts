@@ -6,8 +6,7 @@ import { FloatingCard } from '../ui/floatingCard.js';
 import { ActionButtonConfig } from '../ui/actionButton.js';
 import { ThemeEngine } from '../systems/theme.js';
 import { KeybindsSystem } from '../systems/keybinds.js';
-import { EngineBridge } from '../core/bridge.js';
-import { showFastTravelConfirmationModal } from './fastTravelModal.js';
+import { MarkerInteractionManager } from './markerInteraction.js';
 import { calculateSettlementRatings, SettlementDataWithRatings } from '../utils/settlementUtils.js';
 import { DockCorner } from '../systems/dockControls.js';
 import { WorkshopList } from './workshopList.js';
@@ -216,11 +215,7 @@ export const SettlementCard = {
                     label: 'FAST TRAVEL',
                     action: () => {
                         if (this.activeMarkerFormId !== null) {
-                            showFastTravelConfirmationModal(settlement.name, () => {
-                                EngineBridge.requestFastTravel(this.activeMarkerFormId!);
-                                FocusManager.setFocus('MAP');
-                                this.close();
-                            });
+                            MarkerInteractionManager.initiateFastTravel(this.activeMarkerFormId, settlement.name);
                         }
                     }
                 }

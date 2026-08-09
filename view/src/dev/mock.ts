@@ -1,3 +1,4 @@
+import { FastTravelStatus } from '../types/map.js';
 import { FrameTickPayload } from '../types/payloads.js';
 import { mockPayload } from './mockData.js';
 
@@ -27,7 +28,19 @@ export function initMockData(): void {
     window.checkFastTravel = (payloadString: string) => {
         console.log('[DevMode] checkFastTravel called with:', payloadString);
         if (window.onFastTravelCheckResult) {
-            window.onFastTravelCheckResult(JSON.stringify({ status: 'SUCCESS' }));
+            const statuses = [
+                FastTravelStatus.SUCCESS,
+                FastTravelStatus.SUCCESS,
+                FastTravelStatus.PLAYER_DEAD,
+                FastTravelStatus.COMBAT,
+                FastTravelStatus.INTERIOR,
+                FastTravelStatus.SURVIVAL,
+                FastTravelStatus.OVERBURDENED,
+            ];
+            const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
+            setTimeout(() => {
+                window.onFastTravelCheckResult!(JSON.stringify({ status: randomStatus }));
+            }, 50);
         }
     };
 

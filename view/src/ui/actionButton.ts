@@ -1,30 +1,43 @@
-export interface ActionButtonConfig {
-    id: string;
-    label: string;
-    badge?: string;
-    enabled?: boolean;
-    action: () => void;
+import { Button, ButtonConfig } from './button.js';
+
+export type ActionButtonConfig = ButtonConfig;
+
+export interface ActionButtonGroupConfig {
+    buttons?: ButtonConfig[];
+    layout?: 'row' | 'column';
+    size?: 'normal' | 'large';
+    selectable?: boolean;
 }
 
 export class ActionButtonGroup {
-    private buttons: ActionButtonConfig[] = [];
+    private buttons: Button[] = [];
+    private configs: ButtonConfig[] = [];
     private selectedIndex: number = 0;
     private container: HTMLElement | null = null;
-    private onChangeCallback?: (index: number, btn: ActionButtonConfig) => void;
+    private onChangeCallback?: (index: number, btn: ButtonConfig) => void;
+    private layout: 'row' | 'column';
+    private size: 'normal' | 'large';
+    private selectable: boolean;
 
-    constructor(buttons: ActionButtonConfig[] = []) {
-        this.setButtons(buttons);
+    constructor(config: ActionButtonGroupConfig = {}) {
+        this.layout = config.layout || 'column';
+        this.size = config.size || 'normal';
+        this.selectable = config.selectable !== false;
+        if (config.buttons) {
+            this.setButtons(config.buttons);
+        }
     }
 
-    public setButtons(buttons: ActionButtonConfig[]): void {
-        this.buttons = buttons;
+    public setButtons(buttons: ButtonConfig[]): void {
+        this.configs = buttons;
+        this.buttons = buttons.map(cfg => new Button({ ...cfg, size: this.size }));
         this.selectedIndex = Math.min(this.selectedIndex, Math.max(0, buttons.length - 1));
         if (this.container) {
             this.render();
         }
     }
 
-    public mount(container: HTMLElement, onChange?: (index: number, btn: ActionButtonConfig) => void): void {
+    public mount(container: HTMLElement, onChange?: (index: number, btn: ButtonConfig) => void): void {
         this.container = container;
         this.onChangeCallback = onChange;
         this.render();
@@ -38,8 +51,14 @@ export class ActionButtonGroup {
         if (index >= 0 && index < this.buttons.length) {
             this.selectedIndex = index;
             this.updateSelectionState();
-            if (this.onChangeCallback && this.buttons[index]) {
-                this.onChangeCallback(this.selectedIndex, this.buttons[this.selectedIndex]);
+            
+            const btnEl = this.buttons[this.selectedIndex].getElement();
+            if (btnEl && this.selectable) {
+                btnEl.focus();
+            }
+
+            if (this.onChangeCallback && this.configs[index]) {
+                this.onChangeCallback(this.selectedIndex, this.configs[this.selectedIndex]);
             }
         }
     }
@@ -57,18 +76,21 @@ export class ActionButtonGroup {
     }
 
     public triggerSelected(): void {
-        const current = this.buttons[this.selectedIndex];
+        const current = this.configs[this.selectedIndex];
         if (current && current.enabled !== false) {
             current.action();
         }
     }
 
     public handleKeyDown(e: KeyboardEvent): boolean {
-        if (e.key === 'ArrowDown') {
+        const nextKey = this.layout === 'row' ? 'ArrowRight' : 'ArrowDown';
+        const prevKey = this.layout === 'row' ? 'ArrowLeft' : 'ArrowUp';
+
+        if (e.key === nextKey) {
             this.navigateNext();
             return true;
         }
-        if (e.key === 'ArrowUp') {
+        if (e.key === prevKey) {
             this.navigatePrev();
             return true;
         }
@@ -83,51 +105,36 @@ export class ActionButtonGroup {
         if (!this.container) return;
 
         this.container.innerHTML = '';
+        this.container.style.display = 'flex';
+        this.container.style.flexDirection = this.layout;
+        this.container.style.gap = '6px';
+        
         this.buttons.forEach((btn, index) => {
-            const btnEl = document.createElement('div');
-            btnEl.className = 'fc-action-btn';
-            if (index === this.selectedIndex) {
-                btnEl.classList.add('selected');
-            }
-            if (btn.enabled === false) {
-                btnEl.classList.add('disabled');
-            }
-
-            const labelSpan = document.createElement('span');
-            labelSpan.className = 'fc-btn-text';
-            labelSpan.textContent = btn.label;
-            btnEl.appendChild(labelSpan);
-
-            if (btn.badge) {
-                const badgeSpan = document.createElement('span');
-                badgeSpan.className = 'fc-btn-badge';
-                badgeSpan.textContent = btn.badge;
-                btnEl.appendChild(badgeSpan);
-            }
-
-            btnEl.addEventListener('mouseenter', () => {
-                this.setSelectedIndex(index);
-            });
-
-            btnEl.addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.setSelectedIndex(index);
-                this.triggerSelected();
-            });
-
+            const btnEl = btn.getElement();
+            btnEl.addEventListener('mouseenter', () => this.setSelectedIndex(index));
             this.container!.appendChild(btnEl);
         });
+
+        this.updateSelectionState();
     }
 
     private updateSelectionState(): void {
         if (!this.container) return;
-        const children = Array.from(this.container.children);
-        children.forEach((child, index) => {
-            if (index === this.selectedIndex) {
-                child.classList.add('selected');
+        
+        this.buttons.forEach((btn, index) => {
+            const btnEl = btn.getElement();
+            if (this.selectable && index === this.selectedIndex) {
+                btnEl.classList.add('selected');
             } else {
-                child.classList.remove('selected');
+                btnEl.classList.remove('selected');
             }
         });
+    }
+
+    public destroy(): void {
+        if (this.container) {
+            this.container.innerHTML = '';
+            this.container = null;
+        }
     }
 }
