@@ -1,6 +1,7 @@
 import { mapState } from '../core/state.js';
 import { FocusManager } from '../systems/focusManager.js';
 import { MapViewport } from './viewport.js';
+import { appSettings } from '../core/settings.js';
 import { SelectableListController } from '../ui/selectableListController.js';
 import { CollapsiblePanel } from '../ui/collapsiblePanel.js';
 import { CustomScrollbar } from '../ui/customScrollbar.js';
@@ -13,7 +14,6 @@ import { ThemeEngine } from '../systems/theme.js';
 import { StringUtils } from '../utils/stringUtils.js';
 
 export interface WorkshopListState {
-    theme: '76';
     isCollapsed: boolean;
     hoverIndex: number;
     selectedMarkerFormId: number | null;
@@ -21,7 +21,6 @@ export interface WorkshopListState {
 }
 
 const workshopListState: WorkshopListState = {
-    theme: '76',
     isCollapsed: true,
     hoverIndex: -1,
     selectedMarkerFormId: null,
@@ -102,14 +101,6 @@ let isLayoutMounted = false;
 export const WorkshopList = {
     getState(): WorkshopListState {
         return workshopListState;
-    },
-
-    setTheme(theme: '76'): void {
-        workshopListState.theme = theme;
-        const container = document.getElementById('workshop-list-panel');
-        if (container) {
-            container.setAttribute('data-theme', theme);
-        }
     },
 
     expand(targetRelativeOffset: number | null = null): void {
@@ -267,7 +258,7 @@ export const WorkshopList = {
         }
         
         const marker = mapState.lastPayload?.markers?.find(m => m.formId === workshop.markerFormId);
-        if (marker) {
+        if (marker && appSettings.focusMarkerOnSelection) {
             MapViewport.centerOnWorldCoords(marker.x, marker.y);
         } else {
             MapViewport.restoreSavedViewport();
@@ -342,7 +333,6 @@ export const WorkshopList = {
 
         const isCollapsed = workshopListState.isCollapsed;
         container.setAttribute('data-collapsed', String(isCollapsed));
-        container.setAttribute('data-theme', workshopListState.theme);
 
         const collapseTextEl = container.querySelector('.cp-collapse-text');
         if (collapseTextEl) {

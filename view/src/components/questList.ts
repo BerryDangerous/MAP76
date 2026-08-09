@@ -2,6 +2,7 @@ import { mapState } from '../core/state.js';
 import { QuestItem } from '../types/quests.js';
 import { FocusManager } from '../systems/focusManager.js';
 import { MapViewport } from './viewport.js';
+import { appSettings } from '../core/settings.js';
 import { QuestCard } from './questCard.js';
 import { toggleQuestActive } from '../core/bridge.js';
 import { SelectableListController } from '../ui/selectableListController.js';
@@ -17,7 +18,6 @@ export type QuestFilterTab = 'ALL' | 'MAIN' | 'SIDE' | 'MISC';
 
 export interface QuestListState {
     currentTab: QuestFilterTab;
-    theme: '76';
     isCollapsed: boolean;
     hoverIndex: number;
     selectedQuestId: number | string | null;
@@ -26,7 +26,6 @@ export interface QuestListState {
 
 const questListState: QuestListState = {
     currentTab: 'ALL',
-    theme: '76',
     isCollapsed: true,
     hoverIndex: -1,
     selectedQuestId: null,
@@ -121,14 +120,6 @@ let isLayoutMounted = false;
 export const QuestList = {
     getState(): QuestListState {
         return questListState;
-    },
-
-    setTheme(theme: '76'): void {
-        questListState.theme = theme;
-        const container = document.getElementById('quest-list-panel');
-        if (container) {
-            container.setAttribute('data-theme', theme);
-        }
     },
 
     setFilterTab(tab: QuestFilterTab): void {
@@ -311,7 +302,9 @@ export const QuestList = {
         }
 
         const target = activeObj.targets[0];
-        MapViewport.centerOnWorldCoords(target.x, target.y);
+        if (appSettings.focusMarkerOnSelection) {
+            MapViewport.centerOnWorldCoords(target.x, target.y);
+        }
     },
 
     getVisibleQuests(): QuestItem[] {
@@ -380,7 +373,6 @@ export const QuestList = {
 
         const isCollapsed = questListState.isCollapsed;
         container.setAttribute('data-collapsed', String(isCollapsed));
-        container.setAttribute('data-theme', questListState.theme);
 
         const collapseTextEl = container.querySelector('.cp-collapse-text');
         if (collapseTextEl) {

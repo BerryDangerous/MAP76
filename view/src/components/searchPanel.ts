@@ -1,5 +1,6 @@
 import { FocusManager } from '../systems/focusManager.js';
 import { MapViewport } from './viewport.js';
+import { appSettings } from '../core/settings.js';
 import { SelectableListController } from '../ui/selectableListController.js';
 import { CollapsiblePanel } from '../ui/collapsiblePanel.js';
 import { CustomScrollbar } from '../ui/customScrollbar.js';
@@ -19,7 +20,6 @@ import { mapState } from '../core/state.js';
 import { ThemeEngine } from '../systems/theme.js';
 
 export interface SearchPanelState {
-    theme: '76';
     isCollapsed: boolean;
     dockCorner: DockCorner;
     searchTerm: string;
@@ -27,7 +27,6 @@ export interface SearchPanelState {
 }
 
 const searchPanelState: SearchPanelState = {
-    theme: '76',
     isCollapsed: true,
     dockCorner: 'top-right',
     searchTerm: '',
@@ -52,7 +51,9 @@ const listController = new SelectableListController<SearchResult>({
         if (selectedResult) {
             SearchPanel.openCardForResult(selectedResult);
             if (selectedResult.markerCoords) {
-                MapViewport.centerOnWorldCoords(selectedResult.markerCoords.x, selectedResult.markerCoords.y);
+                if (appSettings.focusMarkerOnSelection) {
+                    MapViewport.centerOnWorldCoords(selectedResult.markerCoords.x, selectedResult.markerCoords.y);
+                }
             } else {
                 MapViewport.restoreSavedViewport();
             }
@@ -95,14 +96,6 @@ const listController = new SelectableListController<SearchResult>({
 export const SearchPanel = {
     getState(): SearchPanelState {
         return searchPanelState;
-    },
-
-    setTheme(theme: '76'): void {
-        searchPanelState.theme = theme;
-        const container = document.getElementById('search-panel');
-        if (container) {
-            container.setAttribute('data-theme', theme);
-        }
     },
 
     expand(): void {
@@ -416,7 +409,6 @@ export const SearchPanel = {
 
         const isCollapsed = searchPanelState.isCollapsed;
         container.setAttribute('data-collapsed', String(isCollapsed));
-        container.setAttribute('data-theme', searchPanelState.theme);
 
         const collapseTextEl = container.querySelector('.cp-collapse-text');
         if (collapseTextEl) {

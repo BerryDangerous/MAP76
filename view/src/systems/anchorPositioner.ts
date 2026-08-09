@@ -1,3 +1,5 @@
+import { appSettings } from '../core/settings.js';
+
 export interface AnchorPositionOptions {
     gap?: number;
     padding?: number;
@@ -37,8 +39,9 @@ export class AnchorPositioner {
         const gap = options.gap ?? 20;
         const padding = options.padding ?? 10;
 
-        const pWidth = options.preferredWidth || panel.offsetWidth || 380;
-        const pHeight = options.preferredHeight || panel.offsetHeight || 420;
+        const scale = appSettings.uiScale;
+        const pWidth = (options.preferredWidth || panel.offsetWidth || 380) * scale;
+        const pHeight = (options.preferredHeight || panel.offsetHeight || 420) * scale;
 
         const markerCenterX = x;
         const markerCenterY = y;
@@ -67,7 +70,8 @@ export class AnchorPositioner {
         let clampedLeft = Math.max(padding, Math.min(window.innerWidth - pWidth - padding, chosenCoordinates.left));
         let clampedTop = Math.max(padding, Math.min(window.innerHeight - pHeight - padding, chosenCoordinates.top));
 
-        panel.style.left = `${clampedLeft}px`;
-        panel.style.top = `${clampedTop}px`;
+        const divisor = scale;
+        panel.style.left = `${clampedLeft / divisor}px`;
+        panel.style.top = `${clampedTop / divisor}px`;
     }
 }

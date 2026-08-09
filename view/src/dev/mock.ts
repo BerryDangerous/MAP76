@@ -21,6 +21,21 @@ export function initMockData(): void {
         emitPayload();
     };
 
+    window.saveSettings = (jsonString: string) => {
+        console.log('[DevMode] saveSettings called:', jsonString);
+        localStorage.setItem('papermap_settings', jsonString);
+    };
+
+    window.requestSettings = () => {
+        console.log('[DevMode] requestSettings called');
+        const saved = localStorage.getItem('papermap_settings');
+        if (saved && typeof (window as any).loadSettings === 'function') {
+            (window as any).loadSettings(saved);
+        } else if (typeof (window as any).loadSettings === 'function') {
+            (window as any).loadSettings("{}");
+        }
+    };
+
     window.requestFastTravel = (payloadString: string) => {
         console.log('[DevMode] requestFastTravel called with:', payloadString);
     };

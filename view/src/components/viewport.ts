@@ -1,4 +1,5 @@
 import { mapState } from '../core/state.js';
+import { appSettings } from '../core/settings.js';
 import { GameBounds, MapPosition } from '../types/map.js';
 import { CELL_SIZE_UNITS } from '../core/constants.js';
 import { QuestCard } from './questCard.js';
@@ -165,11 +166,13 @@ export const MapViewport = {
 
     restoreSavedViewport() {
         if (mapState.savedViewport) {
-            mapState.zoom = mapState.savedViewport.zoom;
-            mapState.panX = mapState.savedViewport.panX;
-            mapState.panY = mapState.savedViewport.panY;
+            if (appSettings.resetViewportOnPanelCollapse) {
+                mapState.zoom = mapState.savedViewport.zoom;
+                mapState.panX = mapState.savedViewport.panX;
+                mapState.panY = mapState.savedViewport.panY;
+                this.updateViewportTransform();
+            }
             mapState.savedViewport = null;
-            this.updateViewportTransform();
         }
     },
 

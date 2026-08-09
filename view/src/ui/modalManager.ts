@@ -18,7 +18,6 @@ export class ModalManager {
         const overlay = document.createElement('div');
         overlay.className = 'modal-overlay';
         overlay.style.display = 'flex';
-        overlay.setAttribute('data-theme', '76');
 
         const modalBox = document.createElement('div');
         modalBox.className = 'modal-box';

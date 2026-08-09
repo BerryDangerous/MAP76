@@ -19,8 +19,14 @@ import { FocusManager } from './systems/focusManager.js';
 import { F4SEMapPayload } from './types/payloads.js';
 import { DockControlsSystem } from './systems/dockControls.js';
 import { KeybindsSystem } from './systems/keybinds.js';
+import { SettingsMenu } from './components/SettingsMenu.js';
+import { requestSettings } from './core/settings.js';
 
 ThemeEngine.initMapConfig();
+
+if (navigator.userAgent.includes('Ultralight')) {
+    document.body.classList.add('is-ultralight');
+}
 
 export function resetUIState(): void {
     setSupplyLinesViewActive(false);
@@ -33,11 +39,13 @@ export function resetUIState(): void {
     QuestList.collapse();
     WorkshopList.collapse();
     SearchPanel.collapse();
+    SettingsMenu.forceClose();
 }
 
 (window as any).resetUIState = resetUIState;
 
 initializeF4SEBindings((payload: F4SEMapPayload) => {
+    requestSettings();
     loadMarkers(payload);
     InfoCard.init(payload.player);
     QuestList.init();
@@ -54,6 +62,15 @@ window.addEventListener('FrameTick', (e: Event) => {
     if (customEvent.detail) {
         InfoCard.update(customEvent.detail);
     }
+});
+
+window.addEventListener('settingsUpdated', () => {
+    if (mapState.lastPayload) {
+        loadMarkers(mapState.lastPayload);
+    }
+    QuestList.render?.();
+    WorkshopList.render?.();
+    SearchPanel.render?.();
 });
 
 function initCustomCursor() {
@@ -81,6 +98,7 @@ window.addEventListener('DOMContentLoaded', () => {
     MarkerInteractionManager.initEvents();
     MapViewport.centerInitialViewport();
     AnimationEngine.startLoop();
+    SettingsMenu.init();
 
     if (import.meta.env.DEV) {
         import('./dev/mock.js').then(({ initMockData }) => {
@@ -114,9 +132,20 @@ window.addEventListener('DOMContentLoaded', () => {
         }
 
         if (KeybindsSystem.isAction(e, 'NAV_BACK')) {
+            if (SettingsMenu.isOpen) {
+                e.stopPropagation();
+                SettingsMenu.handleCloseRequest();
+                return;
+            }
             console.log('[KeyHandler] Focus is MAP. Closing map via NAV_BACK');
+            e.stopPropagation();
             resetUIState();
             EngineBridge.closeMap();
+            return;
+        }
+
+        if (e.key === 'z' || e.key === 'Z') {
+            SettingsMenu.toggle();
             return;
         }
 
@@ -138,6 +167,13 @@ window.addEventListener('DOMContentLoaded', () => {
     });
 
     window.addEventListener('keyup', (e: KeyboardEvent) => {
+        const handledByFocus = FocusManager.handleKeyUp(e);
+        if (handledByFocus) {
+            e.preventDefault();
+            e.stopPropagation();
+            return;
+        }
+
         if (e.key === 'Escape' || e.code === 'Escape' || e.keyCode === 27) {
             e.preventDefault();
             e.stopPropagation();

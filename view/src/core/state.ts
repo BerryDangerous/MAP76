@@ -14,7 +14,6 @@ export const mapState = {
 
     savedViewport: null as { zoom: number; panX: number; panY: number } | null,
 
-    currentTheme: 'default',
     activeMapConfig: {
         mapName: "Commonwealth",
         worldspaceID: 60,

@@ -5,6 +5,7 @@
 #include "UI/Actions.h"
 #include "UI/Interop.h"
 #include "UI/Payload.h"
+#include "UI/Settings.h"
 #include <thread>
 #include <chrono>
 
@@ -43,6 +44,37 @@ namespace PaperMap::UI
                         PaperMap::UI::State::g_api->InteropCall(PaperMap::UI::State::g_view, "loadMarkers", freshMapJson.c_str());
                     }
                 });
+            }
+        }
+
+        void HandleRequestSettings(const char *arg)
+        {
+            if (auto *task = F4SE::GetTaskInterface())
+            {
+                task->AddTask([]() {
+                    std::string settingsJson = Settings::Get().dump();
+                    if (PaperMap::UI::State::g_api && PaperMap::UI::State::g_view)
+                    {
+                        PaperMap::UI::State::g_api->InteropCall(PaperMap::UI::State::g_view, "loadSettings", settingsJson.c_str());
+                    }
+                });
+            }
+        }
+
+        void HandleSaveSettings(const char *arg)
+        {
+            std::string jsonStr = arg ? arg : "";
+            if (!jsonStr.empty()) {
+                if (auto *task = F4SE::GetTaskInterface())
+                {
+                    task->AddTask([jsonStr]() {
+                        Settings::Save(jsonStr);
+                        auto *mainLoop = RE::Main::GetSingleton();
+                        if (mainLoop && PaperMap::UI::State::g_mapIsOpen.load()) {
+                            mainLoop->freezeTime = Settings::freezeSimulation;
+                        }
+                    });
+                }
             }
         }
 
@@ -203,6 +235,7 @@ namespace PaperMap::UI
 {
     void Initialize()
     {
+        Settings::Load();
         if (State::g_api && State::g_view == 0)
         {
             REX::INFO("f4map: Creating HTML view surface...");
@@ -234,6 +267,11 @@ namespace PaperMap::UI
         State::g_api->BindUIEvent(view, "removeCustomMarker", HandleRemoveCustomMarker);
         State::g_api->BindUIEvent(view, "toggleQuestActive", HandleToggleQuestActive);
         State::g_api->BindUIEvent(view, "makeOnlyQuestActive", HandleMakeOnlyQuestActive);
+        State::g_api->BindUIEvent(view, "requestSettings", HandleRequestSettings);
+        State::g_api->BindUIEvent(view, "saveSettings", HandleSaveSettings);
+
+        std::string settingsJson = Settings::Get().dump();
+        State::g_api->InteropCall(view, "loadSettings", settingsJson.c_str());
     }
 
     void OnCloseRequestedFromJS(const char *a_argument)
@@ -305,7 +343,7 @@ namespace PaperMap::UI
         {
             if (mainLoop)
             {
-                mainLoop->freezeTime = true;
+                mainLoop->freezeTime = Settings::freezeSimulation;
             }
             State::g_api->Show(State::g_view);
             State::g_api->Focus(State::g_view, true);

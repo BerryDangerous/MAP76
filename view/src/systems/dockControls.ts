@@ -1,3 +1,5 @@
+import { appSettings } from '../core/settings.js';
+
 export type DockCorner = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 
 export interface DockConfig {
@@ -111,18 +113,18 @@ export class DockControlsSystem {
         card.style.left = '';
         card.style.right = '';
 
-        if (corner === 'top-left') {
-            card.style.top = `${refRect.top}px`;
-            card.style.left = `${refRect.right + gap}px`;
-        } else if (corner === 'bottom-left') {
-            card.style.top = `${refRect.top}px`;
-            card.style.left = `${refRect.right + gap}px`;
-        } else if (corner === 'top-right') {
-            card.style.top = `${refRect.top}px`;
-            card.style.right = `${window.innerWidth - refRect.left + gap}px`;
-        } else if (corner === 'bottom-right') {
-            card.style.bottom = `${window.innerHeight - refRect.bottom}px`;
-            card.style.right = `${window.innerWidth - refRect.left + gap}px`;
+        const isUltralight = navigator.userAgent.includes('Ultralight');
+        const divisor = isUltralight ? 1.0 : appSettings.uiScale;
+
+        if (corner === 'top-left' || corner === 'bottom-left') {
+            card.style.top = `${refRect.top / divisor}px`;
+            card.style.left = `${(refRect.right + gap) / divisor}px`;
+            card.style.transformOrigin = 'top left';
+        } else if (corner === 'top-right' || corner === 'bottom-right') {
+            const viewportWidth = isUltralight ? (window.innerWidth / appSettings.uiScale) : window.innerWidth;
+            card.style.top = `${refRect.top / divisor}px`;
+            card.style.right = `${(viewportWidth - refRect.left + gap) / divisor}px`;
+            card.style.transformOrigin = 'top right';
         }
     }
 }

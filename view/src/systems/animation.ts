@@ -1,4 +1,5 @@
 import { mapState } from '../core/state.js';
+import { appSettings } from '../core/settings.js';
 
 export const AnimationEngine = {
     virtualTime: 0,
@@ -51,7 +52,7 @@ export const AnimationEngine = {
                     naturalScreenY < minY || naturalScreenY > maxY
                 );
 
-                if (isOffScreen) {
+                if (isOffScreen && appSettings.clampQuestMarkers) {
                     const dx = naturalScreenX - centerX;
                     const dy = naturalScreenY - centerY;
 

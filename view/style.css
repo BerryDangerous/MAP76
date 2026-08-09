@@ -5,10 +5,11 @@
 :root {
     --selected-marker-filter: invert(1);
     --selected-status-filter: invert(1);
+    --ui-scale: 1.0;
 }
 
-[data-theme="76"] {
-    --selected-marker-filter: invert(1); /* Set to 'none' once the full-color 76 marker icons are added */
+body[data-icon-style="76"] {
+    --selected-marker-filter: none;
     --selected-status-filter: invert(1);
 }
 
@@ -278,6 +279,7 @@ body, html {
     position: absolute;
     left: 50%;
     transform: translate(-50%, 0);
+    zoom: var(--ui-scale, 1.0);
     top: 14px;
     background: rgba(20, 20, 20, 0.92);
     color: #fff;
@@ -333,6 +335,7 @@ body, html {
     min-width: 320px;
     max-width: 500px;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.9);
+    zoom: var(--ui-scale, 1.0);
 }
 
 #modal-text {
@@ -394,7 +397,7 @@ body, html {
     color: #000;
 }
 
-.modal-overlay[data-theme="76"] .modal-box {
+body[data-theme="76"] .modal-overlay .modal-box {
     background: rgba(10, 10, 10, 0.95);
     border: 2px solid #e0c870;
     color: #e0c870;
@@ -406,7 +409,7 @@ body, html {
     gap: 20px;
 }
 
-.modal-overlay[data-theme="76"] #modal-text {
+body[data-theme="76"] .modal-overlay #modal-text {
     color: #e0c870;
     font-family: 'PibotoCondensed', sans-serif;
     font-size: 16px;
@@ -414,12 +417,12 @@ body, html {
     text-transform: none;
 }
 
-.modal-overlay[data-theme="76"] .modal-actions {
+body[data-theme="76"] .modal-overlay .modal-actions {
     gap: 15px;
     margin-top: 10px;
 }
 
-.modal-overlay[data-theme="76"] .modal-actions .btn {
+body[data-theme="76"] .modal-overlay .modal-actions .btn {
     padding: 0 20px;
     font-family: 'PibotoCondensed', sans-serif;
     font-size: 13px;
@@ -428,32 +431,32 @@ body, html {
     height: 26px;
 }
 
-.modal-overlay[data-theme="76"] .modal-actions .btn:first-child {
+body[data-theme="76"] .modal-overlay .modal-actions .btn:first-child {
     background: transparent;
 }
 
-.modal-overlay[data-theme="76"] .modal-actions .btn .btn-text {
+body[data-theme="76"] .modal-overlay .modal-actions .btn .btn-text {
     font-family: 'PibotoCondensed', sans-serif;
     font-size: 13px;
     color: #f5cb5b;
 }
 
-.modal-overlay[data-theme="76"] .modal-actions .btn:first-child .btn-text {
+body[data-theme="76"] .modal-overlay .modal-actions .btn:first-child .btn-text {
     color: #f5cb5b;
 }
 
-.modal-overlay[data-theme="76"] .modal-actions .btn:hover,
-.modal-overlay[data-theme="76"] .modal-actions .btn:focus,
-.modal-overlay[data-theme="76"] .modal-actions .btn.selected,
-.modal-overlay[data-theme="76"] .modal-actions .btn:first-child:hover,
-.modal-overlay[data-theme="76"] .modal-actions .btn:first-child:focus,
-.modal-overlay[data-theme="76"] .modal-actions .btn:first-child.selected {
+body[data-theme="76"] .modal-overlay .modal-actions .btn:hover,
+body[data-theme="76"] .modal-overlay .modal-actions .btn:focus,
+body[data-theme="76"] .modal-overlay .modal-actions .btn.selected,
+body[data-theme="76"] .modal-overlay .modal-actions .btn:first-child:hover,
+body[data-theme="76"] .modal-overlay .modal-actions .btn:first-child:focus,
+body[data-theme="76"] .modal-overlay .modal-actions .btn:first-child.selected {
     background: #f5cb5b;
 }
 
-.modal-overlay[data-theme="76"] .modal-actions .btn:hover .btn-text,
-.modal-overlay[data-theme="76"] .modal-actions .btn:focus .btn-text,
-.modal-overlay[data-theme="76"] .modal-actions .btn.selected .btn-text {
+body[data-theme="76"] .modal-overlay .modal-actions .btn:hover .btn-text,
+body[data-theme="76"] .modal-overlay .modal-actions .btn:focus .btn-text,
+body[data-theme="76"] .modal-overlay .modal-actions .btn.selected .btn-text {
     color: #000;
 }
 
@@ -978,16 +981,14 @@ body, html {
     color: #000000;
 }
 
-[data-theme="76"] .btn.selected,
-[data-theme="76"] .btn:focus {
+body[data-theme="76"] .btn.selected,
+body[data-theme="76"] .btn:focus {
     background-color: #f5cb5b;
     outline: none;
 }
 
-
-
-[data-theme="76"] .btn.selected .btn-text,
-[data-theme="76"] .btn:focus .btn-text {
+body[data-theme="76"] .btn.selected .btn-text,
+body[data-theme="76"] .btn:focus .btn-text {
     color: #000000;
 }
 
@@ -1194,6 +1195,250 @@ body, html {
 
 
 /* ==========================================================================
+   SETTINGS MENU
+   ========================================================================== */
+
+#settings-menu-panel {
+    position: absolute;
+    top: calc(20vh / var(--ui-scale, 1.0));
+    right: calc(20vw / var(--ui-scale, 1.0));
+    width: calc(80vw / var(--ui-scale, 1.0));
+    height: calc(80vh / var(--ui-scale, 1.0));
+    zoom: var(--ui-scale, 1.0);
+    background: transparent;
+    border: none;
+    display: flex;
+    flex-direction: column;
+    z-index: 9999;
+}
+
+body.is-ultralight #settings-menu-panel {
+    top: 20vh;
+    right: 20vw;
+    width: 80vw;
+    height: 80vh;
+}
+
+#settings-menu-panel.panel-hidden,
+#settings-backdrop.panel-hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.settings-body {
+    display: flex;
+    flex-direction: row;
+    flex: 1;
+    overflow: hidden;
+}
+
+.settings-tabs {
+    flex: 0 0 calc(400px / var(--ui-scale, 1.0));
+    border-right: none;
+    display: flex;
+    flex-direction: column;
+    padding: 20px 15px;
+    gap: 10px;
+}
+
+.settings-tab {
+    padding: 10px 15px;
+    font-size: 24px;
+    font-family: 'PibotoCondensed', sans-serif;
+    font-weight: bold;
+    cursor: pointer;
+    text-transform: uppercase;
+    color: #ffffcb;
+    outline: none;
+}
+
+.settings-tab.active {
+    opacity: 1;
+    background-color: #f5cb5b;
+    color: #000;
+}
+
+.settings-tab:focus {
+    background-color: #f5cb5b;
+    color: #000;
+}
+body[data-theme="76"] .settings-tab:focus,
+body[data-theme="76"] .settings-tab.active {
+    color: #000;
+}
+
+.settings-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+#settings-backdrop {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 9998;
+    background: rgba(0, 0, 0, 0.4);
+}
+
+body.settings-open > :not(#settings-menu-panel):not(#settings-backdrop):not(#screen-container):not(script):not(#custom-map-cursor) {
+    display: none !important;
+}
+body.settings-open #marker-layer,
+body.settings-open #quest-layer,
+body.settings-open #player-layer {
+    display: none !important;
+}
+
+/* ==========================================================================
+   SETTINGS ROW PRIMITIVES
+   ========================================================================== */
+
+.settings-row {
+    display: grid;
+    grid-template-columns: 70% 30%;
+    align-items: center;
+    padding: 6px 10px;
+    background-color: rgba(0, 0, 0, 0.4);
+    cursor: pointer;
+    user-select: none;
+    outline: none;
+}
+
+.settings-row:focus {
+    outline: none;
+    background-color: #f5cb5b;
+}
+
+.settings-row:focus .settings-row-title,
+.settings-row:focus .settings-row-subtitle,
+.settings-row:focus .ui-control-value {
+    color: #000000;
+}
+
+body[data-theme="76"] .settings-row:focus .settings-row-title,
+body[data-theme="76"] .settings-row:focus .settings-row-subtitle,
+body[data-theme="76"] .settings-row:focus .ui-control-value {
+    color: #000000;
+}
+
+.settings-row-left {
+    display: flex;
+    flex-direction: column;
+}
+
+.settings-row-title {
+    font-family: 'PibotoCondensed', sans-serif;
+    font-size: 20px;
+    font-weight: bold;
+    color: #ffffcb;
+}
+
+.settings-row-right {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+    gap: 15px;
+}
+
+
+/* ==========================================================================
+   STEPPER CONTROL
+   ========================================================================== */
+
+.stepper-control {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.stepper-arrow {
+    width: 0;
+    height: 0;
+    border-style: solid;
+    cursor: pointer;
+    opacity: 0.7;
+}
+.stepper-arrow-left {
+    border-width: 6px 10px 6px 0;
+    border-color: transparent #ffffcb transparent transparent;
+}
+.stepper-arrow-right {
+    border-width: 6px 0 6px 10px;
+    border-color: transparent transparent transparent #ffffcb;
+}
+.stepper-arrow:hover { opacity: 1; }
+.stepper-arrow:active { transform: scale(0.9); }
+
+.settings-row:focus .stepper-arrow-left {
+    border-color: transparent #000000 transparent transparent;
+}
+.settings-row:focus .stepper-arrow-right {
+    border-color: transparent transparent transparent #000000;
+}
+
+.ui-control-value {
+    font-family: 'PibotoCondensed', sans-serif;
+    font-size: 20px;
+    color: #ffffcb;
+    width: 60px;
+    text-align: center;
+    font-weight: bold;
+}
+
+
+/* ==========================================================================
+   SLIDER
+   ========================================================================== */
+
+.slider-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    width: 100%;
+}
+.slider-track-row {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    width: 100%;
+}
+.slider-track {
+    flex-grow: 1;
+    width: 100%;
+    height: 4px;
+    background: #ffffcb;
+    position: relative;
+    cursor: pointer;
+}
+.slider-fill {
+    height: 100%;
+    background: #ffffcb;
+    width: 50%;
+}
+.slider-thumb {
+    width: 8px;
+    height: 16px;
+    background: #ffffcb;
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+.settings-row:focus .slider-fill,
+.settings-row:focus .slider-thumb,
+.settings-row:focus .slider-track {
+    background: #000000;
+}
+
+
+/* ==========================================================================
    CUSTOM
    ========================================================================== */
 
@@ -1245,3 +1490,19 @@ body, html {
 #custom-marker-card-panel .fc-header {
     justify-content: center;
 }
+
+#info-card,
+.floating-card,
+.collapsible-panel {
+    zoom: var(--ui-scale, 1.0);
+}
+
+#info-card {
+    transform-origin: bottom right;
+}
+
+[data-dock="top-left"] { transform-origin: top left; }
+[data-dock="top-right"] { transform-origin: top right; }
+[data-dock="bottom-left"] { transform-origin: bottom left; }
+[data-dock="bottom-right"] { transform-origin: bottom right; }
+.floating-card:not([data-dock]) { transform-origin: top left; }

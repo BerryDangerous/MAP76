@@ -1,5 +1,6 @@
 import { ENGINE_MARKER_TYPES, WORLDSPACE_CONFIGS, DEFAULT_BLANK_CONFIG } from '../core/constants.js';
 import { mapState } from '../core/state.js';
+import { appSettings } from '../core/settings.js';
 
 export const ThemeEngine = {
 
@@ -57,7 +58,7 @@ export const ThemeEngine = {
     },
 
     getMarkerIconUrl(engineType: number, discovered?: boolean, customIcon?: string): string {
-        const activeTheme = mapState.currentTheme;
+        const activeTheme = appSettings.iconTheme;
 
         if (customIcon) {
             return `assets/icons/${activeTheme}/custom/${customIcon}.svg`;
@@ -73,11 +74,11 @@ export const ThemeEngine = {
     },
 
     getAssetIconUrl(iconName: string): string {
-        const activeTheme = mapState.currentTheme;
+        const activeTheme = appSettings.iconTheme;
         return `assets/icons/${activeTheme}/${iconName}.svg`;
     },
 
     getPlayerIconUrl(): string {
-        return `assets/icons/${mapState.currentTheme}/player-location.svg`;
+        return `assets/icons/${appSettings.iconTheme}/player-location.svg`;
     }
 };

@@ -34,5 +34,9 @@ declare global {
             updateWorkshopStats?: (jsonString: string) => void;
             toggleActiveTheme?: (themeName: string) => void;
         };
+
+        loadSettings?: (jsonString: string) => void;
+        saveSettings?: (jsonString: string) => void;
+        requestSettings?: () => void;
     }
 }

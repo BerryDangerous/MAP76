@@ -6,6 +6,7 @@ export interface FocusComponent {
      * Returns true if the key event was handled/consumed, false to bubble up.
      */
     handleKeyDown: (e: KeyboardEvent) => boolean;
+    handleKeyUp?: (e: KeyboardEvent) => boolean;
     onFocusGained?: () => void;
     onFocusLost?: (newFocusId?: FocusOwner) => void;
 }
@@ -49,6 +50,17 @@ class FocusManagerSystem {
         const activeComponent = this.components.get(this.currentFocus);
         if (activeComponent) {
             const handled = activeComponent.handleKeyDown(e);
+            if (handled) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    handleKeyUp(e: KeyboardEvent): boolean {
+        const activeComponent = this.components.get(this.currentFocus);
+        if (activeComponent && activeComponent.handleKeyUp) {
+            const handled = activeComponent.handleKeyUp(e);
             if (handled) {
                 return true;
             }

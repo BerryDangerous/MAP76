@@ -5,6 +5,7 @@ import { CustomMarker, POIMarker, PowerArmorMarker, MarkerType } from '../types/
 import { F4SEMapPayload } from '../types/payloads.js';
 import { QuestItem } from '../types/quests.js';
 import { MapViewport } from './viewport.js';
+import { appSettings } from '../core/settings.js';
 import { MARKER_ICON_QUEST_TARGET, MARKER_ICON_QUEST_DOOR, MARKER_ICON_CUSTOM_MARKER, MARKER_ICON_POWER_ARMOR, MARKER_ICON_RAIDER_OUTPOST, MARKER_ICON_VASSAL_SETTLEMENT, MARKER_ICON_POTENTIAL_VASSAL_SETTLEMENT } from '../core/constants.js';
 import { renderSupplyLines, isSupplyLinesViewActive } from './supplyLines.js';
 import { WorldspaceUtils } from '../utils/worldspaceUtils.js';
@@ -168,7 +169,7 @@ function renderLocationMarkers(markers: POIMarker[], worldspaceID: number, bound
 
         let x = m.x;
         let y = m.y;
-        const isClamped = (x < bMinX || x > bMaxX || y < bMinY || y > bMaxY);
+        const isClamped = appSettings.clampQuestMarkers && (x < bMinX || x > bMaxX || y < bMinY || y > bMaxY);
 
         if (isClamped) {
             x = Math.max(bMinX, Math.min(bMaxX, x));
