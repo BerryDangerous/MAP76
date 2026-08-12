@@ -119,6 +119,7 @@ export const SettingsMenu = {
 
         FocusManager.register({
             id: 'SETTINGS_MENU',
+            getAvailableControls: () => ['NAV_BACK', 'RESET_DEFAULTS'] as import('../systems/focusManager.js').ControlActionDef[],
             handleKeyDown: (e) => {
                 if (e.key === 'Escape' || KeybindsSystem.isAction(e, 'NAV_BACK') || KeybindsSystem.isAction(e, 'CLOSE_MAP')) {
                     e.preventDefault();

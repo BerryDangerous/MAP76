@@ -12,6 +12,7 @@ import { SettlementCard } from './settlementCard.js';
 import { MarkerCard } from './markerCard.js';
 import { ThemeEngine } from '../systems/theme.js';
 import { StringUtils } from '../utils/stringUtils.js';
+import { WorldspaceUtils } from '../utils/worldspaceUtils.js';
 
 export interface WorkshopListState {
     isCollapsed: boolean;
@@ -44,6 +45,8 @@ const listController = new SelectableListController<SettlementDataWithRatings>({
             SettlementCard.close();
             MarkerCard.close();
         }
+
+        FocusManager.triggerControlsUpdate();
 
         if (customScrollbar) {
             customScrollbar.updateThumbPosition();
@@ -142,7 +145,7 @@ export const WorkshopList = {
         if (workshopListState.isCollapsed) {
             SettlementCard.close();
             MarkerCard.close();
-            MapViewport.restoreSavedViewport();
+            MapViewport.clearSavedViewport(appSettings.resetViewportOnPanelCollapse);
             return;
         }
         workshopListState.isCollapsed = true;
@@ -153,7 +156,7 @@ export const WorkshopList = {
 
         SettlementCard.close();
         MarkerCard.close();
-        MapViewport.restoreSavedViewport();
+        MapViewport.clearSavedViewport(appSettings.resetViewportOnPanelCollapse);
         
         if (FocusManager.getFocus() === 'WORKSHOP_LIST') {
             FocusManager.setFocus('MAP');
@@ -172,6 +175,14 @@ export const WorkshopList = {
     init(): void {
         FocusManager.register({
             id: 'WORKSHOP_LIST',
+            getAvailableControls: () => {
+                const controls: import('../systems/focusManager.js').ControlActionDef[] = ['NAV_BACK', { action: 'NAV_UP', label: 'MOVE' }, { action: 'NAV_DOWN', label: 'MOVE' }, 'PAN_MOUSE'];
+                const selected = listController.getSelectedItem();
+                if (selected && selected.worldspace !== undefined && WorldspaceUtils.isSameWorldspace(selected.worldspace, mapState.activeMapConfig.worldspaceID)) {
+                    controls.push({ action: 'CENTER_ITEM', label: 'CENTER MARKER' });
+                }
+                return controls;
+            },
             handleKeyDown: (e: KeyboardEvent) => this.handleKeyDown(e),
             onFocusGained: () => {
                 const container = document.getElementById('workshop-list-panel');
@@ -248,12 +259,25 @@ export const WorkshopList = {
             return true;
         }
 
+
+
+        if (KeybindsSystem.isAction(e, 'CENTER_ITEM')) {
+            const selected = listController.getSelectedItem();
+            if (selected && selected.markerFormId !== undefined) {
+                const marker = mapState.lastPayload?.markers?.find(m => m.formId === selected.markerFormId);
+                if (marker) {
+                    MapViewport.centerOnWorldCoords(marker.x, marker.y);
+                }
+            }
+            return true;
+        }
+
         return false;
     },
 
     notifyWorkshopFocused(workshop: SettlementDataWithRatings | null): void {
         if (!workshop || workshop.markerFormId === undefined) {
-            MapViewport.restoreSavedViewport();
+            MapViewport.clearSavedViewport(appSettings.focusMarkerOnSelection);
             return;
         }
         
@@ -261,7 +285,7 @@ export const WorkshopList = {
         if (marker && appSettings.focusMarkerOnSelection) {
             MapViewport.centerOnWorldCoords(marker.x, marker.y);
         } else {
-            MapViewport.restoreSavedViewport();
+            MapViewport.clearSavedViewport(appSettings.focusMarkerOnSelection);
         }
     },
 

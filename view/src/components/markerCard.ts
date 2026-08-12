@@ -4,8 +4,6 @@ import { MapViewport } from './viewport.js';
 import { ActionButtonConfig } from '../ui/actionButton.js';
 import { MarkerInteractionManager } from './markerInteraction.js';
 import { DockCorner } from '../systems/dockControls.js';
-import { KeybindsSystem } from '../systems/keybinds.js';
-import { WorkshopList } from './workshopList.js';
 
 let markerCardInstance: FloatingCard | null = null;
 
@@ -18,6 +16,13 @@ export const MarkerCard = {
     init(): void {
         FocusManager.register({
             id: 'MARKER_CARD',
+            getAvailableControls: () => {
+                const controls: import('../systems/focusManager.js').ControlActionDef[] = ['NAV_BACK', 'PAN_MOUSE'];
+                if (MarkerCard.activeAnchorMarker === null && MarkerCard.activeMarkerFormId !== null) {
+                    controls.push({ action: 'CENTER_ITEM', label: 'CENTER MARKER' });
+                }
+                return controls;
+            },
             handleKeyDown: (e: KeyboardEvent) => this.handleKeyDown(e),
             onFocusGained: () => {
                 const card = document.getElementById('marker-card-panel');

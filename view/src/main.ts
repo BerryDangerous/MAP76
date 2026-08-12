@@ -21,6 +21,8 @@ import { DockControlsSystem } from './systems/dockControls.js';
 import { KeybindsSystem } from './systems/keybinds.js';
 import { SettingsMenu } from './components/SettingsMenu.js';
 import { requestSettings } from './core/settings.js';
+import { ControlBar } from './components/controlBar.js';
+import { InfoBar } from './components/infoBar.js';
 
 ThemeEngine.initMapConfig();
 
@@ -47,6 +49,7 @@ export function resetUIState(): void {
 initializeF4SEBindings((payload: F4SEMapPayload) => {
     requestSettings();
     loadMarkers(payload);
+    InfoBar.initPlayer(payload.player);
     InfoCard.init(payload.player);
     QuestList.init();
     WorkshopList.init();
@@ -61,6 +64,7 @@ window.addEventListener('FrameTick', (e: Event) => {
     const customEvent = e as CustomEvent;
     if (customEvent.detail) {
         InfoCard.update(customEvent.detail);
+        InfoBar.updateTime(customEvent.detail);
     }
 });
 
@@ -99,6 +103,8 @@ window.addEventListener('DOMContentLoaded', () => {
     MapViewport.centerInitialViewport();
     AnimationEngine.startLoop();
     SettingsMenu.init();
+    ControlBar.init();
+    InfoBar.init();
 
     if (import.meta.env.DEV) {
         import('./dev/mock.js').then(({ initMockData }) => {
@@ -144,12 +150,40 @@ window.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        if (e.key === 'z' || e.key === 'Z') {
+        if (KeybindsSystem.isAction(e, 'OPEN_SETTINGS')) {
             SettingsMenu.toggle();
             return;
         }
 
         if (FocusManager.getFocus() === 'MAP') {
+            if (KeybindsSystem.isAction(e, 'ZOOM_IN')) {
+                MapViewport.performZoom('in', MapViewport.lastMouseX, MapViewport.lastMouseY);
+                return;
+            }
+            if (KeybindsSystem.isAction(e, 'ZOOM_OUT')) {
+                MapViewport.performZoom('out', MapViewport.lastMouseX, MapViewport.lastMouseY);
+                return;
+            }
+            if (KeybindsSystem.isAction(e, 'CENTER_CAMERA')) {
+                e.preventDefault();
+                if (mapState.player.active) {
+                    MapViewport.centerOnWorldCoords(mapState.player.x, mapState.player.y);
+                }
+                return;
+            }
+            if (KeybindsSystem.isAction(e, 'PLACE_MARKER')) {
+                if (mapState.currentPayloadBounds) {
+                    const worldCoords = MapViewport.screenToGameCoords(
+                        MapViewport.lastMouseX, 
+                        MapViewport.lastMouseY, 
+                        mapState.currentPayloadBounds
+                    );
+                    CustomMarkerCard.openForPlacement(worldCoords, { x: MapViewport.lastMouseX, y: MapViewport.lastMouseY });
+                    FocusManager.setFocus('CUSTOM_MARKER_CARD');
+                }
+                return;
+            }
+
             const questDockCorner = QuestList.getState().dockCorner;
             const workshopDockCorner = WorkshopList.getState().dockCorner;
             if (DockControlsSystem.isExpandKey(e, questDockCorner)) {

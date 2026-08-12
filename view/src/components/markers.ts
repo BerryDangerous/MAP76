@@ -145,9 +145,9 @@ function renderPlayer(player: PlayerData | undefined, worldspaceID: number, boun
     pImg.style.left = `${pos.x}%`;
     pImg.style.top = `${pos.y}%`;
 
-    mapState.player.x = pos.x;
-    mapState.player.y = pos.y;
-    mapState.player.z = pos.z;
+    mapState.player.x = player.x;
+    mapState.player.y = player.y;
+    mapState.player.z = player.z;
     mapState.player.angle = player.angle;
     mapState.player.active = true;
 

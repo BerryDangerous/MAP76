@@ -14,6 +14,13 @@ export const CustomMarkerCard = {
     init(): void {
         FocusManager.register({
             id: 'CUSTOM_MARKER_CARD',
+            getAvailableControls: () => {
+                const controls: import('../systems/focusManager.js').ControlActionDef[] = ['NAV_BACK', 'PAN_MOUSE'];
+                if (CustomMarkerCard.activeAnchorMarker === null && (CustomMarkerCard.activeGameCoords || CustomMarkerCard.activeCoords)) {
+                    controls.push({ action: 'CENTER_ITEM', label: 'CENTER MARKER' });
+                }
+                return controls;
+            },
             handleKeyDown: (e: KeyboardEvent) => this.handleKeyDown(e),
             onFocusGained: () => {
                 const card = document.getElementById('custom-marker-card-panel');

@@ -53,6 +53,8 @@ const listController = new SelectableListController<QuestItem>({
         if (customScrollbar) {
             customScrollbar.updateThumbPosition();
         }
+
+        FocusManager.triggerControlsUpdate();
     },
     onItemClick: (quest, index) => {
         const container = document.getElementById('quest-list-panel');
@@ -122,6 +124,13 @@ export const QuestList = {
         return questListState;
     },
 
+    isSelectedQuestCompleted(): boolean {
+        if (questListState.isCollapsed) return false;
+        const selected = listController.getSelectedItem();
+        if (!selected) return false;
+        return QuestUtils.isQuestCompleted(selected);
+    },
+
     setFilterTab(tab: QuestFilterTab): void {
         questListState.currentTab = tab;
         listController.setSelectedIndex(0, false);
@@ -167,7 +176,7 @@ export const QuestList = {
     collapse(): void {
         if (questListState.isCollapsed) {
             QuestCard.close();
-            MapViewport.restoreSavedViewport();
+            MapViewport.clearSavedViewport(appSettings.resetViewportOnPanelCollapse);
             return;
         }
         questListState.isCollapsed = true;
@@ -177,7 +186,7 @@ export const QuestList = {
         }
 
         QuestCard.close();
-        MapViewport.restoreSavedViewport();
+        MapViewport.clearSavedViewport(appSettings.resetViewportOnPanelCollapse);
         if (FocusManager.getFocus() === 'QUEST_LIST') {
             FocusManager.setFocus('MAP');
         }
@@ -195,6 +204,20 @@ export const QuestList = {
     init(): void {
         FocusManager.register({
             id: 'QUEST_LIST',
+            getAvailableControls: () => {
+                const controls: import('../systems/focusManager.js').ControlActionDef[] = ['NAV_BACK', { action: 'NAV_UP', label: 'MOVE' }, { action: 'NAV_DOWN', label: 'MOVE' }, 'PAN_MOUSE'];
+                const selected = listController.getSelectedItem();
+                if (selected) {
+                    const isCompleted = QuestUtils.isQuestCompleted(selected);
+                    if (!isCompleted) {
+                        controls.push('TOGGLE_ACTIVE');
+                        if (selected.isTracked && QuestUtils.hasActiveTargets(selected)) {
+                            controls.push({ action: 'CENTER_ITEM', label: 'CENTER OBJECTIVE' });
+                        }
+                    }
+                }
+                return controls;
+            },
             handleKeyDown: (e: KeyboardEvent) => this.handleKeyDown(e),
             onFocusGained: () => {
                 const container = document.getElementById('quest-list-panel');
@@ -263,7 +286,7 @@ export const QuestList = {
             return true;
         }
 
-        if (KeybindsSystem.isAction(e, 'TOGGLE_TRACKING')) {
+        if (KeybindsSystem.isAction(e, 'TOGGLE_ACTIVE')) {
             const selectedQuest = listController.getSelectedItem();
             if (selectedQuest) {
                 this.toggleQuestActive(selectedQuest);
@@ -273,6 +296,18 @@ export const QuestList = {
 
         if (KeybindsSystem.isAction(e, 'NAV_BACK')) {
             this.collapse();
+            return true;
+        }
+
+        if (KeybindsSystem.isAction(e, 'CENTER_ITEM')) {
+            const selected = listController.getSelectedItem();
+            if (selected && !QuestUtils.isQuestCompleted(selected)) {
+                QuestCard.open(selected, undefined, undefined, questListState.dockCorner, false, 'QUEST_LIST', () => QuestList.collapse());
+                const firstTarget = selected.objectives?.find(o => o.targets && o.targets.length > 0)?.targets[0];
+                if (firstTarget) {
+                    MapViewport.centerOnWorldCoords(firstTarget.x, firstTarget.y);
+                }
+            }
             return true;
         }
 
@@ -292,12 +327,12 @@ export const QuestList = {
 
     notifyQuestFocused(quest: QuestItem | null): void {
         if (!quest || !quest.isTracked || !quest.objectives || quest.objectives.length === 0) {
-            MapViewport.restoreSavedViewport();
+            MapViewport.clearSavedViewport(appSettings.focusMarkerOnSelection);
             return;
         }
         const activeObj = quest.objectives.find(o => o.state === 1) || quest.objectives[0];
         if (!activeObj || !activeObj.targets || activeObj.targets.length === 0) {
-            MapViewport.restoreSavedViewport();
+            MapViewport.clearSavedViewport(appSettings.focusMarkerOnSelection);
             return;
         }
 

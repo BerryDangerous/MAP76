@@ -11,11 +11,13 @@ import { SearchEngine } from '../systems/searchEngine.js';
 import { SearchResult } from '../types/search.js';
 import { MarkerCard } from './markerCard.js';
 import { QuestCard } from './questCard.js';
+import { QuestList } from './questList.js';
 import { SettlementCard } from './settlementCard.js';
 import { CustomMarkerCard } from './customMarkerCard.js';
 import { SearchUtils } from '../utils/searchUtils.js';
 import { WorldspaceUtils } from '../utils/worldspaceUtils.js';
 import { StringUtils } from '../utils/stringUtils.js';
+import { QuestUtils } from '../utils/questUtils.js';
 import { mapState } from '../core/state.js';
 import { ThemeEngine } from '../systems/theme.js';
 
@@ -55,15 +57,17 @@ const listController = new SelectableListController<SearchResult>({
                     MapViewport.centerOnWorldCoords(selectedResult.markerCoords.x, selectedResult.markerCoords.y);
                 }
             } else {
-                MapViewport.restoreSavedViewport();
+                MapViewport.clearSavedViewport(appSettings.focusMarkerOnSelection);
             }
         } else {
-            MapViewport.restoreSavedViewport();
+            MapViewport.clearSavedViewport(appSettings.focusMarkerOnSelection);
         }
 
         if (customScrollbar) {
             customScrollbar.updateThumbPosition();
         }
+
+        FocusManager.triggerControlsUpdate();
     },
     onItemClick: (result, index) => {
         const container = document.getElementById('search-panel');
@@ -98,6 +102,21 @@ export const SearchPanel = {
         return searchPanelState;
     },
 
+    isQuestSelected(): boolean {
+        if (searchPanelState.isCollapsed) return false;
+        const selected = listController.getSelectedItem();
+        return selected?.type === 'quest';
+    },
+
+    isSelectedQuestCompleted(): boolean {
+        if (searchPanelState.isCollapsed) return false;
+        const selected = listController.getSelectedItem();
+        if (selected?.type === 'quest') {
+            return QuestUtils.isQuestCompleted(selected.originalRef);
+        }
+        return false;
+    },
+
     expand(): void {
         if (!searchPanelState.isCollapsed) return;
         searchPanelState.isCollapsed = false;
@@ -124,7 +143,7 @@ export const SearchPanel = {
 
         if (searchPanelState.isCollapsed) {
             this.closeCards();
-            MapViewport.restoreSavedViewport();
+            MapViewport.clearSavedViewport(appSettings.resetViewportOnPanelCollapse);
             return;
         }
         searchPanelState.isCollapsed = true;
@@ -134,7 +153,7 @@ export const SearchPanel = {
         }
 
         this.closeCards();
-        MapViewport.restoreSavedViewport();
+        MapViewport.clearSavedViewport(appSettings.resetViewportOnPanelCollapse);
         
         FocusManager.setFocus('MAP');
         this.render();
@@ -180,6 +199,34 @@ export const SearchPanel = {
     init(): void {
         FocusManager.register({
             id: 'SEARCH_PANEL',
+            getAvailableControls: () => {
+                const controls: import('../systems/focusManager.js').ControlActionDef[] = ['NAV_BACK', { action: 'NAV_UP', label: 'MOVE' }, { action: 'NAV_DOWN', label: 'MOVE' }, 'PAN_MOUSE'];
+                if (searchBox?.isFocused()) {
+                    return controls;
+                }
+
+                const selected = listController.getSelectedItem();
+                if (selected) {
+                    if (selected.type === 'quest') {
+                        const isCompleted = QuestUtils.isQuestCompleted(selected.originalRef);
+                        if (!isCompleted) {
+                            controls.push('TOGGLE_ACTIVE');
+                            if (selected.originalRef.isTracked && QuestUtils.hasActiveTargets(selected.originalRef)) {
+                                controls.push({ action: 'CENTER_ITEM', label: 'CENTER OBJECTIVE' });
+                            }
+                        }
+                    } else if (selected.type === 'workshop') {
+                        if (selected.originalRef.worldspace !== undefined && WorldspaceUtils.isSameWorldspace(selected.originalRef.worldspace, mapState.activeMapConfig.worldspaceID)) {
+                            controls.push({ action: 'CENTER_ITEM', label: 'CENTER MARKER' });
+                        }
+                    } else {
+                        if (selected.originalRef.worldspace !== undefined && WorldspaceUtils.isSameWorldspace(selected.originalRef.worldspace, mapState.activeMapConfig.worldspaceID)) {
+                            controls.push({ action: 'CENTER_ITEM', label: 'CENTER MARKER' });
+                        }
+                    }
+                }
+                return controls;
+            },
             handleKeyDown: (e: KeyboardEvent) => this.handleKeyDown(e),
             onFocusGained: () => {
                 const container = document.getElementById('search-panel');
@@ -290,8 +337,35 @@ export const SearchPanel = {
             return true;
         }
         
+        if (KeybindsSystem.isAction(e, 'TOGGLE_ACTIVE')) {
+            const selected = listController.getSelectedItem();
+            if (selected && selected.type === 'quest') {
+                QuestList.toggleQuestActive(selected.originalRef);
+            }
+            return true;
+        }
+        
         if (KeybindsSystem.isAction(e, 'NAV_BACK')) {
             this.collapse();
+            return true;
+        }
+
+
+
+        if (KeybindsSystem.isAction(e, 'CENTER_ITEM')) {
+            const selected = listController.getSelectedItem();
+            if (selected) {
+                if (selected.markerCoords) {
+                    MapViewport.centerOnWorldCoords(selected.markerCoords.x, selected.markerCoords.y);
+                } else if (selected.type === 'quest') {
+                    const markerId = selected.originalRef.formId ?? selected.originalRef.questName;
+                    const markerContainer = document.querySelector(`.marker-container[data-form-id="${markerId}"]`) ||
+                                            document.querySelector(`.marker-container[data-display-name="${markerId}"]`);
+                    if (markerContainer) {
+                        MapViewport.centerOnElement(markerContainer as HTMLElement);
+                    }
+                }
+            }
             return true;
         }
 
@@ -368,13 +442,15 @@ export const SearchPanel = {
                         FocusManager.setFocus('SEARCH_PANEL');
                     }
                     this.closeCards();
-                    MapViewport.restoreSavedViewport();
+                    MapViewport.clearSavedViewport(appSettings.resetViewportOnPanelCollapse);
                     this.updateSelection(false);
+                    FocusManager.triggerControlsUpdate();
                 },
                 onBlur: () => {
                     const panelEl = document.getElementById('search-panel');
                     if (panelEl) panelEl.setAttribute('data-input-focused', 'false');
                     this.updateSelection(false);
+                    FocusManager.triggerControlsUpdate();
                 }
             });
         }

@@ -164,9 +164,9 @@ export const MapViewport = {
         }
     },
 
-    restoreSavedViewport() {
+    clearSavedViewport(restore: boolean = true) {
         if (mapState.savedViewport) {
-            if (appSettings.resetViewportOnPanelCollapse) {
+            if (restore) {
                 mapState.zoom = mapState.savedViewport.zoom;
                 mapState.panX = mapState.savedViewport.panX;
                 mapState.panY = mapState.savedViewport.panY;
@@ -210,69 +210,108 @@ export const MapViewport = {
         }
     },
 
+    centerOnElement(el: HTMLElement, targetZoom: number = 2.5): void {
+        if (!viewport) return;
+
+        this.saveCurrentViewport();
+        const oldZoom = mapState.zoom;
+        const oldPanX = mapState.panX;
+        const oldPanY = mapState.panY;
+        
+        mapState.zoom = targetZoom;
+
+        const imgEl = el.querySelector('img');
+        const mRect = imgEl ? imgEl.getBoundingClientRect() : el.getBoundingClientRect();
+        const elementCenterX = mRect.left + (mRect.width / 2);
+        const elementCenterY = mRect.top + (mRect.height / 2);
+
+        const mapTargetX = (elementCenterX - oldPanX) / oldZoom;
+        const mapTargetY = (elementCenterY - oldPanY) / oldZoom;
+
+        const screenCenterX = window.innerWidth / 2;
+        const screenCenterY = window.innerHeight / 2;
+
+        mapState.panX = screenCenterX - (mapTargetX * mapState.zoom);
+        mapState.panY = screenCenterY - (mapTargetY * mapState.zoom);
+
+        this.updateViewportTransform();
+    },
+
+    lastMouseX: window.innerWidth / 2,
+    lastMouseY: window.innerHeight / 2,
+
+    performZoom(direction: 'in' | 'out', clientX: number, clientY: number) {
+        const zoomIntensity = 0.15;
+        let zoomPointX = clientX;
+        let zoomPointY = clientY;
+        
+        let markerEl: HTMLElement | null = null;
+        if (QuestCard.isOpen()) {
+            markerEl = QuestCard.activeAnchorMarker;
+            if (!markerEl) {
+                const questFormId = QuestCard.activeQuest?.formId;
+                const questName = QuestCard.activeQuest?.questName;
+                const questMarkers = document.querySelectorAll('.quest-marker');
+                for (const el of questMarkers) {
+                    const htmlEl = el as HTMLElement;
+                    if ((questFormId && htmlEl.dataset.formId === questFormId.toString()) || htmlEl.dataset.displayName === questName) {
+                        markerEl = htmlEl;
+                        break;
+                    }
+                }
+            }
+        } else if (MarkerCard.isOpen()) {
+            markerEl = MarkerCard.activeAnchorMarker;
+        } else if (SettlementCard.isOpen()) {
+            markerEl = SettlementCard.activeAnchorMarker;
+        } else if (CustomMarkerCard.isOpen()) {
+            markerEl = CustomMarkerCard.activeAnchorMarker;
+        }
+
+        if (markerEl) {
+            const imgEl = markerEl.querySelector('img');
+            const mRect = imgEl ? imgEl.getBoundingClientRect() : markerEl.getBoundingClientRect();
+            zoomPointX = mRect.left + (mRect.width / 2);
+            zoomPointY = mRect.top + (mRect.height / 2);
+        }
+
+        const mapTargetX = (zoomPointX - mapState.panX) / mapState.zoom;
+        const mapTargetY = (zoomPointY - mapState.panY) / mapState.zoom;
+        
+        if (direction === 'in') {
+            mapState.zoom = Math.min(mapState.maxZoomIn, mapState.zoom + zoomIntensity);
+        } else {
+            mapState.zoom = Math.max(mapState.maxZoomOut, mapState.zoom - zoomIntensity);
+        }
+        
+        mapState.panX = zoomPointX - (mapTargetX * mapState.zoom);
+        mapState.panY = zoomPointY - (mapTargetY * mapState.zoom);
+
+        if (mapState.savedViewport) {
+            mapState.savedViewport = {
+                zoom: mapState.zoom,
+                panX: mapState.panX,
+                panY: mapState.panY
+            };
+        }
+
+        this.updateViewportTransform();
+    },
+
     initEvents() {
         if (!container || !viewport) return;
 
         window.addEventListener('resize', () => this.centerInitialViewport());
+        
+        window.addEventListener('mousemove', (e: MouseEvent) => {
+            this.lastMouseX = e.clientX;
+            this.lastMouseY = e.clientY;
+        });
 
         container.addEventListener('wheel', (e: WheelEvent) => {
+            if (FocusManager.getFocus() !== 'MAP') return;
             e.preventDefault();
-            const zoomIntensity = 0.15;
-            let zoomPointX = e.clientX;
-            let zoomPointY = e.clientY;
-            
-            // When a card is open, zoom in relation to its marker position instead of cursor
-            let markerEl: HTMLElement | null = null;
-            if (QuestCard.isOpen()) {
-                markerEl = QuestCard.activeAnchorMarker;
-                if (!markerEl) {
-                    const questFormId = QuestCard.activeQuest?.formId;
-                    const questName = QuestCard.activeQuest?.questName;
-                    const questMarkers = document.querySelectorAll('.quest-marker');
-                    for (const el of questMarkers) {
-                        const htmlEl = el as HTMLElement;
-                        if ((questFormId && htmlEl.dataset.formId === questFormId.toString()) || htmlEl.dataset.displayName === questName) {
-                            markerEl = htmlEl;
-                            break;
-                        }
-                    }
-                }
-            } else if (MarkerCard.isOpen()) {
-                markerEl = MarkerCard.activeAnchorMarker;
-            } else if (SettlementCard.isOpen()) {
-                markerEl = SettlementCard.activeAnchorMarker;
-            } else if (CustomMarkerCard.isOpen()) {
-                markerEl = CustomMarkerCard.activeAnchorMarker;
-            }
-
-            if (markerEl) {
-                const imgEl = markerEl.querySelector('img');
-                const mRect = imgEl ? imgEl.getBoundingClientRect() : markerEl.getBoundingClientRect();
-                zoomPointX = mRect.left + (mRect.width / 2);
-                zoomPointY = mRect.top + (mRect.height / 2);
-            }
-
-            const mapTargetX = (zoomPointX - mapState.panX) / mapState.zoom;
-            const mapTargetY = (zoomPointY - mapState.panY) / mapState.zoom;
-            
-            if (e.deltaY < 0) {
-                mapState.zoom = Math.min(mapState.maxZoomIn, mapState.zoom + zoomIntensity);
-            } else {
-                mapState.zoom = Math.max(mapState.maxZoomOut, mapState.zoom - zoomIntensity);
-            }
-            
-            mapState.panX = zoomPointX - (mapTargetX * mapState.zoom);
-            mapState.panY = zoomPointY - (mapTargetY * mapState.zoom);
-
-            if (mapState.savedViewport) {
-                mapState.savedViewport = {
-                    zoom: mapState.zoom,
-                    panX: mapState.panX,
-                    panY: mapState.panY
-                };
-            }
-
-            this.updateViewportTransform();
+            this.performZoom(e.deltaY < 0 ? 'in' : 'out', e.clientX, e.clientY);
         }, { passive: false });
 
         let dragStartX = 0;

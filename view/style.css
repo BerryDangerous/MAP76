@@ -510,8 +510,8 @@ body[data-theme="76"] .modal-overlay .modal-actions .btn.selected .btn-text {
 
 #info-card {
     position: absolute;
-    bottom: 24px;
-    right: 24px;
+    bottom: 50px;
+    right: 20px;
     z-index: 1000;
     background: #000000;
     border: 1px solid rgba(255, 255, 255, 0.15);
@@ -1284,7 +1284,7 @@ body[data-theme="76"] .settings-tab.active {
     background: rgba(0, 0, 0, 0.4);
 }
 
-body.settings-open > :not(#settings-menu-panel):not(#settings-backdrop):not(#screen-container):not(script):not(#custom-map-cursor):not(.modal-overlay) {
+body.settings-open > :not(#settings-menu-panel):not(#settings-backdrop):not(#screen-container):not(script):not(#custom-map-cursor):not(.modal-overlay):not(#control-bar) {
     display: none !important;
 }
 body.settings-open #marker-layer,
@@ -1435,6 +1435,45 @@ body[data-theme="76"] .settings-row:focus .ui-control-value {
 .settings-row:focus .slider-thumb,
 .settings-row:focus .slider-track {
     background: #000000;
+}
+
+/* ==========================================================================
+   BARS (INFO, SETTINGS, CONTROL)
+   ========================================================================== */
+
+#settings-bar,
+#info-bar,
+#control-bar {
+    position: absolute;
+    height: 30px;
+    background-color: rgba(24, 28, 29, 0.5);
+    color: #ffffcb;
+    font-family: 'PibotoCondensed', sans-serif;
+    font-size: 18px;
+    line-height: 1.2;
+    padding: 0 10px;
+    white-space: pre;
+    z-index: 10000;
+    pointer-events: none;
+    zoom: var(--ui-scale, 1.0);
+    display: flex;
+    align-items: center;
+}
+
+#settings-bar {
+    top: 10px;
+    left: 10px;
+}
+
+#info-bar {
+    top: 10px;
+    right: 10px;
+}
+
+#control-bar {
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
 }
 
 

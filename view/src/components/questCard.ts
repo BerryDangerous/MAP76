@@ -4,7 +4,6 @@ import { MapViewport } from './viewport.js';
 import { QuestList } from './questList.js';
 import { toggleQuestActive, makeOnlyQuestActive } from '../core/bridge.js';
 import { ActionButtonConfig } from '../ui/actionButton.js';
-import { KeybindsSystem } from '../systems/keybinds.js';
 import { StatusItemList } from '../ui/statusItemList.js';
 import { FloatingCard } from '../ui/floatingCard.js';
 import { DockCorner } from '../systems/dockControls.js';
@@ -20,6 +19,15 @@ export const QuestCard = {
     init(): void {
         FocusManager.register({
             id: 'QUEST_CARD',
+            getAvailableControls: () => {
+                const controls: import('../systems/focusManager.js').ControlActionDef[] = ['NAV_BACK', 'PAN_MOUSE'];
+                if (QuestCard.activeAnchorMarker === null && QuestCard.activeQuest && !QuestUtils.isQuestCompleted(QuestCard.activeQuest)) {
+                    if (QuestCard.activeQuest.isTracked && QuestUtils.hasActiveTargets(QuestCard.activeQuest)) {
+                        controls.push({ action: 'CENTER_ITEM', label: 'CENTER OBJECTIVE' });
+                    }
+                }
+                return controls;
+            },
             handleKeyDown: (e: KeyboardEvent) => this.handleKeyDown(e),
             onFocusGained: () => {
                 const card = document.getElementById('quest-card-panel');

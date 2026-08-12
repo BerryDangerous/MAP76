@@ -5,11 +5,9 @@ import { MapViewport } from './viewport.js';
 import { FloatingCard } from '../ui/floatingCard.js';
 import { ActionButtonConfig } from '../ui/actionButton.js';
 import { ThemeEngine } from '../systems/theme.js';
-import { KeybindsSystem } from '../systems/keybinds.js';
 import { MarkerInteractionManager } from './markerInteraction.js';
 import { calculateSettlementRatings, SettlementDataWithRatings } from '../utils/settlementUtils.js';
 import { DockCorner } from '../systems/dockControls.js';
-import { WorkshopList } from './workshopList.js';
 import { WorldspaceUtils } from '../utils/worldspaceUtils.js';
 
 let settlementCardInstance: FloatingCard | null = null;
@@ -23,6 +21,15 @@ export const SettlementCard = {
     init(): void {
         FocusManager.register({
             id: 'SETTLEMENT_CARD',
+            getAvailableControls: () => {
+                const controls: import('../systems/focusManager.js').ControlActionDef[] = ['NAV_BACK', 'PAN_MOUSE'];
+                if (SettlementCard.activeAnchorMarker === null && SettlementCard.activeSettlement) {
+                    if (SettlementCard.activeSettlement.worldspace !== undefined && WorldspaceUtils.isSameWorldspace(SettlementCard.activeSettlement.worldspace, mapState.activeMapConfig.worldspaceID)) {
+                        controls.push({ action: 'CENTER_ITEM', label: 'CENTER MARKER' });
+                    }
+                }
+                return controls;
+            },
             handleKeyDown: (e: KeyboardEvent) => this.handleKeyDown(e),
             onFocusGained: () => {
                 const card = document.getElementById('settlement-card-panel');

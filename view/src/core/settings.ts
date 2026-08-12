@@ -14,8 +14,8 @@ export const defaultSettings: AppSettings = {
     iconTheme: 'default',
     interfaceTheme: '76',
     clampQuestMarkers: true,
-    focusMarkerOnSelection: true,
-    resetViewportOnPanelCollapse: true,
+    focusMarkerOnSelection: false,
+    resetViewportOnPanelCollapse: false,
     freezeSimulation: true,
     confirmFastTravel: false,
 };

@@ -82,18 +82,19 @@ export class DockControlsSystem {
 
         const fmt = (v: number | string) => typeof v === 'number' ? `${v}px` : String(v);
 
-        const defaultOffset = 10;
+        const defaultHorizontalOffset = 10;
+        const defaultVerticalOffset = 50;
 
         if (corner.includes('top')) {
-            element.style.top = fmt(margins.top ?? defaultOffset);
+            element.style.top = fmt(margins.top ?? defaultVerticalOffset);
         } else if (corner.includes('bottom')) {
-            element.style.bottom = fmt(margins.bottom ?? defaultOffset);
+            element.style.bottom = fmt(margins.bottom ?? defaultVerticalOffset);
         }
 
         if (corner.includes('left')) {
-            element.style.left = fmt(margins.left ?? defaultOffset);
+            element.style.left = fmt(margins.left ?? defaultHorizontalOffset);
         } else if (corner.includes('right')) {
-            element.style.right = fmt(margins.right ?? defaultOffset);
+            element.style.right = fmt(margins.right ?? defaultHorizontalOffset);
         }
     }
 
