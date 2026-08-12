@@ -389,6 +389,23 @@ export const mockPayload: F4SEMapPayload = {
                     text: "Talk to MacCready"
                 }
             ]
+        },
+        {
+            questName: "Completed Mock Quest",
+            type: "Minutemen",
+            journal: "Mock Journal",
+            isMisc: false,
+            isTracked: false,
+            formId:0,
+            objectives: [
+                {
+                    index: 0,
+                    state: 2,
+                    targets: [
+                    ],
+                    text: "Mock Objective"
+                }
+            ]
         }
     ]
 };
