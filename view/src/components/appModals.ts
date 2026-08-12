@@ -1,4 +1,4 @@
-import { ModalManager } from '../ui/modalManager.js';
+import { ModalManager } from '../systems/modalManager.js';
 import { FastTravelStatus } from '../types/map.js';
 import { FAST_TRAVEL_ERROR_MESSAGES } from '../core/constants.js';
 import { appSettings } from '../core/settings.js';
