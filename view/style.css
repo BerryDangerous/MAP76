@@ -1284,7 +1284,7 @@ body[data-theme="76"] .settings-tab.active {
     background: rgba(0, 0, 0, 0.4);
 }
 
-body.settings-open > :not(#settings-menu-panel):not(#settings-backdrop):not(#screen-container):not(script):not(#custom-map-cursor) {
+body.settings-open > :not(#settings-menu-panel):not(#settings-backdrop):not(#screen-container):not(script):not(#custom-map-cursor):not(.modal-overlay) {
     display: none !important;
 }
 body.settings-open #marker-layer,
