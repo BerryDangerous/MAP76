@@ -45,6 +45,12 @@ export function initSupplyLinesLayer(): SVGSVGElement | null {
     return svgLayer;
 }
 
+export function hasSupplyLines(): boolean {
+    const payload = mapState.lastPayload;
+    if (!payload || !payload.settlements) return false;
+    return payload.settlements.some(ws => ws.owned && ws.linkedLocationFormIds && ws.linkedLocationFormIds.length > 0);
+}
+
 function resolveCrossWorldspaceGateway(
     targetWorldspace: number,
     currentWorldspace: number,

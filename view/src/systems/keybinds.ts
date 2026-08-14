@@ -17,7 +17,8 @@ export type KeyAction =
     | 'CENTER_ITEM'
     | 'OPEN_SETTINGS'
     | 'RESET_DEFAULTS'
-    | 'TOGGLE_ACTIVE';
+    | 'TOGGLE_ACTIVE'
+    | 'TOGGLE_SUPPLY_LINES';
 
 export const DEFAULT_KEYMAP: Record<KeyAction, string[]> = {
     NAV_UP: ['ArrowUp'],
@@ -38,7 +39,8 @@ export const DEFAULT_KEYMAP: Record<KeyAction, string[]> = {
     CENTER_ITEM: ['Shift'],
     OPEN_SETTINGS: ['z', 'Z'],
     RESET_DEFAULTS: ['t', 'T'],
-    TOGGLE_ACTIVE: ['t', 'T']
+    TOGGLE_ACTIVE: ['t', 'T'],
+    TOGGLE_SUPPLY_LINES: ['c', 'C']
 };
 
 export const DEFAULT_LABELS: Record<KeyAction, string> = {
@@ -60,7 +62,8 @@ export const DEFAULT_LABELS: Record<KeyAction, string> = {
     CENTER_ITEM: 'CENTER OBJECTIVE',
     OPEN_SETTINGS: 'SETTINGS',
     RESET_DEFAULTS: 'DEFAULTS',
-    TOGGLE_ACTIVE: 'TOGGLE ACTIVE'
+    TOGGLE_ACTIVE: 'TOGGLE ACTIVE',
+    TOGGLE_SUPPLY_LINES: 'SUPPLY LINES'
 };
 
 export class KeybindsSystem {

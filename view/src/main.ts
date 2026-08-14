@@ -5,7 +5,7 @@ import { AnimationEngine } from './systems/animation.js';
 import { MapViewport } from './components/viewport.js';
 import { loadMarkers, applySupplyLinesVisibilityFilter } from './components/markers.js';
 import { MarkerInteractionManager } from './components/markerInteraction.js';
-import { toggleSupplyLinesView, setSupplyLinesViewActive } from './components/supplyLines.js';
+import { toggleSupplyLinesView, setSupplyLinesViewActive, hasSupplyLines } from './components/supplyLines.js';
 import { CustomMarkerCard } from './components/customMarkerCard.js';
 import { ModalManager } from './systems/modalManager.js';
 import { InfoCard } from './components/infoCard.js';
@@ -58,6 +58,7 @@ initializeF4SEBindings((payload: F4SEMapPayload) => {
     MarkerCard.init();
     CustomMarkerCard.init();
     SearchPanel.init();
+    ControlBar.render(FocusManager.getFocus());
 });
 
 window.addEventListener('FrameTick', (e: Event) => {
@@ -192,13 +193,15 @@ window.addEventListener('DOMContentLoaded', () => {
                 WorkshopList.expand();
             } else if (DockControlsSystem.isExpandKey(e, SearchPanel.getState().dockCorner)) {
                 SearchPanel.expand();
-            } else if (KeybindsSystem.isAction(e, 'TAB_NEXT')) {
-                console.log('Toggling Supply Lines View...');
-                toggleSupplyLinesView();
-                if (mapState.lastPayload) {
-                    loadMarkers(mapState.lastPayload);
-                } else {
-                    applySupplyLinesVisibilityFilter();
+            } else if (KeybindsSystem.isAction(e, 'TOGGLE_SUPPLY_LINES')) {
+                if (hasSupplyLines()) {
+                    toggleSupplyLinesView();
+                    if (mapState.lastPayload) {
+                        loadMarkers(mapState.lastPayload);
+                    } else {
+                        applySupplyLinesVisibilityFilter();
+                    }
+                    window.dispatchEvent(new Event('settingsUpdated'));
                 }
             }
         }
