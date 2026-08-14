@@ -150,6 +150,29 @@ export const WORLDSPACE_CONFIGS: Record<string, { mapName: string; texturePath: 
     }
 };
 
+export const DLC_GATEWAYS = {
+    NUKA_WORLD_ID: 10511,
+    FAR_HARBOR_ID: 2831,
+    COMMONWEALTH_ID: 60,
+
+    COMMONWEALTH_TO_NUKAWORLD: {
+        door: { x: -111914.625, y: 18024.332, z: 0, isGateway: true },
+        mapMarker: { x: -116344.0, y: 17512.0, z: 0, isGateway: true, maskedFormId: 152853 }
+    },
+    NUKAWORLD_TO_COMMONWEALTH: {
+        door: { x: 2592.0, y: -33776.0, z: 0, isGateway: true },
+        mapMarker: { x: 3984.0, y: -38312.0, z: 0, isGateway: true, maskedFormId: 152855 }
+    },
+    COMMONWEALTH_TO_FARHARBOR: {
+        door: { x: 82425.47, y: 120477.58, z: 0, isGateway: true },
+        mapMarker: { x: 93942.05, y: 102910.21, z: 0, isGateway: true, maskedFormId: 261861 }
+    },
+    FARHARBOR_TO_COMMONWEALTH: {
+        door: { x: 56504.26, y: 32603.35, z: 0, isGateway: true },
+        mapMarker: { x: 64825.59, y: 34026.19, z: 0, isGateway: true, maskedFormId: 261859 }
+    }
+};
+
 
 import { FastTravelStatus } from '../types/map.js';
 

@@ -342,4 +342,71 @@ namespace PaperMap::Engine
 
         return false;
     }
+
+    std::unordered_map<uint32_t, std::unordered_map<uint32_t, std::vector<GatewayMarker>>> BuildGatewayGraph()
+    {
+        std::unordered_map<uint32_t, std::unordered_map<uint32_t, std::vector<GatewayMarker>>> graph;
+        auto dataHandler = RE::TESDataHandler::GetSingleton();
+        if (!dataHandler) return graph;
+
+        std::unordered_map<uint32_t, std::vector<std::pair<uint32_t, GatewayMarker>>> interiorLinks;
+
+        for (auto* world : dataHandler->GetFormArray<RE::TESWorldSpace>())
+        {
+            if (!world) continue;
+            for (auto* door : world->teleportDoorCache)
+            {
+                if (door && door->extraList)
+                {
+                    if (auto* extraTeleport = door->extraList->GetByType<RE::ExtraTeleport>())
+                    {
+                        if (extraTeleport->teleportData && extraTeleport->teleportData->linkedDoor.get_handle() != 0)
+                        {
+                            auto linkedHandle = extraTeleport->teleportData->linkedDoor;
+                            RE::TESObjectREFR* destDoor = nullptr;
+                            if (auto ptr = linkedHandle.get()) destDoor = ptr.get();
+                            if (!destDoor) destDoor = RE::TESForm::GetFormByID<RE::TESObjectREFR>(linkedHandle.get_handle());
+
+                            if (destDoor)
+                            {
+                                auto* destWorld = GetDirectWorldspace(destDoor);
+                                auto pos = door->GetPosition();
+                                GatewayMarker marker{ pos.x, pos.y };
+
+                                if (destWorld)
+                                {
+                                    if (destWorld->formID != world->formID) {
+                                        graph[world->formID][destWorld->formID].push_back(marker);
+                                    }
+                                }
+                                else if (auto* parentCell = destDoor->GetParentCell())
+                                {
+                                    interiorLinks[parentCell->formID].push_back({ world->formID, marker });
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        for (const auto& [cellId, links] : interiorLinks)
+        {
+            for (size_t i = 0; i < links.size(); ++i)
+            {
+                for (size_t j = 0; j < links.size(); ++j)
+                {
+                    if (i == j) continue;
+                    uint32_t worldA = links[i].first;
+                    uint32_t worldB = links[j].first;
+                    if (worldA != worldB)
+                    {
+                        graph[worldA][worldB].push_back(links[i].second);
+                    }
+                }
+            }
+        }
+
+        return graph;
+    }
 }

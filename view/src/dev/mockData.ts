@@ -27,6 +27,22 @@ export const mockPayload: F4SEMapPayload = {
         60: {
             editorID: "Commonwealth",
             fullName: "Commonwealth"
+        },
+        50334479: {
+            editorID: "DLC03FarHarbor",
+            fullName: "The Island"
+        }
+    },
+    gateways: {
+        60: {
+            50334479: [
+                { x: 80812.84375, y: 122126.3671875 }
+            ]
+        },
+        50334479: {
+            60: [
+                { x: -50000, y: -50000 }
+            ]
         }
     },
     power_armor: {
@@ -177,6 +193,17 @@ export const mockPayload: F4SEMapPayload = {
             worldspace: 60,
             x: 80812.84375,
             y: 122126.3671875
+        },
+        {
+            canFastTravel: true,
+            discovered: false,
+            formId: 50593509,
+            name: "Far Harbor",
+            type: 38,
+            visible: true,
+            worldspace: 60,
+            x: 93942.0546875,
+            y: 102910.2109375
         }
     ],
     settlements: [
@@ -186,7 +213,7 @@ export const mockPayload: F4SEMapPayload = {
             food: 0.0,
             formId: 151806,
             happiness: 2,
-            linkedLocationFormIds: [151467],
+            linkedLocationFormIds: [151467, 50464332],
             locationFormId: 127528,
             markerFormId: 469576,
             iconType: 12,
@@ -279,6 +306,27 @@ export const mockPayload: F4SEMapPayload = {
             vr: false,
             water: 3.0,
             worldspace: 60,
+            },
+        {
+            beds: 1.0,
+            defense: 0.0,
+            excludedFromVassal: true,
+            food: 0.0,
+            formId: 50464332,
+            happiness: 23,
+            iconType: 3,
+            linkedLocationFormIds: [127528],
+            locationFormId: 50464329,
+            markerFormId: 50658596,
+            name: "Longfellow's Cabin",
+            owned: true,
+            population: 1,
+            power: 0.0,
+            raider: false,
+            vassal: false,
+            vr: false,
+            water: 0.0,
+            worldspace: 50334479
             }
     ],
     quests: [
@@ -404,6 +452,30 @@ export const mockPayload: F4SEMapPayload = {
                     targets: [
                     ],
                     text: "Mock Objective"
+                }
+            ]
+        },
+        {
+            questName: "Far From Home",
+            type: "Side",
+            journal: "I arrived at Far Harbor.",
+            isMisc: false,
+            isTracked: true,
+            formId: 10001,
+            objectives: [
+                {
+                    index: 0,
+                    state: 1,
+                    targets: [
+                        {
+                            x: 10000,
+                            y: 10000,
+                            z: 0,
+                            isDoor: false,
+                            worldspace: 50334479,
+                        }
+                    ],
+                    text: "Explore Far Harbor"
                 }
             ]
         }

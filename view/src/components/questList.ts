@@ -13,6 +13,7 @@ import { KeybindsSystem } from '../systems/keybinds.js';
 import { DockControlsSystem, DockCorner } from '../systems/dockControls.js';
 import { QuestUtils } from '../utils/questUtils.js';
 import { StringUtils } from '../utils/stringUtils.js';
+import { WorldspaceUtils } from '../utils/worldspaceUtils.js';
 
 export type QuestFilterTab = 'ALL' | 'MAIN' | 'SIDE' | 'MISC';
 
@@ -305,7 +306,20 @@ export const QuestList = {
                 QuestCard.open(selected, undefined, undefined, questListState.dockCorner, false, 'QUEST_LIST', () => QuestList.collapse());
                 const firstTarget = selected.objectives?.find(o => o.targets && o.targets.length > 0)?.targets[0];
                 if (firstTarget) {
-                    MapViewport.centerOnWorldCoords(firstTarget.x, firstTarget.y);
+                    const worldspaceID = mapState.activeMapConfig?.worldspaceID ?? 0;
+                    const resolved = WorldspaceUtils.resolveGatewayTarget(
+                        firstTarget.worldspace,
+                        worldspaceID,
+                        firstTarget.x,
+                        firstTarget.y,
+                        firstTarget.z,
+                        mapState.player.x,
+                        mapState.player.y,
+                        mapState.lastPayload
+                    );
+                    if (resolved) {
+                        MapViewport.centerOnWorldCoords(resolved.x, resolved.y);
+                    }
                 }
             }
             return true;
@@ -338,7 +352,20 @@ export const QuestList = {
 
         const target = activeObj.targets[0];
         if (appSettings.focusMarkerOnSelection) {
-            MapViewport.centerOnWorldCoords(target.x, target.y);
+            const worldspaceID = mapState.activeMapConfig?.worldspaceID ?? 0;
+            const resolved = WorldspaceUtils.resolveGatewayTarget(
+                target.worldspace,
+                worldspaceID,
+                target.x,
+                target.y,
+                target.z,
+                mapState.player.x,
+                mapState.player.y,
+                mapState.lastPayload
+            );
+            if (resolved) {
+                MapViewport.centerOnWorldCoords(resolved.x, resolved.y);
+            }
         }
     },
 

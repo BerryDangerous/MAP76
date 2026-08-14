@@ -5,9 +5,8 @@ import { CustomMarker, POIMarker, PowerArmorMarker, MarkerType } from '../types/
 import { F4SEMapPayload } from '../types/payloads.js';
 import { QuestItem } from '../types/quests.js';
 import { MapViewport } from './viewport.js';
-import { appSettings } from '../core/settings.js';
-import { MARKER_ICON_QUEST_TARGET, MARKER_ICON_QUEST_DOOR, MARKER_ICON_CUSTOM_MARKER, MARKER_ICON_POWER_ARMOR, MARKER_ICON_RAIDER_OUTPOST, MARKER_ICON_VASSAL_SETTLEMENT, MARKER_ICON_POTENTIAL_VASSAL_SETTLEMENT } from '../core/constants.js';
-import { renderSupplyLines, isSupplyLinesViewActive } from './supplyLines.js';
+import { MARKER_ICON_CUSTOM_MARKER, MARKER_ICON_POWER_ARMOR, MARKER_ICON_RAIDER_OUTPOST, MARKER_ICON_VASSAL_SETTLEMENT, MARKER_ICON_POTENTIAL_VASSAL_SETTLEMENT } from '../core/constants.js';
+import { renderSupplyLines, isSupplyLinesViewActive, activeGatewayMarkerFormIds } from './supplyLines.js';
 import { WorldspaceUtils } from '../utils/worldspaceUtils.js';
 
 function getPlayerLayer(): HTMLElement | null {
@@ -44,7 +43,11 @@ export function applySupplyLinesVisibilityFilter(): void {
             const htmlEl = el as HTMLElement;
             if (isSupplyLineMode) {
                 const isOwnedWorkshop = htmlEl.dataset.isOwnedWorkshop === 'true';
-                htmlEl.style.display = isOwnedWorkshop ? '' : 'none';
+                const formIdStr = htmlEl.dataset.formId;
+                const formId = formIdStr ? parseInt(formIdStr, 10) : 0;
+                const isGateway = activeGatewayMarkerFormIds.has(formId);
+                
+                htmlEl.style.display = (isOwnedWorkshop || isGateway) ? '' : 'none';
             } else {
                 htmlEl.style.display = '';
             }
@@ -120,14 +123,14 @@ export function loadMarkers(payload: F4SEMapPayload) {
     if (questLayer) questLayer.innerHTML = '';
 
     renderPlayer(payload.player, config.worldspaceID, bounds);
+    renderSupplyLines(payload);
     renderLocationMarkers(payload.markers, config.worldspaceID, bounds, payload);
     if (questLayer) {
-        renderQuestMarkers(payload.quests, config.worldspaceID, bounds, questLayer);
-        renderCustomMarker(payload.custom_marker, config.worldspaceID, bounds, questLayer);
-        renderPowerArmor(payload.power_armor, config.worldspaceID, bounds, questLayer);
+        renderQuestMarkers(payload.quests, config.worldspaceID, bounds, questLayer, payload);
+        renderCustomMarker(payload.custom_marker, config.worldspaceID, bounds, questLayer, payload);
+        renderPowerArmor(payload.power_armor, config.worldspaceID, bounds, questLayer, payload);
     }
 
-    renderSupplyLines(payload);
     applySupplyLinesVisibilityFilter();
 
     MapViewport.updateViewportTransform();
@@ -159,21 +162,20 @@ function renderLocationMarkers(markers: POIMarker[], worldspaceID: number, bound
     const markerLayer = getMarkerLayer();
     if (!markerLayer) return;
 
-    const { minX: bMinX, maxX: bMaxX, minY: bMinY, maxY: bMaxY } = MapViewport.getEffectiveBounds(bounds);
-
     markers.forEach(m => {
         if (!WorldspaceUtils.isSameWorldspace(m.worldspace, worldspaceID)) return;
 
-        const shouldRender = m.visible || m.discovered || m.canFastTravel;
+        const isGateway = isSupplyLinesViewActive() && activeGatewayMarkerFormIds.has(m.formId);
+        const shouldRender = m.visible || m.discovered || m.canFastTravel || isGateway;
         if (!shouldRender) return;
 
         let x = m.x;
         let y = m.y;
-        const isClamped = appSettings.clampQuestMarkers && (x < bMinX || x > bMaxX || y < bMinY || y > bMaxY);
+        const isClamped = (x < bounds.minX || x > bounds.maxX || y < bounds.minY || y > bounds.maxY);
 
         if (isClamped) {
-            x = Math.max(bMinX, Math.min(bMaxX, x));
-            y = Math.max(bMinY, Math.min(bMaxY, y));
+            x = Math.max(bounds.minX, Math.min(bounds.maxX, x));
+            y = Math.max(bounds.minY, Math.min(bounds.maxY, y));
         }
 
         const pos = MapViewport.gameToMapCoords(x, y, 0, bounds);
@@ -212,7 +214,7 @@ function renderLocationMarkers(markers: POIMarker[], worldspaceID: number, bound
     });
 }
 
-function renderQuestMarkers(quests: QuestItem[], worldspaceID: number, bounds: GameBounds, questLayer: HTMLElement) {
+function renderQuestMarkers(quests: QuestItem[], worldspaceID: number, bounds: GameBounds, questLayer: HTMLElement, payload: F4SEMapPayload) {
     if (!quests) return;
 
     quests.forEach(quest => {
@@ -225,9 +227,31 @@ function renderQuestMarkers(quests: QuestItem[], worldspaceID: number, bounds: G
             const markerTooltipText = objective.text ? objective.text : quest.questName;
 
             objective.targets.forEach(target => {
-                if (!WorldspaceUtils.isSameWorldspace(target.worldspace, worldspaceID)) return;
+                const refX = mapState.player.active ? mapState.player.x : 0;
+                const refY = mapState.player.active ? mapState.player.y : 0;
+                
+                const resolved = WorldspaceUtils.resolveGatewayTarget(
+                    target.worldspace,
+                    worldspaceID,
+                    target.x,
+                    target.y,
+                    target.z,
+                    refX,
+                    refY,
+                    payload
+                );
 
-                const pos = MapViewport.gameToMapCoords(target.x, target.y, target.z, bounds);
+                if (!resolved) return;
+
+                let gx = resolved.x;
+                let gy = resolved.y;
+                if (resolved.isGateway) {
+                    const { minX: bMinX, maxX: bMaxX, minY: bMinY, maxY: bMaxY } = MapViewport.getEffectiveBounds(bounds);
+                    gx = Math.max(bMinX, Math.min(bMaxX, gx));
+                    gy = Math.max(bMinY, Math.min(bMaxY, gy));
+                }
+
+                const pos = MapViewport.gameToMapCoords(gx, gy, resolved.z, bounds);
 
                 const container = createMarkerContainer('quest', markerTooltipText, pos);
                 container.classList.add('quest-marker');
@@ -239,9 +263,9 @@ function renderQuestMarkers(quests: QuestItem[], worldspaceID: number, bounds: G
                 const img = document.createElement('img');
                 img.src = ThemeEngine.getQuestMarkerIconUrl(target.isDoor, quest.isTracked);
 
-                if (mapState.player.active) {
+                if (mapState.player.active && !resolved.isGateway) {
                     const zThreshold = 500;
-                    const zDelta = target.z - mapState.player.z;
+                    const zDelta = resolved.z - mapState.player.z;
 
                     if (Math.abs(zDelta) > zThreshold) {
                         const arrowImg = document.createElement('img');
@@ -271,14 +295,31 @@ function renderQuestMarkers(quests: QuestItem[], worldspaceID: number, bounds: G
     });
 }
 
-function renderCustomMarker(marker: CustomMarker | null | undefined, worldspaceID: number, bounds: GameBounds, questLayer: HTMLElement) {
+function renderCustomMarker(marker: CustomMarker | null | undefined, worldspaceID: number, bounds: GameBounds, questLayer: HTMLElement, payload: F4SEMapPayload) {
     if (!marker) return;
 
-    if (!WorldspaceUtils.isSameWorldspace(marker.worldspace, worldspaceID)) {
-        return;
+    const resolved = WorldspaceUtils.resolveGatewayTarget(
+        marker.worldspace,
+        worldspaceID,
+        marker.x,
+        marker.y,
+        0,
+        mapState.player.active ? mapState.player.x : 0,
+        mapState.player.active ? mapState.player.y : 0,
+        payload
+    );
+
+    if (!resolved) return;
+
+    let gx = resolved.x;
+    let gy = resolved.y;
+    if (resolved.isGateway) {
+        const { minX: bMinX, maxX: bMaxX, minY: bMinY, maxY: bMaxY } = MapViewport.getEffectiveBounds(bounds);
+        gx = Math.max(bMinX, Math.min(bMaxX, gx));
+        gy = Math.max(bMinY, Math.min(bMaxY, gy));
     }
 
-    const pos = MapViewport.gameToMapCoords(marker.x, marker.y, 0, bounds);
+    const pos = MapViewport.gameToMapCoords(gx, gy, 0, bounds);
     const container = createMarkerContainer('customMarker', 'Custom Marker', pos);
     container.classList.add('custom-marker');
 
@@ -293,23 +334,43 @@ function renderCustomMarker(marker: CustomMarker | null | undefined, worldspaceI
     mapState.animatedElements.push(container);
 }
 
-function renderPowerArmor(pa: PowerArmorMarker | null | undefined, worldspaceID: number, bounds: GameBounds, questLayer: HTMLElement) {
+function renderPowerArmor(pa: PowerArmorMarker | null | undefined, worldspaceID: number, bounds: GameBounds, questLayer: HTMLElement, payload: F4SEMapPayload) {
     if (!pa) return;
 
-    if (!WorldspaceUtils.isSameWorldspace(pa.worldspace, worldspaceID)) {
-        return;
+    const refX = mapState.player.active ? mapState.player.x : 0;
+    const refY = mapState.player.active ? mapState.player.y : 0;
+
+    const resolved = WorldspaceUtils.resolveGatewayTarget(
+        pa.worldspace,
+        worldspaceID,
+        pa.x,
+        pa.y,
+        pa.z ?? 0,
+        refX,
+        refY,
+        payload
+    );
+
+    if (!resolved) return;
+
+    let gx = resolved.x;
+    let gy = resolved.y;
+    if (resolved.isGateway) {
+        const { minX: bMinX, maxX: bMaxX, minY: bMinY, maxY: bMaxY } = MapViewport.getEffectiveBounds(bounds);
+        gx = Math.max(bMinX, Math.min(bMaxX, gx));
+        gy = Math.max(bMinY, Math.min(bMaxY, gy));
     }
 
-    const pos = MapViewport.gameToMapCoords(pa.x, pa.y, pa.z ?? 0, bounds);
+    const pos = MapViewport.gameToMapCoords(gx, gy, resolved.z, bounds);
     const container = createMarkerContainer('powerarmor', 'Power Armor', pos);
     container.classList.add('power-armor-marker');
 
     const img = document.createElement('img');
     img.src = ThemeEngine.getMarkerIconUrl(MARKER_ICON_POWER_ARMOR);
 
-    if (mapState.player.active) {
+    if (mapState.player.active && !resolved.isGateway) {
         const zThreshold = 500;
-        const zDelta = (pa.z ?? 0) - mapState.player.z;
+        const zDelta = resolved.z - mapState.player.z;
 
         if (Math.abs(zDelta) > zThreshold) {
             const arrowImg = document.createElement('img');

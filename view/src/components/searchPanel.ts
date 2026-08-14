@@ -54,7 +54,28 @@ const listController = new SelectableListController<SearchResult>({
             SearchPanel.openCardForResult(selectedResult);
             if (selectedResult.markerCoords) {
                 if (appSettings.focusMarkerOnSelection) {
-                    MapViewport.centerOnWorldCoords(selectedResult.markerCoords.x, selectedResult.markerCoords.y);
+                    let targetX = selectedResult.markerCoords.x;
+                    let targetY = selectedResult.markerCoords.y;
+                    const currentWs = mapState.activeMapConfig?.worldspaceID ?? 0;
+                    if (selectedResult.markerCoords.worldspace !== undefined && selectedResult.markerCoords.worldspace !== currentWs) {
+                        const refX = mapState.player.active ? mapState.player.x : 0;
+                        const refY = mapState.player.active ? mapState.player.y : 0;
+                        const resolved = WorldspaceUtils.resolveGatewayTarget(
+                            selectedResult.markerCoords.worldspace,
+                            currentWs,
+                            targetX,
+                            targetY,
+                            0,
+                            refX,
+                            refY,
+                            mapState.lastPayload
+                        );
+                        if (resolved) {
+                            targetX = resolved.x;
+                            targetY = resolved.y;
+                        }
+                    }
+                    MapViewport.centerOnWorldCoords(targetX, targetY);
                 }
             } else {
                 MapViewport.clearSavedViewport(appSettings.focusMarkerOnSelection);
@@ -356,7 +377,28 @@ export const SearchPanel = {
             const selected = listController.getSelectedItem();
             if (selected) {
                 if (selected.markerCoords) {
-                    MapViewport.centerOnWorldCoords(selected.markerCoords.x, selected.markerCoords.y);
+                    let targetX = selected.markerCoords.x;
+                    let targetY = selected.markerCoords.y;
+                    const currentWs = mapState.activeMapConfig?.worldspaceID ?? 0;
+                    if (selected.markerCoords.worldspace !== undefined && selected.markerCoords.worldspace !== currentWs) {
+                        const refX = mapState.player.active ? mapState.player.x : 0;
+                        const refY = mapState.player.active ? mapState.player.y : 0;
+                        const resolved = WorldspaceUtils.resolveGatewayTarget(
+                            selected.markerCoords.worldspace,
+                            currentWs,
+                            targetX,
+                            targetY,
+                            0,
+                            refX,
+                            refY,
+                            mapState.lastPayload
+                        );
+                        if (resolved) {
+                            targetX = resolved.x;
+                            targetY = resolved.y;
+                        }
+                    }
+                    MapViewport.centerOnWorldCoords(targetX, targetY);
                 } else if (selected.type === 'quest') {
                     const markerId = selected.originalRef.formId ?? selected.originalRef.questName;
                     const markerContainer = document.querySelector(`.marker-container[data-form-id="${markerId}"]`) ||

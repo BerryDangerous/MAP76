@@ -175,6 +175,13 @@ namespace PaperMap::UI::DTO
     };
     NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(WorldspaceDTO, editorID, fullName)
 
+    struct GatewayMarker
+    {
+        float x;
+        float y;
+    };
+    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(GatewayMarker, x, y)
+
     struct MapPayload
     {
         GameBounds bounds;
@@ -182,6 +189,7 @@ namespace PaperMap::UI::DTO
         std::vector<QuestItem> quests;
         std::vector<SettlementDTO> settlements;
         std::unordered_map<uint32_t, WorldspaceDTO> worldspaces;
+        std::unordered_map<uint32_t, std::unordered_map<uint32_t, std::vector<GatewayMarker>>> gateways;
         std::optional<CustomMarker> custom_marker;
         std::optional<PowerArmorMarker> power_armor;
         std::optional<PlayerDTO> player;
@@ -202,6 +210,18 @@ namespace PaperMap::UI::DTO
             wsJson[std::to_string(key)] = val;
         }
         j["worldspaces"] = wsJson;
+
+        nlohmann::json gwJson = nlohmann::json::object();
+        for (const auto &[srcKey, targetMap] : p.gateways)
+        {
+            nlohmann::json targetJson = nlohmann::json::object();
+            for (const auto &[tgtKey, markers] : targetMap)
+            {
+                targetJson[std::to_string(tgtKey)] = markers;
+            }
+            gwJson[std::to_string(srcKey)] = targetJson;
+        }
+        j["gateways"] = gwJson;
         if (p.player)
         {
             j["player"] = *p.player;

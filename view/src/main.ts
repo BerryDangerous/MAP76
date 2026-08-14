@@ -195,7 +195,11 @@ window.addEventListener('DOMContentLoaded', () => {
             } else if (KeybindsSystem.isAction(e, 'TAB_NEXT')) {
                 console.log('Toggling Supply Lines View...');
                 toggleSupplyLinesView();
-                applySupplyLinesVisibilityFilter();
+                if (mapState.lastPayload) {
+                    loadMarkers(mapState.lastPayload);
+                } else {
+                    applySupplyLinesVisibilityFilter();
+                }
             }
         }
     });

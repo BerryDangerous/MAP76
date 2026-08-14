@@ -24,6 +24,18 @@ namespace PaperMap::Engine
         float mapOffsetZ{0.0f};
     };
 
+    struct GatewayMarker
+    {
+        float x;
+        float y;
+    };
+
+    /**
+     * @brief Builds a routing graph of all cross-worldspace gateways in the game.
+     * @return A map of SourceWorldID -> TargetWorldID -> List of gateway coordinates in the SourceWorld.
+     */
+    std::unordered_map<uint32_t, std::unordered_map<uint32_t, std::vector<GatewayMarker>>> BuildGatewayGraph();
+
     /**
      * @brief Calculates map bounds based on the player's current worldspace cell extents.
      * @return Bounding box in world coordinates.

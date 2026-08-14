@@ -154,7 +154,7 @@ export const SearchEngine = {
                         const activeObj = q.objectives.find(o => o.state === 1) || q.objectives[0];
                         if (activeObj && activeObj.targets && activeObj.targets.length > 0) {
                             const target = activeObj.targets[0];
-                            markerCoords = { x: target.x, y: target.y, z: target.z };
+                            markerCoords = { x: target.x, y: target.y, z: target.z, worldspace: target.worldspace };
                         }
                     }
                     

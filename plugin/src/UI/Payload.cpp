@@ -153,6 +153,28 @@ namespace PaperMap::UI::Payload
                 }
             }
 
+            static std::unordered_map<uint32_t, std::unordered_map<uint32_t, std::vector<Engine::GatewayMarker>>> cachedGatewayGraph;
+            static bool hasBuiltGraph = false;
+            if (!hasBuiltGraph)
+            {
+                cachedGatewayGraph = Engine::BuildGatewayGraph();
+                hasBuiltGraph = true;
+            }
+
+            for (const auto& [sourceWorld, targets] : cachedGatewayGraph)
+            {
+                for (const auto& [targetWorld, markers] : targets)
+                {
+                    std::vector<DTO::GatewayMarker> dtoMarkers;
+                    dtoMarkers.reserve(markers.size());
+                    for (const auto& m : markers)
+                    {
+                        dtoMarkers.push_back(DTO::GatewayMarker{ m.x, m.y });
+                    }
+                    payload.gateways[sourceWorld][targetWorld] = dtoMarkers;
+                }
+            }
+
             payload.custom_marker = std::nullopt;
             payload.power_armor = std::nullopt;
 

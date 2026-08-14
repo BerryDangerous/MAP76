@@ -29,12 +29,18 @@ export interface WorldspaceDTO {
     fullName: string;
 }
 
+export interface GatewayMarker {
+    x: number;
+    y: number;
+}
+
 export interface F4SEMapPayload {
     bounds: GameBounds;
     markers: POIMarker[];
     quests: QuestItem[];
     settlements?: SettlementData[];
     worldspaces?: Record<number, WorldspaceDTO>;
+    gateways?: Record<number, Record<number, GatewayMarker[]>>;
     custom_marker?: CustomMarker | null;
     power_armor?: PowerArmorMarker | null;
     player?: PlayerData;

@@ -266,7 +266,20 @@ export const WorkshopList = {
             if (selected && selected.markerFormId !== undefined) {
                 const marker = mapState.lastPayload?.markers?.find(m => m.formId === selected.markerFormId);
                 if (marker) {
-                    MapViewport.centerOnWorldCoords(marker.x, marker.y);
+                    const worldspaceID = mapState.activeMapConfig?.worldspaceID ?? 0;
+                    const resolved = WorldspaceUtils.resolveGatewayTarget(
+                        marker.worldspace,
+                        worldspaceID,
+                        marker.x,
+                        marker.y,
+                        0,
+                        mapState.player.x,
+                        mapState.player.y,
+                        mapState.lastPayload
+                    );
+                    if (resolved) {
+                        MapViewport.centerOnWorldCoords(resolved.x, resolved.y);
+                    }
                 }
             }
             return true;
@@ -283,7 +296,22 @@ export const WorkshopList = {
         
         const marker = mapState.lastPayload?.markers?.find(m => m.formId === workshop.markerFormId);
         if (marker && appSettings.focusMarkerOnSelection) {
-            MapViewport.centerOnWorldCoords(marker.x, marker.y);
+            const worldspaceID = mapState.activeMapConfig?.worldspaceID ?? 0;
+            const resolved = WorldspaceUtils.resolveGatewayTarget(
+                marker.worldspace,
+                worldspaceID,
+                marker.x,
+                marker.y,
+                0,
+                mapState.player.x,
+                mapState.player.y,
+                mapState.lastPayload
+            );
+            if (resolved) {
+                MapViewport.centerOnWorldCoords(resolved.x, resolved.y);
+            } else {
+                MapViewport.clearSavedViewport(appSettings.focusMarkerOnSelection);
+            }
         } else {
             MapViewport.clearSavedViewport(appSettings.focusMarkerOnSelection);
         }
