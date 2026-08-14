@@ -47,10 +47,6 @@ namespace PaperMap::Engine::Memory
         }
         __try
         {
-            if (a_refr->IsDeleted())
-            {
-                return false;
-            }
             a_outPos = a_refr->GetPosition();
             return true;
         }

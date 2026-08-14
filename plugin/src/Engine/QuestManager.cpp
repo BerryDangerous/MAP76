@@ -129,76 +129,84 @@ namespace PaperMap::Engine::QuestManager
                    GetPipboyUint32(a_markerUiObj, "objective", UNKNOWN_OBJECTIVE_INDEX)))));
         }
 
-        /**
-         * @brief Searches active map markers linked to a quest and extracts their
-         *        3D coordinates if they correspond to the active objective.
-         */
-        std::vector<ObjectiveTargetData> CollectObjectiveTargets(
-            uint32_t a_objectiveIndex,
-            uint32_t a_questFormID,
-            bool a_isMiscSub,
-            RE::PipboyDataManager *a_pipboyManager)
+        struct NativeQuestTarget
         {
-            std::vector<ObjectiveTargetData> targetsArray;
-            auto &questMap = a_pipboyManager->mapData.worldQuestMarkers;
+            uint64_t unk00;
+            uint64_t unk08;
+            uint8_t  aliasID;
+        };
 
-            for (auto it = questMap.begin(); it != questMap.end(); ++it)
+        int32_t GetQuestAliasIndex(RE::TESQuest* a_questForm, uint8_t a_aliasID)
+        {
+            for (uint32_t i = 0; i < a_questForm->aliases.size(); ++i)
             {
-                RE::PipboyObject *markerUiObj = it->second;
-                if (!markerUiObj)
+                auto* aliasPtr = a_questForm->aliases[i];
+                if (aliasPtr && aliasPtr->aliasID == a_aliasID)
                 {
-                    continue;
-                }
-
-                if (!IsMarkerLinkedToQuest(markerUiObj, a_questFormID))
-                {
-                    continue;
-                }
-
-                RE::ObjectRefHandle handle = it->first;
-                auto refrPtr = handle ? handle.get() : nullptr;
-                auto *refr = refrPtr ? refrPtr.get() : nullptr;
-
-                ObjectiveTargetData targetPin{};
-                if (!refr || !Memory::IsRefrPositionSafe(refr, targetPin.position))
-                {
-                    continue;
-                }
-
-                uint32_t markerObjIndex = GetMarkerObjectiveIndex(markerUiObj);
-
-                if (a_isMiscSub || markerObjIndex == UNKNOWN_OBJECTIVE_INDEX || markerObjIndex == a_objectiveIndex)
-                {
-                    auto *markerWorld = GetReferenceWorldspace(refr, &targetPin.position);
-
-                    targetPin.isDoor = GetPipboyBool(markerUiObj, "OnDoor", false);
-                    targetPin.worldspace = markerWorld ? markerWorld->formID : 0;
-
-                    targetsArray.push_back(targetPin);
+                    return static_cast<int32_t>(i);
                 }
             }
-
-            return targetsArray;
+            return -1;
         }
 
         /**
-         * @brief Serializes a single objective object from Pip-Boy data into DTO data.
+         * @brief Serializes a single objective object from native engine data into DTO data.
          */
         ObjectiveData SerializeObjectiveData(
-            RE::PipboyObject *a_objUiObj,
-            uint32_t a_defaultIndex,
-            uint32_t a_questFormID,
-            bool a_isMiscSub,
-            RE::PipboyDataManager *a_pipboyManager)
+            RE::BGSQuestObjective *a_objective,
+            RE::TESQuest *a_questForm)
         {
             ObjectiveData objNode{};
-            objNode.index = GetPipboyUint32(a_objUiObj, "index", GetPipboyUint32(a_objUiObj, "indexID", GetPipboyUint32(a_objUiObj, "Obj", a_defaultIndex)));
-            objNode.text = GetPipboyString(a_objUiObj, "text", "");
-            objNode.state = ResolveObjectiveState(a_objUiObj);
+            if (!a_objective || !a_questForm)
+                return objNode;
 
-            if (objNode.state == ObjectiveState::ACTIVE)
+            objNode.index = a_objective->index;
+
+            RE::BSString parsedText;
+            parsedText.Set(a_objective->displayText.c_str(), 0xFFFF);
+            RE::BGSQuestInstanceText::ParseString(&parsedText, a_questForm, a_questForm->currentInstanceID);
+            objNode.text = parsedText.c_str() ? parsedText.c_str() : "";
+
+            objNode.state = static_cast<uint32_t>(a_objective->state);
+
+            if (objNode.state == ObjectiveState::ACTIVE && a_objective->numTargets > 0 && a_objective->targets)
             {
-                objNode.targets = CollectObjectiveTargets(objNode.index, a_questFormID, a_isMiscSub, a_pipboyManager);
+                auto** targetsArray = reinterpret_cast<NativeQuestTarget**>(a_objective->targets);
+                
+                for (std::uint32_t t = 0; t < a_objective->numTargets; ++t)
+                {
+                    NativeQuestTarget* targetData = targetsArray[t];
+                    if (reinterpret_cast<uintptr_t>(targetData) < 0x10000) 
+                        continue;
+
+                    std::int32_t resolvedAliasIndex = GetQuestAliasIndex(a_questForm, targetData->aliasID);
+
+                    if (resolvedAliasIndex != -1 && resolvedAliasIndex < static_cast<std::int32_t>(a_questForm->aliasedHandles.size()))
+                    {
+                        const auto& boundReferences = a_questForm->aliasedHandles[resolvedAliasIndex];
+                        for (const auto& handle : boundReferences)
+                        {
+                            if (!handle) 
+                                continue;
+
+                            auto refrPtr = handle.get();
+                            auto* refr = refrPtr ? refrPtr.get() : nullptr;
+                            if (!refr)
+                                continue;
+
+                            ObjectiveTargetData target{};
+                            if (!Memory::IsRefrPositionSafe(refr, target.position))
+                                continue;
+
+                            auto* targetWorldspace = GetReferenceWorldspace(refr, &target.position);
+
+                            target.isDoor = (refr->formType == RE::ENUM_FORM_ID::kDOOR);
+                            target.worldspace = targetWorldspace ? targetWorldspace->formID : 0;
+
+                            objNode.targets.push_back(target);
+                        }
+                    }
+                }
             }
 
             return objNode;
@@ -211,6 +219,36 @@ namespace PaperMap::Engine::QuestManager
                 return Constants::Quest::TYPE_NAMES[a_rawQuestType];
             }
             return "Side";
+        }
+
+        void SerializeMiscObjective(RE::PipboyObject* a_questObj, RE::TESQuest* a_realQuest, QuestData& a_outQuestNode)
+        {
+            uint32_t possibleIndex = GetMarkerObjectiveIndex(a_questObj);
+            std::string pipboyText = GetPipboyString(a_questObj, "text", "");
+
+            for (auto* obj : a_realQuest->objectives)
+            {
+                if (!obj) continue;
+                
+                if (obj->index == possibleIndex || (!pipboyText.empty() && obj->displayText.c_str() == pipboyText))
+                {
+                    a_outQuestNode.objectives.push_back(SerializeObjectiveData(obj, a_realQuest));
+                    break;
+                }
+            }
+        }
+
+        void SerializeStandardObjectives(RE::TESQuest* a_realQuest, QuestData& a_outQuestNode)
+        {
+            for (auto* obj : a_realQuest->objectives)
+            {
+                if (!obj) continue;
+                
+                if (static_cast<uint32_t>(obj->state) != 0 || !obj->displayText.empty())
+                {
+                    a_outQuestNode.objectives.push_back(SerializeObjectiveData(obj, a_realQuest));
+                }
+            }
         }
 
         /**
@@ -241,23 +279,11 @@ namespace PaperMap::Engine::QuestManager
 
             if (a_target.isMiscSub)
             {
-                questNode.objectives.push_back(SerializeObjectiveData(questObj, 0, realQuest->formID, true, a_pipboyManager));
+                SerializeMiscObjective(questObj, realQuest, questNode);
             }
             else
             {
-                auto *uiObjectivesList = GetPipboyArray(questObj, "objectives");
-                if (uiObjectivesList)
-                {
-                    uint32_t defaultObjIndex = 0;
-                    for (auto *subObjectiveVal : uiObjectivesList->elements)
-                    {
-                        if (subObjectiveVal && subObjectiveVal->GetType() == RE::PipboyValue::kObject)
-                        {
-                            auto *objUiObj = reinterpret_cast<RE::PipboyObject *>(subObjectiveVal);
-                            questNode.objectives.push_back(SerializeObjectiveData(objUiObj, defaultObjIndex++, realQuest->formID, false, a_pipboyManager));
-                        }
-                    }
-                }
+                SerializeStandardObjectives(realQuest, questNode);
             }
 
             return questNode;

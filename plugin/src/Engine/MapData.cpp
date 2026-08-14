@@ -89,6 +89,7 @@ namespace
                             auto* cellWorld = GetDirectWorldspace(markerRef);
                             if (cellWorld)
                             {
+                                if (a_position) *a_position = markerRef->GetPosition();
                                 return cellWorld;
                             }
                         }
@@ -132,6 +133,7 @@ namespace
                                                 {
                                                     if (cellLoc == destLoc || cellLoc->IsChild(destLoc) || cellLoc->IsParent(destLoc))
                                                     {
+                                                        if (a_position) *a_position = destDoor->GetPosition();
                                                         return exteriorWorld;
                                                     }
                                                 }
@@ -139,6 +141,7 @@ namespace
                                         }
                                         if (!candidateWorld)
                                         {
+                                            if (a_position) *a_position = destDoor->GetPosition();
                                             candidateWorld = exteriorWorld;
                                         }
                                     }

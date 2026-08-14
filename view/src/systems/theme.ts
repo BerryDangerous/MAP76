@@ -73,6 +73,17 @@ export const ThemeEngine = {
         return `assets/icons/${activeTheme}/${semanticName}.svg`;
     },
 
+    getQuestMarkerIconUrl(isDoor: boolean, isActive: boolean): string {
+        const activeTheme = appSettings.iconTheme;
+        const semanticName = isDoor ? 'quest-door' : 'quest';
+        
+        if (!isActive) {
+            return `assets/icons/${activeTheme}/${semanticName}_inactive.svg`;
+        }
+        
+        return `assets/icons/${activeTheme}/${semanticName}.svg`;
+    },
+
     getAssetIconUrl(iconName: string): string {
         const activeTheme = appSettings.iconTheme;
         return `assets/icons/${activeTheme}/${iconName}.svg`;

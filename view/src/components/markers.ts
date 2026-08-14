@@ -237,7 +237,7 @@ function renderQuestMarkers(quests: QuestItem[], worldspaceID: number, bounds: G
                 }
 
                 const img = document.createElement('img');
-                img.src = ThemeEngine.getMarkerIconUrl(target.isDoor ? MARKER_ICON_QUEST_DOOR : MARKER_ICON_QUEST_TARGET, true);
+                img.src = ThemeEngine.getQuestMarkerIconUrl(target.isDoor, quest.isTracked);
 
                 if (mapState.player.active) {
                     const zThreshold = 500;
