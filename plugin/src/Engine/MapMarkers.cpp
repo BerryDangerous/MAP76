@@ -4,7 +4,9 @@
 #include "Engine/Memory.h"
 #include "Engine/MapData.h"
 #include "Constants.h"
-
+#include "RE/T/TESDataHandler.h"
+#include "RE/T/TESWorldSpace.h"
+#include "RE/T/TESObjectCELL.h"
 namespace
 {
     std::optional<PaperMap::Engine::MapMarkers::MarkerData> TryCollectMarker(RE::TESObjectREFR* a_refr)
@@ -14,7 +16,7 @@ namespace
             return std::nullopt;
         }
 
-        if (a_refr->IsDisabled())
+        if (a_refr->IsDisabled() || a_refr->IsDeleted())
         {
             return std::nullopt;
         }
@@ -54,7 +56,7 @@ namespace
 
         PaperMap::Engine::MapMarkers::MarkerData markerElement{};
         markerElement.formId = a_refr->formID;
-        markerElement.name = markerName.empty() ? "Unknown Location" : markerName;
+        markerElement.name = markerName;
         markerElement.iconType = iconTypeNumber;
         markerElement.visible = (rawFlags & PaperMap::Constants::Marker::FLAG_VISIBLE) != 0;
         markerElement.canFastTravel = (rawFlags & PaperMap::Constants::Marker::FLAG_FAST_TRAVEL) != 0;
@@ -71,30 +73,32 @@ namespace PaperMap::Engine::MapMarkers
     std::vector<MarkerData> CollectAll(RE::PipboyDataManager *a_pipboyManager)
     {
         std::vector<MarkerData> markers;
-        if (!a_pipboyManager)
+
+        auto dataHandler = RE::TESDataHandler::GetSingleton();
+        if (!dataHandler)
         {
             return markers;
         }
 
-        auto &mapData = a_pipboyManager->mapData;
-        for (auto it = mapData.travelLocationRefrHandles.begin(); it != mapData.travelLocationRefrHandles.end(); ++it)
+        for (auto* world : dataHandler->GetFormArray<RE::TESWorldSpace>())
         {
-            RE::ObjectRefHandle handle = it->second;
-            if (!handle)
+            if (!world || !world->persistentCell)
             {
                 continue;
             }
 
-            auto refrPtr = handle.get();
-            if (!refrPtr)
+            for (auto& refPtr : world->persistentCell->references)
             {
-                continue;
-            }
-
-            auto *refr = refrPtr.get();
-            if (auto markerData = TryCollectMarker(refr))
-            {
-                markers.push_back(*markerData);
+                if (auto* refr = refPtr.get())
+                {
+                    if (auto markerData = TryCollectMarker(refr))
+                    {
+                        if (!markerData->name.empty() && markerData->name != "Marker")
+                        {
+                            markers.push_back(*markerData);
+                        }
+                    }
+                }
             }
         }
 
