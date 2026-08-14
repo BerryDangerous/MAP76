@@ -47,39 +47,8 @@ export const AnimationEngine = {
                 const naturalScreenX = mapState.panX + ((rawPctX / 100) * mapCurrentSize);
                 const naturalScreenY = mapState.panY + ((rawPctY / 100) * mapCurrentSize);
 
-                const isOffScreen = (
-                    naturalScreenX < minX || naturalScreenX > maxX ||
-                    naturalScreenY < minY || naturalScreenY > maxY
-                );
-
-                if (isOffScreen && appSettings.clampQuestMarkers) {
-                    const dx = naturalScreenX - centerX;
-                    const dy = naturalScreenY - centerY;
-
-                    let tX = Infinity;
-                    let tY = Infinity;
-
-                    if (dx > 0) tX = (maxX - centerX) / dx;
-                    else if (dx < 0) tX = (minX - centerX) / dx;
-
-                    if (dy > 0) tY = (maxY - centerY) / dy;
-                    else if (dy < 0) tY = (minY - centerY) / dy;
-
-                    const t = Math.min(tX, tY);
-                    const clampedX = centerX + t * dx;
-                    const clampedY = centerY + t * dy;
-
-                    const targetPctX = ((clampedX - mapState.panX) / mapCurrentSize) * 100;
-                    const targetPctY = ((clampedY - mapState.panY) / mapCurrentSize) * 100;
-
-                    el.classList.add('is-edge-clamped');
-                    el.style.left = `${targetPctX}%`;
-                    el.style.top = `${targetPctY}%`;
-                } else {
-                    el.classList.remove('is-edge-clamped');
-                    el.style.left = `${rawPctX}%`;
-                    el.style.top = `${rawPctY}%`;
-                }
+                el.style.left = `${rawPctX}%`;
+                el.style.top = `${rawPctY}%`;
             });
         }, 16);
     },

@@ -128,9 +128,5 @@ export function initializeF4SEBindings(onDataReceived: (payload: F4SEMapPayload)
         window.MapInterop.updateWorkshopStats = (jsonString: string) => {
             console.log("[Interop] Workshop Data received:", jsonString);
         };
-        
-        window.MapInterop.toggleActiveTheme = (themeName: string) => {
-            console.log("[Interop] Theme switch requested:", themeName);
-        };
     }
 }

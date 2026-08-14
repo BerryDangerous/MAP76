@@ -84,19 +84,6 @@ export const SettingsMenu = {
         const scaleMulti = new MultiChoice(uiScaleOptions, appSettings.uiScale, (val) => { updateSettings({ uiScale: val }); });
         registerControl('uiScale', 'Interface Scale', 'DISPLAY', scaleMulti);
         
-        const styleOptions = [
-            { label: 'Default', value: 'default' },
-            { label: '76', value: '76' }
-        ];
-        const iconStyleMulti = new MultiChoice(styleOptions, appSettings.iconTheme, (val) => { updateSettings({ iconTheme: val }); });
-        registerControl('iconTheme', 'Icon Theme', 'DISPLAY', iconStyleMulti);
-
-        const generalStyleMulti = new MultiChoice(styleOptions, appSettings.interfaceTheme, (val) => { updateSettings({ interfaceTheme: val }); });
-        registerControl('interfaceTheme', 'Interface Theme', 'DISPLAY', generalStyleMulti);
-
-        const clampToggle = new Toggle(appSettings.clampQuestMarkers, (val) => { updateSettings({ clampQuestMarkers: val }); });
-        registerControl('clampQuestMarkers', 'Pin Quest Markers to Screen Edges', 'DISPLAY', clampToggle);
-
         const focusToggle = new Toggle(appSettings.focusMarkerOnSelection, (val) => { updateSettings({ focusMarkerOnSelection: val }); });
         registerControl('focusMarkerOnSelection', 'Auto-Center Markers on List Selection', 'DISPLAY', focusToggle);
 

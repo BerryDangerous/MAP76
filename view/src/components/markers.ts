@@ -263,27 +263,6 @@ function renderQuestMarkers(quests: QuestItem[], worldspaceID: number, bounds: G
                 const img = document.createElement('img');
                 img.src = ThemeEngine.getQuestMarkerIconUrl(target.isDoor, quest.isTracked);
 
-                if (mapState.player.active && !resolved.isGateway) {
-                    const zThreshold = 500;
-                    const zDelta = resolved.z - mapState.player.z;
-
-                    if (Math.abs(zDelta) > zThreshold) {
-                        const arrowImg = document.createElement('img');
-                        arrowImg.className = 'altitude-arrow';
-
-                        if (target.isDoor) {
-                            arrowImg.classList.add('door-offset');
-                        }
-
-                        if (zDelta > 0) {
-                            arrowImg.src = 'assets/icons/default/quest-altitude-up.svg';
-                        } else {
-                            arrowImg.src = 'assets/icons/default/quest-altitude-down.svg';
-                        }
-                        container.appendChild(arrowImg);
-                    }
-                }
-
                 const tag = createMarkerTag(markerTooltipText);
                 container.appendChild(img);
                 container.appendChild(tag);
@@ -367,18 +346,6 @@ function renderPowerArmor(pa: PowerArmorMarker | null | undefined, worldspaceID:
 
     const img = document.createElement('img');
     img.src = ThemeEngine.getMarkerIconUrl(MARKER_ICON_POWER_ARMOR);
-
-    if (mapState.player.active && !resolved.isGateway) {
-        const zThreshold = 500;
-        const zDelta = resolved.z - mapState.player.z;
-
-        if (Math.abs(zDelta) > zThreshold) {
-            const arrowImg = document.createElement('img');
-            arrowImg.className = 'altitude-arrow';
-            arrowImg.src = zDelta > 0 ? 'assets/icons/default/quest-altitude-up.svg' : 'assets/icons/default/quest-altitude-down.svg';
-            container.appendChild(arrowImg);
-        }
-    }
 
     const tag = createMarkerTag('Power Armor');
 

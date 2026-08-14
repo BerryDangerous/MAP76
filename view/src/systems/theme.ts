@@ -58,38 +58,34 @@ export const ThemeEngine = {
     },
 
     getMarkerIconUrl(engineType: number, discovered?: boolean, customIcon?: string): string {
-        const activeTheme = appSettings.iconTheme;
-
         if (customIcon) {
-            return `assets/icons/${activeTheme}/custom/${customIcon}.svg`;
+            return `assets/icons/custom/${customIcon}.svg`;
         }
 
         const semanticName = ENGINE_MARKER_TYPES[engineType] || 'default';
 
         if (!discovered && engineType < 81) {
-            return `assets/icons/${activeTheme}/${semanticName}_undiscovered.svg`;
+            return `assets/icons/${semanticName}_undiscovered.svg`;
         }
 
-        return `assets/icons/${activeTheme}/${semanticName}.svg`;
+        return `assets/icons/${semanticName}.svg`;
     },
 
     getQuestMarkerIconUrl(isDoor: boolean, isActive: boolean): string {
-        const activeTheme = appSettings.iconTheme;
         const semanticName = isDoor ? 'quest-door' : 'quest';
         
         if (!isActive) {
-            return `assets/icons/${activeTheme}/${semanticName}_inactive.svg`;
+            return `assets/icons/${semanticName}_inactive.svg`;
         }
         
-        return `assets/icons/${activeTheme}/${semanticName}.svg`;
+        return `assets/icons/${semanticName}.svg`;
     },
 
     getAssetIconUrl(iconName: string): string {
-        const activeTheme = appSettings.iconTheme;
-        return `assets/icons/${activeTheme}/${iconName}.svg`;
+        return `assets/icons/${iconName}.svg`;
     },
 
     getPlayerIconUrl(): string {
-        return `assets/icons/${appSettings.iconTheme}/player-location.svg`;
+        return `assets/icons/player-location.svg`;
     }
 };

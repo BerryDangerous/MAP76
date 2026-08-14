@@ -32,7 +32,6 @@ declare global {
 
         MapInterop?: {
             updateWorkshopStats?: (jsonString: string) => void;
-            toggleActiveTheme?: (themeName: string) => void;
         };
 
         loadSettings?: (jsonString: string) => void;

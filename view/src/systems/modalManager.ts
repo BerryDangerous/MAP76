@@ -4,7 +4,6 @@ import { ButtonConfig } from '../ui/button.js';
 export interface ModalConfig {
     text: string;
     buttons: ButtonConfig[];
-    theme?: string;
 }
 
 export class ModalManager {

@@ -3,14 +3,9 @@
    ========================================================================== */
 
 :root {
-    --selected-marker-filter: invert(1);
-    --selected-status-filter: invert(1);
-    --ui-scale: 1.0;
-}
-
-body[data-icon-style="76"] {
     --selected-marker-filter: none;
     --selected-status-filter: invert(1);
+    --ui-scale: 1.0;
 }
 
 * {
@@ -211,9 +206,9 @@ body, html {
     object-fit: contain;
 }
 
-.quest-marker img:not(.altitude-arrow),
-.custom-marker img:not(.altitude-arrow),
-.power-armor-marker img:not(.altitude-arrow) {
+.quest-marker img,
+.custom-marker img,
+.power-armor-marker img {
     max-width: 28px;
     max-height: 34px;
     object-fit: contain;
@@ -234,24 +229,6 @@ body, html {
     will-change: transform;
 }
 
-.quest-marker .altitude-arrow,
-.power-armor-marker .altitude-arrow {
-    position: absolute;
-    width: 11px;
-    height: 11px;
-    object-fit: contain;
-    left: 0;
-    top: -20px;
-    transform: translate(-50%, -4px);
-    z-index: 16;
-    pointer-events: none;
-    image-rendering: -webkit-optimize-contrast;
-    image-rendering: crisp-edges;
-}
-
-.quest-marker .altitude-arrow.door-offset {
-    transform: translate(-50%, -8px);
-}
 
 .quest-marker,
 .custom-marker,
@@ -260,11 +237,7 @@ body, html {
     will-change: opacity;
 }
 
-.quest-marker.is-edge-clamped,
-.custom-marker.is-edge-clamped,
-.power-armor-marker.is-edge-clamped {
-    z-index: 100;
-}
+
 
 .custom-marker {
     z-index: 95;
@@ -281,12 +254,10 @@ body, html {
     transform: translate(-50%, 0);
     zoom: var(--ui-scale, 1.0);
     top: 14px;
-    background: rgba(20, 20, 20, 0.92);
-    color: #fff;
-    padding: 4px 8px;
-    border: 1px solid #666;
-    font-family: 'Courier New', monospace;
-    font-size: 12px;
+    color: #ffffcb;
+    font-family: 'PibotoCondensed', sans-serif;
+    font-size: 14px;
+    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
     white-space: nowrap;
     pointer-events: none;
     display: none !important;
@@ -327,29 +298,34 @@ body, html {
 }
 
 .modal-box {
-    background: #1a1a1a;
-    border: 2px solid #fff;
-    padding: 24px 32px;
-    font-family: 'Courier New', monospace;
-    text-align: center;
+    background: rgba(10, 10, 10, 0.95);
+    border: 2px solid #e0c870;
+    color: #e0c870;
+    padding: 30px;
+    width: 400px;
     min-width: 320px;
-    max-width: 500px;
+    max-width: 90vw;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.9);
     zoom: var(--ui-scale, 1.0);
 }
 
 #modal-text {
-    color: #fff;
-    font-size: 18px;
+    color: #e0c870;
+    font-family: 'PibotoCondensed', sans-serif;
+    font-size: 16px;
     line-height: 1.4;
-    margin: 0 0 24px 0;
-    text-transform: uppercase;
+    margin: 0;
+    text-transform: none;
 }
 
 .modal-actions {
     display: flex;
     justify-content: center;
-    gap: 24px;
+    gap: 15px;
+    margin-top: 10px;
 }
 
 .modal-actions.modal-vertical {
@@ -358,105 +334,47 @@ body, html {
 }
 
 .modal-actions .btn {
-    padding: 8px 24px;
-    font-family: 'Courier New', monospace;
-    font-size: 16px;
+    padding: 0 20px;
+    font-family: 'PibotoCondensed', sans-serif;
+    font-size: 13px;
     font-weight: bold;
     cursor: pointer;
-    border: 1px solid #666;
-    background: #333;
+    border: none;
+    background: transparent;
     transition: background 0.1s ease;
-    height: auto;
+    height: 26px;
 }
 
 .modal-actions .btn:hover,
 .modal-actions .btn:focus,
 .modal-actions .btn.selected {
-    background: #444;
-    border-color: #999;
+    background: #f5cb5b;
 }
 
 .modal-actions .btn:first-child {
-    background: #fff;
+    background: transparent;
     border: none;
 }
 
 .modal-actions .btn:first-child:hover,
 .modal-actions .btn:first-child:focus,
 .modal-actions .btn:first-child.selected {
-    background: #a8a8a8;
-}
-
-.modal-actions .btn .btn-text {
-    color: #fff;
-    font-family: inherit;
-    font-size: inherit;
-}
-
-.modal-actions .btn:first-child .btn-text {
-    color: #000;
-}
-
-body[data-theme="76"] .modal-overlay .modal-box {
-    background: rgba(10, 10, 10, 0.95);
-    border: 2px solid #e0c870;
-    color: #e0c870;
-    padding: 30px;
-    width: 400px;
-    max-width: 90vw;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-body[data-theme="76"] .modal-overlay #modal-text {
-    color: #e0c870;
-    font-family: 'PibotoCondensed', sans-serif;
-    font-size: 16px;
-    margin: 0;
-    text-transform: none;
-}
-
-body[data-theme="76"] .modal-overlay .modal-actions {
-    gap: 15px;
-    margin-top: 10px;
-}
-
-body[data-theme="76"] .modal-overlay .modal-actions .btn {
-    padding: 0 20px;
-    font-family: 'PibotoCondensed', sans-serif;
-    font-size: 13px;
-    border: none;
-    background: transparent;
-    height: 26px;
-}
-
-body[data-theme="76"] .modal-overlay .modal-actions .btn:first-child {
-    background: transparent;
-}
-
-body[data-theme="76"] .modal-overlay .modal-actions .btn .btn-text {
-    font-family: 'PibotoCondensed', sans-serif;
-    font-size: 13px;
-    color: #f5cb5b;
-}
-
-body[data-theme="76"] .modal-overlay .modal-actions .btn:first-child .btn-text {
-    color: #f5cb5b;
-}
-
-body[data-theme="76"] .modal-overlay .modal-actions .btn:hover,
-body[data-theme="76"] .modal-overlay .modal-actions .btn:focus,
-body[data-theme="76"] .modal-overlay .modal-actions .btn.selected,
-body[data-theme="76"] .modal-overlay .modal-actions .btn:first-child:hover,
-body[data-theme="76"] .modal-overlay .modal-actions .btn:first-child:focus,
-body[data-theme="76"] .modal-overlay .modal-actions .btn:first-child.selected {
     background: #f5cb5b;
 }
 
-body[data-theme="76"] .modal-overlay .modal-actions .btn:hover .btn-text,
-body[data-theme="76"] .modal-overlay .modal-actions .btn:focus .btn-text,
-body[data-theme="76"] .modal-overlay .modal-actions .btn.selected .btn-text {
+.modal-actions .btn .btn-text {
+    color: #f5cb5b;
+    font-family: 'PibotoCondensed', sans-serif;
+    font-size: 13px;
+}
+
+.modal-actions .btn:first-child .btn-text {
+    color: #f5cb5b;
+}
+
+.modal-actions .btn:hover .btn-text,
+.modal-actions .btn:focus .btn-text,
+.modal-actions .btn.selected .btn-text {
     color: #000;
 }
 
@@ -474,7 +392,6 @@ body[data-theme="76"] .modal-overlay .modal-actions .btn.selected .btn-text {
     z-index: 20000;
     display: none;
     transform-origin: 50% 0%;
-    transform: translate(-50%, 0%) rotate(-18.5deg);
 }
 
 
@@ -981,15 +898,10 @@ body[data-theme="76"] .modal-overlay .modal-actions .btn.selected .btn-text {
     color: #000000;
 }
 
-body[data-theme="76"] .btn.selected,
-body[data-theme="76"] .btn:focus {
+.btn.selected,
+.btn:focus {
     background-color: #f5cb5b;
     outline: none;
-}
-
-body[data-theme="76"] .btn.selected .btn-text,
-body[data-theme="76"] .btn:focus .btn-text {
-    color: #000000;
 }
 
 .btn.disabled {
@@ -1263,10 +1175,6 @@ body.is-ultralight #settings-menu-panel {
     background-color: #f5cb5b;
     color: #000;
 }
-body[data-theme="76"] .settings-tab:focus,
-body[data-theme="76"] .settings-tab.active {
-    color: #000;
-}
 
 .settings-list {
     flex: 1;
@@ -1316,12 +1224,6 @@ body.settings-open #player-layer {
 .settings-row:focus .settings-row-title,
 .settings-row:focus .settings-row-subtitle,
 .settings-row:focus .ui-control-value {
-    color: #000000;
-}
-
-body[data-theme="76"] .settings-row:focus .settings-row-title,
-body[data-theme="76"] .settings-row:focus .settings-row-subtitle,
-body[data-theme="76"] .settings-row:focus .ui-control-value {
     color: #000000;
 }
 

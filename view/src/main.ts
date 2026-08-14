@@ -102,7 +102,7 @@ window.addEventListener('DOMContentLoaded', () => {
     MapViewport.initEvents();
     MarkerInteractionManager.initEvents();
     MapViewport.centerInitialViewport();
-    AnimationEngine.startLoop();
+    // AnimationEngine.startLoop();
     SettingsMenu.init();
     ControlBar.init();
     InfoBar.init();

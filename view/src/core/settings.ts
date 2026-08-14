@@ -1,8 +1,5 @@
 export interface AppSettings {
     uiScale: number;
-    iconTheme: string;
-    interfaceTheme: string;
-    clampQuestMarkers: boolean;
     focusMarkerOnSelection: boolean;
     resetViewportOnPanelCollapse: boolean;
     freezeSimulation: boolean;
@@ -11,9 +8,6 @@ export interface AppSettings {
 
 export const defaultSettings: AppSettings = {
     uiScale: 1.0,
-    iconTheme: 'default',
-    interfaceTheme: '76',
-    clampQuestMarkers: true,
     focusMarkerOnSelection: false,
     resetViewportOnPanelCollapse: false,
     freezeSimulation: true,
@@ -33,18 +27,6 @@ export function updateSettings(newSettings: Partial<AppSettings>) {
 
 function applySettings() {
     document.documentElement.style.setProperty('--ui-scale', appSettings.uiScale.toString());
-    
-    if (appSettings.interfaceTheme) {
-        document.body.setAttribute('data-theme', appSettings.interfaceTheme);
-    } else {
-        document.body.removeAttribute('data-theme');
-    }
-    
-    if (appSettings.iconTheme) {
-        document.body.setAttribute('data-icon-style', appSettings.iconTheme);
-    } else {
-        document.body.removeAttribute('data-icon-style');
-    }
     
     if (window.saveSettings) {
         window.saveSettings(JSON.stringify(appSettings));
