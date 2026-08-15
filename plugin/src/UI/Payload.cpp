@@ -194,23 +194,6 @@ namespace PaperMap::UI::Payload
                             RE::NiPoint3 paPos = paRefr->GetPosition();
                             auto *paWorld = PaperMap::Engine::GetReferenceWorldspace(paRefr, &paPos);
 
-                            if (playerWorld && paWorld && playerWorld->formID != paWorld->formID)
-                            {
-                                if (pipboyManager && pipboyManager->mapData.worldPowerArmorMarker)
-                                {
-                                    auto *pam = pipboyManager->mapData.worldPowerArmorMarker;
-                                    bool pamVis = PaperMap::Engine::PipboyUtils::GetPipboyBool(pam, "Visible", false);
-                                    if (pamVis)
-                                    {
-                                        float pamX = PaperMap::Engine::PipboyUtils::GetPipboyFloat(pam, "X", paPos.x);
-                                        float pamY = PaperMap::Engine::PipboyUtils::GetPipboyFloat(pam, "Y", paPos.y);
-                                        paPos.x = pamX;
-                                        paPos.y = pamY;
-                                        paWorld = playerWorld;
-                                    }
-                                }
-                            }
-
                             if (paWorld) addWorldspace(paWorld->formID);
                             DTO::PowerArmorMarker paMarker{};
                             paMarker.worldspace = paWorld ? paWorld->formID : 0;
