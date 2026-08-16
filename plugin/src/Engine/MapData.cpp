@@ -207,7 +207,7 @@ namespace
 
 namespace PaperMap::Engine
 {
-    MapBoundsData GetEngineMapBounds()
+    MapBoundsData GetWorldspaceBounds(RE::TESWorldSpace* a_worldspace)
     {
         MapBoundsData bounds{
             Constants::Map::DEFAULT_BOUNDS_MIN_X,
@@ -215,16 +215,9 @@ namespace PaperMap::Engine
             Constants::Map::DEFAULT_BOUNDS_MIN_Y,
             Constants::Map::DEFAULT_BOUNDS_MAX_Y};
 
-        auto *player = RE::PlayerCharacter::GetSingleton();
-        if (!player)
+        if (a_worldspace)
         {
-            return bounds;
-        }
-
-        auto *currentWorld = GetReferenceWorldspace(player);
-        if (currentWorld)
-        {
-            auto *mapData = reinterpret_cast<RE::WORLD_MAP_DATA *>(&currentWorld->worldMapData);
+            auto *mapData = reinterpret_cast<RE::WORLD_MAP_DATA *>(&a_worldspace->worldMapData);
             if (mapData)
             {
                 bounds.nwCellX = mapData->nwCellX;
@@ -239,7 +232,7 @@ namespace PaperMap::Engine
                 bounds.minY = static_cast<float>(mapData->seCellY) * Constants::Map::CELL_SIZE_UNITS;
             }
 
-            auto *offsetData = &currentWorld->worldMapOffsetData;
+            auto *offsetData = &a_worldspace->worldMapOffsetData;
             if (offsetData)
             {
                 bounds.mapScale = offsetData->mapScale;
@@ -250,6 +243,22 @@ namespace PaperMap::Engine
         }
 
         return bounds;
+    }
+
+    MapBoundsData GetEngineMapBounds()
+    {
+        auto *player = RE::PlayerCharacter::GetSingleton();
+        if (!player)
+        {
+            return MapBoundsData{
+                Constants::Map::DEFAULT_BOUNDS_MIN_X,
+                Constants::Map::DEFAULT_BOUNDS_MAX_X,
+                Constants::Map::DEFAULT_BOUNDS_MIN_Y,
+                Constants::Map::DEFAULT_BOUNDS_MAX_Y};
+        }
+
+        auto *currentWorld = GetReferenceWorldspace(player);
+        return GetWorldspaceBounds(currentWorld);
     }
 
     RE::TESWorldSpace *GetReferenceWorldspace(RE::TESObjectREFR *a_refr, RE::NiPoint3* a_position)

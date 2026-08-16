@@ -278,7 +278,8 @@ export const MarkerInteractionManager = {
                 }
             } else {
                 if (mapState.wasDragged) return;
-                const bounds = mapState.currentPayloadBounds;
+                const config = mapState.activeMapConfig;
+                const bounds = mapState.lastPayload?.worldspaces?.[config.worldspaceID]?.bounds;
                 if (!bounds) return;
 
                 if (FocusManager.getFocus() !== 'MAP') {

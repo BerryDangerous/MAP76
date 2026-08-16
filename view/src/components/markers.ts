@@ -8,6 +8,7 @@ import { MapViewport } from './viewport.js';
 import { MARKER_ICON_CUSTOM_MARKER, MARKER_ICON_POWER_ARMOR, MARKER_ICON_RAIDER_OUTPOST, MARKER_ICON_VASSAL_SETTLEMENT, MARKER_ICON_POTENTIAL_VASSAL_SETTLEMENT } from '../core/constants.js';
 import { renderSupplyLines, isSupplyLinesViewActive, activeGatewayMarkerFormIds } from './supplyLines.js';
 import { WorldspaceUtils } from '../utils/worldspaceUtils.js';
+import { InfoBar } from './infoBar.js';
 
 function getPlayerLayer(): HTMLElement | null {
     return document.getElementById('player-layer');
@@ -95,15 +96,36 @@ export function getPotentialVassalMarkerFormIds(
     return potentialFormIds;
 }
 
-export function loadMarkers(payload: F4SEMapPayload) {
+export function switchWorldspace(wsId: number) {
+    if (mapState.activeMapConfig) {
+        mapState.worldViewports[mapState.activeMapConfig.worldspaceID] = {
+            zoom: mapState.zoom,
+            panX: mapState.panX,
+            panY: mapState.panY
+        };
+    }
+
+    mapState.selectedWorldspaceID = wsId;
+    
+    if (mapState.lastPayload) {
+        loadMarkers(mapState.lastPayload, true);
+    }
+}
+
+export function loadMarkers(payload: F4SEMapPayload, isSwitchingWorld: boolean = false) {
     if (!payload) return;
 
     mapState.lastPayload = payload;
 
-    if (payload.player && payload.player.worldspace !== undefined) {
-        const wsId = payload.player.worldspace;
-        const editorID = WorldspaceUtils.getWorldspaceEditorID(wsId);
-        ThemeEngine.updateWorldspaceConfig(wsId, editorID);
+    let activeWsId = mapState.selectedWorldspaceID;
+    if (activeWsId === null && payload.player && payload.player.worldspace !== undefined) {
+        activeWsId = payload.player.worldspace;
+    }
+
+    if (activeWsId !== null && activeWsId !== undefined) {
+        const editorID = WorldspaceUtils.getWorldspaceEditorID(activeWsId);
+        ThemeEngine.updateWorldspaceConfig(activeWsId, editorID);
+        InfoBar.updateWorldspace(activeWsId);
     }
 
     const config = mapState.activeMapConfig;
@@ -113,8 +135,13 @@ export function loadMarkers(payload: F4SEMapPayload) {
     const markerLayer = getMarkerLayer();
     if (!playerLayer || !markerLayer) return;
 
-    const bounds = payload.bounds;
-    mapState.currentPayloadBounds = bounds;
+    const worldspaceData = payload.worldspaces?.[config.worldspaceID];
+    const bounds = worldspaceData?.bounds;
+    if (!bounds) {
+        console.error(`[Markers] No bounds data found for worldspace ${config.worldspaceID}`);
+        return;
+    }
+    
     mapState.animatedElements = [];
 
     playerLayer.innerHTML = '';
@@ -132,8 +159,19 @@ export function loadMarkers(payload: F4SEMapPayload) {
     }
 
     applySupplyLinesVisibilityFilter();
-
-    MapViewport.updateViewportTransform();
+    if (isSwitchingWorld) {
+        const saved = mapState.worldViewports[config.worldspaceID];
+        if (saved) {
+            mapState.zoom = saved.zoom;
+            mapState.panX = saved.panX;
+            mapState.panY = saved.panY;
+            MapViewport.updateViewportTransform();
+        } else {
+            MapViewport.centerInitialViewport();
+        }
+    } else {
+        MapViewport.updateViewportTransform();
+    }
 }
 
 function renderPlayer(player: PlayerData | undefined, worldspaceID: number, bounds: GameBounds) {

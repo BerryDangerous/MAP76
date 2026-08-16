@@ -27,6 +27,7 @@ export interface SettlementData {
 export interface WorldspaceDTO {
     editorID: string;
     fullName: string;
+    bounds: GameBounds;
 }
 
 export interface GatewayMarker {
@@ -35,7 +36,6 @@ export interface GatewayMarker {
 }
 
 export interface F4SEMapPayload {
-    bounds: GameBounds;
     markers: POIMarker[];
     quests: QuestItem[];
     settlements?: SettlementData[];

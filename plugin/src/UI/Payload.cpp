@@ -17,24 +17,6 @@ namespace PaperMap::UI::Payload
         {
             DTO::MapPayload payload{};
 
-            Engine::MapBoundsData engineBounds = Engine::GetEngineMapBounds();
-            payload.bounds = DTO::GameBounds{
-                engineBounds.minX,
-                engineBounds.maxX,
-                engineBounds.minY,
-                engineBounds.maxY,
-                engineBounds.nwCellX,
-                engineBounds.nwCellY,
-                engineBounds.seCellX,
-                engineBounds.seCellY,
-                engineBounds.usableWidth,
-                engineBounds.usableHeight,
-                engineBounds.mapScale,
-                engineBounds.mapOffsetX,
-                engineBounds.mapOffsetY,
-                engineBounds.mapOffsetZ
-            };
-
             Engine::Player::State enginePlayer = Engine::Player::GetCurrentState();
             payload.player = DTO::PlayerDTO{
                 enginePlayer.position.x,
@@ -54,6 +36,25 @@ namespace PaperMap::UI::Payload
                     DTO::WorldspaceDTO wsDto{};
                     wsDto.editorID = wspace->GetFormEditorID() ? wspace->GetFormEditorID() : "";
                     wsDto.fullName = wspace->GetFullName() ? wspace->GetFullName() : "";
+
+                    Engine::MapBoundsData wsBounds = Engine::GetWorldspaceBounds(wspace);
+                    wsDto.bounds = DTO::GameBounds{
+                        wsBounds.minX,
+                        wsBounds.maxX,
+                        wsBounds.minY,
+                        wsBounds.maxY,
+                        wsBounds.nwCellX,
+                        wsBounds.nwCellY,
+                        wsBounds.seCellX,
+                        wsBounds.seCellY,
+                        wsBounds.usableWidth,
+                        wsBounds.usableHeight,
+                        wsBounds.mapScale,
+                        wsBounds.mapOffsetX,
+                        wsBounds.mapOffsetY,
+                        wsBounds.mapOffsetZ
+                    };
+
                     payload.worldspaces[wsId] = wsDto;
                 }
             };

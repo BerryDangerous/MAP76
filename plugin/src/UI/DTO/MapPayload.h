@@ -172,8 +172,9 @@ namespace PaperMap::UI::DTO
     {
         std::string editorID;
         std::string fullName;
+        GameBounds bounds;
     };
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(WorldspaceDTO, editorID, fullName)
+    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(WorldspaceDTO, editorID, fullName, bounds)
 
     struct GatewayMarker
     {
@@ -184,7 +185,6 @@ namespace PaperMap::UI::DTO
 
     struct MapPayload
     {
-        GameBounds bounds;
         std::vector<POIMarker> markers;
         std::vector<QuestItem> quests;
         std::vector<SettlementDTO> settlements;
@@ -199,7 +199,6 @@ namespace PaperMap::UI::DTO
     inline void to_json(nlohmann::json &j, const MapPayload &p)
     {
         j = nlohmann::json{
-            {"bounds", p.bounds},
             {"markers", p.markers},
             {"quests", p.quests},
             {"settlements", p.settlements}};

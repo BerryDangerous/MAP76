@@ -236,14 +236,8 @@ export const SearchPanel = {
                                 controls.push({ action: 'CENTER_ITEM', label: 'CENTER OBJECTIVE' });
                             }
                         }
-                    } else if (selected.type === 'workshop') {
-                        if (selected.originalRef.worldspace !== undefined && WorldspaceUtils.isSameWorldspace(selected.originalRef.worldspace, mapState.activeMapConfig.worldspaceID)) {
-                            controls.push({ action: 'CENTER_ITEM', label: 'CENTER MARKER' });
-                        }
                     } else {
-                        if (selected.originalRef.worldspace !== undefined && WorldspaceUtils.isSameWorldspace(selected.originalRef.worldspace, mapState.activeMapConfig.worldspaceID)) {
-                            controls.push({ action: 'CENTER_ITEM', label: 'CENTER MARKER' });
-                        }
+                        controls.push({ action: 'CENTER_ITEM', label: 'CENTER MARKER' });
                     }
                 }
                 return controls;

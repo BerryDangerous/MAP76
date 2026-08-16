@@ -13,6 +13,7 @@ export const mapState = {
     startY: 0,
 
     savedViewport: null as { zoom: number; panX: number; panY: number } | null,
+    worldViewports: {} as Record<number, { zoom: number; panX: number; panY: number }>,
 
     activeMapConfig: {
         mapName: "Commonwealth",
@@ -34,8 +35,7 @@ export const mapState = {
         active: false
     },
 
-    // Cache holding the latest pipeline calculations
-    currentPayloadBounds: null as GameBounds | null,
+    selectedWorldspaceID: null as number | null,
     lastPayload: null as F4SEMapPayload | null,
 
     animatedElements: [] as HTMLElement[]

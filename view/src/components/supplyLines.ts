@@ -58,7 +58,8 @@ function resolveCrossWorldspaceGateway(
     refY: number,
     payload: F4SEMapPayload
 ): { x: number; y: number } {
-    const bounds = payload.bounds;
+    const bounds = payload.worldspaces?.[currentWorldspace]?.bounds;
+    if (!bounds) return { x: 0, y: 0 };
     const markers = payload.markers;
     
     const resolved = WorldspaceUtils.resolveGatewayTarget(
@@ -99,14 +100,16 @@ export function renderSupplyLines(payload: F4SEMapPayload): void {
 
     svgLayer.innerHTML = '';
 
-    if (!payload || !payload.settlements || !payload.bounds || !payload.markers) {
+    if (!payload || !payload.settlements || !payload.markers) {
         return;
     }
 
-    const bounds = payload.bounds;
+    const currentWorldspace = mapState.activeMapConfig?.worldspaceID ?? 0;
+    const bounds = payload.worldspaces?.[currentWorldspace]?.bounds;
+    if (!bounds) return;
+
     const settlements = payload.settlements;
     const markers = payload.markers;
-    const currentWorldspace = mapState.activeMapConfig?.worldspaceID ?? 0;
 
     activeGatewayMarkerFormIds.clear();
 

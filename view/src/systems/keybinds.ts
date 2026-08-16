@@ -18,7 +18,9 @@ export type KeyAction =
     | 'OPEN_SETTINGS'
     | 'RESET_DEFAULTS'
     | 'TOGGLE_ACTIVE'
-    | 'TOGGLE_SUPPLY_LINES';
+    | 'TOGGLE_SUPPLY_LINES'
+    | 'PREV_WORLD'
+    | 'NEXT_WORLD';
 
 export const DEFAULT_KEYMAP: Record<KeyAction, string[]> = {
     NAV_UP: ['ArrowUp'],
@@ -40,7 +42,9 @@ export const DEFAULT_KEYMAP: Record<KeyAction, string[]> = {
     OPEN_SETTINGS: ['z', 'Z'],
     RESET_DEFAULTS: ['t', 'T'],
     TOGGLE_ACTIVE: ['t', 'T'],
-    TOGGLE_SUPPLY_LINES: ['c', 'C']
+    TOGGLE_SUPPLY_LINES: ['c', 'C'],
+    PREV_WORLD: ['<', ',', 'PageUp'],
+    NEXT_WORLD: ['>', '.', 'PageDown']
 };
 
 export const DEFAULT_LABELS: Record<KeyAction, string> = {
@@ -63,7 +67,9 @@ export const DEFAULT_LABELS: Record<KeyAction, string> = {
     OPEN_SETTINGS: 'SETTINGS',
     RESET_DEFAULTS: 'DEFAULTS',
     TOGGLE_ACTIVE: 'TOGGLE ACTIVE',
-    TOGGLE_SUPPLY_LINES: 'SUPPLY LINES'
+    TOGGLE_SUPPLY_LINES: 'SUPPLY LINES',
+    PREV_WORLD: 'PREV WORLD',
+    NEXT_WORLD: 'NEXT WORLD'
 };
 
 export class KeybindsSystem {

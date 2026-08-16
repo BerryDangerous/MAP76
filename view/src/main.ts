@@ -3,7 +3,7 @@ import { initializeF4SEBindings, EngineBridge } from './core/bridge.js';
 import { ThemeEngine } from './systems/theme.js';
 import { AnimationEngine } from './systems/animation.js';
 import { MapViewport } from './components/viewport.js';
-import { loadMarkers, applySupplyLinesVisibilityFilter } from './components/markers.js';
+import { loadMarkers, applySupplyLinesVisibilityFilter, switchWorldspace } from './components/markers.js';
 import { MarkerInteractionManager } from './components/markerInteraction.js';
 import { toggleSupplyLinesView, setSupplyLinesViewActive, hasSupplyLines } from './components/supplyLines.js';
 import { CustomMarkerCard } from './components/customMarkerCard.js';
@@ -167,21 +167,69 @@ window.addEventListener('DOMContentLoaded', () => {
             }
             if (KeybindsSystem.isAction(e, 'CENTER_CAMERA')) {
                 e.preventDefault();
-                if (mapState.player.active) {
-                    MapViewport.centerOnWorldCoords(mapState.player.x, mapState.player.y);
+                if (mapState.player) {
+                    if (mapState.activeMapConfig) {
+                        mapState.worldViewports[mapState.activeMapConfig.worldspaceID] = {
+                            zoom: mapState.zoom,
+                            panX: mapState.panX,
+                            panY: mapState.panY
+                        };
+                    }
+                    mapState.selectedWorldspaceID = null;
+                    if (mapState.lastPayload) {
+                        loadMarkers(mapState.lastPayload, true);
+                    }
+                    if (mapState.player.active) {
+                        MapViewport.centerOnWorldCoords(mapState.player.x, mapState.player.y);
+                    }
                 }
                 return;
             }
             if (KeybindsSystem.isAction(e, 'PLACE_MARKER')) {
-                if (mapState.currentPayloadBounds) {
+                const config = mapState.activeMapConfig;
+                const worldspaceData = mapState.lastPayload?.worldspaces?.[config.worldspaceID];
+                const bounds = worldspaceData?.bounds;
+                if (bounds) {
                     const worldCoords = MapViewport.screenToGameCoords(
                         MapViewport.lastMouseX, 
                         MapViewport.lastMouseY, 
-                        mapState.currentPayloadBounds
+                        bounds
                     );
                     CustomMarkerCard.openForPlacement(worldCoords, { x: MapViewport.lastMouseX, y: MapViewport.lastMouseY });
                     FocusManager.setFocus('CUSTOM_MARKER_CARD');
                 }
+                return;
+            }
+            if (KeybindsSystem.isAction(e, 'PREV_WORLD') || KeybindsSystem.isAction(e, 'NEXT_WORLD')) {
+                if (!mapState.lastPayload || !mapState.lastPayload.worldspaces) return;
+                
+                const wsKeys = Object.keys(mapState.lastPayload.worldspaces).map(k => parseInt(k, 10));
+                if (wsKeys.length <= 1) return;
+
+                wsKeys.sort((a, b) => {
+                    const getPriority = (id: number) => {
+                        if (id === 60) return 0; // Commonwealth
+                        if (id === 100673807) return 1; // Nuka-World
+                        if (id === 50334479) return 2; // The Island
+                        return 3;
+                    };
+                    const pA = getPriority(a);
+                    const pB = getPriority(b);
+                    if (pA !== pB) return pA - pB;
+
+                    const nameA = mapState.lastPayload!.worldspaces![a].fullName.toLowerCase();
+                    const nameB = mapState.lastPayload!.worldspaces![b].fullName.toLowerCase();
+                    return nameA.localeCompare(nameB);
+                });
+
+                const currentIdx = wsKeys.indexOf(mapState.activeMapConfig.worldspaceID);
+                let nextIdx = 0;
+                if (KeybindsSystem.isAction(e, 'PREV_WORLD')) {
+                    nextIdx = currentIdx > 0 ? currentIdx - 1 : wsKeys.length - 1;
+                } else {
+                    nextIdx = currentIdx < wsKeys.length - 1 ? currentIdx + 1 : 0;
+                }
+                switchWorldspace(wsKeys[nextIdx]);
                 return;
             }
 

@@ -37,6 +37,13 @@ namespace PaperMap::Engine
     std::unordered_map<uint32_t, std::unordered_map<uint32_t, std::vector<GatewayMarker>>> BuildGatewayGraph();
 
     /**
+     * @brief Calculates map bounds based on the specified worldspace cell extents.
+     * @param a_worldspace Target worldspace.
+     * @return Bounding box in world coordinates.
+     */
+    MapBoundsData GetWorldspaceBounds(RE::TESWorldSpace* a_worldspace);
+
+    /**
      * @brief Calculates map bounds based on the player's current worldspace cell extents.
      * @return Bounding box in world coordinates.
      */

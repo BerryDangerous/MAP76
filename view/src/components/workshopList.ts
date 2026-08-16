@@ -176,11 +176,7 @@ export const WorkshopList = {
         FocusManager.register({
             id: 'WORKSHOP_LIST',
             getAvailableControls: () => {
-                const controls: import('../systems/focusManager.js').ControlActionDef[] = ['NAV_BACK', { action: 'NAV_UP', label: 'MOVE' }, { action: 'NAV_DOWN', label: 'MOVE' }, 'PAN_MOUSE'];
-                const selected = listController.getSelectedItem();
-                if (selected && selected.worldspace !== undefined && WorldspaceUtils.isSameWorldspace(selected.worldspace, mapState.activeMapConfig.worldspaceID)) {
-                    controls.push({ action: 'CENTER_ITEM', label: 'CENTER MARKER' });
-                }
+                const controls: import('../systems/focusManager.js').ControlActionDef[] = ['NAV_BACK', { action: 'NAV_UP', label: 'MOVE' }, { action: 'NAV_DOWN', label: 'MOVE' }, 'PAN_MOUSE', { action: 'CENTER_ITEM', label: 'CENTER MARKER' }];
                 return controls;
             },
             handleKeyDown: (e: KeyboardEvent) => this.handleKeyDown(e),

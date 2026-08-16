@@ -209,7 +209,9 @@ export const MapViewport = {
     },
 
     centerOnWorldCoords(gameX: number, gameY: number, targetZoom: number = 2.5): void {
-        const bounds = mapState.currentPayloadBounds;
+        const config = mapState.activeMapConfig;
+        const worldspaceData = mapState.lastPayload?.worldspaces?.[config.worldspaceID];
+        const bounds = worldspaceData?.bounds;
         if (bounds) {
             this.centerOnMapCoords(gameX, gameY, bounds, targetZoom);
         }

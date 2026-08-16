@@ -1,22 +1,6 @@
 import { F4SEMapPayload } from "../types/payloads";
 
 export const mockPayload: F4SEMapPayload = {
-    bounds: {
-        mapOffsetX: 0.0,
-        mapOffsetY: 0.0,
-        mapOffsetZ: 0.0,
-        mapScale: 1.0,
-        maxX: 114688.0,
-        maxY: 102400.0,
-        minX: -135168.0,
-        minY: -147456.0,
-        nwCellX: -33,
-        nwCellY: 25,
-        seCellX: 28,
-        seCellY: -36,
-        usableHeight: 0,
-        usableWidth: 0
-    },
     dlc04VassalDistance: 70000,
     custom_marker: {
         worldspace: 60,
@@ -25,23 +9,87 @@ export const mockPayload: F4SEMapPayload = {
     },
     worldspaces: {
         60: {
+            bounds: {
+                mapOffsetX: 0.0,
+                mapOffsetY: 0.0,
+                mapOffsetZ: 0.0,
+                mapScale: 1.0,
+                maxX: 114688.0,
+                maxY: 102400.0,
+                minX: -135168.0,
+                minY: -147456.0,
+                nwCellX: -33,
+                nwCellY: 25,
+                seCellX: 28,
+                seCellY: -36,
+                usableHeight: 0,
+                usableWidth: 0
+            },
             editorID: "Commonwealth",
             fullName: "Commonwealth"
         },
         50334479: {
+            bounds: {
+                mapOffsetX: 0.0,
+                mapOffsetY: 0.0,
+                mapOffsetZ: 0.0,
+                mapScale: 1.0,
+                maxX: 77824.0,
+                maxY: 69632.0,
+                minX: -65536.0,
+                minY: -73728.0,
+                nwCellX: -16,
+                nwCellY: 17,
+                seCellX: 19,
+                seCellY: -18,
+                usableHeight: 0,
+                usableWidth: 0
+            },
             editorID: "DLC03FarHarbor",
             fullName: "The Island"
+        },
+        100673807: {
+            bounds: {
+                mapOffsetX: 0.0,
+                mapOffsetY: 0.0,
+                mapOffsetZ: 0.0,
+                mapScale: 1.0,
+                maxX: 65536.0,
+                maxY: 69632.0,
+                minX: -73728.0,
+                minY: -73728.0,
+                nwCellX: -18,
+                nwCellY: 17,
+                seCellX: 16,
+                seCellY: -18,
+                usableHeight: 0,
+                usableWidth: 0
+            },
+            editorID: "NukaWorld",
+            fullName: "Nuka-World"
         }
     },
     gateways: {
         60: {
             50334479: [
-                { x: 80812.84375, y: 122126.3671875 }
+                { x: 82425.47, y: 120477.58 },
+                { x: 93942.05, y: 102910.21 }
+            ],
+            100673807: [
+                { x: -111914.625, y: 18024.332 },
+                { x: -116344.0, y: 17512.0 }
             ]
         },
         50334479: {
             60: [
-                { x: -50000, y: -50000 }
+                { x: 56504.26, y: 32603.35 },
+                { x: 64825.59, y: 34026.19 }
+            ]
+        },
+        100673807: {
+            60: [
+                { x: 2592.0, y: -33776.0 },
+                { x: 3984.0, y: -38312.0 }
             ]
         }
     },
@@ -186,6 +234,50 @@ export const mockPayload: F4SEMapPayload = {
         {
             canFastTravel: true,
             discovered: false,
+            formId: 100816149,
+            name: "Nuka-World",
+            type: 10,
+            visible: true,
+            worldspace: 60,
+            x: -116344.0,
+            y: 17512.0
+        },
+        {
+            canFastTravel: true,
+            discovered: false,
+            formId: 100710627,
+            name: "Nuka-Station",
+            type: 73,
+            visible: true,
+            worldspace: 100673807,
+            x: 3968.0,
+            y: -33504.0
+        },
+        {
+            canFastTravel: true,
+            discovered: false,
+            formId: 100816151,
+            name: "Commonwealth",
+            type: 1,
+            visible: true,
+            worldspace: 100673807,
+            x: 3984.0,
+            y: -38312.0
+        },
+        {
+            canFastTravel: true,
+            discovered: false,
+            formId: 100976494,
+            name: "Nuka-World Red Rocket",
+            type: 27,
+            visible: true,
+            worldspace: 100673807,
+            x: 22262.193359375,
+            y: 32637.029296875
+        },
+        {
+            canFastTravel: true,
+            discovered: false,
             formId: 50345206,
             name: "Nakano Residence",
             type: 13,
@@ -204,6 +296,39 @@ export const mockPayload: F4SEMapPayload = {
             worldspace: 60,
             x: 93942.0546875,
             y: 102910.2109375
+        },
+        {
+            canFastTravel: true,
+            discovered: false,
+            formId: 50355322,
+            name: "Far Harbor",
+            type: 13,
+            visible: true,
+            worldspace: 50334479,
+            x: 55296.0,
+            y: 34112.0
+        },
+        {
+            canFastTravel: true,
+            discovered: false,
+            formId: 50593507,
+            name: "The Commonwealth",
+            type: 1,
+            visible: true,
+            worldspace: 50334479,
+            x: 64825.58984375,
+            y: 34026.19140625
+        },
+        {
+            canFastTravel: true,
+            discovered: false,
+            formId: 50658596,
+            name: "Longfellow's Cabin",
+            type: 3,
+            visible: true,
+            worldspace: 50334479,
+            x: 54576.3515625,
+            y: 42429.69921875
         }
     ],
     settlements: [
@@ -306,6 +431,26 @@ export const mockPayload: F4SEMapPayload = {
             vr: false,
             water: 3.0,
             worldspace: 60,
+            },
+        {
+            beds: 0.0,
+            defense: 0.0,
+            food: 0.0,
+            formId: 100711655,
+            happiness: 50,
+            iconType: 27,
+            linkedLocationFormIds: [],
+            locationFormId: 100711661,
+            markerFormId: 100976494,
+            name: "Nuka-World Red Rocket",
+            owned: false,
+            population: 0,
+            power: 0.0,
+            raider: false,
+            vassal: false,
+            vr: false,
+            water: 0.0,
+            worldspace: 100673807
             },
         {
             beds: 1.0,

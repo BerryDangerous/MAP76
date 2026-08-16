@@ -2,6 +2,7 @@ import { PlayerData } from '../types/map.js';
 import { FrameTickPayload } from '../types/payloads.js';
 import { WorldspaceUtils } from '../utils/worldspaceUtils.js';
 import { KeybindsSystem } from '../systems/keybinds.js';
+import { mapState } from '../core/state.js';
 
 export class InfoBar {
     private static infoContainer: HTMLElement | null = null;
@@ -10,6 +11,9 @@ export class InfoBar {
     private static worldspace: string = 'Unknown';
     private static dateStr: string = '';
     private static timeStr: string = '';
+
+    private static bracketTick: number = 0;
+    private static bracketInterval: number | null = null;
 
     public static init() {
         this.infoContainer = document.getElementById('info-bar');
@@ -22,8 +26,14 @@ export class InfoBar {
 
     public static initPlayer(player?: PlayerData) {
         if (player && player.worldspace !== undefined) {
-            this.worldspace = WorldspaceUtils.getWorldspaceName(player.worldspace) || 'Unknown';
+            this.updateWorldspace(player.worldspace);
+        } else {
+            this.renderInfo();
         }
+    }
+
+    public static updateWorldspace(wsId: number) {
+        this.worldspace = WorldspaceUtils.getWorldspaceName(wsId) || 'Unknown';
         this.renderInfo();
     }
 
@@ -54,7 +64,36 @@ export class InfoBar {
         const parts = [];
         if (this.timeStr) parts.push(this.timeStr);
         if (this.dateStr) parts.push(this.dateStr);
-        if (this.worldspace) parts.push(this.worldspace.toUpperCase());
+
+        let wsText = this.worldspace ? this.worldspace.toUpperCase() : '';
+        
+        const currentWsId = mapState.activeMapConfig?.worldspaceID;
+        const playerWsId = mapState.lastPayload?.player?.worldspace;
+        const isRemote = playerWsId !== undefined && 
+                         currentWsId !== undefined && 
+                         playerWsId !== currentWsId;
+
+        if (isRemote && wsText) {
+            const isFar = (this.bracketTick % 3) === 2;
+            const leftBracket = isFar ? "[  " : " [ ";
+            const rightBracket = isFar ? "  ]" : " ] ";
+            wsText = `<span class="remote-worldspace">${leftBracket}${wsText}${rightBracket}</span>`;
+
+            if (this.bracketInterval === null) {
+                this.bracketTick = 0;
+                this.bracketInterval = window.setInterval(() => {
+                    this.bracketTick++;
+                    this.renderInfo();
+                }, 500);
+            }
+        } else {
+            if (this.bracketInterval !== null) {
+                window.clearInterval(this.bracketInterval);
+                this.bracketInterval = null;
+            }
+        }
+
+        if (wsText) parts.push(wsText);
 
         this.infoContainer.innerHTML = `<b>${parts.join('    ')}</b>`;
     }

@@ -1,6 +1,7 @@
 import { FocusManager, FocusOwner } from '../systems/focusManager.js';
 import { KeybindsSystem, KeyAction } from '../systems/keybinds.js';
 import { appSettings } from '../core/settings.js';
+import { mapState } from '../core/state.js';
 import { SearchPanel } from './searchPanel.js';
 import { QuestList } from './questList.js';
 import { hasSupplyLines, isSupplyLinesViewActive } from './supplyLines.js';
@@ -39,6 +40,10 @@ export class ControlBar {
             
             if (hasSupplyLines()) {
                 actions.push('TOGGLE_SUPPLY_LINES');
+            }
+            if (mapState.lastPayload && mapState.lastPayload.worldspaces && Object.keys(mapState.lastPayload.worldspaces).length > 1) {
+                actions.push('PREV_WORLD');
+                actions.push('NEXT_WORLD');
             }
 
             actions.push('CENTER_CAMERA');
