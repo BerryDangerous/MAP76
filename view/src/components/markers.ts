@@ -206,10 +206,8 @@ function renderLocationMarkers(markers: POIMarker[], worldspaceID: number, bound
         const img = document.createElement('img');
         img.src = defaultIconUrl;
         container.dataset.canFastTravel = m.canFastTravel.toString();
-        const tag = createMarkerTag(m.name);
 
         container.appendChild(img);
-        container.appendChild(tag);
         markerLayer.appendChild(container);
     });
 }
@@ -263,9 +261,7 @@ function renderQuestMarkers(quests: QuestItem[], worldspaceID: number, bounds: G
                 const img = document.createElement('img');
                 img.src = ThemeEngine.getQuestMarkerIconUrl(target.isDoor, quest.isTracked);
 
-                const tag = createMarkerTag(markerTooltipText);
                 container.appendChild(img);
-                container.appendChild(tag);
                 questLayer.appendChild(container);
 
                 mapState.animatedElements.push(container);
@@ -305,10 +301,7 @@ function renderCustomMarker(marker: CustomMarker | null | undefined, worldspaceI
     const img = document.createElement('img');
     img.src = ThemeEngine.getMarkerIconUrl(MARKER_ICON_CUSTOM_MARKER);
 
-    const tag = createMarkerTag('Custom Marker');
-
     container.appendChild(img);
-    container.appendChild(tag);
     questLayer.appendChild(container);
     mapState.animatedElements.push(container);
 }
@@ -347,10 +340,7 @@ function renderPowerArmor(pa: PowerArmorMarker | null | undefined, worldspaceID:
     const img = document.createElement('img');
     img.src = ThemeEngine.getMarkerIconUrl(MARKER_ICON_POWER_ARMOR);
 
-    const tag = createMarkerTag('Power Armor');
-
     container.appendChild(img);
-    container.appendChild(tag);
     questLayer.appendChild(container);
     mapState.animatedElements.push(container);
 }
@@ -365,11 +355,4 @@ function createMarkerContainer(type: MarkerType, displayName: string, pos: MapPo
     container.dataset.rawPctX = pos.x.toString();
     container.dataset.rawPctY = pos.y.toString();
     return container;
-}
-
-function createMarkerTag(text: string): HTMLSpanElement {
-    const tag = document.createElement('span');
-    tag.className = 'marker-nametag';
-    tag.textContent = text;
-    return tag;
 }

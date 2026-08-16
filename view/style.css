@@ -157,17 +157,11 @@ body, html {
     height: 100%;
 }
 
-#marker-layer {
-    z-index: 10;
-}
-
 #player-layer {
-    z-index: 14;
     pointer-events: none;
 }
 
 #quest-layer {
-    z-index: 15;
     pointer-events: none;
 }
 
@@ -179,6 +173,7 @@ body, html {
     width: 0;
     height: 0;
     will-change: transform;
+    transform: scale(var(--marker-scale, 1.0));
 }
 
 .marker-container img {
@@ -197,7 +192,16 @@ body, html {
 
 .marker-container.is-hovered,
 .marker-container.menu-active {
-    z-index: 100;
+    z-index: 100 !important;
+    transform: scale(calc(var(--marker-scale, 1.0) * 1.35));
+}
+
+.force-top {
+    z-index: 110 !important;
+}
+
+.marker-container[data-marker-type="location"] {
+    z-index: 10;
 }
 
 .marker-container[data-marker-type="location"] img {
@@ -216,7 +220,6 @@ body, html {
     left: 0;
     top: 0;
     transform: translate(-50%, -50%);
-    z-index: 15;
     pointer-events: auto;
     cursor: pointer;
 }
@@ -237,10 +240,21 @@ body, html {
     will-change: opacity;
 }
 
-
+.power-armor-marker {
+    z-index: 20;
+}
 
 .custom-marker {
-    z-index: 95;
+    z-index: 30;
+}
+
+.quest-marker {
+    z-index: 40;
+}
+
+#player-marker {
+    z-index: 50;
+    transform: translate(-50%, -50%) scale(var(--marker-scale, 1.0)) rotate(var(--player-angle, 0deg));
 }
 
 
@@ -248,32 +262,30 @@ body, html {
    4. NAMETAG TOOLTIPS
    ========================================================================== */
 
-.marker-nametag {
+#global-nametag {
     position: absolute;
-    left: 50%;
+    left: 0;
     transform: translate(-50%, 0);
-    zoom: var(--ui-scale, 1.0);
-    top: 14px;
     color: #ffffcb;
     font-family: 'PibotoCondensed', sans-serif;
-    font-size: 14px;
-    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+    font-size: 20px;
+    text-shadow: 1.5px 1.5px 0 rgba(0, 0, 0, 0.8);
     white-space: nowrap;
     pointer-events: none;
-    display: none !important;
-    opacity: 0 !important;
-    visibility: hidden !important;
-    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    will-change: opacity, transform;
+    backface-visibility: hidden;
+    zoom: var(--ui-scale, 1.0);
 }
 
-.marker-container.is-hovered:not(.hide-tooltip-override) .marker-nametag {
-    display: block !important;
-    opacity: 1 !important;
-    visibility: visible !important;
+#global-nametag.is-visible {
+    opacity: 1;
+    visibility: visible;
 }
 
-.marker-container.menu-active .marker-nametag {
-    display: none !important;
+.marker-container.menu-active ~ #global-nametag-container #global-nametag,
+.marker-container.hide-tooltip-override ~ #global-nametag-container #global-nametag {
     opacity: 0 !important;
     visibility: hidden !important;
 }

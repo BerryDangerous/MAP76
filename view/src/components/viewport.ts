@@ -8,6 +8,7 @@ import { FocusManager } from '../systems/focusManager.js';
 import { MarkerCard } from './markerCard.js';
 import { SettlementCard } from './settlementCard.js';
 import { CustomMarkerCard } from './customMarkerCard.js';
+import { activeHoveredMarker } from './markerInteraction.js';
 
 const viewport = document.getElementById('map-viewport') as HTMLElement;
 const container = document.getElementById('screen-container') as HTMLElement;
@@ -129,18 +130,22 @@ export const MapViewport = {
         viewport.style.transform = `translate(${mapState.panX}px, ${mapState.panY}px) scale(${mapState.zoom})`;
         
         const markerScale = Math.sqrt(mapState.zoom) / mapState.zoom;
-        
-        document.querySelectorAll('.marker-container').forEach((el) => {
-            const containerHtml = el as HTMLElement;
-            const isHovered = containerHtml.classList.contains('is-hovered');
-            const isMenuActive = containerHtml.classList.contains('menu-active');
-            const sizeMultiplier = (isHovered || isMenuActive) ? 1.35 : 1.0;
-            containerHtml.style.transform = `scale(${markerScale * sizeMultiplier})`;
-        });
+        viewport.style.setProperty('--marker-scale', markerScale.toString());
         
         const playerImg = document.getElementById('player-marker') as HTMLElement;
         if (playerImg && mapState.player.active) {
-            playerImg.style.transform = `translate(-50%, -50%) scale(${markerScale}) rotate(${mapState.player.angle}deg)`;
+            playerImg.style.setProperty('--marker-scale', markerScale.toString());
+            playerImg.style.setProperty('--player-angle', `${mapState.player.angle}deg`);
+        }
+
+        if (activeHoveredMarker) {
+            const img = activeHoveredMarker.querySelector('img');
+            const rect = img ? img.getBoundingClientRect() : activeHoveredMarker.getBoundingClientRect();
+            const container = document.getElementById('global-nametag-container');
+            if (container) {
+                container.style.left = `${rect.left + rect.width / 2}px`;
+                container.style.top = `${rect.bottom}px`;
+            }
         }
 
         FloatingCard.repositionAll();

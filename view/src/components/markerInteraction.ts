@@ -18,14 +18,146 @@ export let activeHoveredMarker: HTMLElement | null = null;
 let pendingFastTravel: { formId: number, name: string } | null = null;
 
 export const MarkerInteractionManager = {
+    lastX: 0,
+    lastY: 0,
+    accumulatedDistance: 0,
+    forceTopElement: null as HTMLElement | null,
+    isTicking: false,
+    lastEvent: null as MouseEvent | null,
+    currentCluster: new Set<HTMLElement>(),
+    clusterArray: [] as HTMLElement[],
+    cycleIndex: 0,
+
     initiateFastTravel(formId: number, name: string) {
         pendingFastTravel = { formId, name };
         EngineBridge.checkFastTravelConditions(formId);
     },
 
+    clearForceTop() {
+        if (this.forceTopElement) {
+            this.forceTopElement.classList.remove('force-top');
+            this.forceTopElement = null;
+        }
+    },
+
+    onMouseMove(e: MouseEvent) {
+        this.lastEvent = e;
+        if (!this.isTicking) {
+            window.requestAnimationFrame(() => {
+                this.processMouseMove();
+                this.isTicking = false;
+            });
+            this.isTicking = true;
+        }
+    },
+
+    processMouseMove() {
+        if (!this.lastEvent) return;
+        
+        const markers = this.getHoveredMarkers(this.lastEvent.clientX, this.lastEvent.clientY);
+
+        if (this.isHoveringSingleOrNoMarker(markers)) {
+            this.resetClusterState();
+            return;
+        }
+
+        const distanceMoved = this.calculateMouseMovement(this.lastEvent.clientX, this.lastEvent.clientY);
+        
+        this.updateLastMousePosition(this.lastEvent.clientX, this.lastEvent.clientY);
+
+        if (this.isMouseTeleported(distanceMoved)) {
+            this.accumulatedDistance = 0;
+            return;
+        }
+
+        this.accumulatedDistance += distanceMoved;
+
+        if (this.hasClusterChanged(markers)) {
+            this.initializeNewCluster(markers);
+        }
+
+        if (this.isCycleThresholdMet()) {
+            this.cycleToNextMarker();
+        }
+    },
+
+    getHoveredMarkers(clientX: number, clientY: number): HTMLElement[] {
+        return document.elementsFromPoint(clientX, clientY)
+            .map(el => el.closest('.marker-container') || (el.id === 'player-marker' ? el : null))
+            .filter((el, idx, arr) => el && arr.indexOf(el) === idx) as HTMLElement[];
+    },
+
+    isHoveringSingleOrNoMarker(markers: HTMLElement[]): boolean {
+        return markers.length < 2;
+    },
+
+    resetClusterState() {
+        this.accumulatedDistance = 0;
+        this.currentCluster.clear();
+        this.clusterArray = [];
+        this.clearForceTop();
+    },
+
+    calculateMouseMovement(clientX: number, clientY: number): number {
+        const dx = clientX - this.lastX;
+        const dy = clientY - this.lastY;
+        return Math.sqrt(dx * dx + dy * dy);
+    },
+
+    updateLastMousePosition(clientX: number, clientY: number) {
+        this.lastX = clientX;
+        this.lastY = clientY;
+    },
+
+    isMouseTeleported(distanceMoved: number): boolean {
+        return distanceMoved > 50;
+    },
+
+    hasClusterChanged(newMarkers: HTMLElement[]): boolean {
+        const newSet = new Set(newMarkers);
+        
+        if (newSet.size !== this.currentCluster.size) {
+            return true;
+        }
+        
+        for (const marker of newMarkers) {
+            if (!this.currentCluster.has(marker)) {
+                return true;
+            }
+        }
+        
+        return false;
+    },
+
+    initializeNewCluster(newMarkers: HTMLElement[]) {
+        this.currentCluster = new Set(newMarkers);
+        this.clusterArray = newMarkers;
+        this.cycleIndex = 0;
+        this.clearForceTop();
+    },
+
+    isCycleThresholdMet(): boolean {
+        const dynamicThreshold = window.innerHeight * 0.02;
+        return this.accumulatedDistance >= dynamicThreshold;
+    },
+
+    cycleToNextMarker() {
+        this.accumulatedDistance = 0;
+        this.cycleIndex = (this.cycleIndex + 1) % this.clusterArray.length;
+        
+        this.clearForceTop();
+        this.forceTopElement = this.clusterArray[this.cycleIndex];
+        
+        if (this.forceTopElement) {
+            this.forceTopElement.classList.add('force-top');
+        }
+    },
+
     initEvents() {
         const layerContainer = document.getElementById('screen-container');
         if (!layerContainer) return;
+
+        window.addEventListener('mousemove', this.onMouseMove.bind(this), { passive: true });
 
         layerContainer.addEventListener('mouseover', (e: MouseEvent) => {
             const target = (e.target as HTMLElement).closest('.marker-container') as HTMLElement;
@@ -33,6 +165,22 @@ export const MarkerInteractionManager = {
 
             activeHoveredMarker = target;
             target.classList.add('is-hovered');
+
+            const container = document.getElementById('global-nametag-container');
+            const globalTag = document.getElementById('global-nametag');
+            const img = target.querySelector('img');
+            
+            if (container && globalTag && target.dataset.displayName) {
+                const rect = img ? img.getBoundingClientRect() : target.getBoundingClientRect();
+                container.style.left = `${rect.left + rect.width / 2}px`;
+                container.style.top = `${rect.bottom}px`;
+                
+                globalTag.textContent = target.dataset.displayName;
+
+                if (!target.classList.contains('menu-active') && !target.classList.contains('hide-tooltip-override')) {
+                    globalTag.classList.add('is-visible');
+                }
+            }
 
             if (target.dataset.isRaiderOutpost === 'true') {
                 const formId = target.dataset.formId ? parseInt(target.dataset.formId) : null;
@@ -52,8 +200,6 @@ export const MarkerInteractionManager = {
                     });
                 }
             }
-
-            MapViewport.updateViewportTransform();
         });
 
         layerContainer.addEventListener('mouseout', (e: MouseEvent) => {
@@ -75,8 +221,12 @@ export const MarkerInteractionManager = {
             }
 
             target.classList.remove('is-hovered');
+            
+            const globalTag = document.getElementById('global-nametag');
+            if (globalTag) {
+                globalTag.classList.remove('is-visible');
+            }
 
-            MapViewport.updateViewportTransform();
             if (activeHoveredMarker === target) {
                 activeHoveredMarker = null;
             }
