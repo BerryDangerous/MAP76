@@ -232,7 +232,7 @@ export const SearchPanel = {
                         const isCompleted = QuestUtils.isQuestCompleted(selected.originalRef);
                         if (!isCompleted) {
                             controls.push('TOGGLE_ACTIVE');
-                            if (selected.originalRef.isTracked && QuestUtils.hasActiveTargets(selected.originalRef)) {
+                            if (QuestUtils.hasActiveTargets(selected.originalRef)) {
                                 controls.push({ action: 'CENTER_ITEM', label: 'CENTER OBJECTIVE' });
                             }
                         }

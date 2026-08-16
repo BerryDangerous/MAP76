@@ -130,10 +130,15 @@ export class KeybindsSystem {
         return `${primaryKey}) ${label}`;
     }
 
-    public static getControlHtml(action: KeyAction, overrideLabel?: string): string {
+    public static getControlHtml(action: KeyAction, overrideLabel?: string, isActive?: boolean): string {
         const label = overrideLabel || DEFAULT_LABELS[action] || action;
+        let labelHtml = `<b>${label}</b>`;
+        if (isActive) {
+            labelHtml = `<span style="text-decoration: underline;">${labelHtml}</span>`;
+        }
+
         if (action === 'PAN_MOUSE') {
-            return `Mouse) <b>${label}</b>`;
+            return `Mouse) ${labelHtml}`;
         }
         
         const keys = this.keymap[action];
@@ -149,6 +154,6 @@ export class KeybindsSystem {
         else if (primaryKey === 'ArrowRight') primaryKey = 'RIGHT';
         else primaryKey = primaryKey.toUpperCase();
         
-        return `${primaryKey}) <b>${label}</b>`;
+        return `${primaryKey}) ${labelHtml}`;
     }
 }

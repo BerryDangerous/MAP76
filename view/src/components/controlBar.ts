@@ -3,7 +3,7 @@ import { KeybindsSystem, KeyAction } from '../systems/keybinds.js';
 import { appSettings } from '../core/settings.js';
 import { SearchPanel } from './searchPanel.js';
 import { QuestList } from './questList.js';
-import { hasSupplyLines } from './supplyLines.js';
+import { hasSupplyLines, isSupplyLinesViewActive } from './supplyLines.js';
 
 export class ControlBar {
     private static container: HTMLElement | null = null;
@@ -63,11 +63,22 @@ export class ControlBar {
         });
 
         const text = filteredActions.map(actionDef => {
+            let actionId: KeyAction;
+            let label: string | undefined;
             if (typeof actionDef === 'string') {
-                return KeybindsSystem.getControlHtml(actionDef);
+                actionId = actionDef as KeyAction;
             } else {
-                return KeybindsSystem.getControlHtml(actionDef.action, actionDef.label);
+                actionId = actionDef.action;
+                label = actionDef.label;
             }
+
+            let html = KeybindsSystem.getControlHtml(
+                actionId, 
+                label, 
+                actionId === 'TOGGLE_SUPPLY_LINES' && isSupplyLinesViewActive()
+            );
+
+            return html;
         }).join('    ');
 
         this.container.innerHTML = text;

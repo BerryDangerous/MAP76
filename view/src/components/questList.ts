@@ -212,7 +212,7 @@ export const QuestList = {
                     const isCompleted = QuestUtils.isQuestCompleted(selected);
                     if (!isCompleted) {
                         controls.push('TOGGLE_ACTIVE');
-                        if (selected.isTracked && QuestUtils.hasActiveTargets(selected)) {
+                        if (QuestUtils.hasActiveTargets(selected)) {
                             controls.push({ action: 'CENTER_ITEM', label: 'CENTER OBJECTIVE' });
                         }
                     }
