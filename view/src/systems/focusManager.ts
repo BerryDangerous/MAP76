@@ -58,6 +58,12 @@ class FocusManagerSystem {
             newComponent.onFocusGained();
         }
 
+        if (id === 'MAP') {
+            document.body.classList.remove('has-active-focus');
+        } else {
+            document.body.classList.add('has-active-focus');
+        }
+
         this.listeners.forEach(listener => listener(id, prevFocus));
 
         console.log(`[FocusManager] Focus shifted to: ${id}`);

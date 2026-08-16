@@ -1117,6 +1117,15 @@ body, html {
     opacity: 1;
 }
 
+body.has-active-focus .collapsible-panel:not(.focused) .cp-collapse-btn {
+    opacity: 0.4;
+    transition: opacity 0.15s ease;
+}
+
+body.has-active-focus .collapsible-panel:not(.focused) .cp-collapse-btn:hover {
+    opacity: 1;
+}
+
 
 /* ==========================================================================
    SETTINGS MENU

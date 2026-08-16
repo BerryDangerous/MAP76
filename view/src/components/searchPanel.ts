@@ -111,6 +111,9 @@ const listController = new SelectableListController<SearchResult>({
     onItemHover: (result, index) => {
         if ((SearchPanel as any)._ignoreHover) return;
         if (!searchPanelState.isCollapsed) {
+            if (searchBox && searchBox.isFocused()) {
+                searchBox.blur();
+            }
             if (index !== -1 && listController.getSelectedIndex() !== index) {
                 listController.setSelectedIndex(index, true, false);
             }
@@ -176,7 +179,9 @@ export const SearchPanel = {
         this.closeCards();
         MapViewport.clearSavedViewport(appSettings.resetViewportOnPanelCollapse);
         
-        FocusManager.setFocus('MAP');
+        if (FocusManager.getFocus() === 'SEARCH_PANEL') {
+            FocusManager.setFocus('MAP');
+        }
         this.render();
     },
 
@@ -440,7 +445,7 @@ export const SearchPanel = {
                <span class="cp-btn-icon"></span>
             </div>
           </div>
-          <div class="sp-search-bar-container tb-sub-header" style="padding: 0 8px; justify-content: stretch;">
+          <div class="sp-search-bar-container tb-sub-header" style="padding: 0 8px 8px 8px; justify-content: stretch; height: 38px;">
           </div>
           <div class="sl-body">
              <div class="sl-items-list"></div>
@@ -622,7 +627,20 @@ export const SearchPanel = {
             subtitleHtml = `<div class="sl-item-subtitle" style="font-size: 0.8em; opacity: 0.8;">${StringUtils.escapeHtml(wsString)}</div>`;
         }
 
-        const iconUrl = ThemeEngine.getMarkerIconUrl(result.iconType || 0, true, result.customIcon);
+        let iconUrl = ThemeEngine.getMarkerIconUrl(result.iconType || 0, true, result.customIcon);
+        
+        if (result.type === 'quest') {
+            const q = result.originalRef;
+            let isDoor = false;
+            if (q.objectives) {
+                const activeObj = q.objectives.find((o: any) => o.state === 1) || q.objectives[0];
+                if (activeObj && activeObj.targets && activeObj.targets.length > 0) {
+                    isDoor = activeObj.targets[0].isDoor;
+                }
+            }
+            iconUrl = ThemeEngine.getQuestMarkerIconUrl(isDoor, q.isTracked);
+        }
+
         const badgesHtml = result.badgesHtml || '';
 
         return `

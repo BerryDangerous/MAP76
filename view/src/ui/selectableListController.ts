@@ -134,7 +134,17 @@ export class SelectableListController<T> {
         };
 
         const listEl = container.querySelector('.sl-items-list') as HTMLElement || container;
-        listEl.onmouseover = (e: MouseEvent) => {
+        
+        let lastMouseX = -1;
+        let lastMouseY = -1;
+
+        listEl.onmousemove = (e: MouseEvent) => {
+            if (lastMouseX === e.clientX && lastMouseY === e.clientY) {
+                return;
+            }
+            lastMouseX = e.clientX;
+            lastMouseY = e.clientY;
+
             const target = e.target as HTMLElement;
             const itemEl = target.closest(selector) as HTMLElement;
             if (itemEl && this.options.onItemHover) {
