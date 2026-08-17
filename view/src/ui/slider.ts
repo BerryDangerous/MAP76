@@ -1,4 +1,5 @@
 import { SettingsControl } from './settingsRow.js';
+import { EngineBridge } from '../core/bridge.js';
 
 export class Slider implements SettingsControl {
     private container: HTMLElement;
@@ -94,12 +95,20 @@ export class Slider implements SettingsControl {
         this.track.addEventListener('mousedown', (e) => {
             e.stopPropagation();
             this.isDragging = true;
-            this.setValue(calculateValueFromEvent(e), false);
+            const newVal = calculateValueFromEvent(e);
+            if (newVal !== this.value) {
+                EngineBridge.emitSound('UIMenuQuantity');
+            }
+            this.setValue(newVal, false);
         });
 
         window.addEventListener('mousemove', (e) => {
             if (!this.isDragging) return;
-            this.setValue(calculateValueFromEvent(e), false);
+            const newVal = calculateValueFromEvent(e);
+            if (newVal !== this.value) {
+                EngineBridge.emitSound('UIMenuQuantity');
+                this.setValue(newVal, false);
+            }
         });
 
         window.addEventListener('mouseup', () => {
@@ -111,10 +120,12 @@ export class Slider implements SettingsControl {
     }
 
     private decrease() {
+        EngineBridge.emitSound('UIMenuQuantity');
         this.setValue(this.value - this.step, true);
     }
 
     private increase() {
+        EngineBridge.emitSound('UIMenuQuantity');
         this.setValue(this.value + this.step, true);
     }
 

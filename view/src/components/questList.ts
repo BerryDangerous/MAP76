@@ -4,7 +4,7 @@ import { FocusManager } from '../systems/focusManager.js';
 import { MapViewport } from './viewport.js';
 import { appSettings } from '../core/settings.js';
 import { QuestCard } from './questCard.js';
-import { toggleQuestActive } from '../core/bridge.js';
+import { toggleQuestActive, EngineBridge } from '../core/bridge.js';
 import { SelectableListController } from '../ui/selectableListController.js';
 import { TabBar } from '../ui/tabBar.js';
 import { CollapsiblePanel } from '../ui/collapsiblePanel.js';
@@ -92,6 +92,7 @@ const listController = new SelectableListController<QuestItem>({
         if ((QuestList as any)._ignoreHover) return;
         if (questListState.isCollapsed) {
             if (questListState.hoverIndex !== index) {
+                if (index !== -1) EngineBridge.emitSound('UIGeneralFocus');
                 questListState.hoverIndex = index;
                 QuestList.updateSelection();
             }
@@ -266,6 +267,7 @@ export const QuestList = {
 
         if (KeybindsSystem.isAction(e, 'NAV_RIGHT')) {
             FocusManager.setFocus('QUEST_CARD');
+            EngineBridge.emitSound('UIGeneralFocus');
             return true;
         }
 
@@ -303,6 +305,7 @@ export const QuestList = {
         if (KeybindsSystem.isAction(e, 'CENTER_ITEM')) {
             const selected = listController.getSelectedItem();
             if (selected && !QuestUtils.isQuestCompleted(selected)) {
+                EngineBridge.emitSound('UIPipBoyMapZoom');
                 QuestCard.open(selected, undefined, undefined, questListState.dockCorner, false, 'QUEST_LIST', () => QuestList.collapse());
                 const firstTarget = selected.objectives?.find(o => o.targets && o.targets.length > 0)?.targets[0];
                 if (firstTarget) {
@@ -330,6 +333,7 @@ export const QuestList = {
 
     toggleQuestActive(quest: QuestItem): void {
         quest.isTracked = !quest.isTracked;
+        EngineBridge.emitSound(quest.isTracked ? 'UIPipBoyQuestActive' : 'UIPipBoyQuestInactive');
         if (quest.formId !== undefined) {
             toggleQuestActive(quest.formId);
         }

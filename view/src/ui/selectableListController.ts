@@ -8,6 +8,8 @@ export interface ListNavigationOptions<T> {
     itemSelector?: string;
 }
 
+import { EngineBridge } from '../core/bridge.js';
+
 export class SelectableListController<T> {
     private selectedId: string | number | null = null;
     private selectedIndex: number = 0;
@@ -45,7 +47,11 @@ export class SelectableListController<T> {
             return;
         }
 
-        this.selectedIndex = Math.max(0, Math.min(items.length - 1, index));
+        const newIndex = Math.max(0, Math.min(items.length - 1, index));
+        if (newIndex !== this.selectedIndex && newIndex !== -1) {
+            EngineBridge.emitSound('UIGeneralFocus');
+        }
+        this.selectedIndex = newIndex;
         const selected = items[this.selectedIndex];
         this.selectedId = this.options.getItemId(selected);
 

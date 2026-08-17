@@ -6,6 +6,7 @@ import { Slider } from '../ui/slider.js';
 import { MultiChoice } from '../ui/multiChoice.js';
 import { SettingsRow, SettingsControl } from '../ui/settingsRow.js';
 import { showConfirmationModal } from './appModals.js';
+import { EngineBridge } from '../core/bridge.js';
 
 interface SettingControlEntry {
     key: keyof AppSettings;
@@ -90,6 +91,9 @@ export const SettingsMenu = {
         const resetViewportToggle = new Toggle(appSettings.resetViewportOnPanelCollapse, (val) => { updateSettings({ resetViewportOnPanelCollapse: val }); });
         registerControl('resetViewportOnPanelCollapse', 'Restore Map Position When Panel is Closed', 'DISPLAY', resetViewportToggle);
 
+        const altSoundToggle = new Toggle(appSettings.alternativeMapSound, (val) => { updateSettings({ alternativeMapSound: val }); });
+        registerControl('alternativeMapSound', 'Alternative Map Change Sound', 'DISPLAY', altSoundToggle);
+
         const dummySlider = new Slider(50, 0, 100, 1, () => { /* dummy */ });
         registerControl('dummySlider' as any, 'Dummy Slider', 'DISPLAY', dummySlider);
 
@@ -168,6 +172,7 @@ export const SettingsMenu = {
             });
 
             tabEl.addEventListener('focus', () => {
+                EngineBridge.emitSound('UIGeneralFocus');
                 this.switchTab(tabName);
             });
 

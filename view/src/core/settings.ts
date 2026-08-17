@@ -4,6 +4,7 @@ export interface AppSettings {
     resetViewportOnPanelCollapse: boolean;
     freezeSimulation: boolean;
     confirmFastTravel: boolean;
+    alternativeMapSound: boolean;
 }
 
 export const defaultSettings: AppSettings = {
@@ -12,6 +13,7 @@ export const defaultSettings: AppSettings = {
     resetViewportOnPanelCollapse: false,
     freezeSimulation: true,
     confirmFastTravel: false,
+    alternativeMapSound: false,
 };
 
 export function getDefaultSettings(): AppSettings {

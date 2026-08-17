@@ -1,4 +1,5 @@
 import { KeybindsSystem } from '../systems/keybinds.js';
+import { EngineBridge } from '../core/bridge.js';
 
 export interface TabItem<T = string> {
     id: T;
@@ -41,6 +42,7 @@ export class TabBar<T = string> {
     public nextTab(): void {
         const currentIndex = this.options.tabs.findIndex(t => t.id === this.options.activeTabId);
         if (currentIndex < this.options.tabs.length - 1) {
+            EngineBridge.emitSound('UIPipBoyRotaryVerticalUp');
             this.setActiveTab(this.options.tabs[currentIndex + 1].id);
         }
     }
@@ -48,6 +50,7 @@ export class TabBar<T = string> {
     public prevTab(): void {
         const currentIndex = this.options.tabs.findIndex(t => t.id === this.options.activeTabId);
         if (currentIndex > 0) {
+            EngineBridge.emitSound('UIPipBoyRotaryVerticalDown');
             this.setActiveTab(this.options.tabs[currentIndex - 1].id);
         }
     }

@@ -13,6 +13,7 @@ import { MarkerCard } from './markerCard.js';
 import { ThemeEngine } from '../systems/theme.js';
 import { StringUtils } from '../utils/stringUtils.js';
 import { WorldspaceUtils } from '../utils/worldspaceUtils.js';
+import { EngineBridge } from '../core/bridge.js';
 
 export interface WorkshopListState {
     isCollapsed: boolean;
@@ -86,6 +87,7 @@ const listController = new SelectableListController<SettlementDataWithRatings>({
         if ((WorkshopList as any)._ignoreHover) return;
         if (workshopListState.isCollapsed) {
             if (workshopListState.hoverIndex !== index) {
+                if (index !== -1) EngineBridge.emitSound('UIGeneralFocus');
                 workshopListState.hoverIndex = index;
                 WorkshopList.updateSelection();
             }
@@ -230,8 +232,10 @@ export const WorkshopList = {
         if (KeybindsSystem.isAction(e, 'NAV_RIGHT')) {
             if (SettlementCard.isOpen()) {
                 FocusManager.setFocus('SETTLEMENT_CARD');
+                EngineBridge.emitSound('UIGeneralFocus');
             } else if (MarkerCard.isOpen()) {
                 FocusManager.setFocus('MARKER_CARD');
+                EngineBridge.emitSound('UIGeneralFocus');
             }
             return true;
         }
@@ -260,6 +264,7 @@ export const WorkshopList = {
         if (KeybindsSystem.isAction(e, 'CENTER_ITEM')) {
             const selected = listController.getSelectedItem();
             if (selected && selected.markerFormId !== undefined) {
+                EngineBridge.emitSound('UIPipBoyMapZoom');
                 const marker = mapState.lastPayload?.markers?.find(m => m.formId === selected.markerFormId);
                 if (marker) {
                     const worldspaceID = mapState.activeMapConfig?.worldspaceID ?? 0;

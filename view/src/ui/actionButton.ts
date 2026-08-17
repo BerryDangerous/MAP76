@@ -1,4 +1,5 @@
 import { Button, ButtonConfig } from './button.js';
+import { EngineBridge } from '../core/bridge.js';
 
 export type ActionButtonConfig = ButtonConfig;
 
@@ -78,6 +79,7 @@ export class ActionButtonGroup {
     public triggerSelected(): void {
         const current = this.configs[this.selectedIndex];
         if (current && current.enabled !== false) {
+            EngineBridge.emitSound('UIMenuOK');
             current.action();
         }
     }

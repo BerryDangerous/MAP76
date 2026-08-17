@@ -1,4 +1,5 @@
 import { DockControlsSystem, DockCorner } from '../systems/dockControls.js';
+import { EngineBridge } from '../core/bridge.js';
 
 export interface CollapsiblePanelOptions {
     panelElement: HTMLElement;
@@ -41,6 +42,13 @@ export class CollapsiblePanel {
     public setCollapsed(collapsed: boolean): void {
         if (this.isCollapsed === collapsed) return;
         this.isCollapsed = collapsed;
+        
+        if (!collapsed) {
+            EngineBridge.emitSound('UIMenuOK');
+        } else {
+            EngineBridge.emitSound('UIMenuCancel');
+        }
+
         this.options.panelElement.setAttribute('data-collapsed', String(this.isCollapsed));
         this.updateGlyph();
 

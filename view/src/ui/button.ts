@@ -1,3 +1,5 @@
+import { EngineBridge } from '../core/bridge.js';
+
 export interface ButtonConfig {
     id?: string;
     label: string;
@@ -33,6 +35,7 @@ export class Button {
 
         this.container.addEventListener('click', (e) => {
             if (this.config.enabled !== false) {
+                EngineBridge.emitSound('UIMenuOK');
                 this.config.action();
             }
         });
@@ -40,6 +43,12 @@ export class Button {
         this.container.addEventListener('mouseenter', () => {
             if (this.config.enabled !== false) {
                 this.container.focus();
+            }
+        });
+
+        this.container.addEventListener('focus', () => {
+            if (this.config.enabled !== false) {
+                EngineBridge.emitSound('UIGeneralFocus');
             }
         });
     }

@@ -1,3 +1,5 @@
+import { EngineBridge } from '../core/bridge.js';
+
 export interface SettingsControl {
     getElement(): HTMLElement;
     setValue(val: any): void;
@@ -19,6 +21,10 @@ export class SettingsRow {
 
         this.container.addEventListener('mouseenter', () => {
             this.container.focus();
+        });
+
+        this.container.addEventListener('focus', () => {
+            EngineBridge.emitSound('UIGeneralFocus');
         });
 
         this.container.addEventListener('keydown', (e) => {

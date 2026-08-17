@@ -1,4 +1,5 @@
 import { SettingsControl } from './settingsRow.js';
+import { EngineBridge } from '../core/bridge.js';
 
 export class Toggle implements SettingsControl {
     private container: HTMLElement;
@@ -58,6 +59,7 @@ export class Toggle implements SettingsControl {
     }
 
     private toggle() {
+        EngineBridge.emitSound('UIMenuOK');
         this.value = !this.value;
         this.updateValueText();
         this.onChange(this.value);

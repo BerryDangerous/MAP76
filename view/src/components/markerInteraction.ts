@@ -163,6 +163,7 @@ export const MarkerInteractionManager = {
             const target = (e.target as HTMLElement).closest('.marker-container') as HTMLElement;
             if (!target || target.id === 'player-marker') return;
 
+            EngineBridge.emitSound('UIPipBoyMapRollover');
             activeHoveredMarker = target;
             target.classList.add('is-hovered');
 
@@ -245,6 +246,7 @@ export const MarkerInteractionManager = {
                     if (matchingQuest) {
                         QuestCard.open(matchingQuest, target);
                         FocusManager.setFocus('QUEST_CARD');
+                        EngineBridge.emitSound('UIGeneralFocus');
                     }
                     return;
                 }
@@ -253,6 +255,7 @@ export const MarkerInteractionManager = {
                     e.stopPropagation();
                     CustomMarkerCard.openForExisting(target);
                     FocusManager.setFocus('CUSTOM_MARKER_CARD');
+                    EngineBridge.emitSound('UIGeneralFocus');
                     return;
                 }
 
@@ -271,10 +274,12 @@ export const MarkerInteractionManager = {
                 if (ownedSettlement) {
                     renderSettlementCardContent(document.body, ownedSettlement, selectedFormId!, canTravel, target);
                     FocusManager.setFocus('SETTLEMENT_CARD');
+                    EngineBridge.emitSound('UIGeneralFocus');
                     return;
                 } else if (canTravel) {
                     MarkerCard.open(target.dataset.displayName || '', selectedFormId!, canTravel, target);
                     FocusManager.setFocus('MARKER_CARD');
+                    EngineBridge.emitSound('UIGeneralFocus');
                 }
             } else {
                 if (mapState.wasDragged) return;

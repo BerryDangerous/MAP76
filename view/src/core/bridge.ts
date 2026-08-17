@@ -7,9 +7,16 @@ export const EngineBridge = {
             window.requestClose();
         }
     },
+    _lastSounds: {} as Record<string, number>,
     emitSound(soundDescriptor: string) {
         if (typeof window.triggerEngineSound === 'function') {
-            window.triggerEngineSound(soundDescriptor);
+            const now = Date.now();
+            if (this._lastSounds[soundDescriptor] && now - this._lastSounds[soundDescriptor] < 50) {
+                return;
+            }
+            this._lastSounds[soundDescriptor] = now;
+            const payload = JSON.stringify({ soundName: soundDescriptor });
+            window.triggerEngineSound(payload);
         }
     },
     requestFastTravel(formId: number) {

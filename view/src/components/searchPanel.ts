@@ -20,6 +20,7 @@ import { StringUtils } from '../utils/stringUtils.js';
 import { QuestUtils } from '../utils/questUtils.js';
 import { mapState } from '../core/state.js';
 import { ThemeEngine } from '../systems/theme.js';
+import { EngineBridge } from '../core/bridge.js';
 
 export interface SearchPanelState {
     isCollapsed: boolean;
@@ -299,6 +300,7 @@ export const SearchPanel = {
             if (KeybindsSystem.isAction(e, 'NAV_DOWN')) {
                 if (results.length > 0) {
                     searchBox?.blur();
+                    EngineBridge.emitSound('UIGeneralFocus');
                     listController.setSelectedIndex(0, true, true);
                 }
                 return true;
@@ -306,6 +308,7 @@ export const SearchPanel = {
             if (KeybindsSystem.isAction(e, 'NAV_BACK')) {
                 e.preventDefault();
                 searchBox?.blur();
+                EngineBridge.emitSound('UIMenuCancel');
                 return true;
             }
             return true;
@@ -339,6 +342,7 @@ export const SearchPanel = {
                 if (listController.getSelectedIndex() <= 0) {
                     if (searchBox) {
                         searchBox.focus();
+                        EngineBridge.emitSound('UIGeneralFocus');
                         const el = searchBox.getInputElement();
                         const len = el.value.length;
                         el.setSelectionRange(len, len);
@@ -349,6 +353,7 @@ export const SearchPanel = {
             } else {
                 if (searchBox) {
                     searchBox.focus();
+                    EngineBridge.emitSound('UIGeneralFocus');
                     const el = searchBox.getInputElement();
                     const len = el.value.length;
                     el.setSelectionRange(len, len);
@@ -375,6 +380,7 @@ export const SearchPanel = {
         if (KeybindsSystem.isAction(e, 'CENTER_ITEM')) {
             const selected = listController.getSelectedItem();
             if (selected) {
+                EngineBridge.emitSound('UIPipBoyMapZoom');
                 if (selected.markerCoords) {
                     let targetX = selected.markerCoords.x;
                     let targetY = selected.markerCoords.y;

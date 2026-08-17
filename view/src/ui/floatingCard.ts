@@ -3,6 +3,7 @@ import { AnchorPositioner } from '../systems/anchorPositioner.js';
 import { DockControlsSystem, DockCorner } from '../systems/dockControls.js';
 import { FocusManager } from '../systems/focusManager.js';
 import { KeybindsSystem } from '../systems/keybinds.js';
+import { EngineBridge } from '../core/bridge.js';
 
 export interface FloatingCardOptions {
     id: string;
@@ -115,6 +116,7 @@ export class FloatingCard {
             (!isRightDocked && (KeybindsSystem.isAction(e, 'NAV_LEFT') || e.key === 'ArrowLeft'))) {
             if (returnFocusId) {
                 FocusManager.setFocus(returnFocusId);
+                EngineBridge.emitSound('UIGeneralFocus');
                 return true;
             }
         }

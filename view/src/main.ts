@@ -3,6 +3,7 @@ import { initializeF4SEBindings, EngineBridge } from './core/bridge.js';
 import { ThemeEngine } from './systems/theme.js';
 import { AnimationEngine } from './systems/animation.js';
 import { MapViewport } from './components/viewport.js';
+import { appSettings } from './core/settings.js';
 import { loadMarkers, applySupplyLinesVisibilityFilter, switchWorldspace } from './components/markers.js';
 import { MarkerInteractionManager } from './components/markerInteraction.js';
 import { toggleSupplyLinesView, setSupplyLinesViewActive, hasSupplyLines } from './components/supplyLines.js';
@@ -29,6 +30,23 @@ ThemeEngine.initMapConfig();
 if (navigator.userAgent.includes('Ultralight')) {
     document.body.classList.add('is-ultralight');
 }
+
+let mapClosedFlag = true;
+
+export function onMapOpened(): void {
+    if (!mapClosedFlag) return;
+    mapClosedFlag = false;
+    EngineBridge.emitSound(appSettings.alternativeMapSound ? 'UIGeneralFocus' : 'UIPerkMenuEnter');
+}
+
+export function onMapClosed(): void {
+    if (mapClosedFlag) return;
+    mapClosedFlag = true;
+    EngineBridge.emitSound(appSettings.alternativeMapSound ? 'UIGeneralFocus' : 'UIPerkMenuExit');
+}
+
+(window as any).onMapOpened = onMapOpened;
+(window as any).onMapClosed = onMapClosed;
 
 export function resetUIState(): void {
     setSupplyLinesViewActive(false);
@@ -129,6 +147,7 @@ window.addEventListener('DOMContentLoaded', () => {
         if (KeybindsSystem.isAction(e, 'CLOSE_MAP') && FocusManager.getFocus() === 'MAP') {
             console.log('Closing map via CLOSE_MAP action...');
             resetUIState();
+            onMapClosed();
             EngineBridge.closeMap();
             return;
         }
@@ -147,6 +166,7 @@ window.addEventListener('DOMContentLoaded', () => {
             console.log('[KeyHandler] Focus is MAP. Closing map via NAV_BACK');
             e.stopPropagation();
             resetUIState();
+            onMapClosed();
             EngineBridge.closeMap();
             return;
         }
@@ -158,15 +178,18 @@ window.addEventListener('DOMContentLoaded', () => {
 
         if (FocusManager.getFocus() === 'MAP') {
             if (KeybindsSystem.isAction(e, 'ZOOM_IN')) {
+                EngineBridge.emitSound('UIPipBoyMapZoom');
                 MapViewport.performZoom('in', MapViewport.lastMouseX, MapViewport.lastMouseY);
                 return;
             }
             if (KeybindsSystem.isAction(e, 'ZOOM_OUT')) {
+                EngineBridge.emitSound('UIPipBoyMapZoom');
                 MapViewport.performZoom('out', MapViewport.lastMouseX, MapViewport.lastMouseY);
                 return;
             }
             if (KeybindsSystem.isAction(e, 'CENTER_CAMERA')) {
                 e.preventDefault();
+                EngineBridge.emitSound('UIPipBoyMapZoom');
                 if (mapState.player) {
                     if (mapState.activeMapConfig) {
                         mapState.worldViewports[mapState.activeMapConfig.worldspaceID] = {
@@ -229,6 +252,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 } else {
                     nextIdx = currentIdx < wsKeys.length - 1 ? currentIdx + 1 : 0;
                 }
+                EngineBridge.emitSound(appSettings.alternativeMapSound ? 'UIGeneralFocus' : 'UIPerkMenuEnter');
                 switchWorldspace(wsKeys[nextIdx]);
                 return;
             }
@@ -268,6 +292,7 @@ window.addEventListener('DOMContentLoaded', () => {
             e.stopPropagation();
             console.log('Closing map via Escape keyup...');
             resetUIState();
+            onMapClosed();
             EngineBridge.closeMap();
             return;
         }

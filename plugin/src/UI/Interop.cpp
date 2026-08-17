@@ -8,6 +8,7 @@
 #include "UI/Settings.h"
 #include <thread>
 #include <chrono>
+#include "RE/U/UIUtils.h"
 
 namespace PaperMap::UI
 {
@@ -228,6 +229,29 @@ namespace PaperMap::UI
                 REX::ERROR("Error processing makeOnlyQuestActive callback: {}", e.what());
             }
         }
+
+        void HandleTriggerEngineSound(const char *arg)
+        {
+            try
+            {
+                if (!arg) return;
+                auto parsedJson = nlohmann::json::parse(arg);
+                if (parsedJson.contains("soundName") && parsedJson["soundName"].is_string())
+                {
+                    std::string soundName = parsedJson["soundName"].get<std::string>();
+                    if (auto *task = F4SE::GetTaskInterface())
+                    {
+                        task->AddTask([soundName]() {
+                            RE::UIUtils::PlayMenuSound(soundName.c_str());
+                        });
+                    }
+                }
+            }
+            catch (const std::exception &e)
+            {
+                REX::ERROR("Error processing triggerEngineSound callback: {}", e.what());
+            }
+        }
     }
 }
 
@@ -269,6 +293,7 @@ namespace PaperMap::UI
         State::g_api->BindUIEvent(view, "makeOnlyQuestActive", HandleMakeOnlyQuestActive);
         State::g_api->BindUIEvent(view, "requestSettings", HandleRequestSettings);
         State::g_api->BindUIEvent(view, "saveSettings", HandleSaveSettings);
+        State::g_api->BindUIEvent(view, "triggerEngineSound", HandleTriggerEngineSound);
 
         std::string settingsJson = Settings::Get().dump();
         State::g_api->InteropCall(view, "loadSettings", settingsJson.c_str());
@@ -347,7 +372,7 @@ namespace PaperMap::UI
             }
             State::g_api->Show(State::g_view);
             State::g_api->Focus(State::g_view, true);
-            State::g_api->Invoke(State::g_view, "if (window.resetUIState) { window.resetUIState(); } if (window.requestFreshMapData) { window.requestFreshMapData(''); }");
+            State::g_api->Invoke(State::g_view, "if (window.onMapOpened) { window.onMapOpened(); } if (window.resetUIState) { window.resetUIState(); } if (window.requestFreshMapData) { window.requestFreshMapData(''); }");
         }
         else
         {
@@ -358,7 +383,7 @@ namespace PaperMap::UI
                     mainLoop->freezeTime = false;
                 }
             }
-            State::g_api->Invoke(State::g_view, "if (window.resetUIState) { window.resetUIState(); }");
+            State::g_api->Invoke(State::g_view, "if (window.onMapClosed) { window.onMapClosed(); } if (window.resetUIState) { window.resetUIState(); }");
             State::g_api->Unfocus(State::g_view);
             State::g_api->Hide(State::g_view);
         }

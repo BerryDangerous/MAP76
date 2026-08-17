@@ -1,3 +1,5 @@
+import { EngineBridge } from '../core/bridge.js';
+
 export interface SearchBoxOptions {
     container: HTMLElement;
     placeholder?: string;
@@ -63,6 +65,7 @@ export class SearchBox {
                 e.preventDefault();
                 e.stopPropagation();
             } else if (e.key === 'Enter' || e.key === ' ' || e.key.toLowerCase() === 'e') {
+                EngineBridge.emitSound('UIMenuCancel');
                 this.clear();
                 this.inputEl.focus();
                 e.preventDefault();
@@ -72,8 +75,17 @@ export class SearchBox {
 
         this.clearBtnEl.addEventListener('click', (e: MouseEvent) => {
             e.stopPropagation();
+            EngineBridge.emitSound('UIMenuCancel');
             this.clear();
             this.inputEl.focus();
+        });
+
+        this.clearBtnEl.addEventListener('mouseenter', () => {
+            this.clearBtnEl.focus();
+        });
+
+        this.clearBtnEl.addEventListener('focus', () => {
+            EngineBridge.emitSound('UIGeneralFocus');
         });
 
         this.wrapperEl.addEventListener('focusin', (e: FocusEvent) => {

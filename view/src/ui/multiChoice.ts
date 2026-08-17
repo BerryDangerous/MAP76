@@ -1,4 +1,5 @@
 import { SettingsControl } from './settingsRow.js';
+import { EngineBridge } from '../core/bridge.js';
 
 export class MultiChoice<T> implements SettingsControl {
     private container: HTMLElement;
@@ -70,6 +71,7 @@ export class MultiChoice<T> implements SettingsControl {
 
     private prev() {
         if (this.currentIndex > 0) {
+            EngineBridge.emitSound('UIMenuOK');
             this.currentIndex--;
             this.updateValueText();
             this.onChange(this.options[this.currentIndex].value);
@@ -78,6 +80,7 @@ export class MultiChoice<T> implements SettingsControl {
 
     private next() {
         if (this.currentIndex < this.options.length - 1) {
+            EngineBridge.emitSound('UIMenuOK');
             this.currentIndex++;
             this.updateValueText();
             this.onChange(this.options[this.currentIndex].value);
