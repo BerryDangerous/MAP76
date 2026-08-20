@@ -55,20 +55,21 @@ namespace PaperMap::Engine::QuestManager
         }
 
         /**
-         * @brief Extracts the numerical objective state (Dormant, Active, Completed, Failed)
-         *        from a Pip-Boy objective UI object.
+         * @brief Extracts the numerical objective state from a native engine objective state enum.
          */
-        uint32_t ResolveObjectiveState(RE::PipboyObject *a_objUiObj)
+        uint32_t ResolveObjectiveState(uint32_t a_engineState)
         {
-            if (GetPipboyBool(a_objUiObj, "completed", false))
+            if (a_engineState == static_cast<uint32_t>(RE::QUEST_OBJECTIVE_STATE::kCompleted) || 
+                a_engineState == static_cast<uint32_t>(RE::QUEST_OBJECTIVE_STATE::kCompletedDisplayed))
             {
                 return ObjectiveState::COMPLETED;
             }
-            if (GetPipboyBool(a_objUiObj, "failed", false))
+            if (a_engineState == static_cast<uint32_t>(RE::QUEST_OBJECTIVE_STATE::kFailed) || 
+                a_engineState == static_cast<uint32_t>(RE::QUEST_OBJECTIVE_STATE::kFailedDisplayed))
             {
                 return ObjectiveState::FAILED;
             }
-            if (GetPipboyBool(a_objUiObj, "enabled", false))
+            if (a_engineState == static_cast<uint32_t>(RE::QUEST_OBJECTIVE_STATE::kDisplayed))
             {
                 return ObjectiveState::ACTIVE;
             }
@@ -167,7 +168,7 @@ namespace PaperMap::Engine::QuestManager
             RE::BGSQuestInstanceText::ParseString(&parsedText, a_questForm, a_questForm->currentInstanceID);
             objNode.text = parsedText.c_str() ? parsedText.c_str() : "";
 
-            objNode.state = static_cast<uint32_t>(a_objective->state);
+            objNode.state = ResolveObjectiveState(static_cast<uint32_t>(a_objective->state));
 
             if (objNode.state == ObjectiveState::ACTIVE && a_objective->numTargets > 0 && a_objective->targets)
             {
