@@ -6,6 +6,7 @@ export interface AppSettings {
     confirmFastTravel: boolean;
     alternativeMapSound: boolean;
     limitQuestPanelHeight: boolean;
+    hideInactiveQuestMarkers: boolean;
 }
 
 export const defaultSettings: AppSettings = {
@@ -16,6 +17,7 @@ export const defaultSettings: AppSettings = {
     confirmFastTravel: false,
     alternativeMapSound: false,
     limitQuestPanelHeight: false,
+    hideInactiveQuestMarkers: false,
 };
 
 export function getDefaultSettings(): AppSettings {

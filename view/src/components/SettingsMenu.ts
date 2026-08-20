@@ -85,6 +85,9 @@ export const SettingsMenu = {
         const scaleMulti = new MultiChoice(uiScaleOptions, appSettings.uiScale, (val) => { updateSettings({ uiScale: val }); });
         registerControl('uiScale', 'Interface Scale', 'DISPLAY', scaleMulti);
         
+        const hideInactiveQuestToggle = new Toggle(appSettings.hideInactiveQuestMarkers, (val) => { updateSettings({ hideInactiveQuestMarkers: val }); });
+        registerControl('hideInactiveQuestMarkers', 'Hide Inactive Quest Markers', 'DISPLAY', hideInactiveQuestToggle);
+        
         const focusToggle = new Toggle(appSettings.focusMarkerOnSelection, (val) => { updateSettings({ focusMarkerOnSelection: val }); });
         registerControl('focusMarkerOnSelection', 'Auto-Center Markers on List Selection', 'DISPLAY', focusToggle);
 

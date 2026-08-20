@@ -9,6 +9,7 @@ import { MARKER_ICON_CUSTOM_MARKER, MARKER_ICON_POWER_ARMOR, MARKER_ICON_RAIDER_
 import { renderSupplyLines, isSupplyLinesViewActive, activeGatewayMarkerFormIds } from './supplyLines.js';
 import { WorldspaceUtils } from '../utils/worldspaceUtils.js';
 import { InfoBar } from './infoBar.js';
+import { appSettings } from '../core/settings.js';
 
 function getPlayerLayer(): HTMLElement | null {
     return document.getElementById('player-layer');
@@ -255,6 +256,7 @@ function renderQuestMarkers(quests: QuestItem[], worldspaceID: number, bounds: G
 
     quests.forEach(quest => {
         if (!quest.objectives) return;
+        if (appSettings.hideInactiveQuestMarkers && !quest.isTracked) return;
 
         quest.objectives.forEach(objective => {
             if (objective.state !== 1) return;
