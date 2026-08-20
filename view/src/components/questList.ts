@@ -591,6 +591,7 @@ export const QuestList = {
         const isActive = quest.isTracked;
         const isSelected = !questListState.isCollapsed && index === listController.getSelectedIndex();
         const keyAttr = quest.formId !== undefined ? `data-quest-formid="${quest.formId}"` : `data-quest-name="${StringUtils.escapeHtml(quest.questName)}"`;
+        const isMisc = quest.isMisc || quest.type === 'Misc';
         
         let statusClass = 'inactive';
         if (isCompleted) {
@@ -600,18 +601,35 @@ export const QuestList = {
         }
 
         let displayName = quest.questName;
-        if ((quest.isMisc || quest.type === 'Misc') && quest.objectives && quest.objectives.length > 0) {
+        if (isMisc && quest.objectives && quest.objectives.length > 0) {
             const activeObj = quest.objectives.find(o => o.state === 1) || quest.objectives[0];
             if (activeObj && activeObj.text) {
                 displayName = activeObj.text;
             }
         }
 
+        let objectivesHtml = '';
+        if (isActive && !isMisc && quest.objectives && quest.objectives.length > 0) {
+            const activeObjs = quest.objectives.filter(o => o.state === 1);
+            if (activeObjs.length > 0) {
+                objectivesHtml = `
+                    <div class="sl-item-subtitle" style="font-size: 0.9em; opacity: 0.85; margin-top: 1px; white-space: normal; line-height: 1.2;">
+                        ${activeObjs.map(o => `<div class="ql-objective-text">- ${StringUtils.escapeHtml(o.text)}</div>`).join('')}
+                    </div>
+                `;
+            }
+        }
+
+        const styleAttr = (isMisc || isCompleted) ? '' : 'style="height: auto; min-height: 50px; padding-top: 4px; padding-bottom: 4px;"';
+
         return `
-          <div class="sl-item ${statusClass} ${isSelected ? 'selected' : ''}" data-quest-index="${index}" ${keyAttr}>
+          <div class="sl-item ${statusClass} ${isSelected ? 'selected' : ''}" data-quest-index="${index}" ${keyAttr} ${styleAttr}>
              <div class="sl-item-content">
-             <div class="sl-marker-box ${statusClass}"></div>
-             <div class="sl-item-title">${StringUtils.escapeHtml(displayName)}</div>
+                 <div class="sl-marker-box ${statusClass}"></div>
+                 <div class="ql-text-container" style="display: flex; flex-direction: column; flex: 1; justify-content: center;">
+                     <div class="sl-item-title">${StringUtils.escapeHtml(displayName)}</div>
+                     ${objectivesHtml}
+                 </div>
             </div>
           </div>
         `;
