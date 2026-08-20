@@ -70,9 +70,11 @@ namespace PaperMap::UI
                 {
                     task->AddTask([jsonStr]() {
                         Settings::Save(jsonStr);
-                        auto *mainLoop = RE::Main::GetSingleton();
-                        if (mainLoop && PaperMap::UI::State::g_mapIsOpen.load()) {
-                            mainLoop->freezeTime = Settings::freezeSimulation;
+                        if (PaperMap::UI::State::g_mapIsOpen.load()) {
+                            auto *mainLoop = RE::Main::GetSingleton();
+                            if (mainLoop) {
+                                mainLoop->freezeTime = Settings::freezeSimulation;
+                            }
                         }
                     });
                 }
@@ -378,10 +380,7 @@ namespace PaperMap::UI
         {
             if (mainLoop)
             {
-                if (!IsPlayerInMenuMode())
-                {
-                    mainLoop->freezeTime = false;
-                }
+                mainLoop->freezeTime = false;
             }
             State::g_api->Invoke(State::g_view, "if (window.onMapClosed) { window.onMapClosed(); } if (window.resetUIState) { window.resetUIState(); }");
             State::g_api->Unfocus(State::g_view);
