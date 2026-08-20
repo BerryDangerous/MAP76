@@ -7,7 +7,7 @@ import { CollapsiblePanel } from '../ui/collapsiblePanel.js';
 import { CustomScrollbar } from '../ui/customScrollbar.js';
 import { KeybindsSystem } from '../systems/keybinds.js';
 import { DockControlsSystem, DockCorner } from '../systems/dockControls.js';
-import { SettlementDataWithRatings, getWorkshopIconType, getWorkshopBadgesHtml, getWorkshopSubtitle } from '../utils/settlementUtils.js';
+import { SettlementDataWithRatings, getWorkshopIconType, getWorkshopBadgesHtml, getWorkshopSubtitle, calculateSettlementRatings } from '../utils/settlementUtils.js';
 import { SettlementCard } from './settlementCard.js';
 import { MarkerCard } from './markerCard.js';
 import { ThemeEngine } from '../systems/theme.js';
@@ -15,7 +15,10 @@ import { StringUtils } from '../utils/stringUtils.js';
 import { WorldspaceUtils } from '../utils/worldspaceUtils.js';
 import { EngineBridge } from '../core/bridge.js';
 
+export type WorkshopSortMode = 'ATTENTION' | 'ALPHABETICAL' | 'HAPPINESS' | 'POPULATION';
+
 export interface WorkshopListState {
+    sortMode: WorkshopSortMode;
     isCollapsed: boolean;
     hoverIndex: number;
     selectedMarkerFormId: number | null;
@@ -23,6 +26,7 @@ export interface WorkshopListState {
 }
 
 const workshopListState: WorkshopListState = {
+    sortMode: 'ATTENTION',
     isCollapsed: true,
     hoverIndex: -1,
     selectedMarkerFormId: null,
@@ -178,7 +182,7 @@ export const WorkshopList = {
         FocusManager.register({
             id: 'WORKSHOP_LIST',
             getAvailableControls: () => {
-                const controls: import('../systems/focusManager.js').ControlActionDef[] = ['NAV_BACK', { action: 'NAV_UP', label: 'MOVE' }, { action: 'NAV_DOWN', label: 'MOVE' }, 'PAN_MOUSE', { action: 'CENTER_ITEM', label: 'CENTER MARKER' }];
+                const controls: import('../systems/focusManager.js').ControlActionDef[] = ['NAV_BACK', { action: 'NAV_UP', label: 'MOVE' }, { action: 'NAV_DOWN', label: 'MOVE' }, 'PAN_MOUSE', { action: 'SORT', label: `SORT (${workshopListState.sortMode})` }, { action: 'CENTER_ITEM', label: 'CENTER MARKER' }];
                 return controls;
             },
             handleKeyDown: (e: KeyboardEvent) => this.handleKeyDown(e),
@@ -251,6 +255,16 @@ export const WorkshopList = {
             if (workshops.length > 0) {
                 listController.navigatePrev();
             }
+            return true;
+        }
+
+        if (KeybindsSystem.isAction(e, 'SORT')) {
+            const modes: WorkshopSortMode[] = ['ATTENTION', 'ALPHABETICAL', 'HAPPINESS', 'POPULATION'];
+            const nextIdx = (modes.indexOf(workshopListState.sortMode) + 1) % modes.length;
+            workshopListState.sortMode = modes[nextIdx];
+            EngineBridge.emitSound('UIGeneralFocus');
+            this.render();
+            FocusManager.triggerControlsUpdate();
             return true;
         }
 
@@ -335,9 +349,35 @@ export const WorkshopList = {
         }
     },
 
+    sortWorkshops(workshops: SettlementDataWithRatings[], sortMode: WorkshopSortMode): SettlementDataWithRatings[] {
+        let sorted = [...workshops];
+        if (sortMode === 'ALPHABETICAL') {
+            sorted.sort((a, b) => a.name.localeCompare(b.name));
+        } else if (sortMode === 'HAPPINESS') {
+            sorted.sort((a, b) => {
+                const diff = (a.happiness || 0) - (b.happiness || 0);
+                return diff !== 0 ? diff : a.name.localeCompare(b.name);
+            });
+        } else if (sortMode === 'POPULATION') {
+            sorted.sort((a, b) => {
+                const diff = (b.population || 0) - (a.population || 0);
+                return diff !== 0 ? diff : a.name.localeCompare(b.name);
+            });
+        } else if (sortMode === 'ATTENTION') {
+            sorted.sort((a, b) => {
+                const ratingA = calculateSettlementRatings(a).overallStatus;
+                const ratingB = calculateSettlementRatings(b).overallStatus;
+                const diff = ratingA - ratingB;
+                return diff !== 0 ? diff : a.name.localeCompare(b.name);
+            });
+        }
+        return sorted;
+    },
+
     getVisibleWorkshops(): SettlementDataWithRatings[] {
         const settlements = mapState.lastPayload?.settlements || [];
-        return settlements.filter(s => s.owned || s.vassal);
+        const filtered = settlements.filter(s => s.owned || s.vassal);
+        return this.sortWorkshops(filtered, workshopListState.sortMode);
     },
 
     mountLayout(container: HTMLElement): void {

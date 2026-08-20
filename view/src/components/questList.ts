@@ -16,9 +16,11 @@ import { StringUtils } from '../utils/stringUtils.js';
 import { WorldspaceUtils } from '../utils/worldspaceUtils.js';
 
 export type QuestFilterTab = 'ALL' | 'MAIN' | 'SIDE' | 'MISC';
+export type QuestSortMode = 'RECENT' | 'ALPHABETICAL' | 'ACTIVE';
 
 export interface QuestListState {
     currentTab: QuestFilterTab;
+    sortMode: QuestSortMode;
     isCollapsed: boolean;
     hoverIndex: number;
     selectedQuestId: number | string | null;
@@ -27,6 +29,7 @@ export interface QuestListState {
 
 const questListState: QuestListState = {
     currentTab: 'ALL',
+    sortMode: 'RECENT',
     isCollapsed: true,
     hoverIndex: -1,
     selectedQuestId: null,
@@ -207,7 +210,7 @@ export const QuestList = {
         FocusManager.register({
             id: 'QUEST_LIST',
             getAvailableControls: () => {
-                const controls: import('../systems/focusManager.js').ControlActionDef[] = ['NAV_BACK', { action: 'NAV_UP', label: 'MOVE' }, { action: 'NAV_DOWN', label: 'MOVE' }, 'PAN_MOUSE'];
+                const controls: import('../systems/focusManager.js').ControlActionDef[] = ['NAV_BACK', { action: 'NAV_UP', label: 'MOVE' }, { action: 'NAV_DOWN', label: 'MOVE' }, 'PAN_MOUSE', { action: 'SORT', label: `SORT (${questListState.sortMode})` }];
                 const selected = listController.getSelectedItem();
                 if (selected) {
                     const isCompleted = QuestUtils.isQuestCompleted(selected);
@@ -297,6 +300,16 @@ export const QuestList = {
             return true;
         }
 
+        if (KeybindsSystem.isAction(e, 'SORT')) {
+            const modes: QuestSortMode[] = ['RECENT', 'ALPHABETICAL', 'ACTIVE'];
+            const nextIdx = (modes.indexOf(questListState.sortMode) + 1) % modes.length;
+            questListState.sortMode = modes[nextIdx];
+            EngineBridge.emitSound('UIGeneralFocus');
+            this.render();
+            FocusManager.triggerControlsUpdate();
+            return true;
+        }
+
         if (KeybindsSystem.isAction(e, 'NAV_BACK')) {
             this.collapse();
             return true;
@@ -373,15 +386,32 @@ export const QuestList = {
         }
     },
 
-    getVisibleQuests(): QuestItem[] {
-        const quests = mapState.lastPayload?.quests || [];
-        const filtered = this.filterQuests(quests, questListState.currentTab);
-        if (questListState.isCollapsed) {
-            return filtered.filter(q => q.isTracked && !QuestUtils.isQuestCompleted(q));
+    sortQuests(quests: QuestItem[], sortMode: QuestSortMode): QuestItem[] {
+        let sorted = [...quests];
+        if (sortMode === 'ALPHABETICAL') {
+            sorted.sort((a, b) => a.questName.localeCompare(b.questName));
+        } else if (sortMode === 'ACTIVE') {
+            sorted.sort((a, b) => (b.isTracked ? 1 : 0) - (a.isTracked ? 1 : 0));
         }
-        const uncompleted = filtered.filter(q => !QuestUtils.isQuestCompleted(q));
-        const completed = filtered.filter(q => QuestUtils.isQuestCompleted(q));
-        return [...uncompleted, ...completed];
+        return sorted;
+    },
+
+    getVisibleQuests(): QuestItem[] {
+        const quests = [...(mapState.lastPayload?.quests || [])].reverse();
+        const filtered = this.filterQuests(quests, questListState.currentTab);
+        const sorted = this.sortQuests(filtered, questListState.sortMode);
+
+        if (questListState.isCollapsed) {
+            const active = sorted.filter(q => q.isTracked && !QuestUtils.isQuestCompleted(q));
+            const activeNonMisc = active.filter(q => !q.isMisc && q.type !== 'Misc');
+            const activeMisc = active.filter(q => q.isMisc || q.type === 'Misc');
+            return [...activeNonMisc, ...activeMisc];
+        }
+
+        const uncompletedNonMisc = sorted.filter(q => !QuestUtils.isQuestCompleted(q) && !q.isMisc && q.type !== 'Misc');
+        const uncompletedMisc = sorted.filter(q => !QuestUtils.isQuestCompleted(q) && (q.isMisc || q.type === 'Misc'));
+        const completed = sorted.filter(q => QuestUtils.isQuestCompleted(q));
+        return [...uncompletedNonMisc, ...uncompletedMisc, ...completed];
     },
 
     mountLayout(container: HTMLElement): void {
@@ -474,14 +504,30 @@ export const QuestList = {
             const tabName = questListState.currentTab === 'ALL' ? '' : `${questListState.currentTab} `;
             itemsHtml = isCollapsed ? `<div class="sl-empty">NO ACTIVE ${tabName}QUESTS</div>` : `<div class="sl-empty">NO ${tabName}QUESTS</div>`;
         } else if (isCollapsed) {
-            itemsHtml = itemsToRender.map((q, idx) => this.renderQuestItem(q, idx)).join('');
+            const activeNonMisc = itemsToRender.filter(q => !q.isMisc && q.type !== 'Misc');
+            const activeMisc = itemsToRender.filter(q => q.isMisc || q.type === 'Misc');
+
+            let currentItemIndex = 0;
+            itemsHtml += activeNonMisc.map(q => this.renderQuestItem(q, currentItemIndex++)).join('');
+            
+            if (activeNonMisc.length > 0 && activeMisc.length > 0) {
+                itemsHtml += `<div class="sl-separator"></div>`;
+            }
+            itemsHtml += activeMisc.map(q => this.renderQuestItem(q, currentItemIndex++)).join('');
         } else {
-            const uncompleted = itemsToRender.filter(q => !QuestUtils.isQuestCompleted(q));
+            const uncompletedNonMisc = itemsToRender.filter(q => !QuestUtils.isQuestCompleted(q) && !q.isMisc && q.type !== 'Misc');
+            const uncompletedMisc = itemsToRender.filter(q => !QuestUtils.isQuestCompleted(q) && (q.isMisc || q.type === 'Misc'));
             const completed = itemsToRender.filter(q => QuestUtils.isQuestCompleted(q));
 
             let currentItemIndex = 0;
-            itemsHtml += uncompleted.map(q => this.renderQuestItem(q, currentItemIndex++)).join('');
-            if (uncompleted.length > 0 && completed.length > 0) {
+            itemsHtml += uncompletedNonMisc.map(q => this.renderQuestItem(q, currentItemIndex++)).join('');
+            
+            if (uncompletedNonMisc.length > 0 && uncompletedMisc.length > 0) {
+                itemsHtml += `<div class="sl-separator"></div>`;
+            }
+            itemsHtml += uncompletedMisc.map(q => this.renderQuestItem(q, currentItemIndex++)).join('');
+            
+            if ((uncompletedNonMisc.length > 0 || uncompletedMisc.length > 0) && completed.length > 0) {
                 itemsHtml += `<div class="sl-separator"></div>`;
             }
             itemsHtml += completed.map(q => this.renderQuestItem(q, currentItemIndex++)).join('');
