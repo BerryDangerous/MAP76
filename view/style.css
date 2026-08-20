@@ -484,7 +484,6 @@ body, html {
     pointer-events: auto;
     color: #ffffcb;
     font-family: 'PibotoCondensed', sans-serif;
-    transition: max-height 0.2s ease;
 }
 
 .collapsible-panel[data-collapsed="true"] {
@@ -558,6 +557,7 @@ body, html {
     height: 30px;
     padding: 0 20px;
     background-color: rgba(0, 0, 0, 0.75);
+    flex-shrink: 0;
 }
 
 .tb-sub-header .tb-nav-icon {
@@ -1406,15 +1406,36 @@ body.settings-open #player-layer {
 
 #quest-list-panel {
     width: 450px;
-    max-height: 402px;
+    height: auto;
+    max-height: 75vh;
 }
 
-#quest-list-panel[data-collapsed="true"] {
-    max-height: 402px;
+#quest-list-panel .sl-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    height: auto !important;
+    max-height: none !important;
+    align-items: stretch !important;
 }
 
-#quest-list-panel[data-collapsed="false"] {
-    height: 402px;
+#quest-list-panel.height-limited {
+    max-height: 402px !important;
+}
+
+#quest-list-panel.height-limited .sl-body {
+    max-height: none !important;
+}
+
+#quest-list-panel .sl-item:not(.selected) {
+    background-color: transparent;
+}
+
+#quest-list-panel[data-collapsed="false"] .sl-items-list {
+    padding-bottom: 40px;
+}
+
+#quest-list-panel .sl-items-list {
+    max-height: none !important;
 }
 
 #workshop-list-panel {

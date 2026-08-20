@@ -5,6 +5,7 @@ export interface AppSettings {
     freezeSimulation: boolean;
     confirmFastTravel: boolean;
     alternativeMapSound: boolean;
+    limitQuestPanelHeight: boolean;
 }
 
 export const defaultSettings: AppSettings = {
@@ -14,6 +15,7 @@ export const defaultSettings: AppSettings = {
     freezeSimulation: true,
     confirmFastTravel: false,
     alternativeMapSound: false,
+    limitQuestPanelHeight: false,
 };
 
 export function getDefaultSettings(): AppSettings {
@@ -29,6 +31,15 @@ export function updateSettings(newSettings: Partial<AppSettings>) {
 
 function applySettings() {
     document.documentElement.style.setProperty('--ui-scale', appSettings.uiScale.toString());
+    
+    const questPanel = document.getElementById('quest-list-panel');
+    if (questPanel) {
+        if (appSettings.limitQuestPanelHeight) {
+            questPanel.classList.add('height-limited');
+        } else {
+            questPanel.classList.remove('height-limited');
+        }
+    }
     
     if (window.saveSettings) {
         window.saveSettings(JSON.stringify(appSettings));

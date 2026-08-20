@@ -91,6 +91,9 @@ export const SettingsMenu = {
         const resetViewportToggle = new Toggle(appSettings.resetViewportOnPanelCollapse, (val) => { updateSettings({ resetViewportOnPanelCollapse: val }); });
         registerControl('resetViewportOnPanelCollapse', 'Restore Map Position When Panel is Closed', 'DISPLAY', resetViewportToggle);
 
+        const limitQuestToggle = new Toggle(appSettings.limitQuestPanelHeight, (val) => { updateSettings({ limitQuestPanelHeight: val }); });
+        registerControl('limitQuestPanelHeight', 'Limit Quest Panel Height', 'DISPLAY', limitQuestToggle);
+
         const altSoundToggle = new Toggle(appSettings.alternativeMapSound, (val) => { updateSettings({ alternativeMapSound: val }); });
         registerControl('alternativeMapSound', 'Alternative Map Change Sound', 'DISPLAY', altSoundToggle);
 

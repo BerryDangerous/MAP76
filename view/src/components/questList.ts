@@ -33,7 +33,7 @@ const questListState: QuestListState = {
     isCollapsed: true,
     hoverIndex: -1,
     selectedQuestId: null,
-    dockCorner: 'top-left'
+    dockCorner: 'top-right'
 };
 
 const listController = new SelectableListController<QuestItem>({

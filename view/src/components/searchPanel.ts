@@ -31,7 +31,7 @@ export interface SearchPanelState {
 
 const searchPanelState: SearchPanelState = {
     isCollapsed: true,
-    dockCorner: 'top-right',
+    dockCorner: 'top-left',
     searchTerm: '',
     results: []
 };
