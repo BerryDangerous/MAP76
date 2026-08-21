@@ -253,7 +253,7 @@ export const MarkerInteractionManager = {
 
                 if (target.dataset.markerType === 'customMarker') {
                     e.stopPropagation();
-                    CustomMarkerCard.openForExisting(target);
+                    CustomMarkerCard.open({ anchorMarker: target });
                     FocusManager.setFocus('CUSTOM_MARKER_CARD');
                     EngineBridge.emitSound('UIGeneralFocus');
                     return;
@@ -297,7 +297,7 @@ export const MarkerInteractionManager = {
                 }
 
                 const worldCoords = MapViewport.screenToGameCoords(e.clientX, e.clientY, bounds);
-                CustomMarkerCard.openForPlacement(worldCoords, { x: e.clientX, y: e.clientY }, config.worldspaceID);
+                CustomMarkerCard.open({ gameCoords: worldCoords, pageCoords: { x: e.clientX, y: e.clientY }, worldspaceId: config.worldspaceID });
                 FocusManager.setFocus('CUSTOM_MARKER_CARD');
             }
         });

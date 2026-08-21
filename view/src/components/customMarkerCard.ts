@@ -44,87 +44,60 @@ export const CustomMarkerCard = {
         return customMarkerCardInstance ? customMarkerCardInstance.handleKeyDown(e) : false;
     },
 
-    openForExisting(anchorMarker: HTMLElement, returnFocusId?: string, onNavBack?: () => void): void {
-        this.activeAnchorMarker = anchorMarker;
-        this.activeCoords = null;
-        this.activeGameCoords = null;
+    open(options: {
+        anchorMarker?: HTMLElement | null;
+        gameCoords?: { x: number, y: number } | null;
+        pageCoords?: { x: number, y: number } | null;
+        worldspaceId?: number;
+        returnFocusId?: string;
+        onNavBack?: () => void;
+    }): void {
+        this.activeAnchorMarker = options.anchorMarker || null;
+        this.activeCoords = options.pageCoords || null;
+        this.activeGameCoords = options.gameCoords || null;
+        this.activeWorldspaceId = options.worldspaceId;
 
-        if (anchorMarker) {
-            anchorMarker.classList.add('menu-active');
-            anchorMarker.classList.add('hide-tooltip-override');
-        }
-
-        if (!customMarkerCardInstance) {
-            customMarkerCardInstance = new FloatingCard({
-                id: 'custom-marker-card-panel',
-                title: 'Custom Marker',
-                buttons: this.buildButtonsForExisting(),
-                anchorMarker: anchorMarker,
-                returnFocusId: returnFocusId,
-                onNavBack: onNavBack
-            });
-        } else {
-            customMarkerCardInstance.update({
-                title: 'Custom Marker',
-                buttons: this.buildButtonsForExisting(),
-                anchorMarker: anchorMarker,
-                coords: undefined,
-                returnFocusId: returnFocusId,
-                onNavBack: onNavBack
-            });
-        }
-
-        customMarkerCardInstance.open(anchorMarker);
-    },
-
-    openForPlacement(gameCoords: { x: number, y: number }, pageCoords: { x: number, y: number }, worldspaceId?: number, returnFocusId?: string, onNavBack?: () => void): void {
-        this.activeAnchorMarker = null;
-        this.activeCoords = pageCoords;
-        this.activeGameCoords = gameCoords;
-        this.activeWorldspaceId = worldspaceId;
-
+        const isClickingExisting = Boolean(this.activeAnchorMarker);
         const hasExistingMarker = Boolean(document.querySelector('.custom-marker'));
-        const title = 'Custom Marker';
 
-        if (!customMarkerCardInstance) {
-            customMarkerCardInstance = new FloatingCard({
-                id: 'custom-marker-card-panel',
-                title: title,
-                buttons: this.buildButtonsForPlacement(hasExistingMarker),
-                coords: pageCoords,
-                returnFocusId: returnFocusId,
-                onNavBack: onNavBack
-            });
-        } else {
-            customMarkerCardInstance.update({
-                title: title,
-                buttons: this.buildButtonsForPlacement(hasExistingMarker),
-                anchorMarker: null,
-                coords: pageCoords,
-                returnFocusId: returnFocusId,
-                onNavBack: onNavBack
-            });
+        let title = 'Place a marker?';
+        if (isClickingExisting) {
+            title = 'Remove your current marker?';
+        } else if (hasExistingMarker) {
+            title = 'Move your current marker or remove it?';
         }
 
-        customMarkerCardInstance.open(undefined);
+        if (this.activeAnchorMarker) {
+            this.activeAnchorMarker.classList.add('menu-active');
+            this.activeAnchorMarker.classList.add('hide-tooltip-override');
+        }
+
+        const buttons = this.buildButtons(isClickingExisting, hasExistingMarker);
+
+        const cardConfig = {
+            id: 'custom-marker-card-panel',
+            title: title,
+            buttons: buttons,
+            anchorMarker: this.activeAnchorMarker || null,
+            coords: this.activeCoords || undefined,
+            returnFocusId: options.returnFocusId,
+            onNavBack: options.onNavBack
+        };
+
+        if (!customMarkerCardInstance) {
+            customMarkerCardInstance = new FloatingCard(cardConfig);
+        } else {
+            customMarkerCardInstance.update(cardConfig);
+        }
+
+        customMarkerCardInstance.open(this.activeAnchorMarker || undefined);
     },
 
-    buildButtonsForExisting(): ActionButtonConfig[] {
-        return [
-            {
-                id: 'removeMarker',
-                label: 'REMOVE MARKER',
-                action: () => {
-                    removeCustomMarker();
-                    this.close();
-                }
-            }
-        ];
-    },
+    buildButtons(isClickingExisting: boolean, hasExistingMarker: boolean): ActionButtonConfig[] {
+        const buttons: ActionButtonConfig[] = [];
 
-    buildButtonsForPlacement(hasExistingMarker: boolean): ActionButtonConfig[] {
-        const buttons: ActionButtonConfig[] = [
-            {
+        if (!isClickingExisting) {
+            buttons.push({
                 id: 'placeMarker',
                 label: hasExistingMarker ? 'MOVE MARKER' : 'PLACE MARKER',
                 action: () => {
@@ -133,10 +106,10 @@ export const CustomMarkerCard = {
                     }
                     this.close();
                 }
-            }
-        ];
+            });
+        }
 
-        if (hasExistingMarker) {
+        if (isClickingExisting || hasExistingMarker) {
             buttons.push({
                 id: 'removeMarker',
                 label: 'REMOVE MARKER',
@@ -146,6 +119,14 @@ export const CustomMarkerCard = {
                 }
             });
         }
+
+        buttons.push({
+            id: 'cancel',
+            label: 'CANCEL',
+            action: () => {
+                this.close();
+            }
+        });
 
         return buttons;
     },

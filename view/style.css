@@ -1452,9 +1452,12 @@ body.settings-open #player-layer {
     width: 280px;
 }
 
-#marker-card-panel,
-#custom-marker-card-panel {
+#marker-card-panel {
     width: 260px;
+}
+
+#custom-marker-card-panel {
+    width: 300px;
 }
 
 #marker-card-panel .fc-header,
