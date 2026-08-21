@@ -1,3 +1,5 @@
+import { FastTravelStatus } from '@/types/map.js';
+
 export const ENGINE_MARKER_TYPES: Record<number, string> = {
     0: 'cave',
     1: 'city',
@@ -175,7 +177,6 @@ export const DLC_GATEWAYS = {
 };
 
 
-import { FastTravelStatus } from '../types/map.js';
 
 export const FAST_TRAVEL_ERROR_MESSAGES: Record<FastTravelStatus, string> = {
     [FastTravelStatus.SUCCESS]: "",

@@ -1,9 +1,11 @@
-import { ActionButtonGroup, ActionButtonConfig } from './actionButton.js';
-import { AnchorPositioner } from '../systems/anchorPositioner.js';
-import { DockControlsSystem, DockCorner } from '../systems/dockControls.js';
-import { FocusManager } from '../systems/focusManager.js';
-import { KeybindsSystem } from '../systems/keybinds.js';
-import { EngineBridge } from '../core/bridge.js';
+import { EngineBridge } from '@/core/bridge.js';
+
+import { AnchorPositioner } from '@/systems/anchorPositioner.js';
+import { DockControlsSystem, DockCorner } from '@/systems/dockControls.js';
+import { FocusManager } from '@/systems/focusManager.js';
+import { KeybindsSystem } from '@/systems/keybindManager.js';
+
+import { ActionButtonGroup, ActionButtonConfig } from '@/components/ui/ButtonGroup.js';
 
 export interface FloatingCardOptions {
     id: string;

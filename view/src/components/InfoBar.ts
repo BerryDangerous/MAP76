@@ -1,9 +1,12 @@
-import { PlayerData } from '../types/map.js';
-import { FrameTickPayload } from '../types/payloads.js';
-import { WorldspaceUtils } from '../utils/worldspaceUtils.js';
-import { KeybindsSystem } from '../systems/keybinds.js';
-import { FocusManager } from '../systems/focusManager.js';
-import { mapState } from '../core/state.js';
+import { PlayerData } from '@/types/map.js';
+import { FrameTickPayload } from '@/types/payloads.js';
+
+import { mapState } from '@/core/state.js';
+
+import { FocusManager } from '@/systems/focusManager.js';
+import { KeybindsSystem } from '@/systems/keybindManager.js';
+
+import { WorldspaceUtils } from '@/utils/worldspaceUtils.js';
 
 export class InfoBar {
     private static infoContainer: HTMLElement | null = null;

@@ -1,14 +1,19 @@
-import { QuestItem } from '../types/quests.js';
-import { FocusManager } from '../systems/focusManager.js';
-import { MapViewport } from './viewport.js';
-import { QuestList } from './questList.js';
-import { toggleQuestActive, makeOnlyQuestActive } from '../core/bridge.js';
-import { ActionButtonConfig } from '../ui/actionButton.js';
-import { StatusItemList } from '../ui/statusItemList.js';
-import { FloatingCard } from '../ui/floatingCard.js';
-import { DockCorner } from '../systems/dockControls.js';
-import { QuestUtils } from '../utils/questUtils.js';
-import { StringUtils } from '../utils/stringUtils.js';
+import { QuestItem } from '@/types/quests.js';
+
+import { toggleQuestActive, makeOnlyQuestActive } from '@/core/bridge.js';
+
+import { DockCorner } from '@/systems/dockControls.js';
+import { FocusManager } from '@/systems/focusManager.js';
+import { MapViewport } from '@/systems/viewport.js';
+
+import { QuestUtils } from '@/utils/questUtils.js';
+import { StringUtils } from '@/utils/stringUtils.js';
+
+import { QuestList } from '@/components/QuestsPanel.js';
+
+import { ActionButtonConfig } from '@/components/ui/ButtonGroup.js';
+import { FloatingCard } from '@/components/ui/FloatingCard.js';
+import { StatusItemList } from '@/components/ui/StatusItemList.js';
 
 let floatingCard: FloatingCard | null = null;
 

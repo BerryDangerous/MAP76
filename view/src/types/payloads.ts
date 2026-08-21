@@ -1,6 +1,6 @@
-import { GameBounds, FastTravelStatus, PlayerData } from './map.js';
-import { POIMarker, CustomMarker, PowerArmorMarker } from './markers.js';
-import { QuestItem } from './quests.js';
+import { GameBounds, FastTravelStatus, PlayerData } from '@/types/map.js';
+import { POIMarker, CustomMarker, PowerArmorMarker } from '@/types/markers.js';
+import { QuestItem } from '@/types/quests.js';
 
 export interface SettlementData {
     formId: number;

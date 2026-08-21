@@ -1,6 +1,6 @@
 export type FocusOwner = 'MAP' | 'QUEST_LIST' | 'QUEST_CARD' | 'WORKSHOP_LIST' | 'WORKSHOP_CARD' | string;
 
-export type ControlActionDef = import('./keybinds.js').KeyAction | { action: import('./keybinds.js').KeyAction, label: string };
+export type ControlActionDef = import('./keybindManager.js').KeyAction | { action: import('./keybindManager.js').KeyAction, label: string };
 
 export interface FocusComponent {
     id: string;

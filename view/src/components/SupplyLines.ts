@@ -1,8 +1,10 @@
-import { F4SEMapPayload, SettlementData } from '../types/payloads.js';
-import { POIMarker } from '../types/markers.js';
-import { MapViewport } from './viewport.js';
-import { WorldspaceUtils } from '../utils/worldspaceUtils.js';
-import { mapState } from '../core/state.js';
+import { F4SEMapPayload, SettlementData } from '@/types/payloads.js';
+
+import { mapState } from '@/core/state.js';
+
+import { MapViewport } from '@/systems/viewport.js';
+
+import { WorldspaceUtils } from '@/utils/worldspaceUtils.js';
 
 let isSupplyLinesActiveState = false;
 let svgLayer: SVGSVGElement | null = null;

@@ -1,3 +1,5 @@
+import { EngineBridge } from '@/core/bridge.js';
+
 export interface ListNavigationOptions<T> {
     getItems: () => T[];
     getItemId: (item: T) => string | number;
@@ -7,8 +9,6 @@ export interface ListNavigationOptions<T> {
     containerSupplier: () => HTMLElement | null;
     itemSelector?: string;
 }
-
-import { EngineBridge } from '../core/bridge.js';
 
 export class SelectableListController<T> {
     private selectedId: string | number | null = null;

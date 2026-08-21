@@ -1,4 +1,4 @@
-import { QuestItem } from '../types/quests.js';
+import { QuestItem } from '@/types/quests.js';
 
 export const QuestUtils = {
     isQuestCompleted(quest: QuestItem): boolean {

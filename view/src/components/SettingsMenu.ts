@@ -1,12 +1,15 @@
-import { appSettings, updateSettings, getDefaultSettings, AppSettings } from '../core/settings.js';
-import { FocusManager, FocusOwner } from '../systems/focusManager.js';
-import { KeybindsSystem } from '../systems/keybinds.js';
-import { Toggle } from '../ui/toggle.js';
-import { Slider } from '../ui/slider.js';
-import { MultiChoice } from '../ui/multiChoice.js';
-import { SettingsRow, SettingsControl } from '../ui/settingsRow.js';
-import { showConfirmationModal } from './appModals.js';
-import { EngineBridge } from '../core/bridge.js';
+import { EngineBridge } from '@/core/bridge.js';
+import { appSettings, updateSettings, getDefaultSettings, AppSettings } from '@/core/settings.js';
+
+import { FocusManager, FocusOwner } from '@/systems/focusManager.js';
+import { KeybindsSystem } from '@/systems/keybindManager.js';
+
+import { showConfirmationModal } from '@/components/Modals.js';
+
+import { MultiChoice } from '@/components/ui/SettingsMultiChoice.js';
+import { SettingsRow, SettingsControl } from '@/components/ui/SettingsRow.js';
+import { Slider } from '@/components/ui/SettingsSlider.js';
+import { Toggle } from '@/components/ui/SettingsToggle.js';
 
 interface SettingControlEntry {
     key: keyof AppSettings;

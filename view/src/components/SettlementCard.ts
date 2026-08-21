@@ -1,14 +1,18 @@
-import { SettlementData } from '../types/payloads.js';
-import { mapState } from '../core/state.js';
-import { FocusManager } from '../systems/focusManager.js';
-import { MapViewport } from './viewport.js';
-import { FloatingCard } from '../ui/floatingCard.js';
-import { ActionButtonConfig } from '../ui/actionButton.js';
-import { ThemeEngine } from '../systems/theme.js';
-import { MarkerInteractionManager } from './markerInteraction.js';
-import { calculateSettlementRatings, SettlementDataWithRatings } from '../utils/settlementUtils.js';
-import { DockCorner } from '../systems/dockControls.js';
-import { WorldspaceUtils } from '../utils/worldspaceUtils.js';
+import { SettlementData } from '@/types/payloads.js';
+
+import { mapState } from '@/core/state.js';
+
+import { ThemeEngine } from '@/systems/assetManager.js';
+import { DockCorner } from '@/systems/dockControls.js';
+import { FocusManager } from '@/systems/focusManager.js';
+import { MarkerInteractionManager } from '@/systems/markerController.js';
+import { MapViewport } from '@/systems/viewport.js';
+
+import { calculateSettlementRatings, SettlementDataWithRatings } from '@/utils/settlementUtils.js';
+import { WorldspaceUtils } from '@/utils/worldspaceUtils.js';
+
+import { ActionButtonConfig } from '@/components/ui/ButtonGroup.js';
+import { FloatingCard } from '@/components/ui/FloatingCard.js';
 
 let settlementCardInstance: FloatingCard | null = null;
 

@@ -1,5 +1,6 @@
-import { DockControlsSystem, DockCorner } from '../systems/dockControls.js';
-import { EngineBridge } from '../core/bridge.js';
+import { EngineBridge } from '@/core/bridge.js';
+
+import { DockControlsSystem, DockCorner } from '@/systems/dockControls.js';
 
 export interface CollapsiblePanelOptions {
     panelElement: HTMLElement;

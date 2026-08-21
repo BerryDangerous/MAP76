@@ -1,26 +1,31 @@
-import { FocusManager } from '../systems/focusManager.js';
-import { MapViewport } from './viewport.js';
-import { appSettings } from '../core/settings.js';
-import { SelectableListController } from '../ui/selectableListController.js';
-import { CollapsiblePanel } from '../ui/collapsiblePanel.js';
-import { CustomScrollbar } from '../ui/customScrollbar.js';
-import { KeybindsSystem } from '../systems/keybinds.js';
-import { DockControlsSystem, DockCorner } from '../systems/dockControls.js';
-import { SearchBox } from '../ui/searchBox.js';
-import { SearchEngine } from '../systems/searchEngine.js';
-import { SearchResult } from '../types/search.js';
-import { MarkerCard } from './markerCard.js';
-import { QuestCard } from './questCard.js';
-import { QuestList } from './questList.js';
-import { SettlementCard } from './settlementCard.js';
-import { CustomMarkerCard } from './customMarkerCard.js';
-import { SearchUtils } from '../utils/searchUtils.js';
-import { WorldspaceUtils } from '../utils/worldspaceUtils.js';
-import { StringUtils } from '../utils/stringUtils.js';
-import { QuestUtils } from '../utils/questUtils.js';
-import { mapState } from '../core/state.js';
-import { ThemeEngine } from '../systems/theme.js';
-import { EngineBridge } from '../core/bridge.js';
+import { SearchResult } from '@/types/search.js';
+
+import { EngineBridge } from '@/core/bridge.js';
+import { appSettings } from '@/core/settings.js';
+import { mapState } from '@/core/state.js';
+
+import { ThemeEngine } from '@/systems/assetManager.js';
+import { DockControlsSystem, DockCorner } from '@/systems/dockControls.js';
+import { FocusManager } from '@/systems/focusManager.js';
+import { KeybindsSystem } from '@/systems/keybindManager.js';
+import { SelectableListController } from '@/systems/listController.js';
+import { SearchEngine } from '@/systems/searchEngine.js';
+import { MapViewport } from '@/systems/viewport.js';
+
+import { QuestUtils } from '@/utils/questUtils.js';
+import { SearchUtils } from '@/utils/searchUtils.js';
+import { StringUtils } from '@/utils/stringUtils.js';
+import { WorldspaceUtils } from '@/utils/worldspaceUtils.js';
+
+import { CustomMarkerCard } from '@/components/CustomMarkerCard.js';
+import { MarkerCard } from '@/components/MarkerCard.js';
+import { QuestCard } from '@/components/QuestCard.js';
+import { QuestList } from '@/components/QuestsPanel.js';
+import { SettlementCard } from '@/components/SettlementCard.js';
+
+import { CollapsiblePanel } from '@/components/ui/CollapsiblePanel.js';
+import { CustomScrollbar } from '@/components/ui/Scrollbar.js';
+import { SearchBox } from '@/components/ui/SearchBox.js';
 
 export interface SearchPanelState {
     isCollapsed: boolean;

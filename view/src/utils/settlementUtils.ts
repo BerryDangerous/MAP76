@@ -1,7 +1,9 @@
-import { SettlementData } from '../types/payloads.js';
-import { POIMarker } from '../types/markers.js';
-import { ThemeEngine } from '../systems/theme.js';
-import { MARKER_ICON_SETTLEMENT, MARKER_ICON_RAIDER_OUTPOST, MARKER_ICON_VASSAL_SETTLEMENT } from '../core/constants.js';
+import { POIMarker } from '@/types/markers.js';
+import { SettlementData } from '@/types/payloads.js';
+
+import { MARKER_ICON_SETTLEMENT, MARKER_ICON_RAIDER_OUTPOST, MARKER_ICON_VASSAL_SETTLEMENT } from '@/core/constants.js';
+
+import { ThemeEngine } from '@/systems/assetManager.js';
 
 export interface SettlementDataWithRatings extends SettlementData {
     ratings?: {

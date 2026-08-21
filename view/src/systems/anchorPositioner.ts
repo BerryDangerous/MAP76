@@ -1,4 +1,4 @@
-import { appSettings } from '../core/settings.js';
+import { appSettings } from '@/core/settings.js';
 
 export interface AnchorPositionOptions {
     gap?: number;

@@ -1,5 +1,5 @@
-import { PlayerData } from '../types/map.js';
-import { FrameTickPayload } from '../types/payloads.js';
+import { PlayerData } from '@/types/map.js';
+import { FrameTickPayload } from '@/types/payloads.js';
 
 export const InfoCard = {
     init(player?: PlayerData): void {

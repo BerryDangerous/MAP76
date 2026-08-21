@@ -1,6 +1,7 @@
-import { mapState } from '../core/state.js';
-import { FORM_ID_INDEX_MASK, DLC_GATEWAYS } from '../core/constants.js';
-import { F4SEMapPayload, GatewayMarker } from '../types/payloads.js';
+import { F4SEMapPayload, GatewayMarker } from '@/types/payloads.js';
+
+import { FORM_ID_INDEX_MASK, DLC_GATEWAYS } from '@/core/constants.js';
+import { mapState } from '@/core/state.js';
 
 export const WorldspaceUtils = {
     isSameWorldspace(ws1: number, ws2: number): boolean {

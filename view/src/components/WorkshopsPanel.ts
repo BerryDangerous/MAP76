@@ -1,19 +1,23 @@
-import { mapState } from '../core/state.js';
-import { FocusManager } from '../systems/focusManager.js';
-import { MapViewport } from './viewport.js';
-import { appSettings } from '../core/settings.js';
-import { SelectableListController } from '../ui/selectableListController.js';
-import { CollapsiblePanel } from '../ui/collapsiblePanel.js';
-import { CustomScrollbar } from '../ui/customScrollbar.js';
-import { KeybindsSystem } from '../systems/keybinds.js';
-import { DockControlsSystem, DockCorner } from '../systems/dockControls.js';
-import { SettlementDataWithRatings, getWorkshopIconType, getWorkshopBadgesHtml, getWorkshopSubtitle, calculateSettlementRatings } from '../utils/settlementUtils.js';
-import { SettlementCard } from './settlementCard.js';
-import { MarkerCard } from './markerCard.js';
-import { ThemeEngine } from '../systems/theme.js';
-import { StringUtils } from '../utils/stringUtils.js';
-import { WorldspaceUtils } from '../utils/worldspaceUtils.js';
-import { EngineBridge } from '../core/bridge.js';
+import { EngineBridge } from '@/core/bridge.js';
+import { appSettings } from '@/core/settings.js';
+import { mapState } from '@/core/state.js';
+
+import { ThemeEngine } from '@/systems/assetManager.js';
+import { DockControlsSystem, DockCorner } from '@/systems/dockControls.js';
+import { FocusManager } from '@/systems/focusManager.js';
+import { KeybindsSystem } from '@/systems/keybindManager.js';
+import { SelectableListController } from '@/systems/listController.js';
+import { MapViewport } from '@/systems/viewport.js';
+
+import { SettlementDataWithRatings, getWorkshopIconType, getWorkshopBadgesHtml, getWorkshopSubtitle, calculateSettlementRatings } from '@/utils/settlementUtils.js';
+import { StringUtils } from '@/utils/stringUtils.js';
+import { WorldspaceUtils } from '@/utils/worldspaceUtils.js';
+
+import { MarkerCard } from '@/components/MarkerCard.js';
+import { SettlementCard } from '@/components/SettlementCard.js';
+
+import { CollapsiblePanel } from '@/components/ui/CollapsiblePanel.js';
+import { CustomScrollbar } from '@/components/ui/Scrollbar.js';
 
 export type WorkshopSortMode = 'ATTENTION' | 'ALPHABETICAL' | 'HAPPINESS' | 'POPULATION';
 

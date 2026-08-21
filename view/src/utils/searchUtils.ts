@@ -1,4 +1,4 @@
-import { StringUtils } from './stringUtils.js';
+import { StringUtils } from '@/utils/stringUtils.js';
 
 export interface FuzzyMatchResult {
     score: number;

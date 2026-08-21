@@ -1,13 +1,15 @@
-import { mapState } from '../core/state.js';
-import { SearchResult, SearchResultType } from '../types/search.js';
-import { POIMarker, CustomMarker, PowerArmorMarker } from '../types/markers.js';
-import { QuestItem } from '../types/quests.js';
-import { SettlementData } from '../types/payloads.js';
-import { getWorkshopIconType, getWorkshopBadgesHtml, getWorkshopSubtitle } from '../utils/settlementUtils.js';
-import { MARKER_ICON_QUEST_TARGET, MARKER_ICON_CUSTOM_MARKER, MARKER_ICON_POWER_ARMOR } from '../core/constants.js';
-import { SearchUtils } from '../utils/searchUtils.js';
-import { WorldspaceUtils } from '../utils/worldspaceUtils.js';
-import { QuestUtils } from '../utils/questUtils.js';
+import { POIMarker, CustomMarker, PowerArmorMarker } from '@/types/markers.js';
+import { SettlementData } from '@/types/payloads.js';
+import { QuestItem } from '@/types/quests.js';
+import { SearchResult, SearchResultType } from '@/types/search.js';
+
+import { MARKER_ICON_QUEST_TARGET, MARKER_ICON_CUSTOM_MARKER, MARKER_ICON_POWER_ARMOR } from '@/core/constants.js';
+import { mapState } from '@/core/state.js';
+
+import { QuestUtils } from '@/utils/questUtils.js';
+import { SearchUtils } from '@/utils/searchUtils.js';
+import { getWorkshopIconType, getWorkshopBadgesHtml, getWorkshopSubtitle } from '@/utils/settlementUtils.js';
+import { WorldspaceUtils } from '@/utils/worldspaceUtils.js';
 
 export const SearchEngine = {
     search(query: string): SearchResult[] {

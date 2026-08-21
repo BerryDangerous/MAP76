@@ -1,29 +1,31 @@
-import { mapState } from './core/state.js';
-import { initializeF4SEBindings, EngineBridge } from './core/bridge.js';
-import { ThemeEngine } from './systems/theme.js';
-import { AnimationEngine } from './systems/animation.js';
-import { MapViewport } from './components/viewport.js';
-import { appSettings } from './core/settings.js';
-import { loadMarkers, applySupplyLinesVisibilityFilter, switchWorldspace, updatePlayerMarker } from './components/markers.js';
-import { MarkerInteractionManager } from './components/markerInteraction.js';
-import { toggleSupplyLinesView, setSupplyLinesViewActive, hasSupplyLines } from './components/supplyLines.js';
-import { CustomMarkerCard } from './components/customMarkerCard.js';
-import { ModalManager } from './systems/modalManager.js';
-import { InfoCard } from './components/infoCard.js';
-import { QuestList } from './components/questList.js';
-import { WorkshopList } from './components/workshopList.js';
-import { QuestCard } from './components/questCard.js';
-import { SettlementCard } from './components/settlementCard.js';
-import { MarkerCard } from './components/markerCard.js';
-import { SearchPanel } from './components/searchPanel.js';
-import { FocusManager } from './systems/focusManager.js';
-import { F4SEMapPayload } from './types/payloads.js';
-import { DockControlsSystem } from './systems/dockControls.js';
-import { KeybindsSystem } from './systems/keybinds.js';
-import { SettingsMenu } from './components/SettingsMenu.js';
-import { requestSettings } from './core/settings.js';
-import { ControlBar } from './components/controlBar.js';
-import { InfoBar } from './components/infoBar.js';
+import { F4SEMapPayload } from '@/types/payloads.js';
+
+import { initializeF4SEBindings, EngineBridge } from '@/core/bridge.js';
+import { appSettings } from '@/core/settings.js';
+import { requestSettings } from '@/core/settings.js';
+import { mapState } from '@/core/state.js';
+
+import { ThemeEngine } from '@/systems/assetManager.js';
+import { DockControlsSystem } from '@/systems/dockControls.js';
+import { FocusManager } from '@/systems/focusManager.js';
+import { KeybindsSystem } from '@/systems/keybindManager.js';
+import { MarkerInteractionManager } from '@/systems/markerController.js';
+import { loadMarkers, applySupplyLinesVisibilityFilter, switchWorldspace, updatePlayerMarker } from '@/systems/markerRenderer.js';
+import { ModalManager } from '@/systems/modalManager.js';
+import { MapViewport } from '@/systems/viewport.js';
+
+import { ControlBar } from '@/components/ControlsBar.js';
+import { CustomMarkerCard } from '@/components/CustomMarkerCard.js';
+import { InfoBar } from '@/components/InfoBar.js';
+import { InfoCard } from '@/components/InfoCard.js';
+import { MarkerCard } from '@/components/MarkerCard.js';
+import { QuestCard } from '@/components/QuestCard.js';
+import { QuestList } from '@/components/QuestsPanel.js';
+import { SearchPanel } from '@/components/SearchPanel.js';
+import { SettingsMenu } from '@/components/SettingsMenu.js';
+import { SettlementCard } from '@/components/SettlementCard.js';
+import { toggleSupplyLinesView, setSupplyLinesViewActive, hasSupplyLines } from '@/components/SupplyLines.js';
+import { WorkshopList } from '@/components/WorkshopsPanel.js';
 
 ThemeEngine.initMapConfig();
 

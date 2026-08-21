@@ -1,5 +1,5 @@
-import { ActionButtonGroup } from '../ui/actionButton.js';
-import { ButtonConfig } from '../ui/button.js';
+import { ButtonConfig } from '@/components/ui/Button.js';
+import { ActionButtonGroup } from '@/components/ui/ButtonGroup.js';
 
 export interface ModalConfig {
     text: string;

@@ -1,6 +1,8 @@
-import { Button, ButtonConfig } from './button.js';
-import { EngineBridge } from '../core/bridge.js';
-import { KeybindsSystem } from '../systems/keybinds.js';
+import { EngineBridge } from '@/core/bridge.js';
+
+import { KeybindsSystem } from '@/systems/keybindManager.js';
+
+import { Button, ButtonConfig } from '@/components/ui/Button.js';
 
 export type ActionButtonConfig = ButtonConfig;
 

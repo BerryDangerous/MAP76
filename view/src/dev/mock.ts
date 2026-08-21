@@ -1,6 +1,7 @@
-import { FastTravelStatus } from '../types/map.js';
-import { FrameTickPayload } from '../types/payloads.js';
-import { mockPayload } from './mockData.js';
+import { FastTravelStatus } from '@/types/map.js';
+import { FrameTickPayload } from '@/types/payloads.js';
+
+import { mockPayload } from '@/dev/mockData.js';
 
 export function initMockData(): void {
     console.log('[DevMode] Initializing Mock Data Sandbox...');

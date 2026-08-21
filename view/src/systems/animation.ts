@@ -1,5 +1,5 @@
-import { mapState } from '../core/state.js';
-import { appSettings } from '../core/settings.js';
+import { appSettings } from '@/core/settings.js';
+import { mapState } from '@/core/state.js';
 
 export const AnimationEngine = {
     virtualTime: 0,

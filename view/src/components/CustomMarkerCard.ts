@@ -1,8 +1,10 @@
-import { FocusManager } from '../systems/focusManager.js';
-import { FloatingCard } from '../ui/floatingCard.js';
-import { ActionButtonConfig } from '../ui/actionButton.js';
-import { MapViewport } from './viewport.js';
-import { setCustomMarker, removeCustomMarker } from '../core/bridge.js';
+import { setCustomMarker, removeCustomMarker } from '@/core/bridge.js';
+
+import { FocusManager } from '@/systems/focusManager.js';
+import { MapViewport } from '@/systems/viewport.js';
+
+import { ActionButtonConfig } from '@/components/ui/ButtonGroup.js';
+import { FloatingCard } from '@/components/ui/FloatingCard.js';
 
 let customMarkerCardInstance: FloatingCard | null = null;
 

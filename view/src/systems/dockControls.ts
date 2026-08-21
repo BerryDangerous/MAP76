@@ -1,4 +1,4 @@
-import { appSettings } from '../core/settings.js';
+import { appSettings } from '@/core/settings.js';
 
 export type DockCorner = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 

@@ -1,5 +1,6 @@
-import { SettingsControl } from './settingsRow.js';
-import { EngineBridge } from '../core/bridge.js';
+import { EngineBridge } from '@/core/bridge.js';
+
+import { SettingsControl } from '@/components/ui/SettingsRow.js';
 
 export class MultiChoice<T> implements SettingsControl {
     private container: HTMLElement;

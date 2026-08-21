@@ -1,5 +1,4 @@
-import { loadMarkers } from '../components/markers.js';
-import { F4SEMapPayload, FastTravelCheckPayload, FastTravelFailPayload } from '../types/payloads.js';
+import { F4SEMapPayload, FastTravelCheckPayload, FastTravelFailPayload } from '@/types/payloads.js';
 
 export const EngineBridge = {
     closeMap() {

@@ -1,18 +1,21 @@
-import { MapViewport } from './viewport.js';
-import { EngineBridge } from '../core/bridge.js';
-import { FastTravelFailPayload, SettlementData } from '../types/payloads.js';
-import { mapState } from '../core/state.js';
-import { showFastTravelErrorModal } from './appModals.js';
-import { SettlementCard, renderSettlementCardContent } from './settlementCard.js';
-import { MarkerCard } from './markerCard.js';
-import { CustomMarkerCard } from './customMarkerCard.js';
-import { isSupplyLinesViewActive } from './supplyLines.js';
-import { getPotentialVassalMarkerFormIds } from './markers.js';
-import { QuestCard } from './questCard.js';
-import { FocusManager } from '../systems/focusManager.js';
-import { FastTravelCheckPayload } from '../types/payloads.js';
-import { FastTravelStatus } from '../types/map.js';
-import { showFastTravelConfirmationModal } from './appModals.js';
+import { FastTravelStatus } from '@/types/map.js';
+import { FastTravelFailPayload, SettlementData } from '@/types/payloads.js';
+import { FastTravelCheckPayload } from '@/types/payloads.js';
+
+import { EngineBridge } from '@/core/bridge.js';
+import { mapState } from '@/core/state.js';
+
+import { FocusManager } from '@/systems/focusManager.js';
+import { getPotentialVassalMarkerFormIds } from '@/systems/markerRenderer.js';
+import { MapViewport } from '@/systems/viewport.js';
+
+import { CustomMarkerCard } from '@/components/CustomMarkerCard.js';
+import { MarkerCard } from '@/components/MarkerCard.js';
+import { showFastTravelErrorModal } from '@/components/Modals.js';
+import { showFastTravelConfirmationModal } from '@/components/Modals.js';
+import { QuestCard } from '@/components/QuestCard.js';
+import { SettlementCard, renderSettlementCardContent } from '@/components/SettlementCard.js';
+import { isSupplyLinesViewActive } from '@/components/SupplyLines.js';
 
 export let activeHoveredMarker: HTMLElement | null = null;
 let pendingFastTravel: { formId: number, name: string } | null = null;

@@ -1,14 +1,17 @@
-import { mapState } from '../core/state.js';
-import { appSettings } from '../core/settings.js';
-import { GameBounds, MapPosition } from '../types/map.js';
-import { CELL_SIZE_UNITS } from '../core/constants.js';
-import { QuestCard } from './questCard.js';
-import { FloatingCard } from '../ui/floatingCard.js';
-import { FocusManager } from '../systems/focusManager.js';
-import { MarkerCard } from './markerCard.js';
-import { SettlementCard } from './settlementCard.js';
-import { CustomMarkerCard } from './customMarkerCard.js';
-import { activeHoveredMarker } from './markerInteraction.js';
+import { GameBounds, MapPosition } from '@/types/map.js';
+
+import { CELL_SIZE_UNITS } from '@/core/constants.js';
+import { mapState } from '@/core/state.js';
+
+import { FocusManager } from '@/systems/focusManager.js';
+import { activeHoveredMarker } from '@/systems/markerController.js';
+
+import { CustomMarkerCard } from '@/components/CustomMarkerCard.js';
+import { MarkerCard } from '@/components/MarkerCard.js';
+import { QuestCard } from '@/components/QuestCard.js';
+import { SettlementCard } from '@/components/SettlementCard.js';
+
+import { FloatingCard } from '@/components/ui/FloatingCard.js';
 
 const viewport = document.getElementById('map-viewport') as HTMLElement;
 const container = document.getElementById('screen-container') as HTMLElement;

@@ -1,6 +1,6 @@
-import { ENGINE_MARKER_TYPES, WORLDSPACE_CONFIGS, DEFAULT_BLANK_CONFIG } from '../core/constants.js';
-import { mapState } from '../core/state.js';
-import { appSettings } from '../core/settings.js';
+import { ENGINE_MARKER_TYPES, WORLDSPACE_CONFIGS, DEFAULT_BLANK_CONFIG } from '@/core/constants.js';
+import { appSettings } from '@/core/settings.js';
+import { mapState } from '@/core/state.js';
 
 export const ThemeEngine = {
 

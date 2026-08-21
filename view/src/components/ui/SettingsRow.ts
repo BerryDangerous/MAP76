@@ -1,4 +1,4 @@
-import { EngineBridge } from '../core/bridge.js';
+import { EngineBridge } from '@/core/bridge.js';
 
 export interface SettingsControl {
     getElement(): HTMLElement;

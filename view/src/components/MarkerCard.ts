@@ -1,9 +1,10 @@
-import { FocusManager } from '../systems/focusManager.js';
-import { FloatingCard } from '../ui/floatingCard.js';
-import { MapViewport } from './viewport.js';
-import { ActionButtonConfig } from '../ui/actionButton.js';
-import { MarkerInteractionManager } from './markerInteraction.js';
-import { DockCorner } from '../systems/dockControls.js';
+import { DockCorner } from '@/systems/dockControls.js';
+import { FocusManager } from '@/systems/focusManager.js';
+import { MarkerInteractionManager } from '@/systems/markerController.js';
+import { MapViewport } from '@/systems/viewport.js';
+
+import { ActionButtonConfig } from '@/components/ui/ButtonGroup.js';
+import { FloatingCard } from '@/components/ui/FloatingCard.js';
 
 let markerCardInstance: FloatingCard | null = null;
 

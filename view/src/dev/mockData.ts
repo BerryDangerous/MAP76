@@ -1,4 +1,4 @@
-import { F4SEMapPayload } from "../types/payloads";
+import { F4SEMapPayload } from "@/types/payloads";
 
 export const mockPayload: F4SEMapPayload = {
     dlc04VassalDistance: 70000,

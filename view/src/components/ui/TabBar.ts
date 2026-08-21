@@ -1,5 +1,6 @@
-import { KeybindsSystem } from '../systems/keybinds.js';
-import { EngineBridge } from '../core/bridge.js';
+import { EngineBridge } from '@/core/bridge.js';
+
+import { KeybindsSystem } from '@/systems/keybindManager.js';
 
 export interface TabItem<T = string> {
     id: T;

@@ -1,5 +1,5 @@
-import { MapConfig, GameBounds } from '../types/map.js';
-import { F4SEMapPayload } from '../types/payloads.js';
+import { MapConfig, GameBounds } from '@/types/map.js';
+import { F4SEMapPayload } from '@/types/payloads.js';
 
 export const mapState = {
     zoom: 1.0,

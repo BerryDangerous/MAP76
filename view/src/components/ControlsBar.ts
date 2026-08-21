@@ -1,10 +1,12 @@
-import { FocusManager, FocusOwner } from '../systems/focusManager.js';
-import { KeybindsSystem, KeyAction } from '../systems/keybinds.js';
-import { appSettings } from '../core/settings.js';
-import { mapState } from '../core/state.js';
-import { SearchPanel } from './searchPanel.js';
-import { QuestList } from './questList.js';
-import { hasSupplyLines, isSupplyLinesViewActive } from './supplyLines.js';
+import { appSettings } from '@/core/settings.js';
+import { mapState } from '@/core/state.js';
+
+import { FocusManager, FocusOwner } from '@/systems/focusManager.js';
+import { KeybindsSystem, KeyAction } from '@/systems/keybindManager.js';
+
+import { QuestList } from '@/components/QuestsPanel.js';
+import { SearchPanel } from '@/components/SearchPanel.js';
+import { hasSupplyLines, isSupplyLinesViewActive } from '@/components/SupplyLines.js';
 
 export class ControlBar {
     private static container: HTMLElement | null = null;

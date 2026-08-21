@@ -1,5 +1,6 @@
 /// <reference types="vite/client" />
-import { MapConfig } from './types/map.js';
+
+import { MapConfig } from '@/types/map.js';
 
 export { };
 

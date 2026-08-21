@@ -1,19 +1,24 @@
-import { mapState } from '../core/state.js';
-import { QuestItem } from '../types/quests.js';
-import { FocusManager } from '../systems/focusManager.js';
-import { MapViewport } from './viewport.js';
-import { appSettings } from '../core/settings.js';
-import { QuestCard } from './questCard.js';
-import { toggleQuestActive, EngineBridge } from '../core/bridge.js';
-import { SelectableListController } from '../ui/selectableListController.js';
-import { TabBar } from '../ui/tabBar.js';
-import { CollapsiblePanel } from '../ui/collapsiblePanel.js';
-import { CustomScrollbar } from '../ui/customScrollbar.js';
-import { KeybindsSystem } from '../systems/keybinds.js';
-import { DockControlsSystem, DockCorner } from '../systems/dockControls.js';
-import { QuestUtils } from '../utils/questUtils.js';
-import { StringUtils } from '../utils/stringUtils.js';
-import { WorldspaceUtils } from '../utils/worldspaceUtils.js';
+import { QuestItem } from '@/types/quests.js';
+
+import { toggleQuestActive, EngineBridge } from '@/core/bridge.js';
+import { appSettings } from '@/core/settings.js';
+import { mapState } from '@/core/state.js';
+
+import { DockControlsSystem, DockCorner } from '@/systems/dockControls.js';
+import { FocusManager } from '@/systems/focusManager.js';
+import { KeybindsSystem } from '@/systems/keybindManager.js';
+import { SelectableListController } from '@/systems/listController.js';
+import { MapViewport } from '@/systems/viewport.js';
+
+import { QuestUtils } from '@/utils/questUtils.js';
+import { StringUtils } from '@/utils/stringUtils.js';
+import { WorldspaceUtils } from '@/utils/worldspaceUtils.js';
+
+import { QuestCard } from '@/components/QuestCard.js';
+
+import { CollapsiblePanel } from '@/components/ui/CollapsiblePanel.js';
+import { CustomScrollbar } from '@/components/ui/Scrollbar.js';
+import { TabBar } from '@/components/ui/TabBar.js';
 
 export type QuestFilterTab = 'ALL' | 'MAIN' | 'SIDE' | 'MISC';
 export type QuestSortMode = 'RECENT' | 'ALPHABETICAL' | 'ACTIVE';
