@@ -327,10 +327,11 @@ body, html {
 #modal-text {
     color: #e0c870;
     font-family: 'PibotoCondensed', sans-serif;
-    font-size: 16px;
+    font-size: 20px;
     line-height: 1.4;
     margin: 0;
     text-transform: none;
+    text-align: center;
 }
 
 .modal-actions {
@@ -363,25 +364,12 @@ body, html {
     background: #f5cb5b;
 }
 
-.modal-actions .btn:first-child {
-    background: transparent;
-    border: none;
-}
 
-.modal-actions .btn:first-child:hover,
-.modal-actions .btn:first-child:focus,
-.modal-actions .btn:first-child.selected {
-    background: #f5cb5b;
-}
 
 .modal-actions .btn .btn-text {
     color: #f5cb5b;
     font-family: 'PibotoCondensed', sans-serif;
     font-size: 13px;
-}
-
-.modal-actions .btn:first-child .btn-text {
-    color: #f5cb5b;
 }
 
 .modal-actions .btn:hover .btn-text,

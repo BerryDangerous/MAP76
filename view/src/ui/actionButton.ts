@@ -1,5 +1,6 @@
 import { Button, ButtonConfig } from './button.js';
 import { EngineBridge } from '../core/bridge.js';
+import { KeybindsSystem } from '../systems/keybinds.js';
 
 export type ActionButtonConfig = ButtonConfig;
 
@@ -96,7 +97,7 @@ export class ActionButtonGroup {
             this.navigatePrev();
             return true;
         }
-        if (e.key === 'Enter' || e.key === ' ') {
+        if (KeybindsSystem.isAction(e, 'SELECT')) {
             this.triggerSelected();
             return true;
         }
