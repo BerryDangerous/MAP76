@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <stdint.h>
+#include <functional>
 #include <RE/Fallout.h>
 
 namespace PaperMap::UI::Actions
@@ -12,9 +13,10 @@ namespace PaperMap::UI::Actions
      * carry weight vs perks, and control map lock state.
      *
      * @param a_player Target player character instance.
-     * @return Status string ("SUCCESS", "PLAYER_DEAD", "COMBAT", "INTERIOR", "SURVIVAL", "OVERBURDENED", "QUEST_LOCKED", "UNKNOWN_ERROR").
+     * @param a_destinationMarker Optional target destination marker reference (used for survival exceptions).
+     * @param a_callback Callback invoked with status string ("SUCCESS", "PLAYER_DEAD", "COMBAT", "INTERIOR", "SURVIVAL", "OVERBURDENED", "QUEST_LOCKED", "UNKNOWN_ERROR").
      */
-    std::string VerifyFastTravelConditions(RE::PlayerCharacter *a_player);
+    void VerifyFastTravelConditions(RE::PlayerCharacter *a_player, RE::TESObjectREFR *a_destinationMarker, std::function<void(const std::string &)> a_callback);
 
     /**
      * @brief Triggers the fast travel sequence to a specified marker FormID.

@@ -7,6 +7,8 @@
 #include "Constants.h"
 #include "RE/N/NEW_REFR_DATA.h"
 #include "RE/T/TESDataHandler.h"
+#include "RE/T/TESGlobal.h"
+#include "RE/B/BGSListForm.h"
 
 namespace PaperMap::UI::Actions
 {
@@ -39,24 +41,30 @@ namespace PaperMap::UI::Actions
         {
             if (parentCell && !parentCell->IsExterior())
             {
-                if (parentCell->GetFormID() != Constants::FormID::INSTITUTE_CONCOURSE)
+                constexpr uint16_t kCanTravelFromHere = 1u << 2;
+                if (parentCell->cellFlags.all(static_cast<RE::TESObjectCELL::Flag>(kCanTravelFromHere)))
                 {
-                    return true;
+                    return false;
                 }
+                return true;
             }
             return false;
         }
 
-        bool IsSurvivalRestricted(RE::PlayerCharacter *a_player, RE::TESObjectCELL *parentCell)
+        bool IsSurvivalRestricted(RE::PlayerCharacter *a_player, RE::TESObjectCELL *parentCell, RE::TESObjectREFR *a_destinationMarker)
         {
-            auto difficulty = a_player->GetDifficultyLevel();
-            if (difficulty == RE::DifficultyLevel::kTrueSurvival || difficulty == RE::DifficultyLevel::kSurvival)
+            auto noFastTravel = RE::TESForm::GetFormByID<RE::TESGlobal>(Constants::FormID::HC_RULE_NO_FAST_TRAVEL);
+            if (noFastTravel && noFastTravel->GetValue() > 0.0f)
             {
-                bool isInsideInstitute = (parentCell && parentCell->GetFormID() == Constants::FormID::INSTITUTE_CONCOURSE);
-                if (!isInsideInstitute)
+                if (a_destinationMarker)
                 {
-                    return true;
+                    auto allowedList = RE::TESForm::GetFormByID<RE::BGSListForm>(Constants::FormID::HC_FAST_TRAVEL_ALLOWED_LIST);
+                    if (allowedList && allowedList->ContainsItem(a_destinationMarker))
+                    {
+                        return false;
+                    }
                 }
+                return true;
             }
             return false;
         }
@@ -156,7 +164,7 @@ namespace PaperMap::UI::Actions
         }
     }
 
-    std::string VerifyFastTravelConditions(RE::PlayerCharacter *a_player)
+    std::string EvaluateStandardConditions(RE::PlayerCharacter *a_player, RE::TESObjectREFR *a_destinationMarker)
     {
         if (!a_player)
         {
@@ -189,7 +197,7 @@ namespace PaperMap::UI::Actions
             return Constants::FastTravel::INTERIOR;
         }
 
-        if (IsSurvivalRestricted(a_player, parentCell))
+        if (IsSurvivalRestricted(a_player, parentCell, a_destinationMarker))
         {
             return Constants::FastTravel::SURVIVAL;
         }
@@ -199,13 +207,67 @@ namespace PaperMap::UI::Actions
             return Constants::FastTravel::OVERBURDENED;
         }
 
-        auto *controlMap = RE::ControlMap::GetSingleton();
-        if (controlMap && controlMap->contextPriorityStack.empty())
-        {
-            return Constants::FastTravel::QUEST_LOCKED;
-        }
-
         return Constants::FastTravel::SUCCESS;
+    }
+
+    class FastTravelCheckCallback : public RE::BSScript::IStackCallbackFunctor
+    {
+    public:
+        RE::PlayerCharacter *player;
+        RE::TESObjectREFR *destMarker;
+        std::function<void(const std::string &)> onComplete;
+
+        FastTravelCheckCallback(RE::PlayerCharacter *p, RE::TESObjectREFR *m, std::function<void(const std::string &)> cb) 
+            : player(p), destMarker(m), onComplete(cb) {}
+        
+        ~FastTravelCheckCallback() override = default;
+
+        void CallQueued() override {}
+        
+        void CallCanceled() override 
+        {
+            if (onComplete) {
+                onComplete(Constants::FastTravel::UNKNOWN_ERROR);
+            }
+        }
+        
+        void StartMultiDispatch() override {}
+        void EndMultiDispatch() override {}
+        bool CanSave() override { return false; }
+
+        void operator()(RE::BSScript::Variable result) override
+        {
+            bool isEnabled = result.is<bool>() ? RE::BSScript::get<bool>(result) : true;
+            
+            if (auto *task = F4SE::GetTaskInterface())
+            {
+                task->AddTask([isEnabled, p = this->player, m = this->destMarker, cb = this->onComplete]() {
+                    if (!isEnabled)
+                    {
+                        cb(Constants::FastTravel::QUEST_LOCKED);
+                    }
+                    else
+                    {
+                        std::string finalStatus = EvaluateStandardConditions(p, m);
+                        cb(finalStatus);
+                    }
+                });
+            }
+        }
+    };
+
+    void VerifyFastTravelConditions(RE::PlayerCharacter *a_player, RE::TESObjectREFR *a_destinationMarker, std::function<void(const std::string &)> a_callback)
+    {
+        auto *vm = RE::BSScript::Internal::VirtualMachine::GetSingleton();
+        if (vm)
+        {
+            auto callback = RE::make_smart<FastTravelCheckCallback>(a_player, a_destinationMarker, a_callback);
+            vm->RE::BSScript::IVirtualMachine::DispatchStaticCall("Game", "IsFastTravelEnabled", callback);
+        }
+        else
+        {
+            a_callback(EvaluateStandardConditions(a_player, a_destinationMarker));
+        }
     }
 
     void ExecuteFastTravel(uint32_t a_formId)
@@ -226,33 +288,40 @@ namespace PaperMap::UI::Actions
             return;
         }
 
-        std::string status = VerifyFastTravelConditions(player);
-        if (status != Constants::FastTravel::SUCCESS)
-        {
-            if (UI::State::g_api && UI::State::g_view)
+        VerifyFastTravelConditions(player, markerRef, [a_formId, markerRef](const std::string &status) {
+            if (status != Constants::FastTravel::SUCCESS)
             {
-                nlohmann::json response;
-                response["status"] = status;
-                response["formId"] = a_formId;
-                response["locationName"] = markerRef->GetDisplayFullName();
+                if (UI::State::g_api && UI::State::g_view)
+                {
+                    nlohmann::json response;
+                    response["status"] = status;
+                    response["formId"] = a_formId;
+                    response["locationName"] = markerRef->GetDisplayFullName();
 
-                std::string responseStr = response.dump();
-                UI::State::g_api->InteropCall(UI::State::g_view, "onFastTravelFailed", responseStr.c_str());
+                    std::string responseStr = response.dump();
+                    UI::State::g_api->InteropCall(UI::State::g_view, "onFastTravelFailed", responseStr.c_str());
+                }
+                return;
             }
-            return;
-        }
 
-        if (UI::State::g_mapIsOpen.load())
-        {
-            UI::TogglePaperMap();
-        }
-        else if (UI::State::g_api && UI::State::g_view)
-        {
-            UI::State::g_api->Unfocus(UI::State::g_view);
-            UI::State::g_api->Hide(UI::State::g_view);
-        }
+            if (auto *task = F4SE::GetTaskInterface())
+            {
+                task->AddUITask([markerRef]() {
+                    if (UI::State::g_mapIsOpen.load())
+                    {
+                        UI::TogglePaperMap();
+                    }
+                    else if (UI::State::g_api && UI::State::g_view)
+                    {
+                        UI::State::g_api->Unfocus(UI::State::g_view);
+                        UI::State::g_api->Hide(UI::State::g_view);
+                    }
 
-        QueueFastTravel(player, markerRef->GetHandle(), true);
+                    auto *p = RE::PlayerCharacter::GetSingleton();
+                    QueueFastTravel(p, markerRef->GetHandle(), true);
+                });
+            }
+        });
     }
 
     void SetCustomMarker(float a_x, float a_y)

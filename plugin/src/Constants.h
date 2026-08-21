@@ -16,8 +16,9 @@ namespace PaperMap::Constants
     {
         constexpr uint32_t PLAYER = 0x14;
         constexpr uint32_t COMMONWEALTH = 0x3C;
-        constexpr uint32_t INSTITUTE_CONCOURSE = 0x00021FF3;
         constexpr uint32_t STRONG_BACK_PERK = 0x00146098;
+        constexpr uint32_t HC_RULE_NO_FAST_TRAVEL = 0x0000080D;
+        constexpr uint32_t HC_FAST_TRAVEL_ALLOWED_LIST = 0x00000852;
         constexpr uint32_t FORM_ID_INDEX_MASK = 0x00FFFFFF;
     }
 

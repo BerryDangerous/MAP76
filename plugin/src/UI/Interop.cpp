@@ -120,28 +120,50 @@ namespace PaperMap::UI
 
         void HandleCheckFastTravel(const char *arg)
         {
-            if (auto *task = F4SE::GetTaskInterface())
+            if (!arg)
+                return;
+                
+            try
             {
-                task->AddTask([]() {
-                    try
-                    {
-                        auto *player = RE::PlayerCharacter::GetSingleton();
-                        std::string status = PaperMap::UI::Actions::VerifyFastTravelConditions(player);
-
-                        if (PaperMap::UI::State::g_api && PaperMap::UI::State::g_view)
+                auto parsedJson = nlohmann::json::parse(arg);
+                uint32_t formId = 0;
+                if (parsedJson.contains("formId") && parsedJson["formId"].is_number())
+                {
+                    formId = parsedJson["formId"].get<uint32_t>();
+                }
+                
+                if (auto *task = F4SE::GetTaskInterface())
+                {
+                    task->AddTask([formId]() {
+                        try
                         {
-                            nlohmann::json response;
-                            response["status"] = status;
+                            auto *player = RE::PlayerCharacter::GetSingleton();
+                            RE::TESObjectREFR *destMarker = nullptr;
+                            if (formId != 0) {
+                                destMarker = RE::TESForm::GetFormByID<RE::TESObjectREFR>(formId);
+                            }
+                            
+                            PaperMap::UI::Actions::VerifyFastTravelConditions(player, destMarker, [](const std::string &status) {
+                                if (PaperMap::UI::State::g_api && PaperMap::UI::State::g_view)
+                                {
+                                    nlohmann::json response;
+                                    response["status"] = status;
 
-                            std::string responseStr = response.dump();
-                            PaperMap::UI::State::g_api->InteropCall(PaperMap::UI::State::g_view, "onFastTravelCheckResult", responseStr.c_str());
+                                    std::string responseStr = response.dump();
+                                    PaperMap::UI::State::g_api->InteropCall(PaperMap::UI::State::g_view, "onFastTravelCheckResult", responseStr.c_str());
+                                }
+                            });
                         }
-                    }
-                    catch (const std::exception &e)
-                    {
-                        REX::ERROR("Error processing checkFastTravel callback: {}", e.what());
-                    }
-                });
+                        catch (const std::exception &e)
+                        {
+                            REX::ERROR("Error processing checkFastTravel callback task: {}", e.what());
+                        }
+                    });
+                }
+            }
+            catch (const std::exception &e)
+            {
+                REX::ERROR("Error processing checkFastTravel callback: {}", e.what());
             }
         }
 
