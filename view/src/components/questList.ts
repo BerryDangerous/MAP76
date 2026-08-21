@@ -268,7 +268,8 @@ export const QuestList = {
             return true;
         }
 
-        if (KeybindsSystem.isAction(e, 'NAV_RIGHT')) {
+        const isRightDocked = questListState.dockCorner.includes('right');
+        if (isRightDocked ? KeybindsSystem.isAction(e, 'NAV_LEFT') : KeybindsSystem.isAction(e, 'NAV_RIGHT')) {
             FocusManager.setFocus('QUEST_CARD');
             EngineBridge.emitSound('UIGeneralFocus');
             return true;

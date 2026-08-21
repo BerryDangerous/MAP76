@@ -233,7 +233,8 @@ export const WorkshopList = {
             return true;
         }
 
-        if (KeybindsSystem.isAction(e, 'NAV_RIGHT')) {
+        const isRightDocked = workshopListState.dockCorner.includes('right');
+        if (isRightDocked ? KeybindsSystem.isAction(e, 'NAV_LEFT') : KeybindsSystem.isAction(e, 'NAV_RIGHT')) {
             if (SettlementCard.isOpen()) {
                 FocusManager.setFocus('SETTLEMENT_CARD');
                 EngineBridge.emitSound('UIGeneralFocus');

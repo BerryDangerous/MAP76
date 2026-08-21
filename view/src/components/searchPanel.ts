@@ -319,7 +319,8 @@ export const SearchPanel = {
             return true;
         }
 
-        if (KeybindsSystem.isAction(e, 'NAV_LEFT')) {
+        const isRightDocked = searchPanelState.dockCorner.includes('right');
+        if (isRightDocked ? KeybindsSystem.isAction(e, 'NAV_LEFT') : KeybindsSystem.isAction(e, 'NAV_RIGHT')) {
             const selected = listController.getSelectedItem();
             if (selected) {
                 if (selected.type === 'marker' && MarkerCard.isOpen()) FocusManager.setFocus('MARKER_CARD');
