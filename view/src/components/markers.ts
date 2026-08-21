@@ -398,3 +398,37 @@ function createMarkerContainer(type: MarkerType, displayName: string, pos: MapPo
     container.dataset.rawPctY = pos.y.toString();
     return container;
 }
+
+export function updatePlayerMarker(player: PlayerData | undefined) {
+    if (!player) return;
+
+    mapState.player.x = player.x;
+    mapState.player.y = player.y;
+    mapState.player.z = player.z;
+    mapState.player.angle = player.angle;
+    mapState.player.active = true;
+
+    const config = mapState.activeMapConfig;
+    if (!config) return;
+
+    const pImg = document.getElementById('player-marker') as HTMLImageElement;
+    if (!WorldspaceUtils.isSameWorldspace(player.worldspace, config.worldspaceID)) {
+        if (pImg) pImg.style.display = 'none';
+        mapState.player.active = false;
+        return;
+    }
+
+    const worldspaceData = mapState.lastPayload?.worldspaces?.[config.worldspaceID];
+    const bounds = worldspaceData?.bounds;
+    if (!bounds) return;
+
+    if (!pImg) {
+        renderPlayer(player, config.worldspaceID, bounds);
+    } else {
+        pImg.style.display = '';
+        const pos = MapViewport.gameToMapCoords(player.x, player.y, player.z, bounds);
+        pImg.style.left = `${pos.x}%`;
+        pImg.style.top = `${pos.y}%`;
+        pImg.style.setProperty('--player-angle', `${player.angle}deg`);
+    }
+}

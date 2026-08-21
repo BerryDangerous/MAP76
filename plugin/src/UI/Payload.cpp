@@ -235,4 +235,42 @@ namespace PaperMap::UI::Payload
             return "{\"bounds\":null,\"markers\":[],\"quests\":[],\"settlements\":[],\"player\":null,\"custom_marker\":null,\"power_armor\":null}";
         }
     }
+
+    std::string GetFrameTickPayloadAsJSON()
+    {
+        try
+        {
+            nlohmann::json tickPayload = nlohmann::json::object();
+
+            auto *calendar = RE::Calendar::GetSingleton();
+            if (calendar && calendar->gameHour && calendar->gameDay && calendar->gameMonth && calendar->gameYear)
+            {
+                tickPayload["hour"] = calendar->gameHour->value;
+                tickPayload["day"] = calendar->gameDay->value;
+                tickPayload["month"] = calendar->gameMonth->value;
+                tickPayload["year"] = calendar->gameYear->value + 2000;
+            }
+
+            Engine::Player::State enginePlayer = Engine::Player::GetCurrentState();
+            DTO::PlayerDTO playerDto{
+                enginePlayer.position.x,
+                enginePlayer.position.y,
+                enginePlayer.position.z,
+                enginePlayer.worldspace,
+                enginePlayer.headingDegrees,
+                enginePlayer.caps,
+                enginePlayer.currentWeight,
+                enginePlayer.maxWeight
+            };
+            
+            tickPayload["player"] = playerDto;
+
+            return tickPayload.dump(-1, ' ', false, nlohmann::json::error_handler_t::replace);
+        }
+        catch (const std::exception &e)
+        {
+            REX::ERROR("Exception in GetFrameTickPayloadAsJSON: {}", e.what());
+            return "{}";
+        }
+    }
 }

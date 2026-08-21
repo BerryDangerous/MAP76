@@ -16,4 +16,5 @@ namespace PaperMap::UI::Payload
      * @return A serialized JSON string containing: bounds, player, markers, and quests.
      */
     std::string GetMapPayloadAsJSON();
+    std::string GetFrameTickPayloadAsJSON();
 }

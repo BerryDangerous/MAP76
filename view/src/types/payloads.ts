@@ -62,4 +62,5 @@ export interface FrameTickPayload {
     day: number;
     month: number;
     year: number;
+    player?: PlayerData;
 }

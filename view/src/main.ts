@@ -4,7 +4,7 @@ import { ThemeEngine } from './systems/theme.js';
 import { AnimationEngine } from './systems/animation.js';
 import { MapViewport } from './components/viewport.js';
 import { appSettings } from './core/settings.js';
-import { loadMarkers, applySupplyLinesVisibilityFilter, switchWorldspace } from './components/markers.js';
+import { loadMarkers, applySupplyLinesVisibilityFilter, switchWorldspace, updatePlayerMarker } from './components/markers.js';
 import { MarkerInteractionManager } from './components/markerInteraction.js';
 import { toggleSupplyLinesView, setSupplyLinesViewActive, hasSupplyLines } from './components/supplyLines.js';
 import { CustomMarkerCard } from './components/customMarkerCard.js';
@@ -84,6 +84,9 @@ window.addEventListener('FrameTick', (e: Event) => {
     if (customEvent.detail) {
         InfoCard.update(customEvent.detail);
         InfoBar.updateTime(customEvent.detail);
+        if (customEvent.detail.player) {
+            updatePlayerMarker(customEvent.detail.player);
+        }
     }
 });
 

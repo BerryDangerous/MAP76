@@ -34,5 +34,9 @@ export const InfoCard = {
             const s = String(now.getSeconds()).padStart(2, '0');
             realTimeEl.textContent = `REAL: ${h}:${m}:${s}`;
         }
+        
+        if (tick.player) {
+            this.init(tick.player);
+        }
     }
 };

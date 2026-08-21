@@ -1,7 +1,9 @@
 #include "PCH.h"
 #include "Hooks/MainUpdate.h"
 #include "UI/Interop.h"
+#include "UI/Payload.h"
 #include <nlohmann/json.hpp>
+#include <chrono>
 
 namespace PaperMap::Hooks
 {
@@ -19,30 +21,19 @@ namespace PaperMap::Hooks
                 return;
             }
 
-            auto *calendar = RE::Calendar::GetSingleton();
-            if (!calendar)
+            static auto lastTick = std::chrono::steady_clock::now();
+            auto now = std::chrono::steady_clock::now();
+            if (std::chrono::duration_cast<std::chrono::milliseconds>(now - lastTick).count() < 500)
             {
                 return;
             }
+            lastTick = now;
 
-            if (!calendar->gameHour || !calendar->gameDay || !calendar->gameMonth || !calendar->gameYear)
+            std::string payloadStr = PaperMap::UI::Payload::GetFrameTickPayloadAsJSON();
+            if (!payloadStr.empty() && payloadStr != "{}")
             {
-                return;
+                PaperMap::UI::State::g_api->InteropCall(PaperMap::UI::State::g_view, "onFrameTick", payloadStr.c_str());
             }
-
-            float hour = calendar->gameHour->value;
-            float day = calendar->gameDay->value;
-            float month = calendar->gameMonth->value;
-            float year = calendar->gameYear->value + 2000;
-
-            nlohmann::json tickPayload;
-            tickPayload["hour"] = hour;
-            tickPayload["day"] = day;
-            tickPayload["month"] = month;
-            tickPayload["year"] = year;
-
-            std::string payloadStr = tickPayload.dump();
-            PaperMap::UI::State::g_api->InteropCall(PaperMap::UI::State::g_view, "onFrameTick", payloadStr.c_str());
         }
     }
 
