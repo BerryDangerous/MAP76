@@ -1,7 +1,7 @@
 #pragma once
 #include <RE/Fallout.h>
 
-namespace PaperMap::Engine
+namespace MAP76::Engine
 {
     /**
      * @brief Holds calculated bounding coordinates (in world units) for the active map space.

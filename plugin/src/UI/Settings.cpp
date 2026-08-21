@@ -3,12 +3,12 @@
 #include <RE/Fallout.h>
 #include <REX/REX.h>
 
-namespace PaperMap::UI {
+namespace MAP76::UI {
     nlohmann::json Settings::data = nlohmann::json::object();
     bool Settings::freezeSimulation = true;
 
     std::string Settings::GetConfigPath() {
-        return "Data/F4SE/Plugins/f4map.json";
+        return "Data/F4SE/Plugins/MAP76.json";
     }
 
     void Settings::UpdateVariables() {
@@ -25,7 +25,7 @@ namespace PaperMap::UI {
             try {
                 data = nlohmann::json::parse(file);
             } catch (const nlohmann::json::parse_error& e) {
-                REX::ERROR("f4map: Error parsing settings JSON: {}", e.what());
+                REX::ERROR("MAP76: Error parsing settings JSON: {}", e.what());
                 data = nlohmann::json::object();
             }
         }
@@ -47,7 +47,7 @@ namespace PaperMap::UI {
                 outfile << data.dump(4);
             }
         } catch (const nlohmann::json::parse_error& e) {
-            REX::ERROR("f4map: Error saving settings JSON: {}", e.what());
+            REX::ERROR("MAP76: Error saving settings JSON: {}", e.what());
         }
     }
 

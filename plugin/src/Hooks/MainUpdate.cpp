@@ -5,18 +5,18 @@
 #include <nlohmann/json.hpp>
 #include <chrono>
 
-namespace PaperMap::Hooks
+namespace MAP76::Hooks
 {
     namespace
     {
         void OnFrameTick()
         {
-            if (!PaperMap::UI::State::g_mapIsOpen.load())
+            if (!MAP76::UI::State::g_mapIsOpen.load())
             {
                 return;
             }
 
-            if (!PaperMap::UI::State::g_api || !PaperMap::UI::State::g_view)
+            if (!MAP76::UI::State::g_api || !MAP76::UI::State::g_view)
             {
                 return;
             }
@@ -29,10 +29,10 @@ namespace PaperMap::Hooks
             }
             lastTick = now;
 
-            std::string payloadStr = PaperMap::UI::Payload::GetFrameTickPayloadAsJSON();
+            std::string payloadStr = MAP76::UI::Payload::GetFrameTickPayloadAsJSON();
             if (!payloadStr.empty() && payloadStr != "{}")
             {
-                PaperMap::UI::State::g_api->InteropCall(PaperMap::UI::State::g_view, "onFrameTick", payloadStr.c_str());
+                MAP76::UI::State::g_api->InteropCall(MAP76::UI::State::g_view, "onFrameTick", payloadStr.c_str());
             }
         }
     }
@@ -41,12 +41,12 @@ namespace PaperMap::Hooks
     {
         if (auto *taskInterface = F4SE::GetTaskInterface())
         {
-            REX::INFO("f4map: Registering permanent frame tick task...");
+            REX::INFO("MAP76: Registering permanent frame tick task...");
             taskInterface->AddTaskPermanent(OnFrameTick);
         }
         else
         {
-            REX::ERROR("f4map: Failed to acquire F4SE TaskInterface for frame tick task!");
+            REX::ERROR("MAP76: Failed to acquire F4SE TaskInterface for frame tick task!");
         }
     }
 }

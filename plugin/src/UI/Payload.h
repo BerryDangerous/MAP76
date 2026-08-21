@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 
-namespace PaperMap::UI::Payload
+namespace MAP76::UI::Payload
 {
     /**
      * @brief Serializes the active world state, player details, map markers, and

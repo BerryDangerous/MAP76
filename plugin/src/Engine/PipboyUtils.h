@@ -2,7 +2,7 @@
 #include <string>
 #include <RE/Fallout.h>
 
-namespace PaperMap::Engine::PipboyUtils
+namespace MAP76::Engine::PipboyUtils
 {
     /**
      * @brief Safely extracts a string value from a Pip-Boy UI object by key.

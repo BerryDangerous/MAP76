@@ -3,9 +3,9 @@
 #include "UI/Interop.h"
 #include "Constants.h"
 
-namespace PaperMap::Hooks
+namespace MAP76::Hooks
 {
-    LRESULT CALLBACK PaperMapWindowProcessor(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+    LRESULT CALLBACK MAP76WindowProcessor(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         WNDPROC originalProc = g_oldWndProc;
 
@@ -15,7 +15,7 @@ namespace PaperMap::Hooks
             {
                 if (!UI::IsPlayerInMenuMode())
                 {
-                    UI::TogglePaperMap();
+                    UI::ToggleMAP76();
                     return 0;
                 }
             }
@@ -35,16 +35,16 @@ namespace PaperMap::Hooks
         {
             if (!g_oldWndProc)
             {
-                REX::INFO("f4map: Subclassing Fallout 4 Window Procedure hook...");
+                REX::INFO("MAP76: Subclassing Fallout 4 Window Procedure hook...");
                 g_oldWndProc = reinterpret_cast<WNDPROC>(SetWindowLongPtrA(
                     gameWindow,
                     GWLP_WNDPROC,
-                    reinterpret_cast<LONG_PTR>(PaperMapWindowProcessor)));
+                    reinterpret_cast<LONG_PTR>(MAP76WindowProcessor)));
             }
         }
         else
         {
-            REX::ERROR("f4map: Could not find main 'Fallout4' HWND. Input hooking failed!");
+            REX::ERROR("MAP76: Could not find main 'Fallout4' HWND. Input hooking failed!");
         }
     }
 }

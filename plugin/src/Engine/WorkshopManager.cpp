@@ -13,7 +13,7 @@
 #include "RE/D/DoorTeleportData.h"
 #include "RE/T/TESQuest.h"
 
-namespace PaperMap::Engine::WorkshopManager
+namespace MAP76::Engine::WorkshopManager
 {
     namespace
     {
@@ -228,7 +228,7 @@ namespace PaperMap::Engine::WorkshopManager
                 rawData.isInterior = cell->IsInterior();
             }
 
-            if (auto *world = PaperMap::Engine::GetReferenceWorldspace(rawData.workshopRef))
+            if (auto *world = MAP76::Engine::GetReferenceWorldspace(rawData.workshopRef))
             {
                 rawData.worldspace = world->formID;
             }
@@ -252,13 +252,13 @@ namespace PaperMap::Engine::WorkshopManager
 
             if (rawData.workshopRef)
             {
-                if (auto *markerRef = PaperMap::Engine::GetWorldLocationMarker(rawData.workshopRef))
+                if (auto *markerRef = MAP76::Engine::GetWorldLocationMarker(rawData.workshopRef))
                 {
                     rawData.markerFormId = markerRef->formID;
 
                     if (rawData.worldspace == 0)
                     {
-                        if (auto *markerWorld = PaperMap::Engine::GetReferenceWorldspace(markerRef))
+                        if (auto *markerWorld = MAP76::Engine::GetReferenceWorldspace(markerRef))
                         {
                             rawData.worldspace = markerWorld->formID;
                         }
@@ -444,7 +444,7 @@ namespace PaperMap::Engine::WorkshopManager
                         }
                     }
 
-                    if (auto iconTypeOpt = PaperMap::Engine::MapMarkers::GetMarkerIconType(markerRef))
+                    if (auto iconTypeOpt = MAP76::Engine::MapMarkers::GetMarkerIconType(markerRef))
                     {
                         rawData.iconType = *iconTypeOpt;
                     }

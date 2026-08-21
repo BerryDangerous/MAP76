@@ -3,7 +3,7 @@
 #include <vector>
 #include <RE/Fallout.h>
 
-namespace PaperMap::Engine::WorkshopManager
+namespace MAP76::Engine::WorkshopManager
 {
     struct PipboyMarkerIndex
     {

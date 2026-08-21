@@ -1,7 +1,7 @@
 #pragma once
 #include <RE/Fallout.h>
 
-namespace PaperMap::Engine::Player
+namespace MAP76::Engine::Player
 {
     /**
      * @brief Represents the active, dynamic runtime state of the player character.

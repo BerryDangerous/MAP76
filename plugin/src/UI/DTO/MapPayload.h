@@ -4,7 +4,7 @@
 #include <optional>
 #include <nlohmann/json.hpp>
 
-namespace PaperMap::UI::DTO
+namespace MAP76::UI::DTO
 {
     struct GameBounds
     {

@@ -16,21 +16,21 @@ void OnF4SEMessage(F4SE::MessagingInterface::Message *a_msg)
     {
     case F4SE::MessagingInterface::kGameDataReady:
     {
-        REX::INFO("f4map: Game data ready. Requesting PrismaUI API...");
-        PaperMap::UI::State::g_api = PRISMA_UI_API::RequestPluginAPI<PRISMA_UI_API::IVPrismaUI4>();
-        if (!PaperMap::UI::State::g_api)
+        REX::INFO("MAP76: Game data ready. Requesting PrismaUI API...");
+        MAP76::UI::State::g_api = PRISMA_UI_API::RequestPluginAPI<PRISMA_UI_API::IVPrismaUI4>();
+        if (!MAP76::UI::State::g_api)
         {
-            REX::ERROR("f4map: Failed to acquire PrismaUI API surface!");
+            REX::ERROR("MAP76: Failed to acquire PrismaUI API surface!");
         }
-        PaperMap::Hooks::InstallMainUpdateHook();
+        MAP76::Hooks::InstallMainUpdateHook();
         break;
     }
     case F4SE::MessagingInterface::kPostLoadGame:
     case F4SE::MessagingInterface::kNewGame:
-        if (PaperMap::UI::State::g_api && PaperMap::UI::State::g_view == 0)
+        if (MAP76::UI::State::g_api && MAP76::UI::State::g_view == 0)
         {
-            REX::INFO("f4map: Creating HTML view surface...");
-            PaperMap::UI::Initialize();
+            REX::INFO("MAP76: Creating HTML view surface...");
+            MAP76::UI::Initialize();
         }
         break;
     }
@@ -39,10 +39,10 @@ void OnF4SEMessage(F4SE::MessagingInterface::Message *a_msg)
 extern "C" __declspec(dllexport) bool F4SEAPI F4SEPlugin_Load(const F4SE::LoadInterface *a_f4se)
 {
     F4SE::InitInfo info;
-    info.logName = "f4map";
+    info.logName = "MAP76";
     F4SE::Init(a_f4se, info);
 
-    REX::INFO("f4map: Log Engine Online.");
+    REX::INFO("MAP76: Log Engine Online.");
     F4SE::GetMessagingInterface()->RegisterListener(OnF4SEMessage);
     return true;
 }

@@ -11,7 +11,7 @@ namespace RE::BSScript
     IStackCallbackFunctor::~IStackCallbackFunctor() = default;
 }
 
-namespace PaperMap::Engine::QuestManager
+namespace MAP76::Engine::QuestManager
 {
     using namespace PipboyUtils;
 
@@ -445,12 +445,12 @@ namespace PaperMap::Engine::QuestManager
                 {
                     if (_counter->fetch_sub(1) == 1)
                     {
-                        PaperMap::UI::TriggerFreshMapDataSync();
+                        MAP76::UI::TriggerFreshMapDataSync();
                     }
                 }
                 else
                 {
-                    PaperMap::UI::TriggerFreshMapDataSync();
+                    MAP76::UI::TriggerFreshMapDataSync();
                 }
             }
             virtual bool CanSave() override { return false; }
@@ -576,7 +576,7 @@ namespace PaperMap::Engine::QuestManager
         uint32_t totalOps = static_cast<uint32_t>(questsToActivate.size() + questsToDeactivate.size());
         if (totalOps == 0)
         {
-            PaperMap::UI::TriggerFreshMapDataSync();
+            MAP76::UI::TriggerFreshMapDataSync();
             return;
         }
 

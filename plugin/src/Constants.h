@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include <string>
 
-namespace PaperMap::Constants
+namespace MAP76::Constants
 {
     constexpr uintptr_t MIN_VALID_USER_PTR = 0x10000;
     constexpr uintptr_t PIPBOY_VALUE_PAYLOAD_OFFSET = 0x18;

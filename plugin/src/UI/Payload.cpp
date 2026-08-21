@@ -9,7 +9,7 @@
 #include "Engine/Memory.h"
 #include "Engine/PipboyUtils.h"
 
-namespace PaperMap::UI::Payload
+namespace MAP76::UI::Payload
 {
     std::string GetMapPayloadAsJSON()
     {
@@ -182,7 +182,7 @@ namespace PaperMap::UI::Payload
             auto *playerRef = RE::PlayerCharacter::GetSingleton();
             if (playerRef)
             {
-                auto *playerWorld = PaperMap::Engine::GetReferenceWorldspace(playerRef);
+                auto *playerWorld = MAP76::Engine::GetReferenceWorldspace(playerRef);
                 if (playerWorld) addWorldspace(playerWorld->formID);
 
                 if (auto paHandle = playerRef->lastUsedPowerArmor)
@@ -190,10 +190,10 @@ namespace PaperMap::UI::Payload
                     if (auto paPtr = paHandle.get())
                     {
                         auto *paRefr = paPtr.get();
-                        if (paRefr && PaperMap::Engine::Memory::IsReferenceSafe(paRefr) && !paRefr->IsDisabled())
+                        if (paRefr && MAP76::Engine::Memory::IsReferenceSafe(paRefr) && !paRefr->IsDisabled())
                         {
                             RE::NiPoint3 paPos = paRefr->GetPosition();
-                            auto *paWorld = PaperMap::Engine::GetReferenceWorldspace(paRefr, &paPos);
+                            auto *paWorld = MAP76::Engine::GetReferenceWorldspace(paRefr, &paPos);
 
                             if (paWorld) addWorldspace(paWorld->formID);
                             DTO::PowerArmorMarker paMarker{};
@@ -211,10 +211,10 @@ namespace PaperMap::UI::Payload
                     if (auto wpPtr = wpHandle.get())
                     {
                         auto *wpRefr = wpPtr.get();
-                        if (wpRefr && PaperMap::Engine::Memory::IsReferenceSafe(wpRefr) && !wpRefr->IsDisabled())
+                        if (wpRefr && MAP76::Engine::Memory::IsReferenceSafe(wpRefr) && !wpRefr->IsDisabled())
                         {
                             RE::NiPoint3 wpPos = wpRefr->GetPosition();
-                            auto *wpWorld = PaperMap::Engine::GetReferenceWorldspace(wpRefr, &wpPos);
+                            auto *wpWorld = MAP76::Engine::GetReferenceWorldspace(wpRefr, &wpPos);
                             if (wpWorld) addWorldspace(wpWorld->formID);
                             DTO::CustomMarker markerDto{};
                             markerDto.worldspace = wpWorld ? wpWorld->formID : 0;

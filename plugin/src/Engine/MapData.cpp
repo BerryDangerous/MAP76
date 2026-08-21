@@ -29,7 +29,7 @@ namespace
     {
         if (auto* cell = a_refr->GetParentCell())
         {
-            if (PaperMap::Engine::Memory::IsValidWorldspace(cell->worldSpace))
+            if (MAP76::Engine::Memory::IsValidWorldspace(cell->worldSpace))
             {
                 return cell->worldSpace;
             }
@@ -37,7 +37,7 @@ namespace
 
         if (auto* cell = a_refr->GetSaveParentCell())
         {
-            if (PaperMap::Engine::Memory::IsValidWorldspace(cell->worldSpace))
+            if (MAP76::Engine::Memory::IsValidWorldspace(cell->worldSpace))
             {
                 return cell->worldSpace;
             }
@@ -50,7 +50,7 @@ namespace
     {
         auto* pipboyManager = RE::PipboyDataManager::GetSingleton();
 
-        if (a_refr->formID == PaperMap::Constants::FormID::PLAYER)
+        if (a_refr->formID == MAP76::Constants::FormID::PLAYER)
         {
             if (pipboyManager && a_position)
             {
@@ -187,10 +187,10 @@ namespace
 
         if (pipboyManager && pipboyManager->mapData.worldPlayerMarker)
         {
-            uint32_t worldFormID = PaperMap::Engine::PipboyUtils::GetPipboyUint32(pipboyManager->mapData.worldPlayerMarker, "WorldspaceID", 0);
+            uint32_t worldFormID = MAP76::Engine::PipboyUtils::GetPipboyUint32(pipboyManager->mapData.worldPlayerMarker, "WorldspaceID", 0);
             if (worldFormID == 0)
             {
-                worldFormID = PaperMap::Engine::PipboyUtils::GetPipboyUint32(pipboyManager->mapData.worldPlayerMarker, "Worldspace", 0);
+                worldFormID = MAP76::Engine::PipboyUtils::GetPipboyUint32(pipboyManager->mapData.worldPlayerMarker, "Worldspace", 0);
             }
             if (worldFormID != 0)
             {
@@ -207,7 +207,7 @@ namespace
             return tes->worldSpace;
         }
 
-        auto* form = RE::TESForm::GetFormByID(PaperMap::Constants::FormID::COMMONWEALTH);
+        auto* form = RE::TESForm::GetFormByID(MAP76::Constants::FormID::COMMONWEALTH);
         return form ? reinterpret_cast<RE::TESWorldSpace*>(form) : nullptr;
     }
 
@@ -233,7 +233,7 @@ namespace
     }
 }
 
-namespace PaperMap::Engine
+namespace MAP76::Engine
 {
     MapBoundsData GetWorldspaceBounds(RE::TESWorldSpace* a_worldspace)
     {

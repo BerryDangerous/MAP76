@@ -2,7 +2,7 @@
 #include "PrismaUI_F4_API.h"
 #include <atomic>
 
-namespace PaperMap::UI
+namespace MAP76::UI
 {
     /**
      * @brief Holds global runtime state references for Prisma UI integration.
@@ -21,11 +21,11 @@ namespace PaperMap::UI
     void Initialize();
 
     /**
-     * @brief Toggles the paper map UI surface open or closed.
+     * @brief Toggles the MAP76 UI surface open or closed.
      *
      * Handles game time freeze state, UI focus, and triggering fresh data synchronization.
      */
-    void TogglePaperMap();
+    void ToggleMAP76();
 
     /**
      * @brief Checks if any native Fallout 4 menu or console is currently active.

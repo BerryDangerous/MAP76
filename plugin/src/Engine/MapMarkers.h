@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-namespace PaperMap::Engine::MapMarkers
+namespace MAP76::Engine::MapMarkers
 {
     /**
      * @brief Holds static and dynamic state data for collected world map markers.

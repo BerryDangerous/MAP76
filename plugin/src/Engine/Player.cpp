@@ -3,7 +3,7 @@
 #include "Engine/MapData.h"
 #include "Constants.h"
 
-namespace PaperMap::Engine::Player
+namespace MAP76::Engine::Player
 {
     State GetCurrentState()
     {
@@ -16,7 +16,7 @@ namespace PaperMap::Engine::Player
 
         state.position = player->GetPosition();
 
-        auto *world = PaperMap::Engine::GetReferenceWorldspace(player, &state.position);
+        auto *world = MAP76::Engine::GetReferenceWorldspace(player, &state.position);
         state.worldspace = world ? world->formID : 0;
 
         if (auto *camera = RE::PlayerCamera::GetSingleton())

@@ -10,7 +10,7 @@
 #include "RE/T/TESGlobal.h"
 #include "RE/B/BGSListForm.h"
 
-namespace PaperMap::UI::Actions
+namespace MAP76::UI::Actions
 {
     namespace
     {
@@ -111,7 +111,7 @@ namespace PaperMap::UI::Actions
 
                 if (!activeWorld)
                 {
-                    activeWorld = PaperMap::Engine::GetReferenceWorldspace(player);
+                    activeWorld = MAP76::Engine::GetReferenceWorldspace(player);
                 }
             }
 
@@ -308,7 +308,7 @@ namespace PaperMap::UI::Actions
                 task->AddUITask([markerRef]() {
                     if (UI::State::g_mapIsOpen.load())
                     {
-                        UI::TogglePaperMap();
+                        UI::ToggleMAP76();
                     }
                     else if (UI::State::g_api && UI::State::g_view)
                     {
@@ -326,22 +326,22 @@ namespace PaperMap::UI::Actions
     void SetCustomMarker(float a_x, float a_y, uint32_t a_worldspaceId)
     {
         SetEngineCustomMarker(a_x, a_y, a_worldspaceId);
-        PaperMap::UI::TriggerFreshMapDataSync();
+        MAP76::UI::TriggerFreshMapDataSync();
     }
 
     void RemoveCustomMarker()
     {
         RemoveEngineCustomMarker();
-        PaperMap::UI::TriggerFreshMapDataSync();
+        MAP76::UI::TriggerFreshMapDataSync();
     }
 
     void ToggleQuestActive(uint32_t a_formId)
     {
-        PaperMap::Engine::QuestManager::ToggleQuestActive(a_formId);
+        MAP76::Engine::QuestManager::ToggleQuestActive(a_formId);
     }
 
     void MakeOnlyQuestActive(uint32_t a_formId)
     {
-        PaperMap::Engine::QuestManager::MakeOnlyQuestActive(a_formId);
+        MAP76::Engine::QuestManager::MakeOnlyQuestActive(a_formId);
     }
 }

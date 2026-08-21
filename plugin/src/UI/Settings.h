@@ -2,7 +2,7 @@
 #include <string>
 #include <nlohmann/json.hpp>
 
-namespace PaperMap::UI {
+namespace MAP76::UI {
     class Settings {
     public:
         static void Load();

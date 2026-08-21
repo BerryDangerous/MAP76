@@ -41,15 +41,15 @@ add_requires("nlohmann_json")
 
 includes("lib/commonlibf4")
 
-target("f4map")
+target("MAP76")
     set_kind("shared")
-    set_filename("f4map.dll")
+    set_filename("MAP76.dll")
 
     add_deps("commonlibf4")
     add_packages("nlohmann_json")
 
     add_rules("commonlibf4.plugin", {
-        name    = "f4map",
+        name    = "MAP76",
         author  = "BerryDangerous",
         version = "0.1.0",
     })

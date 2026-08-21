@@ -1,7 +1,7 @@
 #pragma once
 #include <RE/Fallout.h>
 
-namespace PaperMap::Engine::Memory
+namespace MAP76::Engine::Memory
 {
     /**
      * @brief Safely verifies if a reference is valid and its memory layout is intact.

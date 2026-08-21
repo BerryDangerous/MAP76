@@ -3,7 +3,7 @@
 #include "Engine/Memory.h"
 #include "Constants.h"
 
-namespace PaperMap::Engine::Memory
+namespace MAP76::Engine::Memory
 {
     bool IsReferenceSafe(RE::TESObjectREFR *a_refr)
     {

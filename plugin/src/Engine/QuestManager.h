@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-namespace PaperMap::Engine::QuestManager
+namespace MAP76::Engine::QuestManager
 {
     struct QuestRecordTarget
     {

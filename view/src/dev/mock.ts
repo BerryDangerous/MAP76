@@ -24,12 +24,12 @@ export function initMockData(): void {
 
     window.saveSettings = (jsonString: string) => {
         console.log('[DevMode] saveSettings called:', jsonString);
-        localStorage.setItem('papermap_settings', jsonString);
+        localStorage.setItem('map76_settings', jsonString);
     };
 
     window.requestSettings = () => {
         console.log('[DevMode] requestSettings called');
-        const saved = localStorage.getItem('papermap_settings');
+        const saved = localStorage.getItem('map76_settings');
         if (saved && typeof (window as any).loadSettings === 'function') {
             (window as any).loadSettings(saved);
         } else if (typeof (window as any).loadSettings === 'function') {

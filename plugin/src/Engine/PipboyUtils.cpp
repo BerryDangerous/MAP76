@@ -3,7 +3,7 @@
 #include "Engine/Memory.h"
 #include "Constants.h"
 
-namespace PaperMap::Engine::PipboyUtils
+namespace MAP76::Engine::PipboyUtils
 {
     std::string GetPipboyString(RE::PipboyObject *a_obj, const RE::BSFixedString &a_key, const std::string &a_fallback)
     {

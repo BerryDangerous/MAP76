@@ -4,7 +4,7 @@
 #include <functional>
 #include <RE/Fallout.h>
 
-namespace PaperMap::UI::Actions
+namespace MAP76::UI::Actions
 {
     /**
      * @brief Validates all game conditions required to fast travel.

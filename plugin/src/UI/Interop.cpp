@@ -10,7 +10,7 @@
 #include <chrono>
 #include "RE/U/UIUtils.h"
 
-namespace PaperMap::UI
+namespace MAP76::UI
 {
     namespace
     {
@@ -19,13 +19,13 @@ namespace PaperMap::UI
             switch (level)
             {
             case PRISMA_UI_API::ConsoleMessageLevel::Warning:
-                REX::WARN("f4map view: {}", message);
+                REX::WARN("MAP76 view: {}", message);
                 break;
             case PRISMA_UI_API::ConsoleMessageLevel::Error:
-                REX::ERROR("f4map view: {}", message);
+                REX::ERROR("MAP76 view: {}", message);
                 break;
             default:
-                REX::INFO("f4map view: {}", message);
+                REX::INFO("MAP76 view: {}", message);
                 break;
             }
         }
@@ -35,14 +35,14 @@ namespace PaperMap::UI
             if (auto *task = F4SE::GetTaskInterface())
             {
                 task->AddTask([]() {
-                    std::string freshMapJson = PaperMap::UI::Payload::GetMapPayloadAsJSON();
+                    std::string freshMapJson = MAP76::UI::Payload::GetMapPayloadAsJSON();
 
-                    REX::INFO("f4map: Live Thread Snapshot Payload -> Stream Length: {}", freshMapJson.length());
-                    REX::INFO("f4map: Content: {}", freshMapJson);
+                    REX::INFO("MAP76: Live Thread Snapshot Payload -> Stream Length: {}", freshMapJson.length());
+                    REX::INFO("MAP76: Content: {}", freshMapJson);
 
-                    if (PaperMap::UI::State::g_api && PaperMap::UI::State::g_view)
+                    if (MAP76::UI::State::g_api && MAP76::UI::State::g_view)
                     {
-                        PaperMap::UI::State::g_api->InteropCall(PaperMap::UI::State::g_view, "loadMarkers", freshMapJson.c_str());
+                        MAP76::UI::State::g_api->InteropCall(MAP76::UI::State::g_view, "loadMarkers", freshMapJson.c_str());
                     }
                 });
             }
@@ -54,9 +54,9 @@ namespace PaperMap::UI
             {
                 task->AddTask([]() {
                     std::string settingsJson = Settings::Get().dump();
-                    if (PaperMap::UI::State::g_api && PaperMap::UI::State::g_view)
+                    if (MAP76::UI::State::g_api && MAP76::UI::State::g_view)
                     {
-                        PaperMap::UI::State::g_api->InteropCall(PaperMap::UI::State::g_view, "loadSettings", settingsJson.c_str());
+                        MAP76::UI::State::g_api->InteropCall(MAP76::UI::State::g_view, "loadSettings", settingsJson.c_str());
                     }
                 });
             }
@@ -70,7 +70,7 @@ namespace PaperMap::UI
                 {
                     task->AddTask([jsonStr]() {
                         Settings::Save(jsonStr);
-                        if (PaperMap::UI::State::g_mapIsOpen.load()) {
+                        if (MAP76::UI::State::g_mapIsOpen.load()) {
                             auto *mainLoop = RE::Main::GetSingleton();
                             if (mainLoop) {
                                 mainLoop->freezeTime = Settings::freezeSimulation;
@@ -94,9 +94,9 @@ namespace PaperMap::UI
                     if (auto *task = F4SE::GetTaskInterface())
                     {
                         task->AddTask([formId]() {
-                            if (PaperMap::UI::State::g_mapIsOpen.load())
+                            if (MAP76::UI::State::g_mapIsOpen.load())
                             {
-                                PaperMap::UI::TogglePaperMap();
+                                MAP76::UI::ToggleMAP76();
                             }
 
                             std::thread([formId]() {
@@ -104,7 +104,7 @@ namespace PaperMap::UI
                                 if (auto *innerTask = F4SE::GetTaskInterface())
                                 {
                                     innerTask->AddTask([formId]() {
-                                        PaperMap::UI::Actions::ExecuteFastTravel(formId);
+                                        MAP76::UI::Actions::ExecuteFastTravel(formId);
                                     });
                                 }
                             }).detach();
@@ -143,14 +143,14 @@ namespace PaperMap::UI
                                 destMarker = RE::TESForm::GetFormByID<RE::TESObjectREFR>(formId);
                             }
                             
-                            PaperMap::UI::Actions::VerifyFastTravelConditions(player, destMarker, [](const std::string &status) {
-                                if (PaperMap::UI::State::g_api && PaperMap::UI::State::g_view)
+                            MAP76::UI::Actions::VerifyFastTravelConditions(player, destMarker, [](const std::string &status) {
+                                if (MAP76::UI::State::g_api && MAP76::UI::State::g_view)
                                 {
                                     nlohmann::json response;
                                     response["status"] = status;
 
                                     std::string responseStr = response.dump();
-                                    PaperMap::UI::State::g_api->InteropCall(PaperMap::UI::State::g_view, "onFastTravelCheckResult", responseStr.c_str());
+                                    MAP76::UI::State::g_api->InteropCall(MAP76::UI::State::g_view, "onFastTravelCheckResult", responseStr.c_str());
                                 }
                             });
                         }
@@ -181,7 +181,7 @@ namespace PaperMap::UI
                     if (auto *task = F4SE::GetTaskInterface())
                     {
                         task->AddTask([x, y, worldspaceId]() {
-                            PaperMap::UI::Actions::SetCustomMarker(x, y, worldspaceId);
+                            MAP76::UI::Actions::SetCustomMarker(x, y, worldspaceId);
                         });
                     }
                 }
@@ -199,7 +199,7 @@ namespace PaperMap::UI
                 task->AddTask([]() {
                     try
                     {
-                        PaperMap::UI::Actions::RemoveCustomMarker();
+                        MAP76::UI::Actions::RemoveCustomMarker();
                     }
                     catch (const std::exception &e)
                     {
@@ -221,7 +221,7 @@ namespace PaperMap::UI
                     if (auto *task = F4SE::GetTaskInterface())
                     {
                         task->AddTask([formId]() {
-                            PaperMap::UI::Actions::ToggleQuestActive(formId);
+                            MAP76::UI::Actions::ToggleQuestActive(formId);
                         });
                     }
                 }
@@ -244,7 +244,7 @@ namespace PaperMap::UI
                     if (auto *task = F4SE::GetTaskInterface())
                     {
                         task->AddTask([formId]() {
-                            PaperMap::UI::Actions::MakeOnlyQuestActive(formId);
+                            MAP76::UI::Actions::MakeOnlyQuestActive(formId);
                         });
                     }
                 }
@@ -280,15 +280,15 @@ namespace PaperMap::UI
     }
 }
 
-namespace PaperMap::UI
+namespace MAP76::UI
 {
     void Initialize()
     {
         Settings::Load();
         if (State::g_api && State::g_view == 0)
         {
-            REX::INFO("f4map: Creating HTML view surface...");
-            State::g_view = State::g_api->CreateView("papermap/index.html", OnDomReady);
+            REX::INFO("MAP76: Creating HTML view surface...");
+            State::g_view = State::g_api->CreateView("MAP76/index.html", OnDomReady);
 
             State::g_api->RegisterConsoleCallback(State::g_view, HandleConsoleMessage);
 
@@ -334,7 +334,7 @@ namespace PaperMap::UI
             task->AddUITask([]() {
                 if (State::g_mapIsOpen.load())
                 {
-                    TogglePaperMap();
+                    ToggleMAP76();
                 }
             });
         }
@@ -377,7 +377,7 @@ namespace PaperMap::UI
         return false;
     }
 
-    void TogglePaperMap()
+    void ToggleMAP76()
     {
         if (!State::g_api || !State::g_view)
         {
