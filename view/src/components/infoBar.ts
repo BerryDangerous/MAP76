@@ -2,6 +2,7 @@ import { PlayerData } from '../types/map.js';
 import { FrameTickPayload } from '../types/payloads.js';
 import { WorldspaceUtils } from '../utils/worldspaceUtils.js';
 import { KeybindsSystem } from '../systems/keybinds.js';
+import { FocusManager } from '../systems/focusManager.js';
 import { mapState } from '../core/state.js';
 
 export class InfoBar {
@@ -21,6 +22,11 @@ export class InfoBar {
 
         if (this.settingsContainer) {
             this.settingsContainer.innerHTML = KeybindsSystem.getControlHtml('OPEN_SETTINGS');
+            FocusManager.subscribe((newFocus) => {
+                if (this.settingsContainer) {
+                    this.settingsContainer.style.display = newFocus === 'MAP' ? '' : 'none';
+                }
+            });
         }
     }
 
