@@ -284,8 +284,8 @@ body, html {
     visibility: visible;
 }
 
-.marker-container.menu-active ~ #global-nametag-container #global-nametag,
-.marker-container.hide-tooltip-override ~ #global-nametag-container #global-nametag {
+#map-viewport:has(.marker-container.menu-active) ~ #global-nametag-container #global-nametag,
+#map-viewport:has(.marker-container.hide-tooltip-override) ~ #global-nametag-container #global-nametag {
     opacity: 0 !important;
     visibility: hidden !important;
 }
