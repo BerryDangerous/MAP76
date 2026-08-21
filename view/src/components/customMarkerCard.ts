@@ -10,6 +10,7 @@ export const CustomMarkerCard = {
     activeCoords: null as { x: number, y: number } | null,
     activeGameCoords: null as { x: number, y: number } | null,
     activeAnchorMarker: null as HTMLElement | null,
+    activeWorldspaceId: undefined as number | undefined,
 
     init(): void {
         FocusManager.register({
@@ -76,10 +77,11 @@ export const CustomMarkerCard = {
         customMarkerCardInstance.open(anchorMarker);
     },
 
-    openForPlacement(gameCoords: { x: number, y: number }, pageCoords: { x: number, y: number }, returnFocusId?: string, onNavBack?: () => void): void {
+    openForPlacement(gameCoords: { x: number, y: number }, pageCoords: { x: number, y: number }, worldspaceId?: number, returnFocusId?: string, onNavBack?: () => void): void {
         this.activeAnchorMarker = null;
         this.activeCoords = pageCoords;
         this.activeGameCoords = gameCoords;
+        this.activeWorldspaceId = worldspaceId;
 
         const hasExistingMarker = Boolean(document.querySelector('.custom-marker'));
         const title = 'Custom Marker';
@@ -127,7 +129,7 @@ export const CustomMarkerCard = {
                 label: hasExistingMarker ? 'MOVE MARKER' : 'PLACE MARKER',
                 action: () => {
                     if (this.activeGameCoords) {
-                        setCustomMarker(this.activeGameCoords.x, this.activeGameCoords.y);
+                        setCustomMarker(this.activeGameCoords.x, this.activeGameCoords.y, this.activeWorldspaceId);
                     }
                     this.close();
                 }

@@ -297,7 +297,7 @@ export const MarkerInteractionManager = {
                 }
 
                 const worldCoords = MapViewport.screenToGameCoords(e.clientX, e.clientY, bounds);
-                CustomMarkerCard.openForPlacement(worldCoords, { x: e.clientX, y: e.clientY });
+                CustomMarkerCard.openForPlacement(worldCoords, { x: e.clientX, y: e.clientY }, config.worldspaceID);
                 FocusManager.setFocus('CUSTOM_MARKER_CARD');
             }
         });

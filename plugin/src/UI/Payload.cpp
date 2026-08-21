@@ -215,24 +215,6 @@ namespace PaperMap::UI::Payload
                         {
                             RE::NiPoint3 wpPos = wpRefr->GetPosition();
                             auto *wpWorld = PaperMap::Engine::GetReferenceWorldspace(wpRefr, &wpPos);
-
-                            if (playerWorld && wpWorld && playerWorld->formID != wpWorld->formID)
-                            {
-                                if (pipboyManager && pipboyManager->mapData.worldCustomMarker)
-                                {
-                                    auto *wcm = pipboyManager->mapData.worldCustomMarker;
-                                    bool wcmVis = PaperMap::Engine::PipboyUtils::GetPipboyBool(wcm, "Visible", false);
-                                    if (wcmVis)
-                                    {
-                                        float wcmX = PaperMap::Engine::PipboyUtils::GetPipboyFloat(wcm, "X", wpPos.x);
-                                        float wcmY = PaperMap::Engine::PipboyUtils::GetPipboyFloat(wcm, "Y", wpPos.y);
-                                        wpPos.x = wcmX;
-                                        wpPos.y = wcmY;
-                                        wpWorld = playerWorld;
-                                    }
-                                }
-                            }
-
                             if (wpWorld) addWorldspace(wpWorld->formID);
                             DTO::CustomMarker markerDto{};
                             markerDto.worldspace = wpWorld ? wpWorld->formID : 0;

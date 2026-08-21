@@ -177,10 +177,11 @@ namespace PaperMap::UI
                 {
                     float x = parsedJson["x"].get<float>();
                     float y = parsedJson["y"].get<float>();
+                    uint32_t worldspaceId = parsedJson.contains("worldspaceId") ? parsedJson["worldspaceId"].get<uint32_t>() : 0;
                     if (auto *task = F4SE::GetTaskInterface())
                     {
-                        task->AddTask([x, y]() {
-                            PaperMap::UI::Actions::SetCustomMarker(x, y);
+                        task->AddTask([x, y, worldspaceId]() {
+                            PaperMap::UI::Actions::SetCustomMarker(x, y, worldspaceId);
                         });
                     }
                 }

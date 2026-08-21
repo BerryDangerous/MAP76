@@ -90,7 +90,7 @@ namespace PaperMap::UI::Actions
             return false;
         }
 
-        void SetEngineCustomMarker(float a_x, float a_y)
+        void SetEngineCustomMarker(float a_x, float a_y, uint32_t a_worldspaceId = 0)
         {
             auto *player = RE::PlayerCharacter::GetSingleton();
             if (!player)
@@ -98,50 +98,49 @@ namespace PaperMap::UI::Actions
                 return;
             }
 
-            auto *tes = RE::TES::GetSingleton();
-            auto *activeWorld = tes ? tes->worldSpace : nullptr;
+            RE::TESWorldSpace* activeWorld = nullptr;
+            if (a_worldspaceId != 0)
+            {
+                activeWorld = RE::TESForm::GetFormByID<RE::TESWorldSpace>(a_worldspaceId);
+            }
+
+            if (!activeWorld)
+            {
+                auto *tes = RE::TES::GetSingleton();
+                activeWorld = tes ? tes->worldSpace : nullptr;
+
+                if (!activeWorld)
+                {
+                    activeWorld = PaperMap::Engine::GetReferenceWorldspace(player);
+                }
+            }
 
             RE::TESObjectREFR *markerRef = player->playerMapMarker ? player->playerMapMarker.get().get() : nullptr;
-
             if (markerRef)
             {
-                auto *currentWorld = PaperMap::Engine::GetReferenceWorldspace(markerRef);
-                if (currentWorld && activeWorld && currentWorld->formID != activeWorld->formID)
-                {
-                    markerRef->Disable();
-                    player->playerMapMarker.reset();
-                    markerRef = nullptr;
-                }
+                markerRef->Disable();
+                player->playerMapMarker.reset();
+                markerRef = nullptr;
             }
 
-            if (!markerRef)
-            {
-                auto *markerForm = RE::TESForm::GetFormByID<RE::TESBoundObject>(0x34);
-                auto *dataHandler = RE::TESDataHandler::GetSingleton();
-                auto *cell = activeWorld ? activeWorld->persistentCell : nullptr;
+            auto *markerForm = RE::TESForm::GetFormByID<RE::TESBoundObject>(0x34);
+            auto *dataHandler = RE::TESDataHandler::GetSingleton();
 
-                if (markerForm && dataHandler && cell)
+            if (markerForm && dataHandler && activeWorld)
+            {
+                RE::NEW_REFR_DATA refrData{};
+                refrData.location = { a_x, a_y, 0.0f };
+                refrData.object = markerForm;
+                refrData.world = activeWorld;
+                refrData.forcePersist = true;
+
+                auto handle = dataHandler->CreateReferenceAtLocation(refrData);
+                if (auto ptr = handle.get())
                 {
-                    RE::NEW_REFR_DATA refrData{};
-                    refrData.location = { a_x, a_y, 0.0f };
-                    refrData.object = markerForm;
-                    refrData.world = activeWorld;
-                    refrData.forcePersist = true;
-
-                    auto handle = dataHandler->CreateReferenceAtLocation(refrData);
-                    if (auto ptr = handle.get())
-                    {
-                        markerRef = ptr.get();
-                        player->playerMapMarker = handle;
-                    }
+                    markerRef = ptr.get();
+                    player->playerMapMarker = handle;
+                    markerRef->Enable(false);
                 }
-            }
-
-            if (markerRef)
-            {
-                markerRef->data.location.x = a_x;
-                markerRef->data.location.y = a_y;
-                markerRef->Enable(false);
             }
         }
 
@@ -324,9 +323,9 @@ namespace PaperMap::UI::Actions
         });
     }
 
-    void SetCustomMarker(float a_x, float a_y)
+    void SetCustomMarker(float a_x, float a_y, uint32_t a_worldspaceId)
     {
-        SetEngineCustomMarker(a_x, a_y);
+        SetEngineCustomMarker(a_x, a_y, a_worldspaceId);
         PaperMap::UI::TriggerFreshMapDataSync();
     }
 

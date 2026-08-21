@@ -30,7 +30,7 @@ namespace PaperMap::UI::Actions
     /**
      * @brief Sets or moves the player custom marker to specified world coordinates.
      */
-    void SetCustomMarker(float a_x, float a_y);
+    void SetCustomMarker(float a_x, float a_y, uint32_t a_worldspaceId = 0);
 
     /**
      * @brief Removes the player custom marker if active.

@@ -218,7 +218,7 @@ window.addEventListener('DOMContentLoaded', () => {
                         MapViewport.lastMouseY, 
                         bounds
                     );
-                    CustomMarkerCard.openForPlacement(worldCoords, { x: MapViewport.lastMouseX, y: MapViewport.lastMouseY });
+                    CustomMarkerCard.openForPlacement(worldCoords, { x: MapViewport.lastMouseX, y: MapViewport.lastMouseY }, config.worldspaceID);
                     FocusManager.setFocus('CUSTOM_MARKER_CARD');
                 }
                 return;

@@ -33,9 +33,9 @@ export const EngineBridge = {
             window.checkFastTravel(payload);
         }
     },
-    setCustomMarker(x: number, y: number) {
+    setCustomMarker(x: number, y: number, worldspaceId?: number) {
         if (typeof window.setCustomMarker === 'function') {
-            const payload = JSON.stringify({ x, y });
+            const payload = JSON.stringify({ x, y, worldspaceId });
             window.setCustomMarker(payload);
         }
     },
@@ -64,8 +64,8 @@ export const EngineBridge = {
     }
 };
 
-export function setCustomMarker(x: number, y: number): void {
-    EngineBridge.setCustomMarker(x, y);
+export function setCustomMarker(x: number, y: number, worldspaceId?: number): void {
+    EngineBridge.setCustomMarker(x, y, worldspaceId);
 }
 
 export function removeCustomMarker(): void {
