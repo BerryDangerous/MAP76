@@ -1,9 +1,8 @@
 import { EngineBridge } from '@/core/bridge.js';
 
-import { AnchorPositioner } from '@/systems/anchorPositioner.js';
-import { DockControlsSystem, DockCorner } from '@/systems/dockControls.js';
 import { FocusManager } from '@/systems/focusManager.js';
 import { KeybindsSystem } from '@/systems/keybindManager.js';
+import { LayoutManager, Corner } from '@/systems/layoutManager.js';
 
 import { ActionButtonGroup, ActionButtonConfig } from '@/components/ui/ButtonGroup.js';
 
@@ -15,7 +14,7 @@ export interface FloatingCardOptions {
     anchorMarker?: HTMLElement | null;
     coords?: { x: number, y: number };
     referencePanel?: HTMLElement | null;
-    dockCorner?: DockCorner;
+    dockCorner?: Corner;
     onButtonSelectionChange?: (index: number) => void;
     returnFocusId?: string;
     onNavBack?: () => void;
@@ -66,7 +65,7 @@ export class FloatingCard {
         this.render();
     }
 
-    public open(anchorMarker?: HTMLElement | null, referencePanel?: HTMLElement | null, dockCorner?: DockCorner): void {
+    public open(anchorMarker?: HTMLElement | null, referencePanel?: HTMLElement | null, dockCorner?: Corner): void {
         if (!this.cardElement) {
             this.mount();
         }
@@ -93,11 +92,11 @@ export class FloatingCard {
         if (!this.cardElement || this.cardElement.style.display === 'none') return;
 
         if (this.options.anchorMarker) {
-            AnchorPositioner.positionNearElement(this.cardElement, this.options.anchorMarker, { gap: 20, padding: 10 });
+            LayoutManager.anchorToElement(this.cardElement, this.options.anchorMarker, { gap: 20, padding: 10 });
         } else if (this.options.coords) {
-            AnchorPositioner.positionNearCoords(this.cardElement, this.options.coords.x, this.options.coords.y, undefined, { gap: 20, padding: 10 });
+            LayoutManager.anchorToCoords(this.cardElement, this.options.coords.x, this.options.coords.y, undefined, { gap: 20, padding: 10 });
         } else if (this.options.referencePanel && this.options.dockCorner) {
-            DockControlsSystem.dockNextToPanel(this.cardElement, this.options.referencePanel, this.options.dockCorner, 10);
+            LayoutManager.anchorToPanel(this.cardElement, this.options.referencePanel, this.options.dockCorner, 10);
         }
     }
 

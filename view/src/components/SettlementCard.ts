@@ -3,8 +3,8 @@ import { SettlementData } from '@/types/payloads.js';
 import { mapState } from '@/core/state.js';
 
 import { ThemeEngine } from '@/systems/assetManager.js';
-import { DockCorner } from '@/systems/dockControls.js';
 import { FocusManager } from '@/systems/focusManager.js';
+import { Corner } from '@/systems/layoutManager.js';
 import { MarkerInteractionManager } from '@/systems/markerController.js';
 import { MapViewport } from '@/systems/viewport.js';
 
@@ -58,7 +58,7 @@ export const SettlementCard = {
         return settlementCardInstance ? settlementCardInstance.handleKeyDown(e) : false;
     },
 
-    open(settlement: SettlementDataWithRatings, markerFormId: number, canFastTravel: boolean, anchorMarker?: HTMLElement, referencePanel?: HTMLElement, dockCorner?: DockCorner, takeFocus: boolean = true, returnFocusId?: string, onNavBack?: () => void): void {
+    open(settlement: SettlementDataWithRatings, markerFormId: number, canFastTravel: boolean, anchorMarker?: HTMLElement, referencePanel?: HTMLElement, dockCorner?: Corner, takeFocus: boolean = true, returnFocusId?: string, onNavBack?: () => void): void {
         if (this.activeAnchorMarker && this.activeAnchorMarker !== anchorMarker) {
             this.activeAnchorMarker.classList.remove('menu-active');
             this.activeAnchorMarker.classList.remove('hide-tooltip-override');
@@ -250,7 +250,7 @@ export function renderSettlementCardContent(
     canFastTravel: boolean,
     markerEl?: HTMLElement,
     referencePanel?: HTMLElement,
-    dockCorner?: DockCorner,
+    dockCorner?: Corner,
     takeFocus: boolean = true,
     returnFocusId?: string,
     onNavBack?: () => void

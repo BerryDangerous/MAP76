@@ -5,9 +5,9 @@ import { appSettings } from '@/core/settings.js';
 import { mapState } from '@/core/state.js';
 
 import { ThemeEngine } from '@/systems/assetManager.js';
-import { DockControlsSystem, DockCorner } from '@/systems/dockControls.js';
 import { FocusManager } from '@/systems/focusManager.js';
 import { KeybindsSystem } from '@/systems/keybindManager.js';
+import { LayoutManager, Corner } from '@/systems/layoutManager.js';
 import { SelectableListController } from '@/systems/listController.js';
 import { SearchEngine } from '@/systems/searchEngine.js';
 import { MapViewport } from '@/systems/viewport.js';
@@ -29,7 +29,7 @@ import { SearchBox } from '@/components/ui/SearchBox.js';
 
 export interface SearchPanelState {
     isCollapsed: boolean;
-    dockCorner: DockCorner;
+    dockCorner: Corner;
     searchTerm: string;
     results: SearchResult[];
 }
@@ -291,7 +291,7 @@ export const SearchPanel = {
 
     handleKeyDown(e: KeyboardEvent): boolean {
         if (searchPanelState.isCollapsed) {
-            if (DockControlsSystem.isExpandKey(e, searchPanelState.dockCorner)) {
+            if (LayoutManager.isExpandKey(e, searchPanelState.dockCorner)) {
                 this.expand();
                 return true;
             }
@@ -319,7 +319,7 @@ export const SearchPanel = {
             return true;
         }
 
-        if (DockControlsSystem.isCollapseKey(e, searchPanelState.dockCorner)) {
+        if (LayoutManager.isCollapseKey(e, searchPanelState.dockCorner)) {
             this.collapse();
             return true;
         }
@@ -527,7 +527,7 @@ export const SearchPanel = {
         const container = document.getElementById('search-panel');
         if (!container) return;
 
-        DockControlsSystem.applyDockPosition(container, searchPanelState.dockCorner);
+        LayoutManager.anchorToCorner(container, searchPanelState.dockCorner);
 
         if (!isLayoutMounted) {
             this.mountLayout(container);

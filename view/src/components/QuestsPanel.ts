@@ -4,9 +4,9 @@ import { toggleQuestActive, EngineBridge } from '@/core/bridge.js';
 import { appSettings } from '@/core/settings.js';
 import { mapState } from '@/core/state.js';
 
-import { DockControlsSystem, DockCorner } from '@/systems/dockControls.js';
 import { FocusManager } from '@/systems/focusManager.js';
 import { KeybindsSystem } from '@/systems/keybindManager.js';
+import { LayoutManager, Corner } from '@/systems/layoutManager.js';
 import { SelectableListController } from '@/systems/listController.js';
 import { MapViewport } from '@/systems/viewport.js';
 
@@ -29,7 +29,7 @@ export interface QuestListState {
     isCollapsed: boolean;
     hoverIndex: number;
     selectedQuestId: number | string | null;
-    dockCorner: DockCorner;
+    dockCorner: Corner;
 }
 
 const questListState: QuestListState = {
@@ -259,7 +259,7 @@ export const QuestList = {
 
     handleKeyDown(e: KeyboardEvent): boolean {
         if (questListState.isCollapsed) {
-            if (DockControlsSystem.isExpandKey(e, questListState.dockCorner)) {
+            if (LayoutManager.isExpandKey(e, questListState.dockCorner)) {
                 this.expand();
                 return true;
             }
@@ -268,7 +268,7 @@ export const QuestList = {
 
         const quests = this.getVisibleQuests();
 
-        if (DockControlsSystem.isCollapseKey(e, questListState.dockCorner)) {
+        if (LayoutManager.isCollapseKey(e, questListState.dockCorner)) {
             this.collapse();
             return true;
         }
@@ -467,7 +467,7 @@ export const QuestList = {
         const container = document.getElementById('quest-list-panel');
         if (!container) return;
 
-        DockControlsSystem.applyDockPosition(container, questListState.dockCorner);
+        LayoutManager.anchorToCorner(container, questListState.dockCorner);
 
         if (!isLayoutMounted) {
             this.mountLayout(container);

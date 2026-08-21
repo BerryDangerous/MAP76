@@ -3,9 +3,9 @@ import { appSettings } from '@/core/settings.js';
 import { mapState } from '@/core/state.js';
 
 import { ThemeEngine } from '@/systems/assetManager.js';
-import { DockControlsSystem, DockCorner } from '@/systems/dockControls.js';
 import { FocusManager } from '@/systems/focusManager.js';
 import { KeybindsSystem } from '@/systems/keybindManager.js';
+import { LayoutManager, Corner } from '@/systems/layoutManager.js';
 import { SelectableListController } from '@/systems/listController.js';
 import { MapViewport } from '@/systems/viewport.js';
 
@@ -26,7 +26,7 @@ export interface WorkshopListState {
     isCollapsed: boolean;
     hoverIndex: number;
     selectedMarkerFormId: number | null;
-    dockCorner: DockCorner;
+    dockCorner: Corner;
 }
 
 const workshopListState: WorkshopListState = {
@@ -223,7 +223,7 @@ export const WorkshopList = {
 
     handleKeyDown(e: KeyboardEvent): boolean {
         if (workshopListState.isCollapsed) {
-            if (DockControlsSystem.isExpandKey(e, workshopListState.dockCorner)) {
+            if (LayoutManager.isExpandKey(e, workshopListState.dockCorner)) {
                 this.expand();
                 return true;
             }
@@ -232,7 +232,7 @@ export const WorkshopList = {
 
         const workshops = this.getVisibleWorkshops();
 
-        if (DockControlsSystem.isCollapseKey(e, workshopListState.dockCorner)) {
+        if (LayoutManager.isCollapseKey(e, workshopListState.dockCorner)) {
             this.collapse();
             return true;
         }
@@ -423,7 +423,7 @@ export const WorkshopList = {
         const container = document.getElementById('workshop-list-panel');
         if (!container) return;
 
-        DockControlsSystem.applyDockPosition(container, workshopListState.dockCorner);
+        LayoutManager.anchorToCorner(container, workshopListState.dockCorner);
 
         if (!isLayoutMounted) {
             this.mountLayout(container);

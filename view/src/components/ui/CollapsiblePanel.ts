@@ -1,12 +1,12 @@
 import { EngineBridge } from '@/core/bridge.js';
 
-import { DockControlsSystem, DockCorner } from '@/systems/dockControls.js';
+import { LayoutManager, Corner } from '@/systems/layoutManager.js';
 
 export interface CollapsiblePanelOptions {
     panelElement: HTMLElement;
     titleElement?: HTMLElement;
     collapseBtnElement?: HTMLElement;
-    dockCorner?: DockCorner;
+    dockCorner?: Corner;
     initiallyCollapsed?: boolean;
     onToggle?: (isCollapsed: boolean) => void;
 }
@@ -14,7 +14,7 @@ export interface CollapsiblePanelOptions {
 export class CollapsiblePanel {
     private options: CollapsiblePanelOptions;
     private isCollapsed: boolean;
-    private dockCorner: DockCorner;
+    private dockCorner: Corner;
 
     constructor(options: CollapsiblePanelOptions) {
         this.options = options;
@@ -61,7 +61,7 @@ export class CollapsiblePanel {
     public updateGlyph(): void {
         const icon = this.options.panelElement.querySelector('.cp-btn-icon');
         if (icon) {
-            icon.textContent = DockControlsSystem.getGlyph(this.dockCorner, this.isCollapsed);
+            icon.textContent = LayoutManager.getGlyph(this.dockCorner, this.isCollapsed);
         }
     }
 

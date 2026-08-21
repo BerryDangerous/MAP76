@@ -6,9 +6,9 @@ import { requestSettings } from '@/core/settings.js';
 import { mapState } from '@/core/state.js';
 
 import { ThemeEngine } from '@/systems/assetManager.js';
-import { DockControlsSystem } from '@/systems/dockControls.js';
 import { FocusManager } from '@/systems/focusManager.js';
 import { KeybindsSystem } from '@/systems/keybindManager.js';
+import { LayoutManager } from '@/systems/layoutManager.js';
 import { MarkerInteractionManager } from '@/systems/markerController.js';
 import { loadMarkers, applySupplyLinesVisibilityFilter, switchWorldspace, updatePlayerMarker } from '@/systems/markerRenderer.js';
 import { ModalManager } from '@/systems/modalManager.js';
@@ -262,13 +262,13 @@ window.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            const questDockCorner = QuestList.getState().dockCorner;
-            const workshopDockCorner = WorkshopList.getState().dockCorner;
-            if (DockControlsSystem.isExpandKey(e, questDockCorner)) {
+            const questCorner = QuestList.getState().dockCorner;
+            const workshopCorner = WorkshopList.getState().dockCorner;
+            if (LayoutManager.isExpandKey(e, questCorner)) {
                 QuestList.expand();
-            } else if (DockControlsSystem.isExpandKey(e, workshopDockCorner)) {
+            } else if (LayoutManager.isExpandKey(e, workshopCorner)) {
                 WorkshopList.expand();
-            } else if (DockControlsSystem.isExpandKey(e, SearchPanel.getState().dockCorner)) {
+            } else if (LayoutManager.isExpandKey(e, SearchPanel.getState().dockCorner)) {
                 SearchPanel.expand();
             } else if (KeybindsSystem.isAction(e, 'TOGGLE_SUPPLY_LINES')) {
                 if (hasSupplyLines()) {

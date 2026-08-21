@@ -2,8 +2,8 @@ import { QuestItem } from '@/types/quests.js';
 
 import { toggleQuestActive, makeOnlyQuestActive } from '@/core/bridge.js';
 
-import { DockCorner } from '@/systems/dockControls.js';
 import { FocusManager } from '@/systems/focusManager.js';
+import { Corner } from '@/systems/layoutManager.js';
 import { MapViewport } from '@/systems/viewport.js';
 
 import { QuestUtils } from '@/utils/questUtils.js';
@@ -57,7 +57,7 @@ export const QuestCard = {
         return floatingCard ? floatingCard.handleKeyDown(e) : false;
     },
 
-    open(quest: QuestItem, anchorMarker?: HTMLElement, referencePanel?: HTMLElement, dockCorner?: DockCorner, takeFocus: boolean = true, returnFocusId?: string, onNavBack?: () => void): void {
+    open(quest: QuestItem, anchorMarker?: HTMLElement, referencePanel?: HTMLElement, dockCorner?: Corner, takeFocus: boolean = true, returnFocusId?: string, onNavBack?: () => void): void {
         if (this.activeAnchorMarker && this.activeAnchorMarker !== anchorMarker) {
             this.activeAnchorMarker.classList.remove('menu-active');
             this.activeAnchorMarker.classList.remove('hide-tooltip-override');
