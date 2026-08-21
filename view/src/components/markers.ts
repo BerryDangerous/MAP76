@@ -5,7 +5,7 @@ import { CustomMarker, POIMarker, PowerArmorMarker, MarkerType } from '../types/
 import { F4SEMapPayload } from '../types/payloads.js';
 import { QuestItem } from '../types/quests.js';
 import { MapViewport } from './viewport.js';
-import { MARKER_ICON_CUSTOM_MARKER, MARKER_ICON_POWER_ARMOR, MARKER_ICON_RAIDER_OUTPOST, MARKER_ICON_VASSAL_SETTLEMENT, MARKER_ICON_POTENTIAL_VASSAL_SETTLEMENT } from '../core/constants.js';
+import { MARKER_ICON_CUSTOM_MARKER, MARKER_ICON_POWER_ARMOR, MARKER_ICON_RAIDER_OUTPOST, MARKER_ICON_VASSAL_SETTLEMENT, MARKER_ICON_POTENTIAL_VASSAL_SETTLEMENT, FORM_ID_INDEX_MASK, NAKANO_RESIDENCE_REAL_MARKER_MASKED_ID } from '../core/constants.js';
 import { renderSupplyLines, isSupplyLinesViewActive, activeGatewayMarkerFormIds } from './supplyLines.js';
 import { WorldspaceUtils } from '../utils/worldspaceUtils.js';
 import { InfoBar } from './infoBar.js';
@@ -203,6 +203,8 @@ function renderLocationMarkers(markers: POIMarker[], worldspaceID: number, bound
 
     markers.forEach(m => {
         if (!WorldspaceUtils.isSameWorldspace(m.worldspace, worldspaceID)) return;
+
+        if ((m.formId & FORM_ID_INDEX_MASK) === NAKANO_RESIDENCE_REAL_MARKER_MASKED_ID) return;
 
         const isGateway = isSupplyLinesViewActive() && activeGatewayMarkerFormIds.has(m.formId);
         const shouldRender = m.visible || m.discovered || m.canFastTravel || isGateway;
