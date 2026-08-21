@@ -68,33 +68,28 @@ namespace
         {
             if (auto* location = cell->GetLocation())
             {
-                auto* currentLoc = location;
-                while (currentLoc)
+                auto markerHandle = location->worldLocMarker;
+                if (markerHandle)
                 {
-                    auto markerHandle = currentLoc->worldLocMarker;
-                    if (markerHandle)
+                    RE::TESObjectREFR* markerRef = nullptr;
+                    if (auto ptr = markerHandle.get())
                     {
-                        RE::TESObjectREFR* markerRef = nullptr;
-                        if (auto ptr = markerHandle.get())
-                        {
-                            markerRef = ptr.get();
-                        }
-                        if (!markerRef && markerHandle.get_handle() != 0)
-                        {
-                            markerRef = RE::TESForm::GetFormByID<RE::TESObjectREFR>(markerHandle.get_handle());
-                        }
+                        markerRef = ptr.get();
+                    }
+                    if (!markerRef && markerHandle.get_handle() != 0)
+                    {
+                        markerRef = RE::TESForm::GetFormByID<RE::TESObjectREFR>(markerHandle.get_handle());
+                    }
 
-                        if (markerRef)
+                    if (markerRef)
+                    {
+                        auto* cellWorld = GetDirectWorldspace(markerRef);
+                        if (cellWorld)
                         {
-                            auto* cellWorld = GetDirectWorldspace(markerRef);
-                            if (cellWorld)
-                            {
-                                if (a_position) *a_position = markerRef->GetPosition();
-                                return cellWorld;
-                            }
+                            if (a_position) *a_position = markerRef->GetPosition();
+                            return cellWorld;
                         }
                     }
-                    currentLoc = currentLoc->parentLoc;
                 }
             }
 
@@ -154,6 +149,39 @@ namespace
             if (candidateWorld)
             {
                 return candidateWorld;
+            }
+
+
+            if (auto* location = cell->GetLocation())
+            {
+                auto* currentLoc = location->parentLoc;
+                while (currentLoc)
+                {
+                    auto markerHandle = currentLoc->worldLocMarker;
+                    if (markerHandle)
+                    {
+                        RE::TESObjectREFR* markerRef = nullptr;
+                        if (auto ptr = markerHandle.get())
+                        {
+                            markerRef = ptr.get();
+                        }
+                        if (!markerRef && markerHandle.get_handle() != 0)
+                        {
+                            markerRef = RE::TESForm::GetFormByID<RE::TESObjectREFR>(markerHandle.get_handle());
+                        }
+
+                        if (markerRef)
+                        {
+                            auto* cellWorld = GetDirectWorldspace(markerRef);
+                            if (cellWorld)
+                            {
+                                if (a_position) *a_position = markerRef->GetPosition();
+                                return cellWorld;
+                            }
+                        }
+                    }
+                    currentLoc = currentLoc->parentLoc;
+                }
             }
         }
 
