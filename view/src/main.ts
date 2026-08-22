@@ -14,6 +14,8 @@ import { loadMarkers, applySupplyLinesVisibilityFilter, switchWorldspace, update
 import { ModalManager } from '@/systems/modalManager.js';
 import { MapViewport } from '@/systems/viewport.js';
 
+import { MapUtils } from '@/utils/mapUtils.js';
+
 import { ControlBar } from '@/components/ControlsBar.js';
 import { CustomMarkerCard } from '@/components/CustomMarkerCard.js';
 import { InfoBar } from '@/components/InfoBar.js';
@@ -218,10 +220,14 @@ window.addEventListener('DOMContentLoaded', () => {
                 const worldspaceData = mapState.lastPayload?.worldspaces?.[config.worldspaceID];
                 const bounds = worldspaceData?.bounds;
                 if (bounds) {
-                    const worldCoords = MapViewport.screenToGameCoords(
+                    const worldCoords = MapUtils.screenToGameCoords(
                         MapViewport.lastMouseX, 
                         MapViewport.lastMouseY, 
-                        bounds
+                        bounds,
+                        mapState.activeMapConfig!.gutters,
+                        mapState.zoom,
+                        mapState.panX,
+                        mapState.panY
                     );
                     CustomMarkerCard.open({ gameCoords: worldCoords, pageCoords: { x: MapViewport.lastMouseX, y: MapViewport.lastMouseY }, worldspaceId: config.worldspaceID });
                     FocusManager.setFocus('CUSTOM_MARKER_CARD');

@@ -10,6 +10,7 @@ import { mapState } from '@/core/state.js';
 import { ThemeEngine } from '@/systems/assetManager.js';
 import { MapViewport } from '@/systems/viewport.js';
 
+import { MapUtils } from '@/utils/mapUtils.js';
 import { WorldspaceUtils } from '@/utils/worldspaceUtils.js';
 
 import { InfoBar } from '@/components/InfoBar.js';
@@ -183,7 +184,7 @@ function renderPlayer(player: PlayerData | undefined, worldspaceID: number, boun
     mapState.player.active = false;
     if (!player || !WorldspaceUtils.isSameWorldspace(player.worldspace, worldspaceID)) return;
 
-    const pos = MapViewport.gameToMapCoords(player.x, player.y, player.z, bounds);
+    const pos = MapUtils.gameToMapCoords(player.x, player.y, player.z, bounds, mapState.activeMapConfig!.gutters);
     const pImg = document.createElement('img');
     pImg.id = 'player-marker';
     pImg.className = 'player-marker-vector';
@@ -223,7 +224,7 @@ function renderLocationMarkers(markers: POIMarker[], worldspaceID: number, bound
             y = Math.max(bounds.minY, Math.min(bounds.maxY, y));
         }
 
-        const pos = MapViewport.gameToMapCoords(x, y, 0, bounds);
+        const pos = MapUtils.gameToMapCoords(x, y, 0, bounds, mapState.activeMapConfig!.gutters);
         const container = createMarkerContainer('location', m.name, pos);
         if (isClamped) {
             container.classList.add('clamped-marker');
@@ -290,12 +291,12 @@ function renderQuestMarkers(quests: QuestItem[], worldspaceID: number, bounds: G
                 let gx = resolved.x;
                 let gy = resolved.y;
                 if (resolved.isGateway) {
-                    const { minX: bMinX, maxX: bMaxX, minY: bMinY, maxY: bMaxY } = MapViewport.getEffectiveBounds(bounds);
+                    const { minX: bMinX, maxX: bMaxX, minY: bMinY, maxY: bMaxY } = MapUtils.getEffectiveBounds(bounds);
                     gx = Math.max(bMinX, Math.min(bMaxX, gx));
                     gy = Math.max(bMinY, Math.min(bMaxY, gy));
                 }
 
-                const pos = MapViewport.gameToMapCoords(gx, gy, resolved.z, bounds);
+                const pos = MapUtils.gameToMapCoords(gx, gy, resolved.z, bounds, mapState.activeMapConfig!.gutters);
 
                 const container = createMarkerContainer('quest', markerTooltipText, pos);
                 container.classList.add('quest-marker');
@@ -335,12 +336,12 @@ function renderCustomMarker(marker: CustomMarker | null | undefined, worldspaceI
     let gx = resolved.x;
     let gy = resolved.y;
     if (resolved.isGateway) {
-        const { minX: bMinX, maxX: bMaxX, minY: bMinY, maxY: bMaxY } = MapViewport.getEffectiveBounds(bounds);
+        const { minX: bMinX, maxX: bMaxX, minY: bMinY, maxY: bMaxY } = MapUtils.getEffectiveBounds(bounds);
         gx = Math.max(bMinX, Math.min(bMaxX, gx));
         gy = Math.max(bMinY, Math.min(bMaxY, gy));
     }
 
-    const pos = MapViewport.gameToMapCoords(gx, gy, 0, bounds);
+    const pos = MapUtils.gameToMapCoords(gx, gy, 0, bounds, mapState.activeMapConfig!.gutters);
     const container = createMarkerContainer('customMarker', 'Custom Marker', pos);
     container.classList.add('custom-marker');
 
@@ -374,12 +375,12 @@ function renderPowerArmor(pa: PowerArmorMarker | null | undefined, worldspaceID:
     let gx = resolved.x;
     let gy = resolved.y;
     if (resolved.isGateway) {
-        const { minX: bMinX, maxX: bMaxX, minY: bMinY, maxY: bMaxY } = MapViewport.getEffectiveBounds(bounds);
+        const { minX: bMinX, maxX: bMaxX, minY: bMinY, maxY: bMaxY } = MapUtils.getEffectiveBounds(bounds);
         gx = Math.max(bMinX, Math.min(bMaxX, gx));
         gy = Math.max(bMinY, Math.min(bMaxY, gy));
     }
 
-    const pos = MapViewport.gameToMapCoords(gx, gy, resolved.z, bounds);
+    const pos = MapUtils.gameToMapCoords(gx, gy, resolved.z, bounds, mapState.activeMapConfig!.gutters);
     const container = createMarkerContainer('powerarmor', 'Power Armor', pos);
     container.classList.add('power-armor-marker');
 
@@ -430,7 +431,7 @@ export function updatePlayerMarker(player: PlayerData | undefined) {
         renderPlayer(player, config.worldspaceID, bounds);
     } else {
         pImg.style.display = '';
-        const pos = MapViewport.gameToMapCoords(player.x, player.y, player.z, bounds);
+        const pos = MapUtils.gameToMapCoords(player.x, player.y, player.z, bounds, mapState.activeMapConfig!.gutters);
         pImg.style.left = `${pos.x}%`;
         pImg.style.top = `${pos.y}%`;
         pImg.style.setProperty('--player-angle', `${player.angle}deg`);

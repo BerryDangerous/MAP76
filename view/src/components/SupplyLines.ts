@@ -2,8 +2,7 @@ import { F4SEMapPayload, SettlementData } from '@/types/payloads.js';
 
 import { mapState } from '@/core/state.js';
 
-import { MapViewport } from '@/systems/viewport.js';
-
+import { MapUtils } from '@/utils/mapUtils.js';
 import { WorldspaceUtils } from '@/utils/worldspaceUtils.js';
 
 let isSupplyLinesActiveState = false;
@@ -81,15 +80,15 @@ function resolveCrossWorldspaceGateway(
         let gx = resolved.x;
         let gy = resolved.y;
 
-        const { minX: bMinX, maxX: bMaxX, minY: bMinY, maxY: bMaxY } = MapViewport.getEffectiveBounds(bounds);
+        const { minX: bMinX, maxX: bMaxX, minY: bMinY, maxY: bMaxY } = MapUtils.getEffectiveBounds(bounds);
         gx = Math.max(bMinX, Math.min(bMaxX, gx));
         gy = Math.max(bMinY, Math.min(bMaxY, gy));
 
-        const gwPos = MapViewport.gameToMapCoords(gx, gy, 0, bounds);
+        const gwPos = MapUtils.gameToMapCoords(gx, gy, 0, bounds, mapState.activeMapConfig!.gutters);
         return { x: gwPos.x, y: gwPos.y };
     }
     
-    const gwPos = MapViewport.gameToMapCoords(0, 0, 0, bounds);
+    const gwPos = MapUtils.gameToMapCoords(0, 0, 0, bounds, mapState.activeMapConfig!.gutters);
     return { x: gwPos.x, y: gwPos.y };
 }
 
@@ -122,7 +121,7 @@ export function renderSupplyLines(payload: F4SEMapPayload): void {
         if (ws.worldspace !== currentWorldspace) return;
         let marker = markers.find(m => m.formId === ws.markerFormId || m.formId === ws.formId);
         if (marker) {
-            const pos = MapViewport.gameToMapCoords(marker.x, marker.y, 0, bounds);
+            const pos = MapUtils.gameToMapCoords(marker.x, marker.y, 0, bounds, mapState.activeMapConfig!.gutters);
             coordsMap.set(ws.locationFormId, { x: pos.x, y: pos.y });
             coordsMap.set(ws.formId, { x: pos.x, y: pos.y });
             rawCoordsMap.set(ws.locationFormId, { x: marker.x, y: marker.y });

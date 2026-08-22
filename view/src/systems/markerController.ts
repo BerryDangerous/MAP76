@@ -7,7 +7,8 @@ import { mapState } from '@/core/state.js';
 
 import { FocusManager } from '@/systems/focusManager.js';
 import { getPotentialVassalMarkerFormIds } from '@/systems/markerRenderer.js';
-import { MapViewport } from '@/systems/viewport.js';
+
+import { MapUtils } from '@/utils/mapUtils.js';
 
 import { CustomMarkerCard } from '@/components/CustomMarkerCard.js';
 import { MarkerCard } from '@/components/MarkerCard.js';
@@ -299,7 +300,7 @@ export const MarkerInteractionManager = {
                     return;
                 }
 
-                const worldCoords = MapViewport.screenToGameCoords(e.clientX, e.clientY, bounds);
+                const worldCoords = MapUtils.screenToGameCoords(e.clientX, e.clientY, bounds, mapState.activeMapConfig!.gutters, mapState.zoom, mapState.panX, mapState.panY);
                 CustomMarkerCard.open({ gameCoords: worldCoords, pageCoords: { x: e.clientX, y: e.clientY }, worldspaceId: config.worldspaceID });
                 FocusManager.setFocus('CUSTOM_MARKER_CARD');
             }
