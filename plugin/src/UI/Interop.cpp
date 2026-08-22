@@ -8,7 +8,12 @@
 #include "UI/Settings.h"
 #include <thread>
 #include <chrono>
+#include <filesystem>
+#include <format>
 #include "RE/U/UIUtils.h"
+#include "REX/W32/OLE32.h"
+#include "REX/W32/SHELL32.h"
+#include "F4SE/API.h"
 
 namespace MAP76::UI
 {
@@ -37,8 +42,32 @@ namespace MAP76::UI
                 task->AddTask([]() {
                     std::string freshMapJson = MAP76::UI::Payload::GetMapPayloadAsJSON();
 
-                    REX::INFO("MAP76: Live Thread Snapshot Payload -> Stream Length: {}", freshMapJson.length());
-                    REX::INFO("MAP76: Content: {}", freshMapJson);
+                    if (MAP76::UI::Settings::writePayloadToFile) {
+                        wchar_t* knownBuffer = nullptr;
+                        if (REX::W32::SHGetKnownFolderPath(REX::W32::FOLDERID_Documents, REX::W32::KF_FLAG_DEFAULT, nullptr, std::addressof(knownBuffer)) == 0) {
+                            std::unique_ptr<wchar_t[], decltype(&REX::W32::CoTaskMemFree)> knownPath(knownBuffer, REX::W32::CoTaskMemFree);
+                            if (knownPath) {
+                                auto now = std::chrono::system_clock::now();
+                                auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
+                                std::string fileName = std::format("MAP76_payload_{}.json", ms);
+                                
+                                std::filesystem::path path = knownPath.get();
+                                path /= std::format("My Games/{}/F4SE/{}", F4SE::GetSaveFolderName(), fileName);
+                                
+                                std::ofstream payloadFile(path);
+                                if (payloadFile.is_open()) {
+                                    try {
+                                        std::string indentedJson = nlohmann::json::parse(freshMapJson).dump(4);
+                                        payloadFile << indentedJson;
+                                        REX::INFO("MAP76: Saved payload snapshot to {} ({} bytes)", fileName, indentedJson.length());
+                                    } catch (const nlohmann::json::parse_error& e) {
+                                        payloadFile << freshMapJson;
+                                        REX::INFO("MAP76: Saved unformatted payload snapshot to {} ({} bytes) due to parse error", fileName, freshMapJson.length());
+                                    }
+                                }
+                            }
+                        }
+                    }
 
                     if (MAP76::UI::State::g_api && MAP76::UI::State::g_view)
                     {

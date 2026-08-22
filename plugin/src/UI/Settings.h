@@ -11,6 +11,8 @@ namespace MAP76::UI {
         static nlohmann::json Get();
         
         static bool freezeSimulation;
+        static bool writePayloadToFile;
+        static bool showWorkshopInfoLog;
         
     private:
         static nlohmann::json data;

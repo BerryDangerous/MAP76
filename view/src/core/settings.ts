@@ -7,6 +7,8 @@ export interface AppSettings {
     alternativeMapSound: boolean;
     limitQuestPanelHeight: boolean;
     hideInactiveQuestMarkers: boolean;
+    writePayloadToFile: boolean;
+    showWorkshopInfoLog: boolean;
 }
 
 export const defaultSettings: AppSettings = {
@@ -18,6 +20,8 @@ export const defaultSettings: AppSettings = {
     alternativeMapSound: false,
     limitQuestPanelHeight: false,
     hideInactiveQuestMarkers: false,
+    writePayloadToFile: false,
+    showWorkshopInfoLog: false,
 };
 
 export function getDefaultSettings(): AppSettings {

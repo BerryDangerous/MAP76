@@ -5,6 +5,7 @@
 #include "Engine/MapData.h"
 #include "Engine/MapMarkers.h"
 #include "Constants.h"
+#include "UI/Settings.h"
 
 #include "RE/A/Actor.h"
 #include "RE/B/BGSKeyword.h"
@@ -97,14 +98,14 @@ namespace MAP76::Engine::WorkshopManager
 
             if (!caravanStartKw || !caravanEndKw)
             {
-                REX::INFO("[WorkshopManager] Caravan keywords not found — skipping supply lines collection.");
+                if (MAP76::UI::Settings::showWorkshopInfoLog) REX::INFO("[WorkshopManager] Caravan keywords not found — skipping supply lines collection.");
                 return supplyLines;
             }
 
             auto *parentQuest = RE::TESForm::GetFormByID<RE::TESQuest>(Constants::Workshop::WORKSHOP_PARENT_QUEST_FORM_ID);
             if (!parentQuest)
             {
-                REX::INFO("[WorkshopManager] WorkshopParent quest 0x{:08X} not found.", Constants::Workshop::WORKSHOP_PARENT_QUEST_FORM_ID);
+                if (MAP76::UI::Settings::showWorkshopInfoLog) REX::INFO("[WorkshopManager] WorkshopParent quest 0x{:08X} not found.", Constants::Workshop::WORKSHOP_PARENT_QUEST_FORM_ID);
                 return supplyLines;
             }
 
@@ -132,7 +133,7 @@ namespace MAP76::Engine::WorkshopManager
                 }
             }
 
-            REX::INFO("[WorkshopManager] Resolved {} active supply lines.", resolvedCount);
+            if (MAP76::UI::Settings::showWorkshopInfoLog) REX::INFO("[WorkshopManager] Resolved {} active supply lines.", resolvedCount);
             return supplyLines;
         }
 
@@ -362,7 +363,7 @@ namespace MAP76::Engine::WorkshopManager
         PipboyMarkerIndex pipboyIndex = BuildPipboyMarkerIndex(pipboyManager);
 
         const auto &workshopMap = pipboyManager->workshopData.workshopMap;
-        REX::INFO("[WorkshopManager] Processing {} workshops from Pipboy map.", workshopMap.size());
+        if (MAP76::UI::Settings::showWorkshopInfoLog) REX::INFO("[WorkshopManager] Processing {} workshops from Pipboy map.", workshopMap.size());
 
         for (const auto &[workshopFormId, workshopObject] : workshopMap)
         {
@@ -374,7 +375,7 @@ namespace MAP76::Engine::WorkshopManager
 
             if (!ResolveReferenceAndLocation(workshopFormId, rawData))
             {
-                REX::INFO("[WorkshopManager] FILTERED 0x{:08X} '{}' — could not resolve REFR or location form", workshopFormId, rawData.name);
+                if (MAP76::UI::Settings::showWorkshopInfoLog) REX::INFO("[WorkshopManager] FILTERED 0x{:08X} '{}' — could not resolve REFR or location form", workshopFormId, rawData.name);
                 continue;
             }
 
@@ -401,7 +402,7 @@ namespace MAP76::Engine::WorkshopManager
 
             if (!hasMarker)
             {
-                REX::INFO("[WorkshopManager] FILTERED 0x{:08X} '{}' (Loc: 0x{:08X}) — no map marker found", workshopFormId, rawData.name, rawData.locationFormId);
+                if (MAP76::UI::Settings::showWorkshopInfoLog) REX::INFO("[WorkshopManager] FILTERED 0x{:08X} '{}' (Loc: 0x{:08X}) — no map marker found", workshopFormId, rawData.name, rawData.locationFormId);
                 continue;
             }
 
@@ -459,11 +460,11 @@ namespace MAP76::Engine::WorkshopManager
             }
             else
             {
-                REX::INFO("[WorkshopManager] FILTERED 0x{:08X} '{}' — no settlement keyword", workshopFormId, rawData.name);
+                if (MAP76::UI::Settings::showWorkshopInfoLog) REX::INFO("[WorkshopManager] FILTERED 0x{:08X} '{}' — no settlement keyword", workshopFormId, rawData.name);
             }
         }
 
-        REX::INFO("[WorkshopManager] Collection completed: {} settlements.", result.size());
+        if (MAP76::UI::Settings::showWorkshopInfoLog) REX::INFO("[WorkshopManager] Collection completed: {} settlements.", result.size());
         return result;
     }
 }

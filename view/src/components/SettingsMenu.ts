@@ -14,7 +14,7 @@ import { Toggle } from '@/components/ui/SettingsToggle.js';
 interface SettingControlEntry {
     key: keyof AppSettings;
     label: string;
-    tab: 'DISPLAY' | 'GAMEPLAY';
+    tab: 'DISPLAY' | 'GAMEPLAY' | 'DEBUG';
     updateUI: (val: any) => void;
     row: SettingsRow;
 }
@@ -28,7 +28,7 @@ export const SettingsMenu = {
     
     tabsContainer: null as HTMLElement | null,
     listContainer: null as HTMLElement | null,
-    activeTab: 'DISPLAY' as 'DISPLAY' | 'GAMEPLAY',
+    activeTab: 'DISPLAY' as 'DISPLAY' | 'GAMEPLAY' | 'DEBUG',
     pendingCloseKey: null as string | null,
 
     init() {
@@ -60,7 +60,7 @@ export const SettingsMenu = {
         const registerControl = <K extends keyof AppSettings>(
             key: K, 
             label: string, 
-            tab: 'DISPLAY' | 'GAMEPLAY',
+            tab: 'DISPLAY' | 'GAMEPLAY' | 'DEBUG',
             control: SettingsControl
         ) => {
             const row = new SettingsRow(label, control);
@@ -111,6 +111,12 @@ export const SettingsMenu = {
 
         const ftToggle = new Toggle(appSettings.confirmFastTravel, (val) => { updateSettings({ confirmFastTravel: val }); });
         registerControl('confirmFastTravel', 'Fast Travel Confirmation', 'GAMEPLAY', ftToggle);
+
+        const writePayloadToggle = new Toggle(appSettings.writePayloadToFile, (val) => { updateSettings({ writePayloadToFile: val }); });
+        registerControl('writePayloadToFile', 'Write Payload to File', 'DEBUG', writePayloadToggle);
+
+        const showWorkshopLogToggle = new Toggle(appSettings.showWorkshopInfoLog, (val) => { updateSettings({ showWorkshopInfoLog: val }); });
+        registerControl('showWorkshopInfoLog', 'Show Workshop Info Log', 'DEBUG', showWorkshopLogToggle);
 
         this.buildTabs();
 
@@ -163,7 +169,7 @@ export const SettingsMenu = {
         if (!this.tabsContainer) return;
         this.tabsContainer.innerHTML = '';
         
-        const tabs: ('DISPLAY' | 'GAMEPLAY')[] = ['DISPLAY', 'GAMEPLAY'];
+        const tabs: ('DISPLAY' | 'GAMEPLAY' | 'DEBUG')[] = ['DISPLAY', 'GAMEPLAY', 'DEBUG'];
         
         tabs.forEach(tabName => {
             const tabEl = document.createElement('div');
@@ -210,7 +216,7 @@ export const SettingsMenu = {
         this.renderList();
     },
 
-    switchTab(tab: 'DISPLAY' | 'GAMEPLAY') {
+    switchTab(tab: 'DISPLAY' | 'GAMEPLAY' | 'DEBUG') {
         if (this.activeTab === tab) return;
         this.activeTab = tab;
         

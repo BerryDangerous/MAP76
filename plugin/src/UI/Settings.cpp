@@ -6,6 +6,8 @@
 namespace MAP76::UI {
     nlohmann::json Settings::data = nlohmann::json::object();
     bool Settings::freezeSimulation = true;
+    bool Settings::writePayloadToFile = false;
+    bool Settings::showWorkshopInfoLog = false;
 
     std::string Settings::GetConfigPath() {
         return "Data/F4SE/Plugins/MAP76.json";
@@ -16,6 +18,18 @@ namespace MAP76::UI {
             freezeSimulation = data["freezeSimulation"].get<bool>();
         } else {
             data["freezeSimulation"] = freezeSimulation;
+        }
+
+        if (data.contains("writePayloadToFile") && data["writePayloadToFile"].is_boolean()) {
+            writePayloadToFile = data["writePayloadToFile"].get<bool>();
+        } else {
+            data["writePayloadToFile"] = writePayloadToFile;
+        }
+
+        if (data.contains("showWorkshopInfoLog") && data["showWorkshopInfoLog"].is_boolean()) {
+            showWorkshopInfoLog = data["showWorkshopInfoLog"].get<bool>();
+        } else {
+            data["showWorkshopInfoLog"] = showWorkshopInfoLog;
         }
     }
 
