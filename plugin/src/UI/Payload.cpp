@@ -1,6 +1,6 @@
 #include "PCH.h"
 #include "UI/Payload.h"
-#include "UI/DTO/MapPayload.h"
+#include "UI/PayloadDTO.h"
 #include "Engine/MapData.h"
 #include "Engine/MapMarkers.h"
 #include "Engine/QuestManager.h"
