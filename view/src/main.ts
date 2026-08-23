@@ -5,7 +5,6 @@ import { appSettings } from '@/core/settings.js';
 import { requestSettings } from '@/core/settings.js';
 import { mapState } from '@/core/state.js';
 
-import { ThemeEngine } from '@/systems/assetManager.js';
 import { FocusManager } from '@/systems/focusManager.js';
 import { KeybindsSystem } from '@/systems/keybindManager.js';
 import { LayoutManager } from '@/systems/layoutManager.js';
@@ -29,7 +28,13 @@ import { SettlementCard } from '@/components/SettlementCard.js';
 import { toggleSupplyLinesView, setSupplyLinesViewActive, hasSupplyLines } from '@/components/SupplyLines.js';
 import { WorkshopList } from '@/components/WorkshopsPanel.js';
 
-ThemeEngine.initMapConfig();
+const globalConfig = window.DEFAULT_COMMONWEALTH_CONFIG;
+if (globalConfig) {
+    mapState.activeMapConfig = globalConfig;
+    console.log(`[Init] Overrode layout using global config: ${globalConfig.mapName}`);
+} else {
+    console.log('[Init] Using built-in hardcoded map configuration fallback.');
+}
 
 if (navigator.userAgent.includes('Ultralight')) {
     document.body.classList.add('is-ultralight');

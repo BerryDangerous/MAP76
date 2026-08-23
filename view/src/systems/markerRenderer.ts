@@ -3,11 +3,11 @@ import { CustomMarker, POIMarker, PowerArmorMarker, MarkerType } from '@/types/m
 import { F4SEMapPayload } from '@/types/payloads.js';
 import { QuestItem } from '@/types/quests.js';
 
-import { ASSET_ICON_CUSTOM_MARKER, ASSET_ICON_POWER_ARMOR, ASSET_ICON_PLAYER_LOCATION, MARKER_ICON_RAIDER_OUTPOST, MARKER_ICON_VASSAL_SETTLEMENT, MARKER_ICON_POTENTIAL_VASSAL_SETTLEMENT, FORM_ID_INDEX_MASK, NAKANO_RESIDENCE_REAL_MARKER_MASKED_ID } from '@/core/constants.js';
+import { ASSET_ICON_CUSTOM_MARKER, ASSET_ICON_POWER_ARMOR, ASSET_ICON_PLAYER_LOCATION, MARKER_ICON_RAIDER_OUTPOST, MARKER_ICON_VASSAL_SETTLEMENT, MARKER_ICON_POTENTIAL_VASSAL_SETTLEMENT, FORM_ID_INDEX_MASK, NAKANO_RESIDENCE_REAL_MARKER_MASKED_ID, WORLDSPACE_CONFIGS, DEFAULT_BLANK_CONFIG } from '@/core/constants.js';
 import { appSettings } from '@/core/settings.js';
 import { mapState } from '@/core/state.js';
 
-import { ThemeEngine } from '@/systems/assetManager.js';
+import { AssetManager } from '@/systems/assetManager.js';
 import { MapViewport } from '@/systems/viewport.js';
 
 import { MapUtils } from '@/utils/mapUtils.js';
@@ -130,7 +130,7 @@ export function loadMarkers(payload: F4SEMapPayload, isSwitchingWorld: boolean =
 
     if (activeWsId !== null && activeWsId !== undefined) {
         const editorID = WorldspaceUtils.getWorldspaceEditorID(activeWsId);
-        ThemeEngine.updateWorldspaceConfig(activeWsId, editorID);
+        updateWorldspaceConfig(activeWsId, editorID);
         InfoBar.updateWorldspace(activeWsId);
     }
 
@@ -188,7 +188,7 @@ function renderPlayer(player: PlayerData | undefined, worldspaceID: number, boun
     const pImg = document.createElement('img');
     pImg.id = 'player-marker';
     pImg.className = 'player-marker-vector';
-    pImg.src = ThemeEngine.getAssetIconUrl(ASSET_ICON_PLAYER_LOCATION);
+    pImg.src = AssetManager.getIconUrl(ASSET_ICON_PLAYER_LOCATION);
     pImg.style.left = `${pos.x}%`;
     pImg.style.top = `${pos.y}%`;
 
@@ -242,10 +242,10 @@ function renderLocationMarkers(markers: POIMarker[], worldspaceID: number, bound
                          isVassal ? MARKER_ICON_VASSAL_SETTLEMENT :
                          m.type;
 
-        const defaultIconUrl = ThemeEngine.getLocationIconUrl(iconType, (m.discovered || m.canFastTravel), m.customIcon);
+        const defaultIconUrl = AssetManager.getLocationIconUrl(iconType, (m.discovered || m.canFastTravel), m.customIcon);
         container.dataset.defaultIconUrl = defaultIconUrl;
 
-        const potentialVassalIconUrl = ThemeEngine.getLocationIconUrl(MARKER_ICON_POTENTIAL_VASSAL_SETTLEMENT, (m.discovered || m.canFastTravel), m.customIcon);
+        const potentialVassalIconUrl = AssetManager.getLocationIconUrl(MARKER_ICON_POTENTIAL_VASSAL_SETTLEMENT, (m.discovered || m.canFastTravel), m.customIcon);
         container.dataset.potentialVassalIconUrl = potentialVassalIconUrl;
         container.dataset.isRaiderOutpost = isRaiderOutpost ? 'true' : 'false';
 
@@ -306,7 +306,7 @@ function renderQuestMarkers(quests: QuestItem[], worldspaceID: number, bounds: G
                 }
 
                 const img = document.createElement('img');
-                img.src = ThemeEngine.getQuestMarkerIconUrl(target.isDoor, quest.isTracked);
+                img.src = AssetManager.getQuestMarkerIconUrl(target.isDoor, quest.isTracked);
 
                 container.appendChild(img);
                 questLayer.appendChild(container);
@@ -346,7 +346,7 @@ function renderCustomMarker(marker: CustomMarker | null | undefined, worldspaceI
     container.classList.add('custom-marker');
 
     const img = document.createElement('img');
-    img.src = ThemeEngine.getAssetIconUrl(ASSET_ICON_CUSTOM_MARKER);
+    img.src = AssetManager.getIconUrl(ASSET_ICON_CUSTOM_MARKER);
 
     container.appendChild(img);
     questLayer.appendChild(container);
@@ -385,7 +385,7 @@ function renderPowerArmor(pa: PowerArmorMarker | null | undefined, worldspaceID:
     container.classList.add('power-armor-marker');
 
     const img = document.createElement('img');
-    img.src = ThemeEngine.getAssetIconUrl(ASSET_ICON_POWER_ARMOR);
+    img.src = AssetManager.getIconUrl(ASSET_ICON_POWER_ARMOR);
 
     container.appendChild(img);
     questLayer.appendChild(container);
@@ -435,5 +435,48 @@ export function updatePlayerMarker(player: PlayerData | undefined) {
         pImg.style.left = `${pos.x}%`;
         pImg.style.top = `${pos.y}%`;
         pImg.style.setProperty('--player-angle', `${player.angle}deg`);
+    }
+}
+
+export function updateWorldspaceConfig(worldspaceID: number, worldspaceEditorID?: string) {
+    const editorKey = worldspaceEditorID ? worldspaceEditorID.toLowerCase() : "";
+    let matchedConfig = null;
+    if (worldspaceEditorID) {
+        for (const key in WORLDSPACE_CONFIGS) {
+            if (key.toLowerCase() === editorKey) {
+                matchedConfig = WORLDSPACE_CONFIGS[key];
+                break;
+            }
+        }
+    }
+
+    if (matchedConfig) {
+        mapState.activeMapConfig = {
+            worldspaceID: worldspaceID,
+            mapName: matchedConfig.mapName,
+            texturePath: matchedConfig.texturePath,
+            gutters: matchedConfig.gutters
+        };
+    } else {
+        const dynamicPath = AssetManager.getMapTextureUrl(worldspaceEditorID);
+        mapState.activeMapConfig = {
+            ...DEFAULT_BLANK_CONFIG,
+            mapName: worldspaceEditorID || "Custom Worldspace",
+            worldspaceID: worldspaceID,
+            texturePath: dynamicPath
+        };
+    }
+
+    const mapBg = document.getElementById('map-bg') as HTMLImageElement;
+    if (mapBg) {
+        mapBg.onerror = () => {
+            console.warn(`[Map] Map texture failed to load: ${mapState.activeMapConfig!.texturePath}. Falling back to blank map canvas.`);
+            mapBg.onerror = null;
+            mapBg.src = DEFAULT_BLANK_CONFIG.texturePath;
+            mapState.activeMapConfig!.gutters = DEFAULT_BLANK_CONFIG.gutters;
+        };
+        if (mapBg.getAttribute('src') !== mapState.activeMapConfig.texturePath) {
+            mapBg.src = mapState.activeMapConfig.texturePath;
+        }
     }
 }

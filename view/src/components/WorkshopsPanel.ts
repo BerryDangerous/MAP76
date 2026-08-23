@@ -2,7 +2,7 @@ import { EngineBridge } from '@/core/bridge.js';
 import { appSettings } from '@/core/settings.js';
 import { mapState } from '@/core/state.js';
 
-import { ThemeEngine } from '@/systems/assetManager.js';
+import { AssetManager } from '@/systems/assetManager.js';
 import { FocusManager } from '@/systems/focusManager.js';
 import { KeybindsSystem } from '@/systems/keybindManager.js';
 import { LayoutManager, Corner } from '@/systems/layoutManager.js';
@@ -509,7 +509,7 @@ export const WorkshopList = {
         const marker = mapState.lastPayload?.markers?.find(m => m.formId === workshop.markerFormId);
         const iconType = getWorkshopIconType(workshop, marker);
         const customIcon = marker ? marker.customIcon : undefined;
-        const markerIconUrl = ThemeEngine.getLocationIconUrl(iconType, true, customIcon);
+        const markerIconUrl = AssetManager.getLocationIconUrl(iconType, true, customIcon);
 
         const badgesHtml = getWorkshopBadgesHtml(workshop);
 

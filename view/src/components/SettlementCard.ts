@@ -2,7 +2,7 @@ import { SettlementData } from '@/types/payloads.js';
 
 import { mapState } from '@/core/state.js';
 
-import { ThemeEngine } from '@/systems/assetManager.js';
+import { AssetManager } from '@/systems/assetManager.js';
 import { FocusManager } from '@/systems/focusManager.js';
 import { Corner } from '@/systems/layoutManager.js';
 import { MarkerInteractionManager } from '@/systems/markerController.js';
@@ -157,16 +157,16 @@ export const SettlementCard = {
     },
 
     buildBodyHtml(settlement: SettlementDataWithRatings): string {
-        const foodUrl = ThemeEngine.getAssetIconUrl('workshop-metric-food');
-        const waterUrl = ThemeEngine.getAssetIconUrl('workshop-metric-water');
-        const bedsUrl = ThemeEngine.getAssetIconUrl('workshop-metric-beds');
-        const powerUrl = ThemeEngine.getAssetIconUrl('workshop-metric-power');
-        const defenseUrl = ThemeEngine.getAssetIconUrl('workshop-metric-defense');
-        const populationUrl = ThemeEngine.getAssetIconUrl('workshop-metric-population');
-        const happinessUrl = ThemeEngine.getAssetIconUrl('workshop-metric-happiness');
+        const foodUrl = AssetManager.getIconUrl('workshop-metric-food');
+        const waterUrl = AssetManager.getIconUrl('workshop-metric-water');
+        const bedsUrl = AssetManager.getIconUrl('workshop-metric-beds');
+        const powerUrl = AssetManager.getIconUrl('workshop-metric-power');
+        const defenseUrl = AssetManager.getIconUrl('workshop-metric-defense');
+        const populationUrl = AssetManager.getIconUrl('workshop-metric-population');
+        const happinessUrl = AssetManager.getIconUrl('workshop-metric-happiness');
 
-        const alertUrl = ThemeEngine.getAssetIconUrl('workshop-alert');
-        const increasingUrl = ThemeEngine.getAssetIconUrl('workshop-increasing');
+        const alertUrl = AssetManager.getIconUrl('workshop-alert');
+        const increasingUrl = AssetManager.getIconUrl('workshop-increasing');
 
         const resolvedRatings = calculateSettlementRatings(settlement);
 

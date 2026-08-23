@@ -5,7 +5,7 @@ import { ASSET_ICON_POWER_ARMOR, ASSET_ICON_CUSTOM_MARKER } from '@/core/constan
 import { appSettings } from '@/core/settings.js';
 import { mapState } from '@/core/state.js';
 
-import { ThemeEngine } from '@/systems/assetManager.js';
+import { AssetManager } from '@/systems/assetManager.js';
 import { FocusManager } from '@/systems/focusManager.js';
 import { KeybindsSystem } from '@/systems/keybindManager.js';
 import { LayoutManager, Corner } from '@/systems/layoutManager.js';
@@ -642,9 +642,9 @@ export const SearchPanel = {
 
         let iconUrl = '';
         if (result.type === 'powerArmor') {
-            iconUrl = ThemeEngine.getAssetIconUrl(ASSET_ICON_POWER_ARMOR);
+            iconUrl = AssetManager.getIconUrl(ASSET_ICON_POWER_ARMOR);
         } else if (result.type === 'customMarker') {
-            iconUrl = ThemeEngine.getAssetIconUrl(ASSET_ICON_CUSTOM_MARKER);
+            iconUrl = AssetManager.getIconUrl(ASSET_ICON_CUSTOM_MARKER);
         } else if (result.type === 'quest') {
             const q = result.originalRef;
             let isDoor = false;
@@ -654,9 +654,9 @@ export const SearchPanel = {
                     isDoor = activeObj.targets[0].isDoor;
                 }
             }
-            iconUrl = ThemeEngine.getQuestMarkerIconUrl(isDoor, q.isTracked);
+            iconUrl = AssetManager.getQuestMarkerIconUrl(isDoor, q.isTracked);
         } else {
-            iconUrl = ThemeEngine.getLocationIconUrl(result.iconType || 0, true, result.customIcon);
+            iconUrl = AssetManager.getLocationIconUrl(result.iconType || 0, true, result.customIcon);
         }
 
         const badgesHtml = result.badgesHtml || '';

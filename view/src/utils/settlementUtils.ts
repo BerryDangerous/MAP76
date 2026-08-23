@@ -3,7 +3,7 @@ import { SettlementData } from '@/types/payloads.js';
 
 import { MARKER_ICON_SETTLEMENT, MARKER_ICON_RAIDER_OUTPOST, MARKER_ICON_VASSAL_SETTLEMENT } from '@/core/constants.js';
 
-import { ThemeEngine } from '@/systems/assetManager.js';
+import { AssetManager } from '@/systems/assetManager.js';
 
 export interface SettlementDataWithRatings extends SettlementData {
     ratings?: {
@@ -78,17 +78,17 @@ export function getWorkshopBadgesHtml(workshop: SettlementDataWithRatings): stri
 
     const ratings = calculateSettlementRatings(workshop);
     if (ratings.overallStatus === -1) {
-        const alertUrl = ThemeEngine.getAssetIconUrl('workshop-alert');
+        const alertUrl = AssetManager.getIconUrl('workshop-alert');
         badgesHtml += `<img class="wl-status-badge" src="${alertUrl}" alt="Alert" style="width: 14px; height: 14px; object-fit: contain; margin-left: 4px;"/>`;
     } else if (ratings.overallStatus === 1) {
-        const increasingUrl = ThemeEngine.getAssetIconUrl('workshop-increasing');
+        const increasingUrl = AssetManager.getIconUrl('workshop-increasing');
         badgesHtml += `<img class="wl-status-badge" src="${increasingUrl}" alt="Increasing" style="width: 14px; height: 14px; object-fit: contain; margin-left: 4px;"/>`;
     }
 
     if (workshop.raider) {
-        badgesHtml += `<img class="wl-status-badge" src="${ThemeEngine.getAssetIconUrl('workshop-raider-outpost')}" alt="Raider" style="width: 14px; height: 14px; object-fit: contain; margin-left: 4px;"/>`;
+        badgesHtml += `<img class="wl-status-badge" src="${AssetManager.getIconUrl('workshop-raider-outpost')}" alt="Raider" style="width: 14px; height: 14px; object-fit: contain; margin-left: 4px;"/>`;
     } else if (workshop.vassal) {
-        badgesHtml += `<img class="wl-status-badge" src="${ThemeEngine.getAssetIconUrl('workshop-vassal-settlement')}" alt="Vassal" style="width: 14px; height: 14px; object-fit: contain; margin-left: 4px;"/>`;
+        badgesHtml += `<img class="wl-status-badge" src="${AssetManager.getIconUrl('workshop-vassal-settlement')}" alt="Vassal" style="width: 14px; height: 14px; object-fit: contain; margin-left: 4px;"/>`;
     }
 
     return badgesHtml;
