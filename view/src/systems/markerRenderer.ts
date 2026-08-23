@@ -3,7 +3,7 @@ import { CustomMarker, POIMarker, PowerArmorMarker, MarkerType } from '@/types/m
 import { F4SEMapPayload } from '@/types/payloads.js';
 import { QuestItem } from '@/types/quests.js';
 
-import { MARKER_ICON_CUSTOM_MARKER, MARKER_ICON_POWER_ARMOR, MARKER_ICON_RAIDER_OUTPOST, MARKER_ICON_VASSAL_SETTLEMENT, MARKER_ICON_POTENTIAL_VASSAL_SETTLEMENT, FORM_ID_INDEX_MASK, NAKANO_RESIDENCE_REAL_MARKER_MASKED_ID } from '@/core/constants.js';
+import { ASSET_ICON_CUSTOM_MARKER, ASSET_ICON_POWER_ARMOR, ASSET_ICON_PLAYER_LOCATION, MARKER_ICON_RAIDER_OUTPOST, MARKER_ICON_VASSAL_SETTLEMENT, MARKER_ICON_POTENTIAL_VASSAL_SETTLEMENT, FORM_ID_INDEX_MASK, NAKANO_RESIDENCE_REAL_MARKER_MASKED_ID } from '@/core/constants.js';
 import { appSettings } from '@/core/settings.js';
 import { mapState } from '@/core/state.js';
 
@@ -188,7 +188,7 @@ function renderPlayer(player: PlayerData | undefined, worldspaceID: number, boun
     const pImg = document.createElement('img');
     pImg.id = 'player-marker';
     pImg.className = 'player-marker-vector';
-    pImg.src = ThemeEngine.getPlayerIconUrl();
+    pImg.src = ThemeEngine.getAssetIconUrl(ASSET_ICON_PLAYER_LOCATION);
     pImg.style.left = `${pos.x}%`;
     pImg.style.top = `${pos.y}%`;
 
@@ -242,10 +242,10 @@ function renderLocationMarkers(markers: POIMarker[], worldspaceID: number, bound
                          isVassal ? MARKER_ICON_VASSAL_SETTLEMENT :
                          m.type;
 
-        const defaultIconUrl = ThemeEngine.getMarkerIconUrl(iconType, (m.discovered || m.canFastTravel), m.customIcon);
+        const defaultIconUrl = ThemeEngine.getLocationIconUrl(iconType, (m.discovered || m.canFastTravel), m.customIcon);
         container.dataset.defaultIconUrl = defaultIconUrl;
 
-        const potentialVassalIconUrl = ThemeEngine.getMarkerIconUrl(MARKER_ICON_POTENTIAL_VASSAL_SETTLEMENT, (m.discovered || m.canFastTravel), m.customIcon);
+        const potentialVassalIconUrl = ThemeEngine.getLocationIconUrl(MARKER_ICON_POTENTIAL_VASSAL_SETTLEMENT, (m.discovered || m.canFastTravel), m.customIcon);
         container.dataset.potentialVassalIconUrl = potentialVassalIconUrl;
         container.dataset.isRaiderOutpost = isRaiderOutpost ? 'true' : 'false';
 
@@ -346,7 +346,7 @@ function renderCustomMarker(marker: CustomMarker | null | undefined, worldspaceI
     container.classList.add('custom-marker');
 
     const img = document.createElement('img');
-    img.src = ThemeEngine.getMarkerIconUrl(MARKER_ICON_CUSTOM_MARKER);
+    img.src = ThemeEngine.getAssetIconUrl(ASSET_ICON_CUSTOM_MARKER);
 
     container.appendChild(img);
     questLayer.appendChild(container);
@@ -385,7 +385,7 @@ function renderPowerArmor(pa: PowerArmorMarker | null | undefined, worldspaceID:
     container.classList.add('power-armor-marker');
 
     const img = document.createElement('img');
-    img.src = ThemeEngine.getMarkerIconUrl(MARKER_ICON_POWER_ARMOR);
+    img.src = ThemeEngine.getAssetIconUrl(ASSET_ICON_POWER_ARMOR);
 
     container.appendChild(img);
     questLayer.appendChild(container);

@@ -509,7 +509,7 @@ export const WorkshopList = {
         const marker = mapState.lastPayload?.markers?.find(m => m.formId === workshop.markerFormId);
         const iconType = getWorkshopIconType(workshop, marker);
         const customIcon = marker ? marker.customIcon : undefined;
-        const markerIconUrl = ThemeEngine.getMarkerIconUrl(iconType, true, customIcon);
+        const markerIconUrl = ThemeEngine.getLocationIconUrl(iconType, true, customIcon);
 
         const badgesHtml = getWorkshopBadgesHtml(workshop);
 

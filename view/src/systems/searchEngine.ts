@@ -3,7 +3,6 @@ import { SettlementData } from '@/types/payloads.js';
 import { QuestItem } from '@/types/quests.js';
 import { SearchResult, SearchResultType } from '@/types/search.js';
 
-import { MARKER_ICON_QUEST_TARGET, MARKER_ICON_CUSTOM_MARKER, MARKER_ICON_POWER_ARMOR } from '@/core/constants.js';
 import { mapState } from '@/core/state.js';
 
 import { QuestUtils } from '@/utils/questUtils.js';
@@ -169,7 +168,6 @@ export const SearchEngine = {
                         subtitleMatchIndices: subtitleIndices,
                         originalRef: q,
                         markerCoords: markerCoords,
-                        iconType: MARKER_ICON_QUEST_TARGET,
                         score: maxScore
                     });
                 }
@@ -195,7 +193,6 @@ export const SearchEngine = {
                     subtitleMatchIndices: subtitleMatch ? subtitleMatch.indices : [],
                     originalRef: payload.power_armor,
                     markerCoords: { x: payload.power_armor.x, y: payload.power_armor.y, z: payload.power_armor.z, worldspace: payload.power_armor.worldspace },
-                    iconType: MARKER_ICON_POWER_ARMOR,
                     score: score
                 });
             }
@@ -220,7 +217,6 @@ export const SearchEngine = {
                     subtitleMatchIndices: subtitleMatch ? subtitleMatch.indices : [],
                     originalRef: payload.custom_marker,
                     markerCoords: { x: payload.custom_marker.x, y: payload.custom_marker.y, worldspace: payload.custom_marker.worldspace },
-                    iconType: MARKER_ICON_CUSTOM_MARKER,
                     score: score
                 });
             }

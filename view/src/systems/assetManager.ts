@@ -57,18 +57,21 @@ export const ThemeEngine = {
         }
     },
 
-    getMarkerIconUrl(engineType: number, discovered?: boolean, customIcon?: string): string {
+    getLocationIconUrl(engineType: number, discovered?: boolean, customIcon?: string): string {
         if (customIcon) {
-            return `assets/icons/custom/${customIcon}.svg`;
+            if (!discovered) {
+                return `assets/icons/location/${customIcon}_undiscovered.svg`;
+            }
+            return `assets/icons/location/${customIcon}.svg`;
         }
 
         const semanticName = ENGINE_MARKER_TYPES[engineType] || 'default';
 
         if (!discovered && engineType < 81) {
-            return `assets/icons/${semanticName}_undiscovered.svg`;
+            return `assets/icons/location/${semanticName}_undiscovered.svg`;
         }
 
-        return `assets/icons/${semanticName}.svg`;
+        return `assets/icons/location/${semanticName}.svg`;
     },
 
     getQuestMarkerIconUrl(isDoor: boolean, isActive: boolean): string {
@@ -83,9 +86,5 @@ export const ThemeEngine = {
 
     getAssetIconUrl(iconName: string): string {
         return `assets/icons/${iconName}.svg`;
-    },
-
-    getPlayerIconUrl(): string {
-        return `assets/icons/player-location.svg`;
     }
 };

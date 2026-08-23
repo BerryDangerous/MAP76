@@ -1,6 +1,7 @@
 import { SearchResult } from '@/types/search.js';
 
 import { EngineBridge } from '@/core/bridge.js';
+import { ASSET_ICON_POWER_ARMOR, ASSET_ICON_CUSTOM_MARKER } from '@/core/constants.js';
 import { appSettings } from '@/core/settings.js';
 import { mapState } from '@/core/state.js';
 
@@ -639,9 +640,12 @@ export const SearchPanel = {
             subtitleHtml = `<div class="sl-item-subtitle" style="font-size: 0.8em; opacity: 0.8;">${StringUtils.escapeHtml(wsString)}</div>`;
         }
 
-        let iconUrl = ThemeEngine.getMarkerIconUrl(result.iconType || 0, true, result.customIcon);
-        
-        if (result.type === 'quest') {
+        let iconUrl = '';
+        if (result.type === 'powerArmor') {
+            iconUrl = ThemeEngine.getAssetIconUrl(ASSET_ICON_POWER_ARMOR);
+        } else if (result.type === 'customMarker') {
+            iconUrl = ThemeEngine.getAssetIconUrl(ASSET_ICON_CUSTOM_MARKER);
+        } else if (result.type === 'quest') {
             const q = result.originalRef;
             let isDoor = false;
             if (q.objectives) {
@@ -651,6 +655,8 @@ export const SearchPanel = {
                 }
             }
             iconUrl = ThemeEngine.getQuestMarkerIconUrl(isDoor, q.isTracked);
+        } else {
+            iconUrl = ThemeEngine.getLocationIconUrl(result.iconType || 0, true, result.customIcon);
         }
 
         const badgesHtml = result.badgesHtml || '';

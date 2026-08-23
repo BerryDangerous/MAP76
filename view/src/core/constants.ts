@@ -81,17 +81,7 @@ export const ENGINE_MARKER_TYPES: Record<number, string> = {
     77: 'poi', // cappy
     78: 'disciples',
     79: 'operators',
-    80: 'pack',
-    81: 'door',
-    // 82: 'count-editor',
-    83: 'quest',
-    84: 'quest-door',
-    // 85: 'quest-multiple,
-    86: 'custom-marker',
-    87: 'player-location',
-    88: 'power-armor'
-    // 89: 'dogmeat,
-    // 90: 'teammate'
+    80: 'pack'
 };
 
 export const FORM_ID_INDEX_MASK = 0x00FFFFFF;
@@ -101,10 +91,10 @@ export const MARKER_ICON_SETTLEMENT = 13;
 export const MARKER_ICON_RAIDER_OUTPOST = 66;
 export const MARKER_ICON_VASSAL_SETTLEMENT = 67;
 export const MARKER_ICON_POTENTIAL_VASSAL_SETTLEMENT = 68;
-export const MARKER_ICON_QUEST_TARGET = 83;
-export const MARKER_ICON_QUEST_DOOR = 84;
-export const MARKER_ICON_CUSTOM_MARKER = 86;
-export const MARKER_ICON_POWER_ARMOR = 88;
+
+export const ASSET_ICON_CUSTOM_MARKER = 'custom-marker';
+export const ASSET_ICON_POWER_ARMOR = 'power-armor';
+export const ASSET_ICON_PLAYER_LOCATION = 'player-location';
 
 export const CELL_SIZE_UNITS = 4096.0;
 
