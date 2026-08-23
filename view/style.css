@@ -434,36 +434,39 @@ body, html {
 
 #info-card {
     position: absolute;
-    bottom: 50px;
-    right: 20px;
     z-index: 1000;
-    background: #000000;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    padding: 10px 14px;
-    font-family: monospace, sans-serif;
-    font-size: 20px;
-    color: #e0e0e0;
+    font-family: 'PibotoCondensed', sans-serif;
+    font-size: 28px;
+    color: #ffffcb;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 8px;
     pointer-events: none;
+    text-shadow: 2px 2px 0 rgba(0, 0, 0, 1);
+    text-align: left;
 }
 
 #info-card .info-row {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
     gap: 12px;
 }
 
-#info-card .info-label {
-    color: #8a9ba8;
+#info-card img.info-icon {
+    width: 38px;
+    height: 38px;
+    object-fit: contain;
+    filter: drop-shadow(2px 2px 0 rgba(0, 0, 0, 1));
+}
+
+#info-card .info-value {
+    color: #ffffcb;
     font-weight: bold;
 }
 
-#info-card #info-weight.overburdened {
+#info-card .info-value.overburdened {
     color: #ff4d4d;
-    font-weight: bold;
 }
 
 
