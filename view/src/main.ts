@@ -105,7 +105,7 @@ window.addEventListener('settingsUpdated', () => {
 
 function initCustomCursor() {
     const cursor = document.createElement('img');
-    cursor.id = 'custom-map-cursor';
+    cursor.id = 'custom-cursor';
     cursor.src = 'assets/cursor.svg'; 
     document.body.appendChild(cursor);
 
@@ -114,6 +114,16 @@ function initCustomCursor() {
         cursor.style.top = `${e.clientY}px`;
         if (cursor.style.display !== 'block') {
             cursor.style.display = 'block';
+        }
+
+        const target = e.target as HTMLElement;
+        const mapElements = ['map-bg', 'map-viewport', 'marker-layer', 'supply-lines-layer'];
+        const isMapHover = mapElements.includes(target.id) || target.closest('.marker-container') !== null;
+        const desiredCursor = isMapHover ? 'assets/cursor2.svg' : 'assets/cursor.svg';
+        
+        if (cursor.getAttribute('src') !== desiredCursor) {
+            cursor.setAttribute('src', desiredCursor);
+            cursor.classList.toggle('map', isMapHover);
         }
     });
 

@@ -383,15 +383,22 @@ body, html {
    6. CUSTOM POINTER CURSOR
    ========================================================================== */
 
-#custom-map-cursor {
+#custom-cursor {
     position: fixed;
-    width: 60px;
-    height: 60px;
+    width: 3vh;
+    height: 3vh;
     object-fit: contain;
     pointer-events: none;
     z-index: 20000;
     display: none;
     transform-origin: 50% 0%;
+}
+
+#custom-cursor.map {
+    width: 5vh;
+    height: 5vh;
+    transform: translate(-50%, -50%);
+    z-index: 120;
 }
 
 
@@ -1201,7 +1208,7 @@ body.is-ultralight #settings-menu-panel {
     background: rgba(0, 0, 0, 0.4);
 }
 
-body.settings-open > :not(#settings-menu-panel):not(#settings-backdrop):not(#screen-container):not(script):not(#custom-map-cursor):not(.modal-overlay):not(#control-bar) {
+body.settings-open > :not(#settings-menu-panel):not(#settings-backdrop):not(#screen-container):not(script):not(#custom-cursor):not(.modal-overlay):not(#control-bar) {
     display: none !important;
 }
 body.settings-open #marker-layer,
