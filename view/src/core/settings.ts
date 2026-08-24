@@ -9,6 +9,7 @@ export interface AppSettings {
     hideInactiveQuestMarkers: boolean;
     writePayloadToFile: boolean;
     showWorkshopInfoLog: boolean;
+    preferredMapConfigs: Record<string, string>;
 }
 
 export const defaultSettings: AppSettings = {
@@ -22,6 +23,7 @@ export const defaultSettings: AppSettings = {
     hideInactiveQuestMarkers: false,
     writePayloadToFile: false,
     showWorkshopInfoLog: false,
+    preferredMapConfigs: {},
 };
 
 export function getDefaultSettings(): AppSettings {

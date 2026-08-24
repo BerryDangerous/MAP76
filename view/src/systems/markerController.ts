@@ -300,7 +300,7 @@ export const MarkerInteractionManager = {
                     return;
                 }
 
-                const worldCoords = MapUtils.screenToGameCoords(e.clientX, e.clientY, bounds, mapState.activeMapConfig!.gutters, mapState.zoom, mapState.panX, mapState.panY);
+                const worldCoords = MapUtils.screenToGameCoords(e.clientX, e.clientY, bounds, mapState.activeMapConfig!.gutters!, mapState.zoom, mapState.panX, mapState.panY);
                 CustomMarkerCard.open({ gameCoords: worldCoords, pageCoords: { x: e.clientX, y: e.clientY }, worldspaceId: config.worldspaceID });
                 FocusManager.setFocus('CUSTOM_MARKER_CARD');
             }

@@ -91,6 +91,21 @@ namespace MAP76::UI
             }
         }
 
+        void HandleRequestAssetCache(const char *arg)
+        {
+            bool forceRefresh = (arg && std::string(arg) == "refresh");
+            if (auto *task = F4SE::GetTaskInterface())
+            {
+                task->AddTask([forceRefresh]() {
+                    std::string assetPayload = MAP76::UI::Payload::GetAssetPayloadAsJSON(forceRefresh);
+                    if (MAP76::UI::State::g_api && MAP76::UI::State::g_view)
+                    {
+                        MAP76::UI::State::g_api->InteropCall(MAP76::UI::State::g_view, "loadAssets", assetPayload.c_str());
+                    }
+                });
+            }
+        }
+
         void HandleSaveSettings(const char *arg)
         {
             std::string jsonStr = arg ? arg : "";
@@ -346,11 +361,23 @@ namespace MAP76::UI
         State::g_api->BindUIEvent(view, "toggleQuestActive", HandleToggleQuestActive);
         State::g_api->BindUIEvent(view, "makeOnlyQuestActive", HandleMakeOnlyQuestActive);
         State::g_api->BindUIEvent(view, "requestSettings", HandleRequestSettings);
+        State::g_api->BindUIEvent(view, "requestAssetCache", HandleRequestAssetCache);
         State::g_api->BindUIEvent(view, "saveSettings", HandleSaveSettings);
         State::g_api->BindUIEvent(view, "triggerEngineSound", HandleTriggerEngineSound);
 
         std::string settingsJson = Settings::Get().dump();
         State::g_api->InteropCall(view, "loadSettings", settingsJson.c_str());
+
+        if (auto *task = F4SE::GetTaskInterface())
+        {
+            task->AddTask([view]() {
+                std::string assetPayload = MAP76::UI::Payload::GetAssetPayloadAsJSON(false);
+                if (MAP76::UI::State::g_api && view)
+                {
+                    MAP76::UI::State::g_api->InteropCall(view, "loadAssets", assetPayload.c_str());
+                }
+            });
+        }
     }
 
     void OnCloseRequestedFromJS(const char *a_argument)

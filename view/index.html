@@ -8,6 +8,7 @@
 
     <script>
         window.__f4seCache = null;
+        window.__f4seAssetCache = null;
 
         window.MapInterop = {
             loadMarkers: function (jsonString) {
@@ -18,10 +19,20 @@
                     console.log('[HTML Inline Stub] Bundle not ready. Caching payload...');
                     window.__f4seCache = jsonString;
                 }
+            },
+            loadAssets: function (jsonString) {
+                console.log('[HTML Inline Stub] InteropCall routed to MapInterop.loadAssets');
+                if (window.__loadAssetsRegister) {
+                    window.__loadAssetsRegister(jsonString);
+                } else {
+                    console.log('[HTML Inline Stub] Bundle not ready. Caching asset payload...');
+                    window.__f4seAssetCache = jsonString;
+                }
             }
         };
 
         window.loadMarkers = window.MapInterop.loadMarkers;
+        window.loadAssets = window.MapInterop.loadAssets;
     </script>
 
     <script type="module" src="src/main.js"></script>
@@ -30,7 +41,9 @@
 <body>
     <div id="screen-container">
         <div id="map-viewport">
-            <img src="assets/maps/commonwealth/default.png" id="map-bg" draggable="false" />
+            <div id="map-bg-container">
+                <img src="assets/maps/commonwealth/default.png" id="map-bg" class="map-bg-layer active" draggable="false" />
+            </div>
             <div id="marker-layer"></div>
             <div id="quest-layer"></div>
             <div id="player-layer"></div>

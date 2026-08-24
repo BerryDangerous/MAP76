@@ -122,8 +122,8 @@ function initCustomCursor() {
         }
 
         const target = e.target as HTMLElement;
-        const mapElements = ['map-bg', 'map-viewport', 'marker-layer', 'supply-lines-layer'];
-        const isMapHover = mapElements.includes(target.id) || target.closest('.marker-container') !== null;
+        const mapElements = ['map-bg', 'map-bg-container', 'map-viewport', 'marker-layer', 'supply-lines-layer'];
+        const isMapHover = mapElements.includes(target.id) || target.closest('.marker-container') !== null || target.closest('#map-bg-container') !== null;
         const desiredCursor = isMapHover ? 'assets/cursor2.svg' : 'assets/cursor.svg';
         
         if (cursor.getAttribute('src') !== desiredCursor) {
@@ -150,6 +150,9 @@ window.addEventListener('DOMContentLoaded', () => {
     if (import.meta.env.DEV) {
         import('./dev/mock.js').then(({ initMockData }) => {
             initMockData();
+            if (typeof window.requestAssetCache === 'function') {
+                window.requestAssetCache("");
+            }
         });
     } else if (window.requestFreshMapData) {
         window.requestFreshMapData(""); 
@@ -239,7 +242,7 @@ window.addEventListener('DOMContentLoaded', () => {
                         MapViewport.lastMouseX, 
                         MapViewport.lastMouseY, 
                         bounds,
-                        mapState.activeMapConfig!.gutters,
+                        mapState.activeMapConfig!.gutters!,
                         mapState.zoom,
                         mapState.panX,
                         mapState.panY

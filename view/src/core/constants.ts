@@ -86,6 +86,7 @@ export const ENGINE_MARKER_TYPES: Record<number, string> = {
 
 export const FORM_ID_INDEX_MASK = 0x00FFFFFF;
 export const NAKANO_RESIDENCE_REAL_MARKER_MASKED_ID = 0x000034F6;
+export const NAKANO_RESIDENCE_FAKE_MARKER_MASKED_ID = 0x00049D0F;
 
 export const MARKER_ICON_SETTLEMENT = 13;
 export const MARKER_ICON_RAIDER_OUTPOST = 66;
@@ -98,49 +99,36 @@ export const ASSET_ICON_PLAYER_LOCATION = 'player-location';
 
 export const CELL_SIZE_UNITS = 4096.0;
 
+export const NUKA_WORLD_MAP_GUTTERS = {
+    left: -92 / 2048,
+    right: -195 / 2048,
+    top: 1 / 2048,
+    bottom: -317 / 2048
+}
+
+export const FAR_HARBOR_MAP_GUTTERS = {
+    left: 19 / 2048,
+    right: 69 / 2048,
+    top: 51 / 2048,
+    bottom: 20 / 2048
+}
+
+export const DEFAULT_MAP_GUTTERS = {
+    left: 55 / 2048,
+    right: 58 / 2048,
+    top: 55 / 2048,
+    bottom: 58 / 2048
+}
+
 export const DEFAULT_BLANK_CONFIG = {
     mapName: "Custom Worldspace",
     worldspaceID: 0,
     texturePath: "assets/maps/blank.svg",
-    gutters: {
-        left: 0.02685546875,
-        right: 0.0283203125,
-        top: 0.02685546875,
-        bottom: 0.0283203125
-    }
-};
-
-export const WORLDSPACE_CONFIGS: Record<string, { mapName: string; texturePath: string; gutters: { left: number; right: number; top: number; bottom: number } }> = {
-    "Commonwealth": {
-        mapName: "Commonwealth",
-        texturePath: "assets/maps/commonwealth/default.png",
-        gutters: {
-            left: 0.02685546875,
-            right: 0.0283203125,
-            top: 0.02685546875,
-            bottom: 0.0283203125
-        }
+    imageDimensions: {
+        width: 1024,
+        height: 1024
     },
-    "DLC03FarHarbor": {
-        mapName: "Far Harbor",
-        texturePath: "assets/maps/dlc03farharbor/default.png",
-        gutters: {
-            left: 0.00920067,
-            right: 0.03374173,
-            top: 0.02515624,
-            bottom: 0.00958931
-        }
-    },
-    "NukaWorld": {
-        mapName: "Nuka-World",
-        texturePath: "assets/maps/nukaworld/default.png",
-        gutters: {
-            left: -0.045,
-            right: -0.095,
-            top: 0.0005,
-            bottom: -0.155
-        }
-    }
+    gutters: DEFAULT_MAP_GUTTERS
 };
 
 export const DLC_GATEWAYS = {

@@ -8,6 +8,9 @@
 #include "Engine/Player.h"
 #include "Engine/Memory.h"
 #include "Engine/PipboyUtils.h"
+#include <filesystem>
+#include <fstream>
+#include <sstream>
 
 namespace MAP76::UI::Payload
 {
@@ -270,6 +273,74 @@ namespace MAP76::UI::Payload
         catch (const std::exception &e)
         {
             REX::ERROR("Exception in GetFrameTickPayloadAsJSON: {}", e.what());
+            return "{}";
+        }
+    }
+
+    static std::string g_assetPayloadCache = "";
+
+    std::string GetAssetPayloadAsJSON(bool forceRefresh)
+    {
+        try
+        {
+            if (!forceRefresh && !g_assetPayloadCache.empty())
+            {
+                return g_assetPayloadCache;
+            }
+
+            nlohmann::json root = nlohmann::json::object();
+            nlohmann::json mapConfigs = nlohmann::json::object();
+            nlohmann::json assetCache = nlohmann::json::object();
+
+            std::filesystem::path assetsDir = "Data/PrismaUI_F4/views/MAP76/assets";
+            
+            if (std::filesystem::exists(assetsDir) && std::filesystem::is_directory(assetsDir))
+            {
+                for (const auto& entry : std::filesystem::recursive_directory_iterator(assetsDir))
+                {
+                    if (entry.is_regular_file())
+                    {
+                        auto ext = entry.path().extension().string();
+                        if (ext == ".json")
+                        {
+                            std::ifstream file(entry.path());
+                            if (file.is_open())
+                            {
+                                try {
+                                    nlohmann::json parsed = nlohmann::json::parse(file);
+                                    for (auto& [key, val] : parsed.items()) {
+                                        mapConfigs[key] = val;
+                                    }
+                                } catch (const std::exception& e) {
+                                    REX::ERROR("Failed to parse JSON config {}: {}", entry.path().string(), e.what());
+                                }
+                            }
+                        }
+                        else if (ext == ".svg")
+                        {
+                            std::ifstream file(entry.path());
+                            if (file.is_open())
+                            {
+                                std::stringstream buffer;
+                                buffer << file.rdbuf();
+                                std::string relPath = std::filesystem::relative(entry.path(), assetsDir.parent_path()).string();
+                                std::replace(relPath.begin(), relPath.end(), '\\', '/');
+                                assetCache[relPath] = buffer.str();
+                            }
+                        }
+                    }
+                }
+            }
+
+            root["mapConfigs"] = mapConfigs;
+            root["assetCache"] = assetCache;
+            
+            g_assetPayloadCache = root.dump(-1, ' ', false, nlohmann::json::error_handler_t::replace);
+            return g_assetPayloadCache;
+        }
+        catch (const std::exception &e)
+        {
+            REX::ERROR("Exception in GetAssetPayloadAsJSON: {}", e.what());
             return "{}";
         }
     }

@@ -1,15 +1,17 @@
 import { GameBounds } from '@/types/map.js';
 import { CELL_SIZE_UNITS } from '@/core/constants.js';
+import { mapState } from '@/core/state.js';
 
 export const MapUtils = {
     /**
      * Computes the effective world space coordinate bounding box for a given worldspace payload.
      */
     getEffectiveBounds(bounds: GameBounds) {
-        const nwCellX = bounds.nwCellX;
-        const seCellX = bounds.seCellX;
-        const nwCellY = bounds.nwCellY;
-        const seCellY = bounds.seCellY;
+        const overrides = mapState.activeMapConfig?.cellBounds;
+        const nwCellX = overrides ? overrides.nwCellX : bounds.nwCellX;
+        const seCellX = overrides ? overrides.seCellX : bounds.seCellX;
+        const nwCellY = overrides ? overrides.nwCellY : bounds.nwCellY;
+        const seCellY = overrides ? overrides.seCellY : bounds.seCellY;
 
         const minX = (nwCellX !== undefined) ? nwCellX * CELL_SIZE_UNITS : bounds.minX;
         const maxX = (seCellX !== undefined) ? seCellX * CELL_SIZE_UNITS : bounds.maxX;

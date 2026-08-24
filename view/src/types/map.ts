@@ -35,10 +35,20 @@ export interface MapPosition {
 }
 
 export interface MapConfig {
+    configID?: string;
+    worldspaceEditorID?: string;
     mapName: string;
     worldspaceID: number;
     texturePath: string;
-    gutters: MapGutters;
+    gutters?: MapGutters;
+    cellBounds?: CellBoundsOverride;
+    imageDimensions?: { width: number; height: number };
+    imageGuttersPixels?: MapGutters;
+}
+
+export interface AssetPayload {
+    mapConfigs: Record<string, MapConfig>;
+    assetCache: Record<string, string>;
 }
 
 export enum FastTravelStatus {

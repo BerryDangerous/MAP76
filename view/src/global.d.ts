@@ -31,6 +31,11 @@ declare global {
         __loadMarkersRegister?: (jsonString: string) => void;
         __f4seCache?: string | null;
 
+        loadAssets?: (jsonString: string) => void;
+        __loadAssetsRegister?: (jsonString: string) => void;
+        __f4seAssetCache?: string | null;
+        requestAssetCache?: (arg: string) => void;
+
         MapInterop?: {
             updateWorkshopStats?: (jsonString: string) => void;
         };

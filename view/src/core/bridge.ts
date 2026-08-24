@@ -1,5 +1,7 @@
 import { F4SEMapPayload, FastTravelCheckPayload, FastTravelFailPayload } from '@/types/payloads.js';
 
+import { AssetManager } from '@/systems/assetManager.js';
+
 export const EngineBridge = {
     closeMap() {
         if (typeof window.requestClose === 'function') {
@@ -60,7 +62,14 @@ export const EngineBridge = {
         } else {
             console.warn(`[Bridge] makeOnlyQuestActive not bound by engine for FormID: ${formId}`);
         }
-    }
+    },
+    requestAssetCache(refresh: boolean = false) {
+        if (typeof window.requestAssetCache === 'function') {
+            window.requestAssetCache(refresh ? "refresh" : "");
+        } else {
+            console.warn(`[Bridge] requestAssetCache not bound yet.`);
+        }
+    },
 };
 
 export function setCustomMarker(x: number, y: number, worldspaceId?: number): void {
@@ -80,11 +89,19 @@ export function makeOnlyQuestActive(formId: number): void {
 }
 
 export function initializeF4SEBindings(onDataReceived: (payload: F4SEMapPayload) => void) {
+    let isAssetsLoaded = false;
+    let pendingPayload: F4SEMapPayload | null = null;
+
     const processPayload = (jsonString: string) => {
         if (!jsonString || jsonString === "[]") return;
         
         try {
             const payload: F4SEMapPayload = JSON.parse(jsonString);
+            if (!isAssetsLoaded) {
+                console.log(`[Bridge] Assets not loaded yet. Buffering payload.`);
+                pendingPayload = payload;
+                return;
+            }
             onDataReceived(payload);
         } catch (err) {
             console.error(`[Bridge] JSON Processing Failure: ${err}`);
@@ -94,6 +111,21 @@ export function initializeF4SEBindings(onDataReceived: (payload: F4SEMapPayload)
     window.__loadMarkersRegister = (jsonString: string) => {
         console.log(`[Bridge] Pipeline execution running. Stream length: ${jsonString.length}`);
         processPayload(jsonString);
+    };
+
+    window.__loadAssetsRegister = (jsonString: string) => {
+        try {
+            const payload = JSON.parse(jsonString);
+            AssetManager.init(payload);
+            isAssetsLoaded = true;
+            if (pendingPayload) {
+                console.log(`[Bridge] Assets loaded. Processing buffered payload.`);
+                onDataReceived(pendingPayload);
+                pendingPayload = null;
+            }
+        } catch (err) {
+            console.error(`[Bridge] Asset Payload JSON Processing Failure: ${err}`);
+        }
     };
 
     window.onFastTravelFailed = (jsonString: string) => {
@@ -128,6 +160,13 @@ export function initializeF4SEBindings(onDataReceived: (payload: F4SEMapPayload)
         console.log(`[Bridge] Processing cached startup array stream. Length: ${earlyCache.length}`);
         processPayload(earlyCache);
         window.__f4seCache = null;
+    }
+
+    const earlyAssetCache = window.__f4seAssetCache;
+    if (earlyAssetCache) {
+        console.log(`[Bridge] Processing cached startup asset stream. Length: ${earlyAssetCache.length}`);
+        window.__loadAssetsRegister!(earlyAssetCache);
+        window.__f4seAssetCache = null;
     }
 
     if (window.MapInterop) {

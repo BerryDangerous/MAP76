@@ -99,7 +99,7 @@ export const MapViewport = {
     },
 
     centerOnMapCoords(gameX: number, gameY: number, bounds: GameBounds, targetZoom: number = 2.5) {
-        if (!viewport) return;
+        if (!viewport || !mapState.activeMapConfig) return;
 
         this.saveCurrentViewport();
 
@@ -108,7 +108,7 @@ export const MapViewport = {
         const baseSize = Math.max(window.innerWidth, window.innerHeight);
         const currentViewportSize = baseSize * mapState.zoom;
 
-        const screenPos = MapUtils.gameToMapCoords(gameX, gameY, 0, bounds, mapState.activeMapConfig.gutters);
+        const screenPos = MapUtils.gameToMapCoords(gameX, gameY, 0, bounds, mapState.activeMapConfig.gutters!);
 
         const pixelOnBaseX = (screenPos.x / 100) * baseSize;
         const pixelOnBaseY = (screenPos.y / 100) * baseSize;

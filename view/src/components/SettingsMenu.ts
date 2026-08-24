@@ -1,7 +1,12 @@
+import { MapConfig } from '@/types/map.js';
+
 import { EngineBridge } from '@/core/bridge.js';
 import { appSettings, updateSettings, getDefaultSettings, AppSettings } from '@/core/settings.js';
+import { mapState } from '@/core/state.js';
 
+import { AssetManager } from '@/systems/assetManager.js';
 import { FocusManager, FocusOwner } from '@/systems/focusManager.js';
+import { updateWorldspaceConfig } from '@/systems/markerRenderer.js';
 import { KeybindsSystem } from '@/systems/keybindManager.js';
 
 import { showConfirmationModal } from '@/components/Modals.js';
@@ -11,10 +16,13 @@ import { SettingsRow, SettingsControl } from '@/components/ui/SettingsRow.js';
 import { Slider } from '@/components/ui/SettingsSlider.js';
 import { Toggle } from '@/components/ui/SettingsToggle.js';
 
+export const SETTINGS_TABS = ['DISPLAY', 'GAMEPLAY', 'MAPS', 'DEBUG'] as const;
+export type SettingsTab = (typeof SETTINGS_TABS)[number];
+
 interface SettingControlEntry {
-    key: keyof AppSettings;
+    key: keyof AppSettings | string;
     label: string;
-    tab: 'DISPLAY' | 'GAMEPLAY' | 'DEBUG';
+    tab: SettingsTab;
     updateUI: (val: any) => void;
     row: SettingsRow;
 }
@@ -28,8 +36,22 @@ export const SettingsMenu = {
     
     tabsContainer: null as HTMLElement | null,
     listContainer: null as HTMLElement | null,
-    activeTab: 'DISPLAY' as 'DISPLAY' | 'GAMEPLAY' | 'DEBUG',
+    activeTab: 'DISPLAY' as SettingsTab,
     pendingCloseKey: null as string | null,
+
+    attachRowNavigation(rowEl: HTMLElement) {
+        rowEl.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                const next = rowEl.nextElementSibling as HTMLElement;
+                if (next) next.focus();
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                const prev = rowEl.previousElementSibling as HTMLElement;
+                if (prev) prev.focus();
+            }
+        });
+    },
 
     init() {
         this.container = document.createElement('div');
@@ -60,24 +82,12 @@ export const SettingsMenu = {
         const registerControl = <K extends keyof AppSettings>(
             key: K, 
             label: string, 
-            tab: 'DISPLAY' | 'GAMEPLAY' | 'DEBUG',
+            tab: SettingsTab,
             control: SettingsControl
         ) => {
             const row = new SettingsRow(label, control);
             const rowEl = row.getElement();
-            
-            rowEl.addEventListener('keydown', (e) => {
-                if (e.key === 'ArrowDown') {
-                    e.preventDefault();
-                    const next = rowEl.nextElementSibling as HTMLElement;
-                    if (next) next.focus();
-                } else if (e.key === 'ArrowUp') {
-                    e.preventDefault();
-                    const prev = rowEl.previousElementSibling as HTMLElement;
-                    if (prev) prev.focus();
-                }
-            });
-
+            this.attachRowNavigation(rowEl);
             this.controls.push({ key, label, tab, updateUI: (val: any) => control.setValue(val), row });
         };
 
@@ -169,7 +179,7 @@ export const SettingsMenu = {
         if (!this.tabsContainer) return;
         this.tabsContainer.innerHTML = '';
         
-        const tabs: ('DISPLAY' | 'GAMEPLAY' | 'DEBUG')[] = ['DISPLAY', 'GAMEPLAY', 'DEBUG'];
+        const tabs: SettingsTab[] = [...SETTINGS_TABS];
         
         tabs.forEach(tabName => {
             const tabEl = document.createElement('div');
@@ -216,7 +226,7 @@ export const SettingsMenu = {
         this.renderList();
     },
 
-    switchTab(tab: 'DISPLAY' | 'GAMEPLAY' | 'DEBUG') {
+    switchTab(tab: SettingsTab) {
         if (this.activeTab === tab) return;
         this.activeTab = tab;
         
@@ -261,10 +271,96 @@ export const SettingsMenu = {
         }
     },
 
+    createMapChoiceControl(wsId: number, ws: any, configs: MapConfig[]) {
+        if (configs.length === 0) {
+            return new MultiChoice<string>(
+                [{ label: 'NO TEXTURE', value: 'NONE' }],
+                'NONE',
+                () => {}
+            );
+        }
+
+        const options = configs.map(config => ({
+            label: config.mapName,
+            value: config.configID || ws.editorID
+        })).sort((a, b) => a.label.localeCompare(b.label));
+
+        let defaultOption = options.find(o => o.label.toLowerCase() === 'default');
+        if (!defaultOption) defaultOption = options[0];
+
+        const initialValue = appSettings.preferredMapConfigs[ws.editorID] || defaultOption.value;
+
+        return new MultiChoice<string>(options, initialValue, (selectedConfigId: string) => {
+            updateSettings({
+                preferredMapConfigs: {
+                    ...appSettings.preferredMapConfigs,
+                    [ws.editorID]: selectedConfigId
+                }
+            });
+
+            if (mapState.selectedWorldspaceID === wsId) {
+                updateWorldspaceConfig(wsId, ws.editorID);
+            }
+        });
+    },
+
+    buildMapControlEntry(wsId: number, ws: any, configs: MapConfig[]) {
+        const control = this.createMapChoiceControl(wsId, ws, configs);
+        const label = `${ws.fullName || ws.editorID} Map Style`;
+
+        const row = new SettingsRow(label, control);
+        this.attachRowNavigation(row.getElement());
+
+        return {
+            key: `map_pref_${ws.editorID}`,
+            label,
+            tab: 'MAPS' as const,
+            updateUI: (val: any) => control.setValue(val),
+            row
+        };
+    },
+
+    refreshMapSettings() {
+        this.controls = this.controls.filter(control => control.tab !== 'MAPS');
+
+        const worldspaces = mapState.lastPayload?.worldspaces;
+        if (!worldspaces) return;
+
+        const allConfigs = Object.values(AssetManager.mapConfigs) as MapConfig[];
+
+        const mapControls = Object.entries(worldspaces).map(([wsIdStr, ws]) => {
+            const wsId = parseInt(wsIdStr, 10);
+            const configs = allConfigs.filter(c => c.worldspaceEditorID === (ws as any).editorID);
+            return { ws: ws as any, entry: this.buildMapControlEntry(wsId, ws, configs) };
+        });
+
+        const pinnedOrder = ['Commonwealth', 'NukaWorld', 'DLC03FarHarbor'];
+
+        mapControls.sort((a, b) => {
+            const idxA = pinnedOrder.indexOf(a.ws.editorID);
+            const idxB = pinnedOrder.indexOf(b.ws.editorID);
+            
+            if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+            if (idxA !== -1) return -1;
+            if (idxB !== -1) return 1;
+            
+            const nameA = a.ws.fullName || a.ws.editorID;
+            const nameB = b.ws.fullName || b.ws.editorID;
+            return nameA.localeCompare(nameB);
+        });
+
+        this.controls.push(...mapControls.map(m => m.entry));
+
+        if (this.activeTab === 'MAPS') {
+            this.renderList();
+        }
+    },
+
     open() {
         if (this.isOpen) return;
         if (!this.container) this.init();
 
+        this.refreshMapSettings();
         this.updateUIFromSettings();
 
         this.container!.classList.remove('panel-hidden');
@@ -307,8 +403,16 @@ export const SettingsMenu = {
 
     updateUIFromSettings() {
         this.controls.forEach(c => {
-            const val = appSettings[c.key];
-            c.updateUI(val);
+            if (typeof c.key === 'string' && c.key.startsWith('map_pref_')) {
+                const editorID = c.key.replace('map_pref_', '');
+                const preferredMapId = appSettings.preferredMapConfigs[editorID];
+                if (preferredMapId) {
+                    c.updateUI(preferredMapId);
+                }
+            } else if (c.key in appSettings) {
+                const val = (appSettings as any)[c.key];
+                c.updateUI(val);
+            }
         });
     }
 };

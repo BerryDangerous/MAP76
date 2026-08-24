@@ -84,11 +84,11 @@ function resolveCrossWorldspaceGateway(
         gx = Math.max(bMinX, Math.min(bMaxX, gx));
         gy = Math.max(bMinY, Math.min(bMaxY, gy));
 
-        const gwPos = MapUtils.gameToMapCoords(gx, gy, 0, bounds, mapState.activeMapConfig!.gutters);
+        const gwPos = MapUtils.gameToMapCoords(gx, gy, 0, bounds, mapState.activeMapConfig!.gutters!);
         return { x: gwPos.x, y: gwPos.y };
     }
     
-    const gwPos = MapUtils.gameToMapCoords(0, 0, 0, bounds, mapState.activeMapConfig!.gutters);
+    const gwPos = MapUtils.gameToMapCoords(0, 0, 0, bounds, mapState.activeMapConfig!.gutters!);
     return { x: gwPos.x, y: gwPos.y };
 }
 
@@ -121,7 +121,7 @@ export function renderSupplyLines(payload: F4SEMapPayload): void {
         if (ws.worldspace !== currentWorldspace) return;
         let marker = markers.find(m => m.formId === ws.markerFormId || m.formId === ws.formId);
         if (marker) {
-            const pos = MapUtils.gameToMapCoords(marker.x, marker.y, 0, bounds, mapState.activeMapConfig!.gutters);
+            const pos = MapUtils.gameToMapCoords(marker.x, marker.y, 0, bounds, mapState.activeMapConfig!.gutters!);
             coordsMap.set(ws.locationFormId, { x: pos.x, y: pos.y });
             coordsMap.set(ws.formId, { x: pos.x, y: pos.y });
             rawCoordsMap.set(ws.locationFormId, { x: marker.x, y: marker.y });

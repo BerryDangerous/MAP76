@@ -1,9 +1,9 @@
-import { GameBounds, PlayerData, MapPosition } from '@/types/map.js';
+import { GameBounds, PlayerData, MapPosition, MapConfig } from '@/types/map.js';
 import { CustomMarker, POIMarker, PowerArmorMarker, MarkerType } from '@/types/markers.js';
 import { F4SEMapPayload } from '@/types/payloads.js';
 import { QuestItem } from '@/types/quests.js';
 
-import { ASSET_ICON_CUSTOM_MARKER, ASSET_ICON_POWER_ARMOR, ASSET_ICON_PLAYER_LOCATION, MARKER_ICON_RAIDER_OUTPOST, MARKER_ICON_VASSAL_SETTLEMENT, MARKER_ICON_POTENTIAL_VASSAL_SETTLEMENT, FORM_ID_INDEX_MASK, NAKANO_RESIDENCE_REAL_MARKER_MASKED_ID, WORLDSPACE_CONFIGS, DEFAULT_BLANK_CONFIG } from '@/core/constants.js';
+import { ASSET_ICON_CUSTOM_MARKER, ASSET_ICON_POWER_ARMOR, ASSET_ICON_PLAYER_LOCATION, MARKER_ICON_RAIDER_OUTPOST, MARKER_ICON_VASSAL_SETTLEMENT, MARKER_ICON_POTENTIAL_VASSAL_SETTLEMENT, FORM_ID_INDEX_MASK, NAKANO_RESIDENCE_REAL_MARKER_MASKED_ID, NAKANO_RESIDENCE_FAKE_MARKER_MASKED_ID, ENGINE_MARKER_TYPES, DEFAULT_BLANK_CONFIG, NUKA_WORLD_MAP_GUTTERS, FAR_HARBOR_MAP_GUTTERS, DEFAULT_MAP_GUTTERS } from '@/core/constants.js';
 import { appSettings } from '@/core/settings.js';
 import { mapState } from '@/core/state.js';
 
@@ -130,7 +130,7 @@ export function loadMarkers(payload: F4SEMapPayload, isSwitchingWorld: boolean =
 
     if (activeWsId !== null && activeWsId !== undefined) {
         const editorID = WorldspaceUtils.getWorldspaceEditorID(activeWsId);
-        updateWorldspaceConfig(activeWsId, editorID);
+        updateWorldspaceConfig(activeWsId, editorID, isSwitchingWorld);
         InfoBar.updateWorldspace(activeWsId);
     }
 
@@ -184,7 +184,7 @@ function renderPlayer(player: PlayerData | undefined, worldspaceID: number, boun
     mapState.player.active = false;
     if (!player || !WorldspaceUtils.isSameWorldspace(player.worldspace, worldspaceID)) return;
 
-    const pos = MapUtils.gameToMapCoords(player.x, player.y, player.z, bounds, mapState.activeMapConfig!.gutters);
+    const pos = MapUtils.gameToMapCoords(player.x, player.y, player.z, bounds, mapState.activeMapConfig!.gutters!);
     const pImg = document.createElement('img');
     pImg.id = 'player-marker';
     pImg.className = 'player-marker-vector';
@@ -206,6 +206,8 @@ function renderLocationMarkers(markers: POIMarker[], worldspaceID: number, bound
     const markerLayer = getMarkerLayer();
     if (!markerLayer) return;
 
+    const realNakano = markers.find(m => (m.formId & FORM_ID_INDEX_MASK) === NAKANO_RESIDENCE_REAL_MARKER_MASKED_ID);
+
     markers.forEach(m => {
         if (!WorldspaceUtils.isSameWorldspace(m.worldspace, worldspaceID)) return;
 
@@ -217,14 +219,21 @@ function renderLocationMarkers(markers: POIMarker[], worldspaceID: number, bound
 
         let x = m.x;
         let y = m.y;
-        const isClamped = (x < bounds.minX || x > bounds.maxX || y < bounds.minY || y > bounds.maxY);
 
-        if (isClamped) {
-            x = Math.max(bounds.minX, Math.min(bounds.maxX, x));
-            y = Math.max(bounds.minY, Math.min(bounds.maxY, y));
+        if (((m.formId & FORM_ID_INDEX_MASK) === NAKANO_RESIDENCE_FAKE_MARKER_MASKED_ID) && realNakano) {
+            x = realNakano.x;
+            y = realNakano.y;
         }
 
-        const pos = MapUtils.gameToMapCoords(x, y, 0, bounds, mapState.activeMapConfig!.gutters);
+        const effectiveBounds = MapUtils.getEffectiveBounds(bounds);
+        const isClamped = (x < effectiveBounds.minX || x > effectiveBounds.maxX || y < effectiveBounds.minY || y > effectiveBounds.maxY);
+
+        if (isClamped) {
+            x = Math.max(effectiveBounds.minX, Math.min(effectiveBounds.maxX, x));
+            y = Math.max(effectiveBounds.minY, Math.min(effectiveBounds.maxY, y));
+        }
+
+        const pos = MapUtils.gameToMapCoords(x, y, 0, bounds, mapState.activeMapConfig!.gutters!);
         const container = createMarkerContainer('location', m.name, pos);
         if (isClamped) {
             container.classList.add('clamped-marker');
@@ -296,7 +305,7 @@ function renderQuestMarkers(quests: QuestItem[], worldspaceID: number, bounds: G
                     gy = Math.max(bMinY, Math.min(bMaxY, gy));
                 }
 
-                const pos = MapUtils.gameToMapCoords(gx, gy, resolved.z, bounds, mapState.activeMapConfig!.gutters);
+                const pos = MapUtils.gameToMapCoords(gx, gy, resolved.z, bounds, mapState.activeMapConfig!.gutters!);
 
                 const container = createMarkerContainer('quest', markerTooltipText, pos);
                 container.classList.add('quest-marker');
@@ -341,7 +350,7 @@ function renderCustomMarker(marker: CustomMarker | null | undefined, worldspaceI
         gy = Math.max(bMinY, Math.min(bMaxY, gy));
     }
 
-    const pos = MapUtils.gameToMapCoords(gx, gy, 0, bounds, mapState.activeMapConfig!.gutters);
+    const pos = MapUtils.gameToMapCoords(gx, gy, 0, bounds, mapState.activeMapConfig!.gutters!);
     const container = createMarkerContainer('customMarker', 'Custom Marker', pos);
     container.classList.add('custom-marker');
 
@@ -380,7 +389,7 @@ function renderPowerArmor(pa: PowerArmorMarker | null | undefined, worldspaceID:
         gy = Math.max(bMinY, Math.min(bMaxY, gy));
     }
 
-    const pos = MapUtils.gameToMapCoords(gx, gy, resolved.z, bounds, mapState.activeMapConfig!.gutters);
+    const pos = MapUtils.gameToMapCoords(gx, gy, resolved.z, bounds, mapState.activeMapConfig!.gutters!);
     const container = createMarkerContainer('powerarmor', 'Power Armor', pos);
     container.classList.add('power-armor-marker');
 
@@ -431,52 +440,82 @@ export function updatePlayerMarker(player: PlayerData | undefined) {
         renderPlayer(player, config.worldspaceID, bounds);
     } else {
         pImg.style.display = '';
-        const pos = MapUtils.gameToMapCoords(player.x, player.y, player.z, bounds, mapState.activeMapConfig!.gutters);
+        const pos = MapUtils.gameToMapCoords(player.x, player.y, player.z, bounds, mapState.activeMapConfig!.gutters!);
         pImg.style.left = `${pos.x}%`;
         pImg.style.top = `${pos.y}%`;
         pImg.style.setProperty('--player-angle', `${player.angle}deg`);
     }
 }
 
-export function updateWorldspaceConfig(worldspaceID: number, worldspaceEditorID?: string) {
-    const editorKey = worldspaceEditorID ? worldspaceEditorID.toLowerCase() : "";
-    let matchedConfig = null;
-    if (worldspaceEditorID) {
-        for (const key in WORLDSPACE_CONFIGS) {
-            if (key.toLowerCase() === editorKey) {
-                matchedConfig = WORLDSPACE_CONFIGS[key];
-                break;
-            }
-        }
-    }
-
-    if (matchedConfig) {
-        mapState.activeMapConfig = {
-            worldspaceID: worldspaceID,
-            mapName: matchedConfig.mapName,
-            texturePath: matchedConfig.texturePath,
-            gutters: matchedConfig.gutters
+function calculateFinalGutters(config: MapConfig) {
+    if (config.imageGuttersPixels && config.imageDimensions && config.imageDimensions.width > 0 && config.imageDimensions.height > 0) {
+        return {
+            left: config.imageGuttersPixels.left / config.imageDimensions.width,
+            right: config.imageGuttersPixels.right / config.imageDimensions.width,
+            top: config.imageGuttersPixels.top / config.imageDimensions.height,
+            bottom: config.imageGuttersPixels.bottom / config.imageDimensions.height
         };
-    } else {
-        const dynamicPath = AssetManager.getMapTextureUrl(worldspaceEditorID);
+    }
+    
+    if (config.gutters) return config.gutters;
+
+    switch (config.worldspaceEditorID) {
+        case "NukaWorld": return NUKA_WORLD_MAP_GUTTERS;
+        case "DLC03FarHarbor": return FAR_HARBOR_MAP_GUTTERS;
+        default: return DEFAULT_MAP_GUTTERS;
+    }
+}
+
+export function updateWorldspaceConfig(worldspaceID: number, worldspaceEditorID?: string, isSwitchingWorld: boolean = false) {
+    if (worldspaceEditorID) {
+        const preferredConfigID = appSettings.preferredMapConfigs[worldspaceEditorID];
+        
+        let config = preferredConfigID 
+            ? AssetManager.getMapConfig(preferredConfigID) 
+            : AssetManager.getDefaultMapConfigForWorldspace(worldspaceEditorID);
+
+        if (config === DEFAULT_BLANK_CONFIG) {
+            config = AssetManager.getDefaultMapConfigForWorldspace(worldspaceEditorID);
+        }
+        
+        const finalGutters = calculateFinalGutters(config);
+
+
         mapState.activeMapConfig = {
             ...DEFAULT_BLANK_CONFIG,
-            mapName: worldspaceEditorID || "Custom Worldspace",
+            ...config,
             worldspaceID: worldspaceID,
-            texturePath: dynamicPath
+            mapName: config.mapName || worldspaceEditorID,
+            gutters: finalGutters,
+            imageDimensions: config.imageDimensions,
+            imageGuttersPixels: config.imageGuttersPixels
+        };
+    } else {
+        mapState.activeMapConfig = {
+            ...DEFAULT_BLANK_CONFIG,
+            mapName: "Custom Worldspace",
+            worldspaceID: worldspaceID
         };
     }
 
-    const mapBg = document.getElementById('map-bg') as HTMLImageElement;
-    if (mapBg) {
-        mapBg.onerror = () => {
-            console.warn(`[Map] Map texture failed to load: ${mapState.activeMapConfig!.texturePath}. Falling back to blank map canvas.`);
-            mapBg.onerror = null;
-            mapBg.src = DEFAULT_BLANK_CONFIG.texturePath;
-            mapState.activeMapConfig!.gutters = DEFAULT_BLANK_CONFIG.gutters;
-        };
-        if (mapBg.getAttribute('src') !== mapState.activeMapConfig.texturePath) {
-            mapBg.src = mapState.activeMapConfig.texturePath;
+    const container = document.getElementById('map-bg-container');
+    if (container) {
+        const texturePath = mapState.activeMapConfig.texturePath;
+        const textureData = AssetManager.getMapTextureData(texturePath);
+        
+        Array.from(container.children).forEach((child: Element) => {
+            child.classList.remove('active');
+        });
+
+        const layerId = `map-layer-${texturePath.replace(/[^a-zA-Z0-9]/g, '_')}`;
+        let activeLayer = document.getElementById(layerId);
+
+        if (activeLayer) {
+            activeLayer.classList.add('active');
+        } else {
+            console.warn(`[Map] Expected layer ${layerId} was not preloaded into DOM. Fallback triggered.`);
+            const layer = AssetManager.createMapLayer(layerId, textureData, mapState.activeMapConfig, true);
+            container.appendChild(layer);
         }
     }
 }

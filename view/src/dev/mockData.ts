@@ -1,4 +1,10 @@
 import { F4SEMapPayload } from "@/types/payloads";
+import { AssetPayload } from "@/types/map";
+
+export const mockAssetPayload: AssetPayload = {
+    mapConfigs: {},
+    assetCache: {}
+};
 
 export const mockPayload: F4SEMapPayload = {
     dlc04VassalDistance: 70000,

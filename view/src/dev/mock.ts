@@ -1,7 +1,7 @@
 import { FastTravelStatus } from '@/types/map.js';
 import { FrameTickPayload } from '@/types/payloads.js';
 
-import { mockPayload } from '@/dev/mockData.js';
+import { mockPayload, mockAssetPayload } from '@/dev/mockData.js';
 
 export function initMockData(): void {
     console.log('[DevMode] Initializing Mock Data Sandbox...');
@@ -20,6 +20,56 @@ export function initMockData(): void {
     window.requestFreshMapData = () => {
         console.log('[DevMode] requestFreshMapData triggered. Emitting mock payload.');
         emitPayload();
+    };
+
+    window.requestAssetCache = async () => {
+        console.log('[DevMode] requestAssetCache triggered. Fetching SVGs and JSONs dynamically...');
+
+        const variants = ['default', 'default-vector', 'satellite4k', 'satellite8k'];
+        const worldspaces = Object.values(mockPayload.worldspaces || {}).map(w => w.editorID.toLowerCase());
+        
+        const pathsToTry = [
+            { dir: 'assets/maps', file: 'blank' }
+        ];
+
+        for (const ws of worldspaces) {
+            for (const variant of variants) {
+                pathsToTry.push({ dir: `assets/maps/${ws}`, file: variant });
+            }
+        }
+
+        for (const { dir, file } of pathsToTry) {
+            const jsonPath = `${dir}/${file}.json`;
+            try {
+                const res = await fetch(`/${jsonPath}`);
+                if (res.ok) {
+                    const parsed = await res.json();
+                    for (const [key, val] of Object.entries(parsed)) {
+                        mockAssetPayload.mapConfigs[key] = {
+                            ...(val as any),
+                            configID: key
+                        };
+                    }
+                }
+            } catch (e) {
+            }
+        }
+
+        for (const { dir, file } of pathsToTry) {
+            const svgPath = `${dir}/${file}.svg`;
+            try {
+                const res = await fetch(`/${svgPath}`);
+                if (res.ok) {
+                    mockAssetPayload.assetCache[svgPath] = await res.text();
+                }
+            } catch (e) {
+            }
+        }
+
+        const json = JSON.stringify(mockAssetPayload);
+        if (typeof window.loadAssets === 'function') {
+            window.loadAssets(json);
+        }
     };
 
     window.saveSettings = (jsonString: string) => {
