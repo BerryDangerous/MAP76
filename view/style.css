@@ -685,6 +685,7 @@ body, html {
 
 .selectable-list .sl-item {
     display: flex;
+    flex-shrink: 0;
     padding: 12px;
     gap: 10px;
     align-items: center;
