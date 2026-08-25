@@ -58,7 +58,7 @@ namespace MAP76::Engine
      * @param a_position Optional pointer to position vector; modified in-place if parent world offsets exist.
      * @return Resolved parent TESWorldSpace pointer, or nullptr if resolution failed.
      */
-    RE::TESWorldSpace *GetReferenceWorldspace(RE::TESObjectREFR *a_refr, RE::NiPoint3* a_position = nullptr);
+    RE::TESWorldSpace *GetReferenceWorldspace(RE::TESObjectREFR *a_refr, RE::NiPoint3* a_position = nullptr, bool* a_isDoor = nullptr);
 
     /**
      * @brief Resolves the exterior location map marker reference associated with a reference's BGSLocation chain.

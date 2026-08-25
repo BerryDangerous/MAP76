@@ -46,7 +46,7 @@ namespace
         return nullptr;
     }
 
-    RE::TESWorldSpace* ResolveInteriorFallback(RE::TESObjectREFR* a_refr, RE::NiPoint3* a_position)
+    RE::TESWorldSpace* ResolveInteriorWorldspace(RE::TESObjectREFR* a_refr, RE::NiPoint3* a_position, bool* a_isDoor = nullptr)
     {
         auto* pipboyManager = RE::PipboyDataManager::GetSingleton();
 
@@ -66,33 +66,6 @@ namespace
 
         if (cell)
         {
-            if (auto* location = cell->GetLocation())
-            {
-                auto markerHandle = location->worldLocMarker;
-                if (markerHandle)
-                {
-                    RE::TESObjectREFR* markerRef = nullptr;
-                    if (auto ptr = markerHandle.get())
-                    {
-                        markerRef = ptr.get();
-                    }
-                    if (!markerRef && markerHandle.get_handle() != 0)
-                    {
-                        markerRef = RE::TESForm::GetFormByID<RE::TESObjectREFR>(markerHandle.get_handle());
-                    }
-
-                    if (markerRef)
-                    {
-                        auto* cellWorld = GetDirectWorldspace(markerRef);
-                        if (cellWorld)
-                        {
-                            if (a_position) *a_position = markerRef->GetPosition();
-                            return cellWorld;
-                        }
-                    }
-                }
-            }
-
             RE::TESWorldSpace* candidateWorld = nullptr;
             auto* cellLoc = cell->GetLocation();
             for (auto& refPtr : cell->references)
@@ -129,6 +102,7 @@ namespace
                                                     if (cellLoc == destLoc || cellLoc->IsChild(destLoc) || cellLoc->IsParent(destLoc))
                                                     {
                                                         if (a_position) *a_position = destDoor->GetPosition();
+                                                        if (a_isDoor) *a_isDoor = true;
                                                         return exteriorWorld;
                                                     }
                                                 }
@@ -137,6 +111,7 @@ namespace
                                         if (!candidateWorld)
                                         {
                                             if (a_position) *a_position = destDoor->GetPosition();
+                                            if (a_isDoor) *a_isDoor = true;
                                             candidateWorld = exteriorWorld;
                                         }
                                     }
@@ -154,7 +129,7 @@ namespace
 
             if (auto* location = cell->GetLocation())
             {
-                auto* currentLoc = location->parentLoc;
+                auto* currentLoc = location;
                 while (currentLoc)
                 {
                     auto markerHandle = currentLoc->worldLocMarker;
@@ -289,7 +264,7 @@ namespace MAP76::Engine
         return GetWorldspaceBounds(currentWorld);
     }
 
-    RE::TESWorldSpace *GetReferenceWorldspace(RE::TESObjectREFR *a_refr, RE::NiPoint3* a_position)
+    RE::TESWorldSpace *GetReferenceWorldspace(RE::TESObjectREFR *a_refr, RE::NiPoint3* a_position, bool* a_isDoor)
     {
         if (!a_refr)
         {
@@ -299,7 +274,7 @@ namespace MAP76::Engine
         auto* world = GetDirectWorldspace(a_refr);
         if (!world)
         {
-            world = ResolveInteriorFallback(a_refr, a_position);
+            world = ResolveInteriorWorldspace(a_refr, a_position, a_isDoor);
         }
 
         if (world)

@@ -199,9 +199,10 @@ namespace MAP76::Engine::QuestManager
                             if (!Memory::IsRefrPositionSafe(refr, target.position))
                                 continue;
 
-                            auto* targetWorldspace = GetReferenceWorldspace(refr, &target.position);
+                            bool isFallbackDoor = false;
+                            auto* targetWorldspace = GetReferenceWorldspace(refr, &target.position, &isFallbackDoor);
 
-                            target.isDoor = (refr->formType == RE::ENUM_FORM_ID::kDOOR);
+                            target.isDoor = (refr->formType == RE::ENUM_FORM_ID::kDOOR) || isFallbackDoor;
                             target.worldspace = targetWorldspace ? targetWorldspace->formID : 0;
 
                             objNode.targets.push_back(target);
