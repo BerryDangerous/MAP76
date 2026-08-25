@@ -26,21 +26,41 @@ export class CustomScrollbar {
 
         content.addEventListener('scroll', () => this.updateThumbPosition());
 
+        content.addEventListener('wheel', (e: WheelEvent) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            let delta = e.deltaY;
+            if (e.deltaMode === 1) {
+                delta *= 30;
+            } else if (e.deltaMode === 2) {
+                delta = content.clientHeight;
+            }
+            
+            content.scrollTop += delta;
+        }, { passive: false });
+
         thumb.addEventListener('mousedown', (e: MouseEvent) => {
             e.stopPropagation();
             this.isDragging = true;
             this.startY = e.clientY;
             this.startScrollTop = content.scrollTop;
+            
             document.addEventListener('mousemove', this.boundOnMouseMove);
             document.addEventListener('mouseup', this.boundOnMouseUp);
         });
 
         track.addEventListener('click', (e: MouseEvent) => {
+            e.stopPropagation();
             if (e.target === thumb) return;
-            const rect = track.getBoundingClientRect();
-            const clickY = e.clientY - rect.top;
-            const percentage = clickY / rect.height;
-            content.scrollTop = percentage * (content.scrollHeight - content.clientHeight);
+            
+            const thumbRect = thumb.getBoundingClientRect();
+            
+            if (e.clientY < thumbRect.top) {
+                content.scrollTop -= content.clientHeight;
+            } else if (e.clientY > thumbRect.bottom) {
+                content.scrollTop += content.clientHeight;
+            }
         });
     }
 
@@ -57,7 +77,19 @@ export class CustomScrollbar {
     }
 
     private onMouseUp(): void {
+        if (!this.isDragging) return;
         this.isDragging = false;
+        
+        const captureClick = (clickEvent: MouseEvent) => {
+            clickEvent.stopPropagation();
+            document.removeEventListener('click', captureClick, true);
+        };
+        document.addEventListener('click', captureClick, true);
+        
+        setTimeout(() => {
+            document.removeEventListener('click', captureClick, true);
+        }, 0);
+        
         document.removeEventListener('mousemove', this.boundOnMouseMove);
         document.removeEventListener('mouseup', this.boundOnMouseUp);
     }
