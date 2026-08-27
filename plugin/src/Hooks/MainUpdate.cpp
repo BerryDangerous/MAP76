@@ -4,6 +4,7 @@
 #include "UI/Payload.h"
 #include <nlohmann/json.hpp>
 #include <chrono>
+#include <thread>
 
 namespace MAP76::Hooks
 {
@@ -21,14 +22,6 @@ namespace MAP76::Hooks
                 return;
             }
 
-            static auto lastTick = std::chrono::steady_clock::now();
-            auto now = std::chrono::steady_clock::now();
-            if (std::chrono::duration_cast<std::chrono::milliseconds>(now - lastTick).count() < 500)
-            {
-                return;
-            }
-            lastTick = now;
-
             std::string payloadStr = MAP76::UI::Payload::GetFrameTickPayloadAsJSON();
             if (!payloadStr.empty() && payloadStr != "{}")
             {
@@ -41,8 +34,17 @@ namespace MAP76::Hooks
     {
         if (auto *taskInterface = F4SE::GetTaskInterface())
         {
-            REX::INFO("MAP76: Registering permanent frame tick task...");
-            taskInterface->AddTaskPermanent(OnFrameTick);
+            REX::INFO("MAP76: Registering background thread for frame tick...");
+            std::thread([]() {
+                while (true) {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+                    if (MAP76::UI::State::g_mapIsOpen.load()) {
+                        if (auto *taskInt = F4SE::GetTaskInterface()) {
+                            taskInt->AddTask(OnFrameTick);
+                        }
+                    }
+                }
+            }).detach();
         }
         else
         {
