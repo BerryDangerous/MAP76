@@ -11,6 +11,8 @@ namespace MAP76::Engine::MapMarkers
     struct MarkerData
     {
         uint32_t formId;
+        std::string pluginName;
+        uint32_t localFormId;
         std::string name;
         uint32_t iconType;
         bool visible;

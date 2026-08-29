@@ -72,6 +72,8 @@ namespace MAP76::UI::Payload
                     addWorldspace(marker.worldspace);
                     payload.markers.push_back(DTO::POIMarker{
                         marker.formId,
+                        marker.pluginName,
+                        marker.localFormId,
                         marker.worldspace,
                         marker.position.x,
                         marker.position.y,

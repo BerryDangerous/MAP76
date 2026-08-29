@@ -328,10 +328,8 @@ namespace MAP76::Engine
             return false;
         }
 
-        uint32_t targetIndex = a_questFormID & Constants::FormID::FORM_ID_INDEX_MASK;
-
         uint32_t singleID = PipboyUtils::GetPipboyUint32(a_markerObj, "formID", PipboyUtils::GetPipboyUint32(a_markerObj, "questID", 0));
-        if (singleID != 0 && (singleID & Constants::FormID::FORM_ID_INDEX_MASK) == targetIndex)
+        if (singleID != 0 && singleID == a_questFormID)
         {
             return true;
         }
@@ -344,7 +342,7 @@ namespace MAP76::Engine
                 if (innerElement && (innerElement->GetType() == RE::PipboyValue::kUint32 || innerElement->GetType() == RE::PipboyValue::kInt32))
                 {
                     auto formID = *reinterpret_cast<uint32_t *>(reinterpret_cast<uintptr_t>(innerElement) + Constants::PIPBOY_VALUE_PAYLOAD_OFFSET);
-                    if ((formID & Constants::FormID::FORM_ID_INDEX_MASK) == targetIndex)
+                    if (formID == a_questFormID)
                     {
                         return true;
                     }

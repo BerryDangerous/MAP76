@@ -40,12 +40,6 @@ namespace MAP76::Engine::QuestManager
 
             auto *form = RE::TESForm::GetFormByID(a_formID);
 
-            // Fallback for ESL / Light plugins (FormIDs starting with 0xFE)
-            if (!form && (a_formID & 0xFF000000) == 0xFE000000)
-            {
-                form = RE::TESForm::GetFormByID(a_formID & Constants::FormID::FORM_ID_INDEX_MASK);
-            }
-
             if (form && form->formType.underlying() == Constants::Quest::FORM_TYPE_ID)
             {
                 return static_cast<RE::TESQuest *>(form);

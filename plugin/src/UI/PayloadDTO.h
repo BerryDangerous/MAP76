@@ -41,6 +41,8 @@ namespace MAP76::UI::DTO
     struct POIMarker
     {
         uint32_t formId;
+        std::string pluginName;
+        uint32_t localFormId;
         uint32_t worldspace;
         float x;
         float y;
@@ -56,6 +58,8 @@ namespace MAP76::UI::DTO
     {
         j = nlohmann::json{
             {"formId", p.formId},
+            {"pluginName", p.pluginName},
+            {"localFormId", p.localFormId},
             {"worldspace", p.worldspace},
             {"x", p.x},
             {"y", p.y},

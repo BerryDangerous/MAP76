@@ -3,7 +3,7 @@ import { CustomMarker, POIMarker, PowerArmorMarker, MarkerType } from '@/types/m
 import { F4SEMapPayload } from '@/types/payloads.js';
 import { QuestItem } from '@/types/quests.js';
 
-import { ASSET_ICON_CUSTOM_MARKER, ASSET_ICON_POWER_ARMOR, ASSET_ICON_PLAYER_LOCATION, MARKER_ICON_RAIDER_OUTPOST, MARKER_ICON_VASSAL_SETTLEMENT, MARKER_ICON_POTENTIAL_VASSAL_SETTLEMENT, FORM_ID_INDEX_MASK, NAKANO_RESIDENCE_REAL_MARKER_MASKED_ID, NAKANO_RESIDENCE_FAKE_MARKER_MASKED_ID, ENGINE_MARKER_TYPES, DEFAULT_BLANK_CONFIG, NUKA_WORLD_MAP_GUTTERS, FAR_HARBOR_MAP_GUTTERS, DEFAULT_MAP_GUTTERS } from '@/core/constants.js';
+import { ASSET_ICON_CUSTOM_MARKER, ASSET_ICON_POWER_ARMOR, ASSET_ICON_PLAYER_LOCATION, MARKER_ICON_RAIDER_OUTPOST, MARKER_ICON_VASSAL_SETTLEMENT, MARKER_ICON_POTENTIAL_VASSAL_SETTLEMENT, NAKANO_RESIDENCE_REAL_MARKER, NAKANO_RESIDENCE_FAKE_MARKER, ENGINE_MARKER_TYPES, DEFAULT_BLANK_CONFIG, NUKA_WORLD_MAP_GUTTERS, FAR_HARBOR_MAP_GUTTERS, DEFAULT_MAP_GUTTERS } from '@/core/constants.js';
 import { appSettings } from '@/core/settings.js';
 import { mapState } from '@/core/state.js';
 
@@ -206,12 +206,12 @@ function renderLocationMarkers(markers: POIMarker[], worldspaceID: number, bound
     const markerLayer = getMarkerLayer();
     if (!markerLayer) return;
 
-    const realNakano = markers.find(m => (m.formId & FORM_ID_INDEX_MASK) === NAKANO_RESIDENCE_REAL_MARKER_MASKED_ID);
+    const realNakano = markers.find(m => m.pluginName === NAKANO_RESIDENCE_REAL_MARKER.plugin && m.localFormId === NAKANO_RESIDENCE_REAL_MARKER.localFormId);
 
     markers.forEach(m => {
         if (!WorldspaceUtils.isSameWorldspace(m.worldspace, worldspaceID)) return;
 
-        if ((m.formId & FORM_ID_INDEX_MASK) === NAKANO_RESIDENCE_REAL_MARKER_MASKED_ID) return;
+        if (m.pluginName === NAKANO_RESIDENCE_REAL_MARKER.plugin && m.localFormId === NAKANO_RESIDENCE_REAL_MARKER.localFormId) return;
 
         const isGateway = isSupplyLinesViewActive() && activeGatewayMarkerFormIds.has(m.formId);
         const shouldRender = m.visible || m.discovered || m.canFastTravel || isGateway;
@@ -220,7 +220,7 @@ function renderLocationMarkers(markers: POIMarker[], worldspaceID: number, bound
         let x = m.x;
         let y = m.y;
 
-        if (((m.formId & FORM_ID_INDEX_MASK) === NAKANO_RESIDENCE_FAKE_MARKER_MASKED_ID) && realNakano) {
+        if ((m.pluginName === NAKANO_RESIDENCE_FAKE_MARKER.plugin && m.localFormId === NAKANO_RESIDENCE_FAKE_MARKER.localFormId) && realNakano) {
             x = realNakano.x;
             y = realNakano.y;
         }

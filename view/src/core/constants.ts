@@ -84,9 +84,8 @@ export const ENGINE_MARKER_TYPES: Record<number, string> = {
     80: 'pack'
 };
 
-export const FORM_ID_INDEX_MASK = 0x00FFFFFF;
-export const NAKANO_RESIDENCE_REAL_MARKER_MASKED_ID = 0x000034F6;
-export const NAKANO_RESIDENCE_FAKE_MARKER_MASKED_ID = 0x00049D0F;
+export const NAKANO_RESIDENCE_REAL_MARKER = { plugin: 'DLCCoast.esm', localFormId: 0x000034F6 };
+export const NAKANO_RESIDENCE_FAKE_MARKER = { plugin: 'DLCCoast.esm', localFormId: 0x00049D0F };
 
 export const MARKER_ICON_SETTLEMENT = 13;
 export const MARKER_ICON_RAIDER_OUTPOST = 66;
@@ -132,25 +131,25 @@ export const DEFAULT_BLANK_CONFIG = {
 };
 
 export const DLC_GATEWAYS = {
-    NUKA_WORLD_ID: 10511,
-    FAR_HARBOR_ID: 2831,
-    COMMONWEALTH_ID: 60,
+    NUKA_WORLD_ID: 'NukaWorld',
+    FAR_HARBOR_ID: 'DLC03FarHarbor',
+    COMMONWEALTH_ID: 'Commonwealth',
 
     COMMONWEALTH_TO_NUKAWORLD: {
         door: { x: -111914.625, y: 18024.332, z: 0, isGateway: true },
-        mapMarker: { x: -116344.0, y: 17512.0, z: 0, isGateway: true, maskedFormId: 152853 }
+        mapMarker: { x: -116344.0, y: 17512.0, z: 0, isGateway: true, plugin: 'DLCNukaWorld.esm', localFormId: 152853 }
     },
     NUKAWORLD_TO_COMMONWEALTH: {
         door: { x: 2592.0, y: -33776.0, z: 0, isGateway: true },
-        mapMarker: { x: 3984.0, y: -38312.0, z: 0, isGateway: true, maskedFormId: 152855 }
+        mapMarker: { x: 3984.0, y: -38312.0, z: 0, isGateway: true, plugin: 'DLCNukaWorld.esm', localFormId: 152855 }
     },
     COMMONWEALTH_TO_FARHARBOR: {
         door: { x: 82425.47, y: 120477.58, z: 0, isGateway: true },
-        mapMarker: { x: 93942.05, y: 102910.21, z: 0, isGateway: true, maskedFormId: 261861 }
+        mapMarker: { x: 93942.05, y: 102910.21, z: 0, isGateway: true, plugin: 'DLCCoast.esm', localFormId: 261861 }
     },
     FARHARBOR_TO_COMMONWEALTH: {
         door: { x: 56504.26, y: 32603.35, z: 0, isGateway: true },
-        mapMarker: { x: 64825.59, y: 34026.19, z: 0, isGateway: true, maskedFormId: 261859 }
+        mapMarker: { x: 64825.59, y: 34026.19, z: 0, isGateway: true, plugin: 'DLCCoast.esm', localFormId: 261859 }
     }
 };
 

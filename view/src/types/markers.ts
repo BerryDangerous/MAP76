@@ -1,5 +1,7 @@
 export interface POIMarker {
     formId: number;
+    pluginName?: string;
+    localFormId?: number;
     worldspace: number;
     x: number;
     y: number;

@@ -56,6 +56,10 @@ namespace
 
         MAP76::Engine::MapMarkers::MarkerData markerElement{};
         markerElement.formId = a_refr->formID;
+        if (auto* file = a_refr->GetFile(0)) {
+            markerElement.pluginName = file->GetFilename();
+        }
+        markerElement.localFormId = a_refr->GetLocalFormID();
         markerElement.name = markerName;
         markerElement.iconType = iconTypeNumber;
         markerElement.visible = (rawFlags & MAP76::Constants::Marker::FLAG_VISIBLE) != 0;

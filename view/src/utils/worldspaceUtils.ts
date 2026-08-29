@@ -1,11 +1,11 @@
 import { F4SEMapPayload, GatewayMarker } from '@/types/payloads.js';
 
-import { FORM_ID_INDEX_MASK, DLC_GATEWAYS } from '@/core/constants.js';
+import { DLC_GATEWAYS } from '@/core/constants.js';
 import { mapState } from '@/core/state.js';
 
 export const WorldspaceUtils = {
     isSameWorldspace(ws1: number, ws2: number): boolean {
-        return (ws1 & FORM_ID_INDEX_MASK) === (ws2 & FORM_ID_INDEX_MASK);
+        return ws1 === ws2;
     },
 
     getWorldspaceName(worldspaceId?: number): string | undefined {
@@ -54,28 +54,30 @@ export const WorldspaceUtils = {
             }
         }
 
-        const currentWsMasked = currentWorldspace & FORM_ID_INDEX_MASK;
-        const targetWsMasked = effectiveTargetWs & FORM_ID_INDEX_MASK;
+        const currentWsEditorID = WorldspaceUtils.getWorldspaceEditorID(currentWorldspace);
+        const targetWsEditorID = WorldspaceUtils.getWorldspaceEditorID(effectiveTargetWs);
 
-        const getDLCGateway = (gw: { x: number, y: number, z: number, isGateway: boolean, maskedFormId?: number }, worldspaceWithPrefix: number) => {
-            if (gw.maskedFormId) {
-                const prefix = worldspaceWithPrefix & ~FORM_ID_INDEX_MASK;
-                return { ...gw, formId: prefix | gw.maskedFormId };
+        const getDLCGateway = (gw: { x: number, y: number, z: number, isGateway: boolean, plugin?: string, localFormId?: number }) => {
+            if (gw.plugin && gw.localFormId && payload && payload.markers) {
+                const marker = payload.markers.find(m => m.pluginName === gw.plugin && m.localFormId === gw.localFormId);
+                if (marker) {
+                    return { ...gw, formId: marker.formId };
+                }
             }
             return gw;
         };
 
-        if (currentWsMasked === DLC_GATEWAYS.COMMONWEALTH_ID && targetWsMasked === DLC_GATEWAYS.NUKA_WORLD_ID) {
-            return getDLCGateway(DLC_GATEWAYS.COMMONWEALTH_TO_NUKAWORLD[gatewayType], effectiveTargetWs);
+        if (currentWsEditorID === DLC_GATEWAYS.COMMONWEALTH_ID && targetWsEditorID === DLC_GATEWAYS.NUKA_WORLD_ID) {
+            return getDLCGateway(DLC_GATEWAYS.COMMONWEALTH_TO_NUKAWORLD[gatewayType]);
         }
-        if (currentWsMasked === DLC_GATEWAYS.NUKA_WORLD_ID && targetWsMasked === DLC_GATEWAYS.COMMONWEALTH_ID) {
-            return getDLCGateway(DLC_GATEWAYS.NUKAWORLD_TO_COMMONWEALTH[gatewayType], currentWorldspace);
+        if (currentWsEditorID === DLC_GATEWAYS.NUKA_WORLD_ID && targetWsEditorID === DLC_GATEWAYS.COMMONWEALTH_ID) {
+            return getDLCGateway(DLC_GATEWAYS.NUKAWORLD_TO_COMMONWEALTH[gatewayType]);
         }
-        if (currentWsMasked === DLC_GATEWAYS.COMMONWEALTH_ID && targetWsMasked === DLC_GATEWAYS.FAR_HARBOR_ID) {
-            return getDLCGateway(DLC_GATEWAYS.COMMONWEALTH_TO_FARHARBOR[gatewayType], effectiveTargetWs);
+        if (currentWsEditorID === DLC_GATEWAYS.COMMONWEALTH_ID && targetWsEditorID === DLC_GATEWAYS.FAR_HARBOR_ID) {
+            return getDLCGateway(DLC_GATEWAYS.COMMONWEALTH_TO_FARHARBOR[gatewayType]);
         }
-        if (currentWsMasked === DLC_GATEWAYS.FAR_HARBOR_ID && targetWsMasked === DLC_GATEWAYS.COMMONWEALTH_ID) {
-            return getDLCGateway(DLC_GATEWAYS.FARHARBOR_TO_COMMONWEALTH[gatewayType], currentWorldspace);
+        if (currentWsEditorID === DLC_GATEWAYS.FAR_HARBOR_ID && targetWsEditorID === DLC_GATEWAYS.COMMONWEALTH_ID) {
+            return getDLCGateway(DLC_GATEWAYS.FARHARBOR_TO_COMMONWEALTH[gatewayType]);
         }
 
         if (!payload || !payload.gateways) {
