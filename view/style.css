@@ -242,8 +242,8 @@ body, html {
 .quest-marker img,
 .custom-marker img,
 .power-armor-marker img {
-    max-width: 28px;
-    max-height: 34px;
+    width: 28px;
+    height: 34px;
     object-fit: contain;
     position: absolute;
     left: 0;
@@ -251,6 +251,16 @@ body, html {
     transform: translate(-50%, -50%);
     pointer-events: auto;
     cursor: pointer;
+}
+
+.quest-marker img {
+    width: 20px;
+    height: 20px;
+}
+
+.power-armor-marker img {
+    width: 20px;
+    height: 21px;
 }
 
 .player-marker-vector {
