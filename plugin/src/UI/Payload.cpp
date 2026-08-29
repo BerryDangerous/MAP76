@@ -1,6 +1,7 @@
 #include "PCH.h"
 #include "UI/Payload.h"
 #include "UI/PayloadDTO.h"
+#include "UI/IconOverrides.h"
 #include "Engine/MapData.h"
 #include "Engine/MapMarkers.h"
 #include "Engine/QuestManager.h"
@@ -82,7 +83,10 @@ namespace MAP76::UI::Payload
                         marker.visible,
                         marker.canFastTravel,
                         marker.discovered,
-                        std::nullopt
+                        [&]() -> std::optional<std::string> {
+                            auto icon = MAP76::UI::IconOverrides::GetCustomIcon(marker.pluginName, marker.localFormId);
+                            return icon.empty() ? std::nullopt : std::optional<std::string>(icon);
+                        }()
                     });
                 }
 

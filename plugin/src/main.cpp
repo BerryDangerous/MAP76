@@ -2,6 +2,7 @@
 #include <filesystem>
 #include "Engine/MapData.h"
 #include "UI/Interop.h"
+#include "UI/IconOverrides.h"
 #include "Hooks/WindowProc.h"
 #include "Hooks/MainUpdate.h"
 #include "Engine/QuestManager.h"
@@ -22,6 +23,7 @@ void OnF4SEMessage(F4SE::MessagingInterface::Message *a_msg)
         {
             REX::ERROR("MAP76: Failed to acquire PrismaUI API surface!");
         }
+        MAP76::UI::IconOverrides::Load();
         MAP76::Hooks::InstallMainUpdateHook();
         break;
     }

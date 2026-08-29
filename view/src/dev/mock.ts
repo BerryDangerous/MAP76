@@ -6,6 +6,12 @@ import { mockPayload, mockAssetPayload } from '@/dev/mockData.js';
 export function initMockData(): void {
     console.log('[DevMode] Initializing Mock Data Sandbox...');
 
+    window.loadAssets = (jsonString: string) => {
+        if (typeof window.__loadAssetsRegister === 'function') {
+            window.__loadAssetsRegister(jsonString);
+        }
+    };
+
     const emitPayload = () => {
         const json = JSON.stringify(mockPayload);
         if (typeof window.__loadMarkersRegister === 'function') {
@@ -66,10 +72,58 @@ export function initMockData(): void {
             }
         }
 
+        try {
+            let overrideFiles: string[] = [];
+            try {
+                const listRes = await fetch('/dev/overrides-list.json');
+                if (listRes.ok) overrideFiles = await listRes.json();
+            } catch (e) {
+            }
+
+            const overrideByFormId = new Map<number, string>();
+
+            for (const filename of overrideFiles) {
+                try {
+                    const res = await fetch(`/assets/icons/location/overrides/${filename}`);
+                    if (!res.ok) continue;
+                    const overrideData = await res.json();
+                    const markerOverrides = overrideData?.markerOverrides;
+                    if (!markerOverrides) continue;
+
+                    for (const entries of Object.values(markerOverrides) as Array<Array<{ localFormId: number; icon: string }>>) {
+                        for (const entry of entries) {
+                            if (entry.localFormId !== undefined && entry.icon) {
+                                overrideByFormId.set(entry.localFormId, entry.icon);
+                            }
+                        }
+                    }
+                    console.log(`[DevMode] Loaded icon overrides from ${filename}`);
+                } catch (e) {
+                    console.warn(`[DevMode] Failed to process override file ${filename}:`, e);
+                }
+            }
+
+            if (overrideByFormId.size > 0) {
+                let applied = 0;
+                for (const marker of mockPayload.markers) {
+                    const icon = overrideByFormId.get(marker.formId)
+                        ?? (marker.localFormId !== undefined ? overrideByFormId.get(marker.localFormId) : undefined);
+                    if (icon) {
+                        (marker as any).customIcon = icon;
+                        applied++;
+                    }
+                }
+                console.log(`[DevMode] Applied ${applied} icon override(s) to mock markers.`);
+            }
+        } catch (e) {
+            console.warn('[DevMode] Failed to apply icon overrides:', e);
+        }
+
         const json = JSON.stringify(mockAssetPayload);
         if (typeof window.loadAssets === 'function') {
             window.loadAssets(json);
         }
+        emitPayload();
     };
 
     window.saveSettings = (jsonString: string) => {
