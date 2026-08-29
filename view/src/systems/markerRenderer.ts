@@ -299,15 +299,21 @@ function renderQuestMarkers(quests: QuestItem[], worldspaceID: number, bounds: G
 
                 let gx = resolved.x;
                 let gy = resolved.y;
-                if (resolved.isGateway) {
-                    const { minX: bMinX, maxX: bMaxX, minY: bMinY, maxY: bMaxY } = MapUtils.getEffectiveBounds(bounds);
-                    gx = Math.max(bMinX, Math.min(bMaxX, gx));
-                    gy = Math.max(bMinY, Math.min(bMaxY, gy));
+
+                const effectiveBounds = MapUtils.getEffectiveBounds(bounds);
+                const isClamped = (gx < effectiveBounds.minX || gx > effectiveBounds.maxX || gy < effectiveBounds.minY || gy > effectiveBounds.maxY);
+
+                if (resolved.isGateway || isClamped) {
+                    gx = Math.max(effectiveBounds.minX, Math.min(effectiveBounds.maxX, gx));
+                    gy = Math.max(effectiveBounds.minY, Math.min(effectiveBounds.maxY, gy));
                 }
 
                 const pos = MapUtils.gameToMapCoords(gx, gy, resolved.z, bounds, mapState.activeMapConfig!.gutters!);
 
                 const container = createMarkerContainer('quest', markerTooltipText, pos);
+                if (resolved.isGateway || isClamped) {
+                    container.classList.add('clamped-marker');
+                }
                 container.classList.add('quest-marker');
                 container.dataset.markerType = 'quest';
                 if (quest.formId !== undefined) {
@@ -344,14 +350,20 @@ function renderCustomMarker(marker: CustomMarker | null | undefined, worldspaceI
 
     let gx = resolved.x;
     let gy = resolved.y;
-    if (resolved.isGateway) {
-        const { minX: bMinX, maxX: bMaxX, minY: bMinY, maxY: bMaxY } = MapUtils.getEffectiveBounds(bounds);
-        gx = Math.max(bMinX, Math.min(bMaxX, gx));
-        gy = Math.max(bMinY, Math.min(bMaxY, gy));
+
+    const effectiveBounds = MapUtils.getEffectiveBounds(bounds);
+    const isClamped = (gx < effectiveBounds.minX || gx > effectiveBounds.maxX || gy < effectiveBounds.minY || gy > effectiveBounds.maxY);
+
+    if (resolved.isGateway || isClamped) {
+        gx = Math.max(effectiveBounds.minX, Math.min(effectiveBounds.maxX, gx));
+        gy = Math.max(effectiveBounds.minY, Math.min(effectiveBounds.maxY, gy));
     }
 
     const pos = MapUtils.gameToMapCoords(gx, gy, 0, bounds, mapState.activeMapConfig!.gutters!);
     const container = createMarkerContainer('customMarker', 'Custom Marker', pos);
+    if (resolved.isGateway || isClamped) {
+        container.classList.add('clamped-marker');
+    }
     container.classList.add('custom-marker');
 
     const img = document.createElement('img');
@@ -383,14 +395,20 @@ function renderPowerArmor(pa: PowerArmorMarker | null | undefined, worldspaceID:
 
     let gx = resolved.x;
     let gy = resolved.y;
-    if (resolved.isGateway) {
-        const { minX: bMinX, maxX: bMaxX, minY: bMinY, maxY: bMaxY } = MapUtils.getEffectiveBounds(bounds);
-        gx = Math.max(bMinX, Math.min(bMaxX, gx));
-        gy = Math.max(bMinY, Math.min(bMaxY, gy));
+
+    const effectiveBounds = MapUtils.getEffectiveBounds(bounds);
+    const isClamped = (gx < effectiveBounds.minX || gx > effectiveBounds.maxX || gy < effectiveBounds.minY || gy > effectiveBounds.maxY);
+
+    if (resolved.isGateway || isClamped) {
+        gx = Math.max(effectiveBounds.minX, Math.min(effectiveBounds.maxX, gx));
+        gy = Math.max(effectiveBounds.minY, Math.min(effectiveBounds.maxY, gy));
     }
 
     const pos = MapUtils.gameToMapCoords(gx, gy, resolved.z, bounds, mapState.activeMapConfig!.gutters!);
     const container = createMarkerContainer('powerarmor', 'Power Armor', pos);
+    if (resolved.isGateway || isClamped) {
+        container.classList.add('clamped-marker');
+    }
     container.classList.add('power-armor-marker');
 
     const img = document.createElement('img');
