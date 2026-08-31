@@ -9,6 +9,11 @@
 #include "RE/T/TESDataHandler.h"
 #include "RE/T/TESGlobal.h"
 #include "RE/B/BGSListForm.h"
+#include "RE/B/BSInputEnableManager.h"
+#include "RE/B/BSSpinLock.h"
+#include "RE/O/OtherInputEvents.h"
+#include "RE/P/ProcessLists.h"
+#include "RE/B/BSTArray.h"
 
 namespace MAP76::UI::Actions
 {
@@ -35,6 +40,30 @@ namespace MAP76::UI::Actions
             using Func_t = void(RE::PlayerCharacter *, const RE::ObjectRefHandle &, bool);
             static REL::Relocation<Func_t> func{RE::ID::PlayerCharacter::QueueFastTravel};
             func(a_player, a_marker, a_allowAutoSave);
+        }
+
+        bool IsScriptFastTravelBlocked()
+        {
+            auto *inputManager = RE::BSInputEnableManager::GetSingleton();
+            if (!inputManager)
+                return false;
+
+            constexpr auto ftFlag = RE::OtherInputEvents::OTHER_EVENT_FLAG::kFastTravel;
+
+            RE::BSAutoLock cacheLocker(inputManager->cacheLock);
+            if (inputManager->forceOtherInputEventsFlags.all(ftFlag))
+                return false;
+
+            RE::BSAutoLock layerLocker(inputManager->layerLock);
+            for (const auto &layer : inputManager->layers)
+            {
+                if (!layer.otherInputEvents.all(ftFlag))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         bool IsInteriorRestricted(RE::TESObjectCELL *parentCell)
@@ -163,7 +192,7 @@ namespace MAP76::UI::Actions
         }
     }
 
-    std::string EvaluateStandardConditions(RE::PlayerCharacter *a_player, RE::TESObjectREFR *a_destinationMarker)
+    std::string VerifyFastTravelConditions(RE::PlayerCharacter *a_player, RE::TESObjectREFR *a_destinationMarker)
     {
         if (!a_player)
         {
@@ -174,17 +203,22 @@ namespace MAP76::UI::Actions
         {
             return Constants::FastTravel::PLAYER_DEAD;
         }
+
+        if (IsScriptFastTravelBlocked())
+        {
+            return Constants::FastTravel::QUEST_LOCKED;
+        }
+
         if (a_player->playerInCombat)
         {
-            auto *processLists = RE::ProcessLists::GetSingleton();
-            if (!processLists)
-            {
-                return Constants::FastTravel::COMBAT;
-            }
+            return Constants::FastTravel::COMBAT;
+        }
 
-            uint32_t losCount = 0;
-            int16_t detectionLevel = processLists->RequestHighestDetectionLevelAgainstActor(a_player, losCount);
-            if (detectionLevel >= 3)
+        auto *processLists = RE::ProcessLists::GetSingleton();
+        if (processLists)
+        {
+            RE::BSScrapArray<RE::ActorHandle> hostiles;
+            if (processLists->AreHostileActorsNear(&hostiles))
             {
                 return Constants::FastTravel::COMBAT;
             }
@@ -209,66 +243,6 @@ namespace MAP76::UI::Actions
         return Constants::FastTravel::SUCCESS;
     }
 
-    class FastTravelCheckCallback : public RE::BSScript::IStackCallbackFunctor
-    {
-    public:
-        RE::PlayerCharacter *player;
-        RE::TESObjectREFR *destMarker;
-        std::function<void(const std::string &)> onComplete;
-
-        FastTravelCheckCallback(RE::PlayerCharacter *p, RE::TESObjectREFR *m, std::function<void(const std::string &)> cb) 
-            : player(p), destMarker(m), onComplete(cb) {}
-        
-        ~FastTravelCheckCallback() override = default;
-
-        void CallQueued() override {}
-        
-        void CallCanceled() override 
-        {
-            if (onComplete) {
-                onComplete(Constants::FastTravel::UNKNOWN_ERROR);
-            }
-        }
-        
-        void StartMultiDispatch() override {}
-        void EndMultiDispatch() override {}
-        bool CanSave() override { return false; }
-
-        void operator()(RE::BSScript::Variable result) override
-        {
-            bool isEnabled = result.is<bool>() ? RE::BSScript::get<bool>(result) : true;
-            
-            if (auto *task = F4SE::GetTaskInterface())
-            {
-                task->AddTask([isEnabled, p = this->player, m = this->destMarker, cb = this->onComplete]() {
-                    if (!isEnabled)
-                    {
-                        cb(Constants::FastTravel::QUEST_LOCKED);
-                    }
-                    else
-                    {
-                        std::string finalStatus = EvaluateStandardConditions(p, m);
-                        cb(finalStatus);
-                    }
-                });
-            }
-        }
-    };
-
-    void VerifyFastTravelConditions(RE::PlayerCharacter *a_player, RE::TESObjectREFR *a_destinationMarker, std::function<void(const std::string &)> a_callback)
-    {
-        auto *vm = RE::BSScript::Internal::VirtualMachine::GetSingleton();
-        if (vm)
-        {
-            auto callback = RE::make_smart<FastTravelCheckCallback>(a_player, a_destinationMarker, a_callback);
-            vm->RE::BSScript::IVirtualMachine::DispatchStaticCall("Game", "IsFastTravelEnabled", callback);
-        }
-        else
-        {
-            a_callback(EvaluateStandardConditions(a_player, a_destinationMarker));
-        }
-    }
-
     void ExecuteFastTravel(uint32_t a_formId)
     {
         auto *player = RE::PlayerCharacter::GetSingleton();
@@ -287,40 +261,40 @@ namespace MAP76::UI::Actions
             return;
         }
 
-        VerifyFastTravelConditions(player, markerRef, [a_formId, markerRef](const std::string &status) {
-            if (status != Constants::FastTravel::SUCCESS)
+        std::string status = VerifyFastTravelConditions(player, markerRef);
+
+        if (status != Constants::FastTravel::SUCCESS)
+        {
+            if (UI::State::g_api && UI::State::g_view)
             {
-                if (UI::State::g_api && UI::State::g_view)
+                nlohmann::json response;
+                response["status"] = status;
+                response["formId"] = a_formId;
+                response["locationName"] = markerRef->GetDisplayFullName();
+
+                std::string responseStr = response.dump();
+                UI::State::g_api->InteropCall(UI::State::g_view, "onFastTravelFailed", responseStr.c_str());
+            }
+            return;
+        }
+
+        if (auto *task = F4SE::GetTaskInterface())
+        {
+            task->AddUITask([markerRef]() {
+                if (UI::State::g_mapIsOpen.load())
                 {
-                    nlohmann::json response;
-                    response["status"] = status;
-                    response["formId"] = a_formId;
-                    response["locationName"] = markerRef->GetDisplayFullName();
-
-                    std::string responseStr = response.dump();
-                    UI::State::g_api->InteropCall(UI::State::g_view, "onFastTravelFailed", responseStr.c_str());
+                    UI::ToggleMAP76();
                 }
-                return;
-            }
+                else if (UI::State::g_api && UI::State::g_view)
+                {
+                    UI::State::g_api->Unfocus(UI::State::g_view);
+                    UI::State::g_api->Hide(UI::State::g_view);
+                }
 
-            if (auto *task = F4SE::GetTaskInterface())
-            {
-                task->AddUITask([markerRef]() {
-                    if (UI::State::g_mapIsOpen.load())
-                    {
-                        UI::ToggleMAP76();
-                    }
-                    else if (UI::State::g_api && UI::State::g_view)
-                    {
-                        UI::State::g_api->Unfocus(UI::State::g_view);
-                        UI::State::g_api->Hide(UI::State::g_view);
-                    }
-
-                    auto *p = RE::PlayerCharacter::GetSingleton();
-                    QueueFastTravel(p, markerRef->GetHandle(), true);
-                });
-            }
-        });
+                auto *p = RE::PlayerCharacter::GetSingleton();
+                QueueFastTravel(p, markerRef->GetHandle(), true);
+            });
+        }
     }
 
     void SetCustomMarker(float a_x, float a_y, uint32_t a_worldspaceId)

@@ -187,16 +187,15 @@ namespace MAP76::UI
                                 destMarker = RE::TESForm::GetFormByID<RE::TESObjectREFR>(formId);
                             }
                             
-                            MAP76::UI::Actions::VerifyFastTravelConditions(player, destMarker, [](const std::string &status) {
-                                if (MAP76::UI::State::g_api && MAP76::UI::State::g_view)
-                                {
-                                    nlohmann::json response;
-                                    response["status"] = status;
+                            std::string status = MAP76::UI::Actions::VerifyFastTravelConditions(player, destMarker);
+                            if (MAP76::UI::State::g_api && MAP76::UI::State::g_view)
+                            {
+                                nlohmann::json response;
+                                response["status"] = status;
 
-                                    std::string responseStr = response.dump();
-                                    MAP76::UI::State::g_api->InteropCall(MAP76::UI::State::g_view, "onFastTravelCheckResult", responseStr.c_str());
-                                }
-                            });
+                                std::string responseStr = response.dump();
+                                MAP76::UI::State::g_api->InteropCall(MAP76::UI::State::g_view, "onFastTravelCheckResult", responseStr.c_str());
+                            }
                         }
                         catch (const std::exception &e)
                         {

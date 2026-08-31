@@ -1,7 +1,6 @@
 #pragma once
 #include <string>
 #include <stdint.h>
-#include <functional>
 #include <RE/Fallout.h>
 
 namespace MAP76::UI::Actions
@@ -14,9 +13,9 @@ namespace MAP76::UI::Actions
      *
      * @param a_player Target player character instance.
      * @param a_destinationMarker Optional target destination marker reference (used for survival exceptions).
-     * @param a_callback Callback invoked with status string ("SUCCESS", "PLAYER_DEAD", "COMBAT", "INTERIOR", "SURVIVAL", "OVERBURDENED", "QUEST_LOCKED", "UNKNOWN_ERROR").
+     * @return Status string ("SUCCESS", "PLAYER_DEAD", "COMBAT", "INTERIOR", "SURVIVAL", "OVERBURDENED", "QUEST_LOCKED", "UNKNOWN_ERROR").
      */
-    void VerifyFastTravelConditions(RE::PlayerCharacter *a_player, RE::TESObjectREFR *a_destinationMarker, std::function<void(const std::string &)> a_callback);
+    std::string VerifyFastTravelConditions(RE::PlayerCharacter *a_player, RE::TESObjectREFR *a_destinationMarker);
 
     /**
      * @brief Triggers the fast travel sequence to a specified marker FormID.
