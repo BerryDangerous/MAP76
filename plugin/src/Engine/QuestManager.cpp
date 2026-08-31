@@ -5,11 +5,9 @@
 #include "Engine/MapData.h"
 #include "UI/Interop.h"
 #include "Constants.h"
-
-namespace RE::BSScript
-{
-    IStackCallbackFunctor::~IStackCallbackFunctor() = default;
-}
+#include <RE/B/BGSDynamicPersistenceManager.h>
+#include <RE/P/PipboyDataManager.h>
+#include <RE/T/TESQuestEvent.h>
 
 namespace MAP76::Engine::QuestManager
 {
@@ -327,181 +325,121 @@ namespace MAP76::Engine::QuestManager
         return questTreeArray;
     }
 
-    void ForceQuestActiveViaVM(RE::TESQuest *a_quest)
-    {
-        if (!a_quest)
-        {
-            return;
-        }
-
-        auto *gameVM = RE::GameVM::GetSingleton();
-        if (!gameVM)
-        {
-            return;
-        }
-
-        auto vmSmartPtr = gameVM->GetVM();
-        RE::BSScript::IVirtualMachine *vm = vmSmartPtr ? vmSmartPtr.get() : nullptr;
-        if (!vm)
-        {
-            return;
-        }
-
-        const auto &handles = vm->GetObjectHandlePolicy();
-        std::size_t questHandle = handles.GetHandleForObject(static_cast<std::uint32_t>(RE::ENUM_FORM_ID::kQUST), a_quest);
-
-        if (questHandle == handles.EmptyHandle())
-        {
-            return;
-        }
-
-        RE::BSTSmartPointer<RE::BSScript::IStackCallbackFunctor> emptyCallback;
-
-        vm->DispatchMethodCall(
-            questHandle,
-            RE::BSFixedString("Quest"),
-            RE::BSFixedString("SetActive"),
-            [](RE::BSScrapArray<RE::BSScript::Variable> &a_outArgs)
-            {
-                RE::BSScript::Variable activeArg;
-                RE::BSScript::PackVariable(activeArg, true);
-                a_outArgs.push_back(activeArg);
-                return true;
-            },
-            emptyCallback
-        );
-    }
-
     void ActivateAllUserFacingQuests()
     {
-        auto *dataHandler = RE::TESDataHandler::GetSingleton();
-        if (!dataHandler)
+        auto *pipboyManager = RE::PipboyDataManager::GetSingleton();
+        if (!pipboyManager || !pipboyManager->questData.questArray)
         {
             return;
         }
 
-        auto &questArray = dataHandler->GetFormArray<RE::TESQuest>();
-
-        for (auto *quest : questArray)
+        for (auto *elementValue : pipboyManager->questData.questArray->elements)
         {
-            if (!quest)
-            {
+            if (!elementValue || elementValue->GetType() != RE::PipboyValue::kObject)
                 continue;
-            }
 
-            uint32_t flags = quest->data.flags;
-            
-            uint32_t kEnabled = static_cast<uint32_t>(RE::QuestFlag::kEnabled);
-            if ((flags & kEnabled) == 0)
+            auto *questObj = reinterpret_cast<RE::PipboyObject *>(elementValue);
+            uint32_t questFormID = GetPipboyUint32(questObj, "formID", 0);
+
+            if (questFormID == 0)
             {
-                continue;
+                auto *uiObjectivesList = GetPipboyArray(questObj, "objectives");
+                if (uiObjectivesList)
+                {
+                    for (auto *subVal : uiObjectivesList->elements)
+                    {
+                        if (!subVal || subVal->GetType() != RE::PipboyValue::kObject)
+                            continue;
+                            
+                        uint32_t subFormID = GetPipboyUint32(reinterpret_cast<RE::PipboyObject *>(subVal), "formID", 0);
+                        if (auto *subForm = ResolveQuestForm(subFormID))
+                        {
+                            SetQuestActive(subForm, true);
+                        }
+                    }
+                }
             }
-
-            uint32_t kCompleted = static_cast<uint32_t>(RE::QuestFlag::kCompleted);
-            uint32_t kFailed = static_cast<uint32_t>(RE::QuestFlag::kFailed);
-            if ((flags & kCompleted) != 0 || (flags & kFailed) != 0)
+            else
             {
-                continue;
+                if (auto *baseForm = ResolveQuestForm(questFormID))
+                {
+                    SetQuestActive(baseForm, true);
+                }
             }
-
-            uint32_t kDisplayedInHUD = static_cast<uint32_t>(RE::QuestFlag::kDisplayedInHUD);
-            if ((flags & kDisplayedInHUD) == 0)
-            {
-                continue;
-            }
-
-            uint32_t kActive = static_cast<uint32_t>(RE::QuestFlag::kActive);
-
-            if ((flags & kActive) != 0)
-            {
-                continue;
-            }
-
-            ForceQuestActiveViaVM(quest);
         }
     }
 
-    namespace
-    {
-        class QuestActiveCallback : public RE::BSScript::IStackCallbackFunctor
-        {
-        public:
-            explicit QuestActiveCallback(std::shared_ptr<std::atomic<uint32_t>> a_counter = nullptr)
-                : _counter(std::move(a_counter))
-            {}
-
-            virtual void CallQueued() override {}
-            virtual void CallCanceled() override {}
-            virtual void StartMultiDispatch() override {}
-            virtual void EndMultiDispatch() override {}
-            virtual void operator()(RE::BSScript::Variable) override
-            {
-                if (_counter)
-                {
-                    if (_counter->fetch_sub(1) == 1)
-                    {
-                        MAP76::UI::TriggerFreshMapDataSync();
-                    }
-                }
-                else
-                {
-                    MAP76::UI::TriggerFreshMapDataSync();
-                }
-            }
-            virtual bool CanSave() override { return false; }
-
-        private:
-            std::shared_ptr<std::atomic<uint32_t>> _counter;
-        };
-    }
-
-    void SetQuestActiveViaVM(RE::TESQuest *a_quest, bool a_active, RE::BSTSmartPointer<RE::BSScript::IStackCallbackFunctor> a_callback)
+    void SetQuestActive(RE::TESQuest *a_quest, bool a_active)
     {
         if (!a_quest)
         {
             return;
         }
 
-        auto *gameVM = RE::GameVM::GetSingleton();
-        if (!gameVM)
+        uint32_t flags = a_quest->data.flags;
+        uint32_t kEnabled = static_cast<uint32_t>(RE::QuestFlag::kEnabled);
+        uint32_t kCompleted = static_cast<uint32_t>(RE::QuestFlag::kCompleted);
+        uint32_t kFailed = static_cast<uint32_t>(RE::QuestFlag::kFailed);
+
+        if ((flags & kEnabled) == 0 || (flags & kCompleted) != 0 || (flags & kFailed) != 0)
         {
             return;
         }
 
-        auto vmSmartPtr = gameVM->GetVM();
-        RE::BSScript::IVirtualMachine *vm = vmSmartPtr ? vmSmartPtr.get() : nullptr;
-        if (!vm)
+        uint32_t kActive = static_cast<uint32_t>(RE::QuestFlag::kActive);
+        bool currentlyActive = (flags & kActive) != 0;
+        
+        if (currentlyActive == a_active)
         {
             return;
         }
 
-        const auto &handles = vm->GetObjectHandlePolicy();
-        std::size_t questHandle = handles.GetHandleForObject(static_cast<std::uint32_t>(RE::ENUM_FORM_ID::kQUST), a_quest);
-
-        if (questHandle == handles.EmptyHandle())
+        if (a_active)
         {
-            return;
+            a_quest->data.flags |= kActive;
+        }
+        else
+        {
+            a_quest->data.flags &= ~kActive;
         }
 
-        RE::BSTSmartPointer<RE::BSScript::IStackCallbackFunctor> callback = a_callback;
-        if (!callback)
+        auto* dpm = RE::BGSDynamicPersistenceManager::GetSingleton();
+        if (dpm)
         {
-            callback = RE::BSTSmartPointer<RE::BSScript::IStackCallbackFunctor>(new QuestActiveCallback());
-        }
-
-        vm->DispatchMethodCall(
-            questHandle,
-            RE::BSFixedString("Quest"),
-            RE::BSFixedString("SetActive"),
-            [a_active](RE::BSScrapArray<RE::BSScript::Variable> &a_outArgs)
+            for (const auto& boundReferences : a_quest->aliasedHandles)
             {
-                RE::BSScript::Variable activeArg;
-                RE::BSScript::PackVariable(activeArg, a_active);
-                a_outArgs.push_back(activeArg);
-                return true;
-            },
-            callback
-        );
+                for (const auto& handle : boundReferences)
+                {
+                    if (handle)
+                    {
+                        if (auto refrPtr = handle.get())
+                        {
+                            if (auto* refr = refrPtr.get())
+                            {
+                                if (a_active)
+                                {
+                                    dpm->PromoteReference(refr, a_quest);
+                                }
+                                else
+                                {
+                                    dpm->DemoteReference(refr, a_quest, false);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if (auto* pipboyManager = RE::PipboyDataManager::GetSingleton())
+        {
+            RE::TESQuestEvent::Event eventData{};
+            eventData.changeType = RE::TESQuestEvent::kUpdateQuestActiveStatus;
+            eventData.quest = a_quest;
+            
+            pipboyManager->questData.ProcessEvent(eventData, nullptr);
+            pipboyManager->mapData.ProcessEvent(eventData, nullptr);
+        }
     }
 
     void ToggleQuestActive(uint32_t a_formId)
@@ -516,77 +454,64 @@ namespace MAP76::Engine::QuestManager
         uint32_t kActive = static_cast<uint32_t>(RE::QuestFlag::kActive);
         bool currentlyActive = (flags & kActive) != 0;
 
-        SetQuestActiveViaVM(quest, !currentlyActive);
+        SetQuestActive(quest, !currentlyActive);
+        MAP76::UI::TriggerFreshMapDataSync();
     }
 
     void MakeOnlyQuestActive(uint32_t a_formId)
     {
-        auto *targetQuest = RE::TESForm::GetFormByID<RE::TESQuest>(a_formId);
-        if (!targetQuest)
+        auto *pipboyManager = RE::PipboyDataManager::GetSingleton();
+        if (!pipboyManager || !pipboyManager->questData.questArray)
         {
             return;
         }
 
-        auto *dataHandler = RE::TESDataHandler::GetSingleton();
-        if (!dataHandler)
+        for (auto *elementValue : pipboyManager->questData.questArray->elements)
         {
-            return;
-        }
-
-        auto &questArray = dataHandler->GetFormArray<RE::TESQuest>();
-        uint32_t kEnabled = static_cast<uint32_t>(RE::QuestFlag::kEnabled);
-        uint32_t kCompleted = static_cast<uint32_t>(RE::QuestFlag::kCompleted);
-        uint32_t kFailed = static_cast<uint32_t>(RE::QuestFlag::kFailed);
-        uint32_t kActive = static_cast<uint32_t>(RE::QuestFlag::kActive);
-
-        std::vector<RE::TESQuest *> questsToActivate;
-        std::vector<RE::TESQuest *> questsToDeactivate;
-
-        for (auto *quest : questArray)
-        {
-            if (!quest)
-            {
+            if (!elementValue || elementValue->GetType() != RE::PipboyValue::kObject)
                 continue;
-            }
 
-            uint32_t flags = quest->data.flags;
-            if ((flags & kEnabled) == 0 || (flags & kCompleted) != 0 || (flags & kFailed) != 0)
-            {
-                continue;
-            }
+            auto *questObj = reinterpret_cast<RE::PipboyObject *>(elementValue);
+            uint32_t questFormID = GetPipboyUint32(questObj, "formID", 0);
 
-            if (quest->formID == a_formId)
+            if (questFormID == 0)
             {
-                if ((flags & kActive) == 0)
+                auto *uiObjectivesList = GetPipboyArray(questObj, "objectives");
+                if (uiObjectivesList)
                 {
-                    questsToActivate.push_back(quest);
+                    for (auto *subVal : uiObjectivesList->elements)
+                    {
+                        if (!subVal || subVal->GetType() != RE::PipboyValue::kObject)
+                            continue;
+                            
+                        uint32_t subFormID = GetPipboyUint32(reinterpret_cast<RE::PipboyObject *>(subVal), "formID", 0);
+                        if (subFormID != a_formId)
+                        {
+                            if (auto *subForm = ResolveQuestForm(subFormID))
+                            {
+                                SetQuestActive(subForm, false);
+                            }
+                        }
+                    }
                 }
             }
-            else if ((flags & kActive) != 0)
+            else
             {
-                questsToDeactivate.push_back(quest);
+                if (questFormID != a_formId)
+                {
+                    if (auto *baseForm = ResolveQuestForm(questFormID))
+                    {
+                        SetQuestActive(baseForm, false);
+                    }
+                }
             }
         }
 
-        uint32_t totalOps = static_cast<uint32_t>(questsToActivate.size() + questsToDeactivate.size());
-        if (totalOps == 0)
+        if (auto *targetQuest = ResolveQuestForm(a_formId))
         {
-            MAP76::UI::TriggerFreshMapDataSync();
-            return;
+            SetQuestActive(targetQuest, true);
         }
 
-        auto counter = std::make_shared<std::atomic<uint32_t>>(totalOps);
-
-        for (auto *q : questsToDeactivate)
-        {
-            RE::BSTSmartPointer<RE::BSScript::IStackCallbackFunctor> cb(new QuestActiveCallback(counter));
-            SetQuestActiveViaVM(q, false, cb);
-        }
-
-        for (auto *q : questsToActivate)
-        {
-            RE::BSTSmartPointer<RE::BSScript::IStackCallbackFunctor> cb(new QuestActiveCallback(counter));
-            SetQuestActiveViaVM(q, true, cb);
-        }
+        MAP76::UI::TriggerFreshMapDataSync();
     }
 }
