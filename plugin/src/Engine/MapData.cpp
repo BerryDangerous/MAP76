@@ -5,6 +5,8 @@
 #include "Constants.h"
 #include "RE/E/ExtraTeleport.h"
 #include "RE/D/DoorTeleportData.h"
+#include <RE/C/CustomMarkerUpdate.h>
+#include <RE/P/PipboyDataManager.h>
 
 namespace
 {
@@ -418,5 +420,14 @@ namespace MAP76::Engine
         }
 
         return graph;
+    }
+
+    void SyncCustomMapMarker()
+    {
+        if (auto* pipboyManager = RE::PipboyDataManager::GetSingleton())
+        {
+            RE::CustomMarkerUpdate::Event eventData{};
+            pipboyManager->mapData.ProcessEvent(eventData, nullptr);
+        }
     }
 }

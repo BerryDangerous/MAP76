@@ -300,12 +300,14 @@ namespace MAP76::UI::Actions
     void SetCustomMarker(float a_x, float a_y, uint32_t a_worldspaceId)
     {
         SetEngineCustomMarker(a_x, a_y, a_worldspaceId);
+        MAP76::Engine::SyncCustomMapMarker();
         MAP76::UI::TriggerFreshMapDataSync();
     }
 
     void RemoveCustomMarker()
     {
         RemoveEngineCustomMarker();
+        MAP76::Engine::SyncCustomMapMarker();
         MAP76::UI::TriggerFreshMapDataSync();
     }
 

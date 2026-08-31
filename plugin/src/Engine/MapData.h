@@ -74,4 +74,9 @@ namespace MAP76::Engine
      * @return true if linked, false otherwise.
      */
     bool IsMarkerLinkedToQuest(RE::PipboyObject *a_markerObj, uint32_t a_questFormID);
+
+    /**
+     * @brief Forces the Pip-Boy map to synchronize with the current world custom map marker position.
+     */
+    void SyncCustomMapMarker();
 }
