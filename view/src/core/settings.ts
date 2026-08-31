@@ -4,6 +4,7 @@ export interface AppSettings {
     resetViewportOnPanelCollapse: boolean;
     freezeSimulation: boolean;
     confirmFastTravel: boolean;
+    skipSurvivalFastTravelCheck: boolean;
     alternativeMapSound: boolean;
     limitQuestPanelHeight: boolean;
     hideInactiveQuestMarkers: boolean;
@@ -18,6 +19,7 @@ export const defaultSettings: AppSettings = {
     resetViewportOnPanelCollapse: false,
     freezeSimulation: true,
     confirmFastTravel: false,
+    skipSurvivalFastTravelCheck: false,
     alternativeMapSound: false,
     limitQuestPanelHeight: false,
     hideInactiveQuestMarkers: false,

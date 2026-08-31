@@ -2,6 +2,7 @@
 #include "PCH.h"
 #include "UI/Actions.h"
 #include "UI/Interop.h"
+#include "UI/Settings.h"
 #include "Engine/MapData.h"
 #include "Engine/QuestManager.h"
 #include "Constants.h"
@@ -230,9 +231,11 @@ namespace MAP76::UI::Actions
             return Constants::FastTravel::INTERIOR;
         }
 
-        if (IsSurvivalRestricted(a_player, parentCell, a_destinationMarker))
-        {
-            return Constants::FastTravel::SURVIVAL;
+        if (!MAP76::UI::Settings::skipSurvivalFastTravelCheck) {
+            if (IsSurvivalRestricted(a_player, parentCell, a_destinationMarker))
+            {
+                return Constants::FastTravel::SURVIVAL;
+            }
         }
 
         if (IsPlayerOverburdened(a_player))

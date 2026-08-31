@@ -8,6 +8,7 @@ namespace MAP76::UI {
     bool Settings::freezeSimulation = true;
     bool Settings::writePayloadToFile = false;
     bool Settings::showWorkshopInfoLog = false;
+    bool Settings::skipSurvivalFastTravelCheck = false;
 
     std::string Settings::GetConfigPath() {
         return "Data/F4SE/Plugins/MAP76.json";
@@ -30,6 +31,12 @@ namespace MAP76::UI {
             showWorkshopInfoLog = data["showWorkshopInfoLog"].get<bool>();
         } else {
             data["showWorkshopInfoLog"] = showWorkshopInfoLog;
+        }
+
+        if (data.contains("skipSurvivalFastTravelCheck") && data["skipSurvivalFastTravelCheck"].is_boolean()) {
+            skipSurvivalFastTravelCheck = data["skipSurvivalFastTravelCheck"].get<bool>();
+        } else {
+            data["skipSurvivalFastTravelCheck"] = skipSurvivalFastTravelCheck;
         }
     }
 

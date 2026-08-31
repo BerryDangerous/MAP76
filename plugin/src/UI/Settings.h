@@ -13,6 +13,7 @@ namespace MAP76::UI {
         static bool freezeSimulation;
         static bool writePayloadToFile;
         static bool showWorkshopInfoLog;
+        static bool skipSurvivalFastTravelCheck;
         
     private:
         static nlohmann::json data;

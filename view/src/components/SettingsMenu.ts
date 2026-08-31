@@ -122,6 +122,9 @@ export const SettingsMenu = {
         const ftToggle = new Toggle(appSettings.confirmFastTravel, (val) => { updateSettings({ confirmFastTravel: val }); });
         registerControl('confirmFastTravel', 'Fast Travel Confirmation', 'GAMEPLAY', ftToggle);
 
+        const skipSurvivalToggle = new Toggle(appSettings.skipSurvivalFastTravelCheck, (val) => { updateSettings({ skipSurvivalFastTravelCheck: val }); });
+        registerControl('skipSurvivalFastTravelCheck', 'Skip Survival Fast Travel Check', 'GAMEPLAY', skipSurvivalToggle);
+
         const writePayloadToggle = new Toggle(appSettings.writePayloadToFile, (val) => { updateSettings({ writePayloadToFile: val }); });
         registerControl('writePayloadToFile', 'Write Payload to File', 'DEBUG', writePayloadToggle);
 
