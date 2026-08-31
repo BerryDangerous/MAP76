@@ -98,6 +98,9 @@ export const SettingsMenu = {
         const scaleMulti = new MultiChoice(uiScaleOptions, appSettings.uiScale, (val) => { updateSettings({ uiScale: val }); });
         registerControl('uiScale', 'Interface Scale', 'DISPLAY', scaleMulti);
         
+        const markerScaleMulti = new MultiChoice(uiScaleOptions, appSettings.markerSize, (val) => { updateSettings({ markerSize: val }); });
+        registerControl('markerSize', 'Map Marker Size', 'DISPLAY', markerScaleMulti);
+        
         const hideInactiveQuestToggle = new Toggle(appSettings.hideInactiveQuestMarkers, (val) => { updateSettings({ hideInactiveQuestMarkers: val }); });
         registerControl('hideInactiveQuestMarkers', 'Hide Inactive Quest Markers', 'DISPLAY', hideInactiveQuestToggle);
         

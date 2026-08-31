@@ -200,7 +200,7 @@ body, html {
     display: block;
     width: 0;
     height: 0;
-    transform: scale(var(--marker-scale, 1.0));
+    transform: scale(calc(var(--marker-scale, 1.0) * var(--marker-size-mult, 1.0)));
 }
 
 .marker-container svg {
@@ -218,7 +218,7 @@ body, html {
 .marker-container.is-hovered,
 .marker-container.menu-active {
     z-index: 100 !important;
-    transform: scale(calc(var(--marker-scale, 1.0) * 1.35));
+    transform: scale(calc(var(--marker-scale, 1.0) * var(--marker-size-mult, 1.0) * 1.35));
 }
 
 .force-top {
@@ -293,7 +293,7 @@ body, html {
 
 #player-marker {
     z-index: 50;
-    transform: translate(-50%, -50%) scale(var(--marker-scale, 1.0)) rotate(var(--player-angle, 0deg));
+    transform: translate(-50%, -50%) scale(calc(var(--marker-scale, 1.0) * var(--marker-size-mult, 1.0))) rotate(var(--player-angle, 0deg));
 }
 
 

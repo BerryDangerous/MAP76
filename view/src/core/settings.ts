@@ -1,5 +1,6 @@
 export interface AppSettings {
     uiScale: number;
+    markerSize: number;
     focusMarkerOnSelection: boolean;
     resetViewportOnPanelCollapse: boolean;
     freezeSimulation: boolean;
@@ -15,6 +16,7 @@ export interface AppSettings {
 
 export const defaultSettings: AppSettings = {
     uiScale: 1.0,
+    markerSize: 1.0,
     focusMarkerOnSelection: false,
     resetViewportOnPanelCollapse: false,
     freezeSimulation: true,
@@ -41,6 +43,7 @@ export function updateSettings(newSettings: Partial<AppSettings>) {
 
 function applySettings() {
     document.documentElement.style.setProperty('--ui-scale', appSettings.uiScale.toString());
+    document.documentElement.style.setProperty('--marker-size-mult', appSettings.markerSize.toString());
     
     const questPanel = document.getElementById('quest-list-panel');
     if (questPanel) {
