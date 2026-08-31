@@ -185,10 +185,10 @@ function renderPlayer(player: PlayerData | undefined, worldspaceID: number, boun
     if (!player || !WorldspaceUtils.isSameWorldspace(player.worldspace, worldspaceID)) return;
 
     const pos = MapUtils.gameToMapCoords(player.x, player.y, player.z, bounds, mapState.activeMapConfig!.gutters!);
-    const pImg = document.createElement('img');
+    const pImg = document.createElement('div');
     pImg.id = 'player-marker';
     pImg.className = 'player-marker-vector';
-    pImg.src = AssetManager.getIconUrl(ASSET_ICON_PLAYER_LOCATION);
+    pImg.innerHTML = AssetManager.getIconSvg(ASSET_ICON_PLAYER_LOCATION);
     pImg.style.left = `${pos.x}%`;
     pImg.style.top = `${pos.y}%`;
 
@@ -251,18 +251,16 @@ function renderLocationMarkers(markers: POIMarker[], worldspaceID: number, bound
                          isVassal ? MARKER_ICON_VASSAL_SETTLEMENT :
                          m.type;
 
-        const defaultIconUrl = AssetManager.getLocationIconUrl(iconType, (m.discovered || m.canFastTravel), m.customIcon);
-        container.dataset.defaultIconUrl = defaultIconUrl;
+        const defaultIconSvg = AssetManager.getLocationIconSvg(iconType, (m.discovered || m.canFastTravel), m.customIcon);
+        container.dataset.defaultIconSvg = defaultIconSvg;
 
-        const potentialVassalIconUrl = AssetManager.getLocationIconUrl(MARKER_ICON_POTENTIAL_VASSAL_SETTLEMENT, (m.discovered || m.canFastTravel), m.customIcon);
-        container.dataset.potentialVassalIconUrl = potentialVassalIconUrl;
+        const potentialVassalIconSvg = AssetManager.getLocationIconSvg(MARKER_ICON_POTENTIAL_VASSAL_SETTLEMENT, (m.discovered || m.canFastTravel), m.customIcon);
+        container.dataset.potentialVassalIconSvg = potentialVassalIconSvg;
         container.dataset.isRaiderOutpost = isRaiderOutpost ? 'true' : 'false';
 
-        const img = document.createElement('img');
-        img.src = defaultIconUrl;
+        container.innerHTML = defaultIconSvg;
         container.dataset.canFastTravel = m.canFastTravel.toString();
 
-        container.appendChild(img);
         markerLayer.appendChild(container);
     });
 }
@@ -320,10 +318,8 @@ function renderQuestMarkers(quests: QuestItem[], worldspaceID: number, bounds: G
                     container.dataset.formId = quest.formId.toString();
                 }
 
-                const img = document.createElement('img');
-                img.src = AssetManager.getQuestMarkerIconUrl(target.isDoor, quest.isTracked);
+                container.innerHTML = AssetManager.getQuestMarkerIconSvg(target.isDoor, quest.isTracked);
 
-                container.appendChild(img);
                 questLayer.appendChild(container);
 
                 mapState.animatedElements.push(container);
@@ -366,10 +362,8 @@ function renderCustomMarker(marker: CustomMarker | null | undefined, worldspaceI
     }
     container.classList.add('custom-marker');
 
-    const img = document.createElement('img');
-    img.src = AssetManager.getIconUrl(ASSET_ICON_CUSTOM_MARKER);
+    container.innerHTML = AssetManager.getIconSvg(ASSET_ICON_CUSTOM_MARKER);
 
-    container.appendChild(img);
     questLayer.appendChild(container);
     mapState.animatedElements.push(container);
 }
@@ -411,10 +405,8 @@ function renderPowerArmor(pa: PowerArmorMarker | null | undefined, worldspaceID:
     }
     container.classList.add('power-armor-marker');
 
-    const img = document.createElement('img');
-    img.src = AssetManager.getIconUrl(ASSET_ICON_POWER_ARMOR);
+    container.innerHTML = AssetManager.getIconSvg(ASSET_ICON_POWER_ARMOR);
 
-    container.appendChild(img);
     questLayer.appendChild(container);
     mapState.animatedElements.push(container);
 }
@@ -443,7 +435,7 @@ export function updatePlayerMarker(player: PlayerData | undefined) {
     const config = mapState.activeMapConfig;
     if (!config) return;
 
-    const pImg = document.getElementById('player-marker') as HTMLImageElement;
+    const pImg = document.getElementById('player-marker') as HTMLDivElement;
     if (!WorldspaceUtils.isSameWorldspace(player.worldspace, config.worldspaceID)) {
         if (pImg) pImg.style.display = 'none';
         mapState.player.active = false;

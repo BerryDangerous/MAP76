@@ -56,8 +56,8 @@ export const MapViewport = {
         }
 
         if (activeHoveredMarker) {
-            const img = activeHoveredMarker.querySelector('img');
-            const rect = img ? img.getBoundingClientRect() : activeHoveredMarker.getBoundingClientRect();
+            const svg = activeHoveredMarker.querySelector('svg');
+            const rect = svg ? svg.getBoundingClientRect() : activeHoveredMarker.getBoundingClientRect();
             const container = document.getElementById('global-nametag-container');
             if (container) {
                 container.style.left = `${rect.left + rect.width / 2}px`;
@@ -144,8 +144,8 @@ export const MapViewport = {
         
         mapState.zoom = targetZoom;
 
-        const imgEl = el.querySelector('img');
-        const mRect = imgEl ? imgEl.getBoundingClientRect() : el.getBoundingClientRect();
+        const svgEl = el.querySelector('svg');
+        const mRect = svgEl ? svgEl.getBoundingClientRect() : el.getBoundingClientRect();
         const elementCenterX = mRect.left + (mRect.width / 2);
         const elementCenterY = mRect.top + (mRect.height / 2);
 
@@ -193,8 +193,8 @@ export const MapViewport = {
         }
 
         if (markerEl) {
-            const imgEl = markerEl.querySelector('img');
-            const mRect = imgEl ? imgEl.getBoundingClientRect() : markerEl.getBoundingClientRect();
+            const svgEl = markerEl.querySelector('svg');
+            const mRect = svgEl ? svgEl.getBoundingClientRect() : markerEl.getBoundingClientRect();
             zoomPointX = mRect.left + (mRect.width / 2);
             zoomPointY = mRect.top + (mRect.height / 2);
         }

@@ -640,11 +640,11 @@ export const SearchPanel = {
             subtitleHtml = `<div class="sl-item-subtitle" style="font-size: 0.8em; opacity: 0.8;">${StringUtils.escapeHtml(wsString)}</div>`;
         }
 
-        let iconUrl = '';
+        let iconSvg = '';
         if (result.type === 'powerArmor') {
-            iconUrl = AssetManager.getIconUrl(ASSET_ICON_POWER_ARMOR);
+            iconSvg = AssetManager.getIconSvg(ASSET_ICON_POWER_ARMOR);
         } else if (result.type === 'customMarker') {
-            iconUrl = AssetManager.getIconUrl(ASSET_ICON_CUSTOM_MARKER);
+            iconSvg = AssetManager.getIconSvg(ASSET_ICON_CUSTOM_MARKER);
         } else if (result.type === 'quest') {
             const q = result.originalRef;
             let isDoor = false;
@@ -654,9 +654,9 @@ export const SearchPanel = {
                     isDoor = activeObj.targets[0].isDoor;
                 }
             }
-            iconUrl = AssetManager.getQuestMarkerIconUrl(isDoor, q.isTracked);
+            iconSvg = AssetManager.getQuestMarkerIconSvg(isDoor, q.isTracked);
         } else {
-            iconUrl = AssetManager.getLocationIconUrl(result.iconType || 0, true, result.customIcon);
+            iconSvg = AssetManager.getLocationIconSvg(result.iconType || 0, true, result.customIcon);
         }
 
         const badgesHtml = result.badgesHtml || '';
@@ -664,7 +664,7 @@ export const SearchPanel = {
         return `
           <div class="sl-item ${isSelected ? 'selected' : ''}" data-quest-index="${index}" ${keyAttr} style="min-height: 44px; display: flex; align-items: center;">
              <div class="sl-item-content" style="padding-left: 5px; display: flex; align-items: center; width: 100%;">
-                 <img class="wl-marker-icon" src="${iconUrl}" alt="Icon" style="width: 24px; height: 24px; margin-right: 10px; object-fit: contain;" />
+                 <span class="wl-marker-icon icon-wrapper" style="width: 24px; height: 24px; display: inline-block; margin-right: 10px;">${iconSvg}</span>
                  <div class="wl-text-container" style="display: flex; flex-direction: column; justify-content: center; flex: 1;">
                      <div class="sl-item-title" style="display: flex; align-items: center; gap: 5px; line-height: 1.2;">
                          ${titleHtml}

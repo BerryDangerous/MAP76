@@ -143,8 +143,8 @@ export class LayoutManager {
     ): void {
         if (!panel || !targetMarker) return;
 
-        const imgEl = targetMarker.querySelector('img');
-        const mRect = imgEl ? imgEl.getBoundingClientRect() : targetMarker.getBoundingClientRect();
+        const svgEl = targetMarker.querySelector('svg');
+        const mRect = svgEl ? svgEl.getBoundingClientRect() : targetMarker.getBoundingClientRect();
 
         const markerCenterX = mRect.left + (mRect.width / 2);
         const markerCenterY = mRect.top + (mRect.height / 2);

@@ -16,6 +16,25 @@ export default defineConfig({
           res.setHeader('Content-Type', 'application/json');
           res.end(JSON.stringify(files));
         });
+
+        server.middlewares.use('/dev/svg-list.json', (req, res) => {
+          const assetsDir = path.resolve(__dirname, 'public/assets');
+          const walkSync = (dir: string, filelist: string[] = []) => {
+            const files = fs.readdirSync(dir);
+            for (const file of files) {
+              const filepath = path.join(dir, file);
+              if (fs.statSync(filepath).isDirectory()) {
+                filelist = walkSync(filepath, filelist);
+              } else if (filepath.endsWith('.svg')) {
+                filelist.push(filepath.replace(path.resolve(__dirname, 'public') + path.sep, '').replace(/\\/g, '/'));
+              }
+            }
+            return filelist;
+          };
+          const svgFiles = fs.existsSync(assetsDir) ? walkSync(assetsDir) : [];
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify(svgFiles));
+        });
       }
     }
   ],

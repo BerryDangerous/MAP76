@@ -129,7 +129,6 @@ body, html {
     width: 100vmax;
     height: 100vmax;
     transform-origin: 0 0;
-    will-change: transform;
     cursor: grab;
     pointer-events: auto;
 }
@@ -201,18 +200,15 @@ body, html {
     display: block;
     width: 0;
     height: 0;
-    will-change: transform;
     transform: scale(var(--marker-scale, 1.0));
 }
 
-.marker-container img {
+.marker-container svg {
     position: absolute;
     left: 0;
     top: 0;
     transform: translate(-50%, -50%);
     transform-origin: center center !important;
-    image-rendering: -webkit-optimize-contrast;
-    image-rendering: crisp-edges;
     display: block;
     pointer-events: auto;
     user-select: none;
@@ -233,15 +229,15 @@ body, html {
     z-index: 10;
 }
 
-.marker-container[data-marker-type="location"] img {
+.marker-container[data-marker-type="location"] svg {
     width: 28px;
     height: 28px;
     object-fit: contain;
 }
 
-.quest-marker img,
-.custom-marker img,
-.power-armor-marker img {
+.quest-marker svg,
+.custom-marker svg,
+.power-armor-marker svg {
     width: 28px;
     height: 34px;
     object-fit: contain;
@@ -253,12 +249,12 @@ body, html {
     cursor: pointer;
 }
 
-.quest-marker img {
+.quest-marker svg {
     width: 20px;
     height: 20px;
 }
 
-.power-armor-marker img {
+.power-armor-marker svg {
     width: 20px;
     height: 21px;
 }
@@ -267,16 +263,20 @@ body, html {
     position: absolute;
     width: 32px;
     height: 32px;
-    object-fit: contain;
-    will-change: transform;
 }
 
+.player-marker-vector svg {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
 
-.quest-marker,
-.custom-marker,
-.power-armor-marker,
-#player-marker {
-    will-change: opacity;
+.icon-wrapper svg {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
 }
 
 .power-armor-marker {

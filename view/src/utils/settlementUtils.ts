@@ -78,17 +78,17 @@ export function getWorkshopBadgesHtml(workshop: SettlementDataWithRatings): stri
 
     const ratings = calculateSettlementRatings(workshop);
     if (ratings.overallStatus === -1) {
-        const alertUrl = AssetManager.getIconUrl('workshop-alert');
-        badgesHtml += `<img class="wl-status-badge" src="${alertUrl}" alt="Alert" style="width: 14px; height: 14px; object-fit: contain; margin-left: 4px;"/>`;
+        const alertSvg = AssetManager.getIconSvg('workshop-alert');
+        badgesHtml += `<span class="wl-status-badge icon-wrapper" style="width: 14px; height: 14px; display: inline-block; margin-left: 4px;">${alertSvg}</span>`;
     } else if (ratings.overallStatus === 1) {
-        const increasingUrl = AssetManager.getIconUrl('workshop-increasing');
-        badgesHtml += `<img class="wl-status-badge" src="${increasingUrl}" alt="Increasing" style="width: 14px; height: 14px; object-fit: contain; margin-left: 4px;"/>`;
+        const increasingSvg = AssetManager.getIconSvg('workshop-increasing');
+        badgesHtml += `<span class="wl-status-badge icon-wrapper" style="width: 14px; height: 14px; display: inline-block; margin-left: 4px;">${increasingSvg}</span>`;
     }
 
     if (workshop.raider) {
-        badgesHtml += `<img class="wl-status-badge" src="${AssetManager.getIconUrl('workshop-raider-outpost')}" alt="Raider" style="width: 14px; height: 14px; object-fit: contain; margin-left: 4px;"/>`;
+        badgesHtml += `<span class="wl-status-badge icon-wrapper" style="width: 14px; height: 14px; display: inline-block; margin-left: 4px;">${AssetManager.getIconSvg('workshop-raider-outpost')}</span>`;
     } else if (workshop.vassal) {
-        badgesHtml += `<img class="wl-status-badge" src="${AssetManager.getIconUrl('workshop-vassal-settlement')}" alt="Vassal" style="width: 14px; height: 14px; object-fit: contain; margin-left: 4px;"/>`;
+        badgesHtml += `<span class="wl-status-badge icon-wrapper" style="width: 14px; height: 14px; display: inline-block; margin-left: 4px;">${AssetManager.getIconSvg('workshop-vassal-settlement')}</span>`;
     }
 
     return badgesHtml;

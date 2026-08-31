@@ -73,6 +73,23 @@ export function initMockData(): void {
         }
 
         try {
+            const svgListRes = await fetch('/dev/svg-list.json');
+            if (svgListRes.ok) {
+                const svgFiles = await svgListRes.json();
+                for (const file of svgFiles) {
+                    try {
+                        const res = await fetch(`/${file}`);
+                        if (res.ok) {
+                            mockAssetPayload.assetCache[file] = await res.text();
+                        }
+                    } catch (e) {
+                    }
+                }
+            }
+        } catch (e) {
+        }
+
+        try {
             let overrideFiles: string[] = [];
             try {
                 const listRes = await fetch('/dev/overrides-list.json');

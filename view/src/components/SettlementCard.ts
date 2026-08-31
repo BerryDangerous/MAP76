@@ -157,30 +157,30 @@ export const SettlementCard = {
     },
 
     buildBodyHtml(settlement: SettlementDataWithRatings): string {
-        const foodUrl = AssetManager.getIconUrl('workshop-metric-food');
-        const waterUrl = AssetManager.getIconUrl('workshop-metric-water');
-        const bedsUrl = AssetManager.getIconUrl('workshop-metric-beds');
-        const powerUrl = AssetManager.getIconUrl('workshop-metric-power');
-        const defenseUrl = AssetManager.getIconUrl('workshop-metric-defense');
-        const populationUrl = AssetManager.getIconUrl('workshop-metric-population');
-        const happinessUrl = AssetManager.getIconUrl('workshop-metric-happiness');
+        const foodSvg = AssetManager.getIconSvg('workshop-metric-food');
+        const waterSvg = AssetManager.getIconSvg('workshop-metric-water');
+        const bedsSvg = AssetManager.getIconSvg('workshop-metric-beds');
+        const powerSvg = AssetManager.getIconSvg('workshop-metric-power');
+        const defenseSvg = AssetManager.getIconSvg('workshop-metric-defense');
+        const populationSvg = AssetManager.getIconSvg('workshop-metric-population');
+        const happinessSvg = AssetManager.getIconSvg('workshop-metric-happiness');
 
-        const alertUrl = AssetManager.getIconUrl('workshop-alert');
-        const increasingUrl = AssetManager.getIconUrl('workshop-increasing');
+        const alertSvg = AssetManager.getIconSvg('workshop-alert');
+        const increasingSvg = AssetManager.getIconSvg('workshop-increasing');
 
         const resolvedRatings = calculateSettlementRatings(settlement);
 
-        const renderMetricItem = (iconUrl: string, val: number | string, rating: number) => {
+        const renderMetricItem = (iconSvg: string, val: number | string, rating: number) => {
             let statusIcon = '';
             if (rating < 0) {
-                statusIcon = `<img class="wc-status-badge" src="${alertUrl}" alt="Alert" />`;
+                statusIcon = `<span class="wc-status-badge icon-wrapper">${alertSvg}</span>`;
             } else if (rating > 0) {
-                statusIcon = `<img class="wc-status-badge" src="${increasingUrl}" alt="Increasing" />`;
+                statusIcon = `<span class="wc-status-badge icon-wrapper">${increasingSvg}</span>`;
             }
 
             return `
                 <div class="wc-stat-item">
-                    <img class="wc-stat-icon" src="${iconUrl}" />
+                    <span class="wc-stat-icon icon-wrapper">${iconSvg}</span>
                     <span class="wc-stat-value">${val}</span>
                     ${statusIcon}
                 </div>
@@ -204,13 +204,13 @@ export const SettlementCard = {
                 <div class="fc-section-box wc-stats-box">
                     <div class="fc-section-title">STATS</div>
                     <div class="wc-stats-grid">
-                        ${renderMetricItem(populationUrl, settlement.population, resolvedRatings.population)}
-                        ${renderMetricItem(happinessUrl, `${settlement.happiness}%`, resolvedRatings.happiness)}
-                        ${renderMetricItem(foodUrl, settlement.food, resolvedRatings.food)}
-                        ${renderMetricItem(waterUrl, settlement.water, resolvedRatings.water)}
-                        ${renderMetricItem(powerUrl, settlement.power, resolvedRatings.power)}
-                        ${renderMetricItem(defenseUrl, settlement.defense, resolvedRatings.defense)}
-                        ${renderMetricItem(bedsUrl, settlement.beds, resolvedRatings.beds)}
+                        ${renderMetricItem(populationSvg, settlement.population, resolvedRatings.population)}
+                        ${renderMetricItem(happinessSvg, `${settlement.happiness}%`, resolvedRatings.happiness)}
+                        ${renderMetricItem(foodSvg, settlement.food, resolvedRatings.food)}
+                        ${renderMetricItem(waterSvg, settlement.water, resolvedRatings.water)}
+                        ${renderMetricItem(powerSvg, settlement.power, resolvedRatings.power)}
+                        ${renderMetricItem(defenseSvg, settlement.defense, resolvedRatings.defense)}
+                        ${renderMetricItem(bedsSvg, settlement.beds, resolvedRatings.beds)}
                     </div>
                 </div>
             </div>

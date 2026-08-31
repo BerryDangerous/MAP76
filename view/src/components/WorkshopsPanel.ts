@@ -509,14 +509,14 @@ export const WorkshopList = {
         const marker = mapState.lastPayload?.markers?.find(m => m.formId === workshop.markerFormId);
         const iconType = getWorkshopIconType(workshop, marker);
         const customIcon = marker ? marker.customIcon : undefined;
-        const markerIconUrl = AssetManager.getLocationIconUrl(iconType, true, customIcon);
+        const markerIconSvg = AssetManager.getLocationIconSvg(iconType, true, customIcon);
 
         const badgesHtml = getWorkshopBadgesHtml(workshop);
 
         return `
           <div class="sl-item ${isSelected ? 'selected' : ''}" data-workshop-index="${index}" ${keyAttr} style="min-height: 44px; display: flex; align-items: center;">
              <div class="sl-item-content wl-item-content" style="padding-left: 5px; display: flex; align-items: center; width: 100%;">
-                 <img class="wl-marker-icon" src="${markerIconUrl}" alt="Icon" style="width: 24px; height: 24px; margin-right: 10px; object-fit: contain;" />
+                 <span class="wl-marker-icon icon-wrapper" style="width: 24px; height: 24px; display: inline-block; margin-right: 10px;">${markerIconSvg}</span>
                  <div class="wl-text-container" style="display: flex; flex-direction: column; justify-content: center; flex: 1;">
                      <div class="sl-item-title" style="display: flex; align-items: center; gap: 5px; line-height: 1.2;">
                          ${StringUtils.escapeHtml(workshop.name)}

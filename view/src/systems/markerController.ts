@@ -173,10 +173,10 @@ export const MarkerInteractionManager = {
 
             const container = document.getElementById('global-nametag-container');
             const globalTag = document.getElementById('global-nametag');
-            const img = target.querySelector('img');
+            const svg = target.querySelector('svg');
             
             if (container && globalTag && target.dataset.displayName) {
-                const rect = img ? img.getBoundingClientRect() : target.getBoundingClientRect();
+                const rect = svg ? svg.getBoundingClientRect() : target.getBoundingClientRect();
                 container.style.left = `${rect.left + rect.width / 2}px`;
                 container.style.top = `${rect.bottom}px`;
                 
@@ -196,9 +196,8 @@ export const MarkerInteractionManager = {
                         const markerEl = el as HTMLElement;
                         const mFormId = markerEl.dataset.formId ? parseInt(markerEl.dataset.formId) : null;
                         if (mFormId && potentialVassalIds.has(mFormId)) {
-                            const img = markerEl.querySelector('img');
-                            if (img && markerEl.dataset.potentialVassalIconUrl) {
-                                img.src = markerEl.dataset.potentialVassalIconUrl;
+                            if (markerEl.dataset.potentialVassalIconSvg) {
+                                markerEl.innerHTML = markerEl.dataset.potentialVassalIconSvg;
                                 markerEl.classList.add('is-potential-vassal');
                             }
                         }
@@ -217,9 +216,8 @@ export const MarkerInteractionManager = {
             if (target.dataset.isRaiderOutpost === 'true') {
                 document.querySelectorAll('.marker-container.is-potential-vassal').forEach(el => {
                     const markerEl = el as HTMLElement;
-                    const img = markerEl.querySelector('img');
-                    if (img && markerEl.dataset.defaultIconUrl) {
-                        img.src = markerEl.dataset.defaultIconUrl;
+                    if (markerEl.dataset.defaultIconSvg) {
+                        markerEl.innerHTML = markerEl.dataset.defaultIconSvg;
                     }
                     markerEl.classList.remove('is-potential-vassal');
                 });

@@ -125,5 +125,20 @@ export const AssetManager = {
     
     getIconUrl(iconName: string): string {
         return `assets/icons/${iconName}.svg`;
+    },
+
+    getLocationIconSvg(engineType: number, discovered?: boolean, customIcon?: string): string {
+        const url = this.getLocationIconUrl(engineType, discovered, customIcon);
+        return this.assetCache[url] || '';
+    },
+
+    getQuestMarkerIconSvg(isDoor: boolean, isActive: boolean): string {
+        const url = this.getQuestMarkerIconUrl(isDoor, isActive);
+        return this.assetCache[url] || '';
+    },
+
+    getIconSvg(iconName: string): string {
+        const url = this.getIconUrl(iconName);
+        return this.assetCache[url] || '';
     }
 };
