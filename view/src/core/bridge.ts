@@ -49,7 +49,6 @@ export const EngineBridge = {
         if (typeof window.toggleQuestActive === 'function') {
             const payload = JSON.stringify({ formId });
             window.toggleQuestActive(payload);
-            if (window.requestFreshMapData) window.requestFreshMapData("");
         } else {
             console.warn(`[Bridge] toggleQuestActive not bound by engine for FormID: ${formId}`);
         }
@@ -58,7 +57,6 @@ export const EngineBridge = {
         if (typeof window.makeOnlyQuestActive === 'function') {
             const payload = JSON.stringify({ formId });
             window.makeOnlyQuestActive(payload);
-            if (window.requestFreshMapData) window.requestFreshMapData("");
         } else {
             console.warn(`[Bridge] makeOnlyQuestActive not bound by engine for FormID: ${formId}`);
         }
