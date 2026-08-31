@@ -166,6 +166,8 @@ export const MarkerInteractionManager = {
         layerContainer.addEventListener('mouseover', (e: MouseEvent) => {
             const target = (e.target as HTMLElement).closest('.marker-container') as HTMLElement;
             if (!target || target.id === 'player-marker') return;
+            
+            if (target === activeHoveredMarker) return;
 
             EngineBridge.emitSound('UIPipBoyMapRollover');
             activeHoveredMarker = target;
