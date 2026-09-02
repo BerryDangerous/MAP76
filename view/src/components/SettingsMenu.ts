@@ -435,7 +435,16 @@ export const SettingsMenu = {
 
     reloadLocales() {
         const wasOpen = this.isOpen;
-        if (wasOpen) this.forceClose();
+        let focusedControlKey: string | null = null;
+
+        if (wasOpen) {
+            const activeEl = document.activeElement;
+            const focusedControl = this.controls.find(c => c.row.getElement().contains(activeEl));
+            if (focusedControl) {
+                focusedControlKey = focusedControl.key as string;
+            }
+            this.forceClose();
+        }
         
         if (this.container) {
             this.container.remove();
@@ -449,7 +458,15 @@ export const SettingsMenu = {
         this.tabsContainer = null;
         this.listContainer = null;
         
-        if (wasOpen) this.open();
+        if (wasOpen) {
+            this.open();
+            if (focusedControlKey) {
+                const newControl = this.controls.find(c => c.key === focusedControlKey);
+                if (newControl) {
+                    newControl.row.getElement().focus();
+                }
+            }
+        }
     }
 };
 

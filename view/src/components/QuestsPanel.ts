@@ -517,11 +517,6 @@ export const QuestList = {
             }
         }
 
-        const subHeader = container.querySelector('.tb-sub-header') as HTMLElement;
-        if (subHeader) {
-            subHeader.style.display = isCollapsed ? 'none' : 'flex';
-        }
-
         if (collapsiblePanel) {
             collapsiblePanel.updateGlyph();
         }
