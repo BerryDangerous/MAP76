@@ -30,7 +30,6 @@ namespace MAP76::Hooks
                 if (!UI::IsPlayerInMenuMode())
                 {
                     UI::ToggleMAP76();
-                    UI::State::g_mapInputFocused.store(UI::State::g_mapIsOpen.load());
                     return 0;
                 }
             }

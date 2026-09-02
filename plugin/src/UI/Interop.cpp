@@ -401,6 +401,7 @@ namespace MAP76::UI
 
             State::g_api->Hide(State::g_view);
             State::g_mapIsOpen.store(false);
+            State::g_mapInputFocused.store(false);
 
             Hooks::SetupWindowHook();
         }
@@ -517,6 +518,7 @@ namespace MAP76::UI
             }
             State::g_api->Show(State::g_view);
             State::g_api->Focus(State::g_view, true);
+            State::g_mapInputFocused.store(true);
             State::g_api->Invoke(State::g_view, "if (window.onMapOpened) { window.onMapOpened(); } if (window.resetUIState) { window.resetUIState(); } if (window.requestFreshMapData) { window.requestFreshMapData(''); }");
         }
         else
@@ -528,6 +530,7 @@ namespace MAP76::UI
             }
             State::g_api->Invoke(State::g_view, "if (window.onMapClosed) { window.onMapClosed(); } if (window.resetUIState) { window.resetUIState(); }");
             State::g_api->Unfocus(State::g_view);
+            State::g_mapInputFocused.store(false);
             State::g_api->Hide(State::g_view);
         }
     }
