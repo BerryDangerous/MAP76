@@ -1,7 +1,6 @@
 #include "PCH.h"
 #include "Hooks/WindowProc.h"
 #include "UI/Interop.h"
-#include "UI/Settings.h"
 #include "Constants.h"
 
 namespace MAP76::Hooks
@@ -10,16 +9,22 @@ namespace MAP76::Hooks
     {
         WNDPROC originalProc = g_oldWndProc;
 
-        if (uMsg == WM_ACTIVATEAPP && UI::State::g_mapIsOpen.load())
+        if (uMsg == WM_ACTIVATEAPP && UI::State::g_mapIsOpen.load() && UI::State::g_api && UI::State::g_view)
         {
-            if (auto *mainLoop = RE::Main::GetSingleton())
+            if (!wParam)
             {
-                mainLoop->freezeTime = wParam ? UI::Settings::freezeSimulation : false;
+                if (UI::State::g_mapInputFocused.exchange(false))
+                {
+                    UI::State::g_api->Unfocus(UI::State::g_view);
+                }
             }
-
-            if (!wParam && UI::State::g_api && UI::State::g_view && UI::State::g_mapInputFocused.exchange(false))
+            else if (GetForegroundWindow() == hWnd && !UI::IsPlayerInMenuMode())
             {
-                UI::State::g_api->Unfocus(UI::State::g_view);
+                bool expected = false;
+                if (UI::State::g_mapInputFocused.compare_exchange_strong(expected, true))
+                {
+                    UI::State::g_api->Focus(UI::State::g_view, true);
+                }
             }
         }
 

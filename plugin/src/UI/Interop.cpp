@@ -69,13 +69,15 @@ namespace MAP76::UI
             }
 
             if (g_backgroundActivityState.alwaysActive &&
-                g_backgroundActivityState.alwaysActive->GetType() == RE::Setting::SETTING_TYPE::kBinary)
+                g_backgroundActivityState.alwaysActive->GetType() == RE::Setting::SETTING_TYPE::kBinary &&
+                g_backgroundActivityState.alwaysActive->GetBinary())
             {
                 g_backgroundActivityState.alwaysActive->SetBinary(g_backgroundActivityState.alwaysActiveValue);
             }
 
             if (g_backgroundActivityState.pauseOnAltTab &&
-                g_backgroundActivityState.pauseOnAltTab->GetType() == RE::Setting::SETTING_TYPE::kBinary)
+                g_backgroundActivityState.pauseOnAltTab->GetType() == RE::Setting::SETTING_TYPE::kBinary &&
+                !g_backgroundActivityState.pauseOnAltTab->GetBinary())
             {
                 g_backgroundActivityState.pauseOnAltTab->SetBinary(g_backgroundActivityState.pauseOnAltTabValue);
             }
