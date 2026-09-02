@@ -9,6 +9,7 @@ import { QuestUtils } from '@/utils/questUtils.js';
 import { SearchUtils } from '@/utils/searchUtils.js';
 import { getWorkshopIconType, getWorkshopBadgesHtml, getWorkshopSubtitle } from '@/utils/settlementUtils.js';
 import { WorldspaceUtils } from '@/utils/worldspaceUtils.js';
+import { t } from '@/core/i18n.js';
 
 export const SearchEngine = {
     search(query: string): SearchResult[] {
@@ -44,7 +45,7 @@ export const SearchEngine = {
                 const titleMatch = SearchUtils.fuzzyMatch(query, m.name);
                 
                 const wsName = WorldspaceUtils.getWorldspaceName(m.worldspace);
-                const subtitle = wsName ? `Location - ${wsName}` : 'Location';
+                const subtitle = wsName ? `${t('search.resultType.location')} - ${wsName}` : t('search.resultType.location');
                 
                 const subtitleMatch = SearchUtils.fuzzyMatch(query, subtitle);
                 
@@ -123,7 +124,7 @@ export const SearchEngine = {
                 }
 
                 const isCompleted = QuestUtils.isQuestCompleted(q);
-                const subtitle = isCompleted ? 'Quest (Completed)' : 'Quest';
+                const subtitle = isCompleted ? t('quests.type.completed') : t(`quests.type.${q.type || 'side'}`);
                 
                 const typeMatch = SearchUtils.fuzzyMatch(query, subtitle);
                 if (typeMatch && typeMatch.score > maxScore) {
@@ -177,9 +178,9 @@ export const SearchEngine = {
         if (payload.power_armor) {
             const p = payload.power_armor;
             const wsName = WorldspaceUtils.getWorldspaceName(p.worldspace);
-            const subtitle = wsName ? `Power Armor - ${wsName}` : 'Power Armor';
+            const subtitle = wsName ? `${t('search.resultType.powerArmor')} - ${wsName}` : t('search.resultType.powerArmor');
             
-            const titleMatch = SearchUtils.fuzzyMatch(query, "Power Armor");
+            const titleMatch = SearchUtils.fuzzyMatch(query, t('search.resultType.powerArmor'));
             const subtitleMatch = SearchUtils.fuzzyMatch(query, subtitle);
             
             if (titleMatch || subtitleMatch) {
@@ -187,7 +188,7 @@ export const SearchEngine = {
                 addResult({
                     id: 'power_armor',
                     type: 'powerArmor',
-                    title: 'Power Armor',
+                    title: t('search.resultType.powerArmor'),
                     titleMatchIndices: titleMatch ? titleMatch.indices : [],
                     subtitle: subtitle,
                     subtitleMatchIndices: subtitleMatch ? subtitleMatch.indices : [],
@@ -201,9 +202,9 @@ export const SearchEngine = {
         if (payload.custom_marker) {
             const m = payload.custom_marker;
             const wsName = WorldspaceUtils.getWorldspaceName(m.worldspace);
-            const subtitle = wsName ? `Custom Marker - ${wsName}` : 'Custom Marker';
+            const subtitle = wsName ? `${t('search.resultType.customMarker')} - ${wsName}` : t('search.resultType.customMarker');
             
-            const titleMatch = SearchUtils.fuzzyMatch(query, "Custom Marker");
+            const titleMatch = SearchUtils.fuzzyMatch(query, t('search.resultType.customMarker'));
             const subtitleMatch = SearchUtils.fuzzyMatch(query, subtitle);
             
             if (titleMatch || subtitleMatch) {
@@ -211,7 +212,7 @@ export const SearchEngine = {
                 addResult({
                     id: 'custom_marker',
                     type: 'customMarker',
-                    title: 'Custom Marker',
+                    title: t('search.resultType.customMarker'),
                     titleMatchIndices: titleMatch ? titleMatch.indices : [],
                     subtitle: subtitle,
                     subtitleMatchIndices: subtitleMatch ? subtitleMatch.indices : [],

@@ -12,6 +12,7 @@ export interface AppSettings {
     writePayloadToFile: boolean;
     showWorkshopInfoLog: boolean;
     preferredMapConfigs: Record<string, string>;
+    language: string;
 }
 
 export const defaultSettings: AppSettings = {
@@ -28,6 +29,7 @@ export const defaultSettings: AppSettings = {
     writePayloadToFile: false,
     showWorkshopInfoLog: false,
     preferredMapConfigs: {},
+    language: "",
 };
 
 export function getDefaultSettings(): AppSettings {

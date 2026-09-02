@@ -15,6 +15,8 @@ import { MultiChoice } from '@/components/ui/SettingsMultiChoice.js';
 import { SettingsRow, SettingsControl } from '@/components/ui/SettingsRow.js';
 import { Slider } from '@/components/ui/SettingsSlider.js';
 import { Toggle } from '@/components/ui/SettingsToggle.js';
+import { t, changeLanguage } from '@/core/i18n.js';
+import { getAvailableLanguages } from '@/utils/localeUtils.js';
 
 export const SETTINGS_TABS = ['DISPLAY', 'GAMEPLAY', 'MAPS', 'DEBUG'] as const;
 export type SettingsTab = (typeof SETTINGS_TABS)[number];
@@ -95,44 +97,51 @@ export const SettingsMenu = {
         for (let i = 50; i <= 200; i += 10) {
             uiScaleOptions.push({ label: `${i}%`, value: i / 100 });
         }
+        const langOptions = getAvailableLanguages();
+        const langMulti = new MultiChoice(langOptions, appSettings.language || 'en', (val) => { 
+            updateSettings({ language: val }); 
+            changeLanguage(val);
+        });
+        registerControl('language', t('settings.labels.language'), 'DISPLAY', langMulti);
+
         const scaleMulti = new MultiChoice(uiScaleOptions, appSettings.uiScale, (val) => { updateSettings({ uiScale: val }); });
-        registerControl('uiScale', 'Interface Scale', 'DISPLAY', scaleMulti);
+        registerControl('uiScale', t('settings.labels.uiScale'), 'DISPLAY', scaleMulti);
         
         const markerScaleMulti = new MultiChoice(uiScaleOptions, appSettings.markerSize, (val) => { updateSettings({ markerSize: val }); });
-        registerControl('markerSize', 'Map Marker Size', 'DISPLAY', markerScaleMulti);
+        registerControl('markerSize', t('settings.labels.markerSize'), 'DISPLAY', markerScaleMulti);
         
         const hideInactiveQuestToggle = new Toggle(appSettings.hideInactiveQuestMarkers, (val) => { updateSettings({ hideInactiveQuestMarkers: val }); });
-        registerControl('hideInactiveQuestMarkers', 'Hide Inactive Quest Markers', 'DISPLAY', hideInactiveQuestToggle);
+        registerControl('hideInactiveQuestMarkers', t('settings.labels.hideInactiveQuestMarkers'), 'DISPLAY', hideInactiveQuestToggle);
         
         const focusToggle = new Toggle(appSettings.focusMarkerOnSelection, (val) => { updateSettings({ focusMarkerOnSelection: val }); });
-        registerControl('focusMarkerOnSelection', 'Auto-Center Markers on List Selection', 'DISPLAY', focusToggle);
+        registerControl('focusMarkerOnSelection', t('settings.labels.focusMarkerOnSelection'), 'DISPLAY', focusToggle);
 
         const resetViewportToggle = new Toggle(appSettings.resetViewportOnPanelCollapse, (val) => { updateSettings({ resetViewportOnPanelCollapse: val }); });
-        registerControl('resetViewportOnPanelCollapse', 'Restore Map Position When Panel is Closed', 'DISPLAY', resetViewportToggle);
+        registerControl('resetViewportOnPanelCollapse', t('settings.labels.resetViewportOnPanelCollapse'), 'DISPLAY', resetViewportToggle);
 
         const limitQuestToggle = new Toggle(appSettings.limitQuestPanelHeight, (val) => { updateSettings({ limitQuestPanelHeight: val }); });
-        registerControl('limitQuestPanelHeight', 'Limit Quest Panel Height', 'DISPLAY', limitQuestToggle);
+        registerControl('limitQuestPanelHeight', t('settings.labels.limitQuestPanelHeight'), 'DISPLAY', limitQuestToggle);
 
         const altSoundToggle = new Toggle(appSettings.alternativeMapSound, (val) => { updateSettings({ alternativeMapSound: val }); });
-        registerControl('alternativeMapSound', 'Alternative Map Change Sound', 'DISPLAY', altSoundToggle);
+        registerControl('alternativeMapSound', t('settings.labels.alternativeMapSound'), 'DISPLAY', altSoundToggle);
 
         const dummySlider = new Slider(50, 0, 100, 1, () => { /* dummy */ });
-        registerControl('dummySlider' as any, 'Dummy Slider', 'DISPLAY', dummySlider);
+        registerControl('dummySlider' as any, t('settings.labels.dummySlider'), 'DISPLAY', dummySlider);
 
         const freezeToggle = new Toggle(appSettings.freezeSimulation, (val) => { updateSettings({ freezeSimulation: val }); });
-        registerControl('freezeSimulation', 'Pause Game While in Map', 'GAMEPLAY', freezeToggle);
+        registerControl('freezeSimulation', t('settings.labels.freezeSimulation'), 'GAMEPLAY', freezeToggle);
 
         const ftToggle = new Toggle(appSettings.confirmFastTravel, (val) => { updateSettings({ confirmFastTravel: val }); });
-        registerControl('confirmFastTravel', 'Fast Travel Confirmation', 'GAMEPLAY', ftToggle);
+        registerControl('confirmFastTravel', t('settings.labels.confirmFastTravel'), 'GAMEPLAY', ftToggle);
 
         const skipSurvivalToggle = new Toggle(appSettings.skipSurvivalFastTravelCheck, (val) => { updateSettings({ skipSurvivalFastTravelCheck: val }); });
-        registerControl('skipSurvivalFastTravelCheck', 'Skip Survival Fast Travel Check', 'GAMEPLAY', skipSurvivalToggle);
+        registerControl('skipSurvivalFastTravelCheck', t('settings.labels.skipSurvivalFastTravelCheck'), 'GAMEPLAY', skipSurvivalToggle);
 
         const writePayloadToggle = new Toggle(appSettings.writePayloadToFile, (val) => { updateSettings({ writePayloadToFile: val }); });
-        registerControl('writePayloadToFile', 'Write Payload to File', 'DEBUG', writePayloadToggle);
+        registerControl('writePayloadToFile', t('settings.labels.writePayloadToFile'), 'DEBUG', writePayloadToggle);
 
         const showWorkshopLogToggle = new Toggle(appSettings.showWorkshopInfoLog, (val) => { updateSettings({ showWorkshopInfoLog: val }); });
-        registerControl('showWorkshopInfoLog', 'Show Workshop Info Log', 'DEBUG', showWorkshopLogToggle);
+        registerControl('showWorkshopInfoLog', t('settings.labels.showWorkshopInfoLog'), 'DEBUG', showWorkshopLogToggle);
 
         this.buildTabs();
 
@@ -190,7 +199,7 @@ export const SettingsMenu = {
         tabs.forEach(tabName => {
             const tabEl = document.createElement('div');
             tabEl.className = 'settings-tab';
-            tabEl.textContent = tabName;
+            tabEl.textContent = t(`settings.tabs.${tabName}`);
             tabEl.tabIndex = 0;
             
             if (tabName === this.activeTab) {
@@ -236,9 +245,11 @@ export const SettingsMenu = {
         if (this.activeTab === tab) return;
         this.activeTab = tab;
         
+        const tabs: SettingsTab[] = [...SETTINGS_TABS];
+        
         if (this.tabsContainer) {
-            Array.from(this.tabsContainer.children).forEach(child => {
-                if (child.textContent === tab) {
+            Array.from(this.tabsContainer.children).forEach((child, index) => {
+                if (tabs[index] === tab) {
                     child.classList.add('active');
                 } else {
                     child.classList.remove('active');
@@ -280,7 +291,7 @@ export const SettingsMenu = {
     createMapChoiceControl(wsId: number, ws: any, configs: MapConfig[]) {
         if (configs.length === 0) {
             return new MultiChoice<string>(
-                [{ label: 'NO TEXTURE', value: 'NONE' }],
+                [{ label: t('settings.options.none'), value: 'NONE' }],
                 'NONE',
                 () => {}
             );
@@ -312,7 +323,7 @@ export const SettingsMenu = {
 
     buildMapControlEntry(wsId: number, ws: any, configs: MapConfig[]) {
         const control = this.createMapChoiceControl(wsId, ws, configs);
-        const label = `${ws.fullName || ws.editorID} Map Style`;
+        const label = t('settings.labels.mapStyle', { name: ws.fullName || ws.editorID });
 
         const row = new SettingsRow(label, control);
         this.attachRowNavigation(row.getElement());
@@ -420,5 +431,28 @@ export const SettingsMenu = {
                 c.updateUI(val);
             }
         });
+    },
+
+    reloadLocales() {
+        const wasOpen = this.isOpen;
+        if (wasOpen) this.forceClose();
+        
+        if (this.container) {
+            this.container.remove();
+            this.container = null;
+        }
+        if (this.backdrop) {
+            this.backdrop.remove();
+            this.backdrop = null;
+        }
+        this.controls = [];
+        this.tabsContainer = null;
+        this.listContainer = null;
+        
+        if (wasOpen) this.open();
     }
 };
+
+window.addEventListener('languageChanged', () => {
+    SettingsMenu.reloadLocales();
+});

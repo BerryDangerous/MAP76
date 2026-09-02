@@ -10,6 +10,7 @@ import { MapViewport } from '@/systems/viewport.js';
 
 import { calculateSettlementRatings, SettlementDataWithRatings } from '@/utils/settlementUtils.js';
 import { WorldspaceUtils } from '@/utils/worldspaceUtils.js';
+import { t } from '@/core/i18n.js';
 
 import { ActionButtonConfig } from '@/components/ui/ButtonGroup.js';
 import { FloatingCard } from '@/components/ui/FloatingCard.js';
@@ -29,7 +30,7 @@ export const SettlementCard = {
                 const controls: import('../systems/focusManager.js').ControlActionDef[] = ['NAV_BACK', 'PAN_MOUSE'];
                 if (SettlementCard.activeAnchorMarker === null && SettlementCard.activeSettlement) {
                     if (SettlementCard.activeSettlement.worldspace !== undefined && WorldspaceUtils.isSameWorldspace(SettlementCard.activeSettlement.worldspace, mapState.activeMapConfig.worldspaceID)) {
-                        controls.push({ action: 'CENTER_ITEM', label: 'CENTER MARKER' });
+                        controls.push({ action: 'CENTER_ITEM', label: t('markers.controls.centerMarker') });
                     }
                 }
                 return controls;
@@ -193,7 +194,7 @@ export const SettlementCard = {
             locationSectionHtml = `
             <div class="fc-section">
                 <div class="fc-section-box">
-                    <div class="fc-section-title">LOCATION</div>
+                    <div class="fc-section-title">${t('settlements.card.location')}</div>
                     <div class="fc-section-text">${wsFullName}</div>
                 </div>
             </div>`;
@@ -202,7 +203,7 @@ export const SettlementCard = {
         return `
             <div class="fc-section">
                 <div class="fc-section-box wc-stats-box">
-                    <div class="fc-section-title">STATS</div>
+                    <div class="fc-section-title">${t('settlements.card.stats')}</div>
                     <div class="wc-stats-grid">
                         ${renderMetricItem(populationSvg, settlement.population, resolvedRatings.population)}
                         ${renderMetricItem(happinessSvg, `${settlement.happiness}%`, resolvedRatings.happiness)}
@@ -223,7 +224,7 @@ export const SettlementCard = {
             return [
                 {
                     id: 'fastTravel',
-                    label: 'FAST TRAVEL',
+                    label: t('markers.controls.fastTravel'),
                     action: () => {
                         if (this.activeMarkerFormId !== null) {
                             MarkerInteractionManager.initiateFastTravel(this.activeMarkerFormId, settlement.name);
@@ -235,7 +236,7 @@ export const SettlementCard = {
             return [
                 {
                     id: 'undiscovered',
-                    label: 'UNDISCOVERED',
+                    label: t('markers.controls.undiscovered'),
                     action: () => {}
                 }
             ];
@@ -257,3 +258,15 @@ export function renderSettlementCardContent(
 ): void {
     SettlementCard.open(settlement, markerFormId, canFastTravel, markerEl, referencePanel, dockCorner, takeFocus, returnFocusId, onNavBack);
 }
+
+window.addEventListener('languageChanged', () => {
+    if (SettlementCard.isOpen() && SettlementCard.activeSettlement && SettlementCard.activeMarkerFormId !== null) {
+        SettlementCard.open(
+            SettlementCard.activeSettlement,
+            SettlementCard.activeMarkerFormId,
+            SettlementCard.canFastTravel,
+            SettlementCard.activeAnchorMarker || undefined,
+            undefined, undefined, false
+        );
+    }
+});

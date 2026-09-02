@@ -2,6 +2,7 @@ import { setCustomMarker, removeCustomMarker } from '@/core/bridge.js';
 
 import { FocusManager } from '@/systems/focusManager.js';
 import { MapViewport } from '@/systems/viewport.js';
+import { t } from '@/core/i18n.js';
 
 import { ActionButtonConfig } from '@/components/ui/ButtonGroup.js';
 import { FloatingCard } from '@/components/ui/FloatingCard.js';
@@ -20,7 +21,7 @@ export const CustomMarkerCard = {
             getAvailableControls: () => {
                 const controls: import('../systems/focusManager.js').ControlActionDef[] = ['NAV_BACK', 'PAN_MOUSE'];
                 if (CustomMarkerCard.activeAnchorMarker === null && (CustomMarkerCard.activeGameCoords || CustomMarkerCard.activeCoords)) {
-                    controls.push({ action: 'CENTER_ITEM', label: 'CENTER MARKER' });
+                    controls.push({ action: 'CENTER_ITEM', label: t('markers.controls.centerMarker') });
                 }
                 return controls;
             },
@@ -62,11 +63,11 @@ export const CustomMarkerCard = {
         const isClickingExisting = Boolean(this.activeAnchorMarker);
         const hasExistingMarker = Boolean(document.querySelector('.custom-marker'));
 
-        let title = 'Place a marker?';
+        let title = t('markers.customMarker.placePrompt');
         if (isClickingExisting) {
-            title = 'Remove your current marker?';
+            title = t('markers.customMarker.removePrompt');
         } else if (hasExistingMarker) {
-            title = 'Move your current marker or remove it?';
+            title = t('markers.customMarker.movePrompt');
         }
 
         if (this.activeAnchorMarker) {
@@ -101,7 +102,7 @@ export const CustomMarkerCard = {
         if (!isClickingExisting) {
             buttons.push({
                 id: 'placeMarker',
-                label: hasExistingMarker ? 'MOVE MARKER' : 'PLACE MARKER',
+                label: hasExistingMarker ? t('markers.customMarker.moveMarker') : t('markers.customMarker.placeMarker'),
                 action: () => {
                     if (this.activeGameCoords) {
                         setCustomMarker(this.activeGameCoords.x, this.activeGameCoords.y, this.activeWorldspaceId);
@@ -114,7 +115,7 @@ export const CustomMarkerCard = {
         if (isClickingExisting || hasExistingMarker) {
             buttons.push({
                 id: 'removeMarker',
-                label: 'REMOVE MARKER',
+                label: t('markers.customMarker.removeMarker'),
                 action: () => {
                     removeCustomMarker();
                     this.close();
@@ -124,7 +125,7 @@ export const CustomMarkerCard = {
 
         buttons.push({
             id: 'cancel',
-            label: 'CANCEL',
+            label: t('markers.customMarker.cancel'),
             action: () => {
                 this.close();
             }
@@ -158,3 +159,14 @@ export const CustomMarkerCard = {
         return customMarkerCardInstance ? customMarkerCardInstance.isOpen() : false;
     }
 };
+
+window.addEventListener('languageChanged', () => {
+    if (CustomMarkerCard.isOpen()) {
+        CustomMarkerCard.open({
+            anchorMarker: CustomMarkerCard.activeAnchorMarker,
+            gameCoords: CustomMarkerCard.activeGameCoords,
+            pageCoords: CustomMarkerCard.activeCoords,
+            worldspaceId: CustomMarkerCard.activeWorldspaceId
+        });
+    }
+});

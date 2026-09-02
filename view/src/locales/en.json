@@ -1,0 +1,205 @@
+{
+  "settings": {
+    "languageName": "English",
+    "tabs": {
+      "DISPLAY": "DISPLAY",
+      "GAMEPLAY": "GAMEPLAY",
+      "MAPS": "MAPS",
+      "DEBUG": "DEBUG"
+    },
+    "labels": {
+      "uiScale": "Interface Scale",
+      "markerSize": "Map Marker Size",
+      "hideInactiveQuestMarkers": "Hide Inactive Quest Markers",
+      "focusMarkerOnSelection": "Auto-Center Markers on List Selection",
+      "resetViewportOnPanelCollapse": "Restore Map Position When Panel is Closed",
+      "limitQuestPanelHeight": "Limit Quest Panel Height",
+      "alternativeMapSound": "Alternative Map Change Sound",
+      "dummySlider": "Dummy Slider",
+      "freezeSimulation": "Pause Game While in Map",
+      "confirmFastTravel": "Fast Travel Confirmation",
+      "skipSurvivalFastTravelCheck": "Skip Survival Fast Travel Check",
+      "writePayloadToFile": "Write Payload to File",
+      "showWorkshopInfoLog": "Show Workshop Info Log",
+      "mapStyle": "{{name}} Map Style",
+      "language": "Language"
+    },
+    "options": {
+      "none": "NONE"
+    }
+  },
+  "controls": {
+    "actions": {
+      "up": "MOVE",
+      "down": "MOVE",
+      "left": "MOVE",
+      "right": "MOVE",
+      "back": "BACK",
+      "prevTab": "PREV TAB",
+      "nextTab": "NEXT TAB",
+      "select": "SELECT",
+      "collapse": "COLLAPSE",
+      "expand": "EXPAND",
+      "close": "CLOSE",
+      "placeMarker": "PLACE MARKER",
+      "zoomIn": "ZOOM IN",
+      "zoomOut": "ZOOM OUT",
+      "move": "PAN MAP",
+      "centerPlayer": "CENTER MAP",
+      "centerObjective": "CENTER OBJECTIVE",
+      "settings": "OPEN SETTINGS",
+      "defaults": "RESET",
+      "toggleActive": "TOGGLE ACTIVE",
+      "supplyLines": "SUPPLY LINES",
+      "prevWorld": "PREV MAP",
+      "nextWorld": "NEXT MAP",
+      "sort": "SORT",
+      "yes": "YES",
+      "no": "NO",
+      "ok": "OK",
+      "on": "ON",
+      "off": "OFF"
+    },
+    "keys": {
+      "space": "SPACE",
+      "tab": "TAB",
+      "enter": "ENTER",
+      "up": "UP",
+      "down": "DOWN",
+      "left": "LEFT",
+      "right": "RIGHT",
+      "shift": "SHIFT"
+    },
+    "collapse": "COLLAPSE",
+    "expand": "EXPAND"
+  },
+  "quests": {
+    "title": "QUESTS",
+    "tabs": {
+      "all": "ALL",
+      "main": "MAIN",
+      "side": "SIDE",
+      "misc": "MISC"
+    },
+    "type": {
+      "Main": "Main Quest",
+      "Side": "Side Quest",
+      "Misc": "Misc Quest",
+      "Event": "Event",
+      "Daily": "Daily Quest",
+      "Unknown": "Quest",
+      "completed": "Quest (Completed)"
+    },
+    "emptyActive": {
+      "all": "NO ACTIVE QUESTS",
+      "main": "NO ACTIVE MAIN QUESTS",
+      "side": "NO ACTIVE SIDE QUESTS",
+      "misc": "NO ACTIVE MISC QUESTS"
+    },
+    "empty": {
+      "all": "NO QUESTS",
+      "main": "NO MAIN QUESTS",
+      "side": "NO SIDE QUESTS",
+      "misc": "NO MISC QUESTS"
+    },
+    "sortMode": {
+      "recent": "RECENT",
+      "alphabetical": "A-Z",
+      "active": "ACTIVE"
+    },
+    "controls": {
+      "toggleActive": "TOGGLE ACTIVE",
+      "makeOnlyActive": "MAKE ONLY THIS ACTIVE",
+      "centerObjective": "CENTER OBJECTIVE"
+    },
+    "card": {
+      "journal": "JOURNAL",
+      "objectives": "OBJECTIVES"
+    }
+  },
+  "workshops": {
+    "title": "SETTLEMENTS",
+    "tabs": {
+      "all": "ALL",
+      "owned": "OWNED",
+      "unowned": "UNOWNED"
+    },
+    "empty": "NO {{tab}}SETTLEMENTS",
+    "stats": {
+      "happiness": "HAPPINESS",
+      "population": "POPULATION",
+      "food": "FOOD",
+      "water": "WATER",
+      "power": "POWER",
+      "defense": "DEFENSE",
+      "beds": "BEDS"
+    },
+    "subtitle": {
+      "raider": "Raider Outpost",
+      "vassal": "Vassal Settlement",
+      "vr": "VR Workshop",
+      "default": "Settlement"
+    },
+    "sortMode": {
+      "attention": "ATTENTION",
+      "alphabetical": "A-Z",
+      "happiness": "HAPPINESS",
+      "population": "POPULATION"
+    }
+  },
+  "search": {
+    "title": "SEARCH",
+    "placeholder": "ENTER SEARCH QUERY...",
+    "clear": "CLEAR",
+    "noResults": "NO RESULTS FOUND",
+    "empty": "NO SEARCH HISTORY",
+    "tabs": {
+      "markers": "MARKERS",
+      "quests": "QUESTS",
+      "workshops": "WORKSHOPS"
+    },
+    "resultType": {
+      "location": "Location",
+      "powerArmor": "Power Armor",
+      "customMarker": "Custom Marker"
+    }
+  },
+  "fastTravel": {
+    "confirm": "Fast travel to {{location}}?",
+    "errors": {
+      "SUCCESS": "",
+      "PLAYER_DEAD": "You cannot fast travel at this time.",
+      "COMBAT": "You cannot fast travel when enemies are nearby.",
+      "INTERIOR": "You cannot fast travel from this location.",
+      "SURVIVAL": "You cannot fast travel to this location.",
+      "OVERBURDENED": "You're carrying too much and can't fast travel!",
+      "QUEST_LOCKED": "Fast travel is currently unavailable from this location.",
+      "UNKNOWN_ERROR": "You cannot fast travel at this time."
+    }
+  },
+  "markers": {
+    "controls": {
+      "centerMarker": "CENTER MARKER",
+      "fastTravel": "FAST TRAVEL",
+      "undiscovered": "UNDISCOVERED"
+    },
+    "customMarker": {
+      "placePrompt": "Place a marker?",
+      "removePrompt": "Remove your current marker?",
+      "movePrompt": "Move your current marker or remove it?",
+      "placeMarker": "PLACE MARKER",
+      "moveMarker": "MOVE MARKER",
+      "removeMarker": "REMOVE MARKER",
+      "cancel": "CANCEL"
+    }
+  },
+  "settlements": {
+    "card": {
+      "location": "LOCATION",
+      "stats": "STATS"
+    }
+  },
+  "info": {
+    "unknownWorldspace": "Unknown"
+  }
+}

@@ -1,4 +1,5 @@
 import { EngineBridge } from '@/core/bridge.js';
+import { t } from '@/core/i18n.js';
 import { appSettings } from '@/core/settings.js';
 import { mapState } from '@/core/state.js';
 
@@ -186,7 +187,8 @@ export const WorkshopList = {
         FocusManager.register({
             id: 'WORKSHOP_LIST',
             getAvailableControls: () => {
-                const controls: import('../systems/focusManager.js').ControlActionDef[] = ['NAV_BACK', { action: 'NAV_UP', label: 'MOVE' }, { action: 'NAV_DOWN', label: 'MOVE' }, 'PAN_MOUSE', { action: 'SORT', label: `SORT (${workshopListState.sortMode})` }, { action: 'CENTER_ITEM', label: 'CENTER MARKER' }];
+                const sortLabel = `${t('controls.actions.sort')} (${t(`workshops.sortMode.${workshopListState.sortMode.toLowerCase()}`)})`;
+                const controls: import('../systems/focusManager.js').ControlActionDef[] = ['NAV_BACK', 'NAV_UP', 'NAV_DOWN', 'PAN_MOUSE', { action: 'SORT', label: sortLabel }, { action: 'CENTER_ITEM', label: t('markers.controls.centerMarker') }];
                 return controls;
             },
             handleKeyDown: (e: KeyboardEvent) => this.handleKeyDown(e),
@@ -218,7 +220,18 @@ export const WorkshopList = {
             }
         });
 
+        window.addEventListener('languageChanged', () => {
+            this.reloadLocales();
+        });
+
         this.render();
+    },
+
+    reloadLocales(): void {
+        const container = document.getElementById('workshop-list-panel');
+        if (container) {
+            this.render();
+        }
     },
 
     handleKeyDown(e: KeyboardEvent): boolean {
@@ -391,9 +404,9 @@ export const WorkshopList = {
         container.classList.add('workshop-list');
         container.innerHTML = `
           <div class="cp-header">
-             <div class="cp-title">WORKSHOPS</div>
+             <div class="cp-title">${t('workshops.title')}</div>
              <div class="cp-collapse-btn">
-               <span class="cp-collapse-text">COLLAPSE</span>
+               <span class="cp-collapse-text">${t('controls.collapse')}</span>
                <span class="cp-btn-icon"></span>
             </div>
           </div>
@@ -432,9 +445,14 @@ export const WorkshopList = {
         const isCollapsed = workshopListState.isCollapsed;
         container.setAttribute('data-collapsed', String(isCollapsed));
 
+        const titleEl = container.querySelector('.cp-title');
+        if (titleEl) {
+            titleEl.textContent = t('workshops.title');
+        }
+
         const collapseTextEl = container.querySelector('.cp-collapse-text');
         if (collapseTextEl) {
-            collapseTextEl.textContent = isCollapsed ? 'EXPAND' : 'COLLAPSE';
+            collapseTextEl.textContent = isCollapsed ? t('controls.expand') : t('controls.collapse');
         }
 
         if (collapsiblePanel) {
@@ -449,7 +467,7 @@ export const WorkshopList = {
         let itemsHtml = '';
 
         if (itemsToRender.length === 0) {
-            itemsHtml = `<div class="sl-empty">NO WORKSHOPS</div>`;
+            itemsHtml = `<div class="sl-empty">${t('workshops.empty')}</div>`;
         } else {
             itemsHtml = itemsToRender.map((w, idx) => this.renderWorkshopItem(w, idx)).join('');
         }

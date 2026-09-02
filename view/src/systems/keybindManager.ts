@@ -1,3 +1,5 @@
+import { t } from '@/core/i18n.js';
+
 export type KeyAction =
     | 'NAV_UP'
     | 'NAV_DOWN'
@@ -50,29 +52,29 @@ export const DEFAULT_KEYMAP: Record<KeyAction, string[]> = {
 };
 
 export const DEFAULT_LABELS: Record<KeyAction, string> = {
-    NAV_UP: 'UP',
-    NAV_DOWN: 'DOWN',
-    NAV_LEFT: 'LEFT',
-    NAV_RIGHT: 'RIGHT',
-    NAV_BACK: 'BACK',
-    TAB_PREV: 'PREV TAB',
-    TAB_NEXT: 'NEXT TAB',
-    SELECT: 'SELECT',
-    COLLAPSE: 'COLLAPSE',
-    CLOSE_MAP: 'CLOSE',
-    PLACE_MARKER: 'PLACE MARKER',
-    ZOOM_IN: 'ZOOM IN',
-    ZOOM_OUT: 'ZOOM OUT',
-    PAN_MOUSE: 'MOVE',
-    CENTER_CAMERA: 'CENTER PLAYER',
-    CENTER_ITEM: 'CENTER OBJECTIVE',
-    OPEN_SETTINGS: 'SETTINGS',
-    RESET_DEFAULTS: 'DEFAULTS',
-    TOGGLE_ACTIVE: 'TOGGLE ACTIVE',
-    TOGGLE_SUPPLY_LINES: 'SUPPLY LINES',
-    PREV_WORLD: 'PREV WORLD',
-    NEXT_WORLD: 'NEXT WORLD',
-    SORT: 'SORT'
+    NAV_UP: 'controls.actions.up',
+    NAV_DOWN: 'controls.actions.down',
+    NAV_LEFT: 'controls.actions.left',
+    NAV_RIGHT: 'controls.actions.right',
+    NAV_BACK: 'controls.actions.back',
+    TAB_PREV: 'controls.actions.prevTab',
+    TAB_NEXT: 'controls.actions.nextTab',
+    SELECT: 'controls.actions.select',
+    COLLAPSE: 'controls.actions.collapse',
+    CLOSE_MAP: 'controls.actions.close',
+    PLACE_MARKER: 'controls.actions.placeMarker',
+    ZOOM_IN: 'controls.actions.zoomIn',
+    ZOOM_OUT: 'controls.actions.zoomOut',
+    PAN_MOUSE: 'controls.actions.move',
+    CENTER_CAMERA: 'controls.actions.centerPlayer',
+    CENTER_ITEM: 'controls.actions.centerObjective',
+    OPEN_SETTINGS: 'controls.actions.settings',
+    RESET_DEFAULTS: 'controls.actions.defaults',
+    TOGGLE_ACTIVE: 'controls.actions.toggleActive',
+    TOGGLE_SUPPLY_LINES: 'controls.actions.supplyLines',
+    PREV_WORLD: 'controls.actions.prevWorld',
+    NEXT_WORLD: 'controls.actions.nextWorld',
+    SORT: 'controls.actions.sort'
 };
 
 export class KeybindsSystem {
@@ -118,7 +120,7 @@ export class KeybindsSystem {
     }
 
     public static getControlText(action: KeyAction, overrideLabel?: string): string {
-        const label = overrideLabel || DEFAULT_LABELS[action] || action;
+        const label = overrideLabel || t(DEFAULT_LABELS[action]) || action;
         if (action === 'PAN_MOUSE') {
             return `Mouse) ${label}`;
         }
@@ -127,20 +129,21 @@ export class KeybindsSystem {
         if (!keys || keys.length === 0) return `?) ${label}`;
         
         let primaryKey = keys[0];
-        if (primaryKey === ' ') primaryKey = 'SPACE';
-        else if (primaryKey === 'Tab') primaryKey = 'TAB';
-        else if (primaryKey === 'Enter') primaryKey = 'ENTER';
-        else if (primaryKey === 'ArrowUp') primaryKey = 'UP';
-        else if (primaryKey === 'ArrowDown') primaryKey = 'DOWN';
-        else if (primaryKey === 'ArrowLeft') primaryKey = 'LEFT';
-        else if (primaryKey === 'ArrowRight') primaryKey = 'RIGHT';
+        if (primaryKey === ' ') primaryKey = t('controls.keys.space', { defaultValue: 'SPACE' });
+        else if (primaryKey === 'Tab') primaryKey = t('controls.keys.tab', { defaultValue: 'TAB' });
+        else if (primaryKey === 'Enter') primaryKey = t('controls.keys.enter', { defaultValue: 'ENTER' });
+        else if (primaryKey === 'ArrowUp') primaryKey = t('controls.keys.up', { defaultValue: 'UP' });
+        else if (primaryKey === 'ArrowDown') primaryKey = t('controls.keys.down', { defaultValue: 'DOWN' });
+        else if (primaryKey === 'ArrowLeft') primaryKey = t('controls.keys.left', { defaultValue: 'LEFT' });
+        else if (primaryKey === 'ArrowRight') primaryKey = t('controls.keys.right', { defaultValue: 'RIGHT' });
+        else if (primaryKey === 'Shift') primaryKey = t('controls.keys.shift', { defaultValue: 'SHIFT' });
         else primaryKey = primaryKey.toUpperCase();
         
         return `${primaryKey}) ${label}`;
     }
 
     public static getControlHtml(action: KeyAction, overrideLabel?: string, isActive?: boolean): string {
-        const label = overrideLabel || DEFAULT_LABELS[action] || action;
+        const label = overrideLabel || t(DEFAULT_LABELS[action]) || action;
         let labelHtml = `<b>${label}</b>`;
         if (isActive) {
             labelHtml = `<span style="text-decoration: underline;">${labelHtml}</span>`;
@@ -154,13 +157,14 @@ export class KeybindsSystem {
         if (!keys || keys.length === 0) return `?) <b>${label}</b>`;
         
         let primaryKey = keys[0];
-        if (primaryKey === ' ') primaryKey = 'SPACE';
-        else if (primaryKey === 'Tab') primaryKey = 'TAB';
-        else if (primaryKey === 'Enter') primaryKey = 'ENTER';
-        else if (primaryKey === 'ArrowUp') primaryKey = 'UP';
-        else if (primaryKey === 'ArrowDown') primaryKey = 'DOWN';
-        else if (primaryKey === 'ArrowLeft') primaryKey = 'LEFT';
-        else if (primaryKey === 'ArrowRight') primaryKey = 'RIGHT';
+        if (primaryKey === ' ') primaryKey = t('controls.keys.space', { defaultValue: 'SPACE' });
+        else if (primaryKey === 'Tab') primaryKey = t('controls.keys.tab', { defaultValue: 'TAB' });
+        else if (primaryKey === 'Enter') primaryKey = t('controls.keys.enter', { defaultValue: 'ENTER' });
+        else if (primaryKey === 'ArrowUp') primaryKey = t('controls.keys.up', { defaultValue: 'UP' });
+        else if (primaryKey === 'ArrowDown') primaryKey = t('controls.keys.down', { defaultValue: 'DOWN' });
+        else if (primaryKey === 'ArrowLeft') primaryKey = t('controls.keys.left', { defaultValue: 'LEFT' });
+        else if (primaryKey === 'ArrowRight') primaryKey = t('controls.keys.right', { defaultValue: 'RIGHT' });
+        else if (primaryKey === 'Shift') primaryKey = t('controls.keys.shift', { defaultValue: 'SHIFT' });
         else primaryKey = primaryKey.toUpperCase();
         
         return `${primaryKey}) ${labelHtml}`;

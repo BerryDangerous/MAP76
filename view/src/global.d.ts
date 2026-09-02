@@ -36,6 +36,10 @@ declare global {
         __f4seAssetCache?: string | null;
         requestAssetCache?: (arg: string) => void;
 
+        loadLocales?: (jsonString: string) => void;
+        __loadLocalesRegister?: (jsonString: string) => void;
+        __f4seLocaleCache?: string | null;
+
         MapInterop?: {
             updateWorkshopStats?: (jsonString: string) => void;
         };

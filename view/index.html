@@ -9,6 +9,7 @@
     <script>
         window.__f4seCache = null;
         window.__f4seAssetCache = null;
+        window.__f4seLocaleCache = null;
 
         window.MapInterop = {
             loadMarkers: function (jsonString) {
@@ -28,11 +29,21 @@
                     console.log('[HTML Inline Stub] Bundle not ready. Caching asset payload...');
                     window.__f4seAssetCache = jsonString;
                 }
+            },
+            loadLocales: function (jsonString) {
+                console.log('[HTML Inline Stub] InteropCall routed to MapInterop.loadLocales');
+                if (window.__loadLocalesRegister) {
+                    window.__loadLocalesRegister(jsonString);
+                } else {
+                    console.log('[HTML Inline Stub] Bundle not ready. Caching locale payload...');
+                    window.__f4seLocaleCache = jsonString;
+                }
             }
         };
 
         window.loadMarkers = window.MapInterop.loadMarkers;
         window.loadAssets = window.MapInterop.loadAssets;
+        window.loadLocales = window.MapInterop.loadLocales;
     </script>
 
     <script type="module" src="src/main.js"></script>

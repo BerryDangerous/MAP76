@@ -1,5 +1,6 @@
 import { PlayerData } from '@/types/map.js';
 import { FrameTickPayload } from '@/types/payloads.js';
+import { t } from '@/core/i18n.js';
 
 import { mapState } from '@/core/state.js';
 
@@ -12,7 +13,7 @@ export class InfoBar {
     private static infoContainer: HTMLElement | null = null;
     private static settingsContainer: HTMLElement | null = null;
     
-    private static worldspace: string = 'Unknown';
+    private static worldspace: string = '';
     private static dateStr: string = '';
     private static timeStr: string = '';
 
@@ -31,6 +32,16 @@ export class InfoBar {
                 }
             });
         }
+
+        window.addEventListener('languageChanged', () => {
+            this.reloadLocales();
+        });
+    }
+
+    public static reloadLocales(): void {
+        if (this.settingsContainer) {
+            this.settingsContainer.innerHTML = KeybindsSystem.getControlHtml('OPEN_SETTINGS');
+        }
     }
 
     public static initPlayer(player?: PlayerData) {
@@ -42,7 +53,7 @@ export class InfoBar {
     }
 
     public static updateWorldspace(wsId: number) {
-        this.worldspace = WorldspaceUtils.getWorldspaceName(wsId) || 'Unknown';
+        this.worldspace = WorldspaceUtils.getWorldspaceName(wsId) || t('info.unknownWorldspace');
         this.renderInfo();
     }
 

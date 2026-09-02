@@ -306,7 +306,7 @@ body, html {
     left: 0;
     transform: translate(-50%, 0);
     color: #ffffcb;
-    font-family: 'PibotoCondensed', sans-serif;
+    font-family: var(--main-font, 'PibotoCondensed', sans-serif);
     font-size: 20px;
     text-shadow: 1.5px 1.5px 0 rgba(0, 0, 0, 0.8);
     white-space: nowrap;
@@ -365,7 +365,7 @@ body, html {
 
 #modal-text {
     color: #e0c870;
-    font-family: 'PibotoCondensed', sans-serif;
+    font-family: var(--main-font, 'PibotoCondensed', sans-serif);
     font-size: 20px;
     line-height: 1.4;
     margin: 0;
@@ -387,7 +387,7 @@ body, html {
 
 .modal-actions .btn {
     padding: 0 20px;
-    font-family: 'PibotoCondensed', sans-serif;
+    font-family: var(--main-font, 'PibotoCondensed', sans-serif);
     font-size: 13px;
     font-weight: bold;
     cursor: pointer;
@@ -407,7 +407,7 @@ body, html {
 
 .modal-actions .btn .btn-text {
     color: #f5cb5b;
-    font-family: 'PibotoCondensed', sans-serif;
+    font-family: var(--main-font, 'PibotoCondensed', sans-serif);
     font-size: 13px;
 }
 
@@ -474,7 +474,7 @@ body, html {
 #info-card {
     position: absolute;
     z-index: 1000;
-    font-family: 'PibotoCondensed', sans-serif;
+    font-family: var(--main-font, 'PibotoCondensed', sans-serif);
     font-size: 28px;
     color: #ffffcb;
     display: flex;
@@ -520,7 +520,7 @@ body, html {
     flex-direction: column;
     pointer-events: auto;
     color: #ffffcb;
-    font-family: 'PibotoCondensed', sans-serif;
+    font-family: var(--main-font, 'PibotoCondensed', sans-serif);
 }
 
 .collapsible-panel[data-collapsed="true"] {
@@ -598,7 +598,7 @@ body, html {
 }
 
 .tb-sub-header .tb-nav-icon {
-    font-family: 'PibotoCondensed', sans-serif;
+    font-family: var(--main-font, 'PibotoCondensed', sans-serif);
     color: #ffffcb;
     font-size: 16px;
     line-height: 1.2;
@@ -813,7 +813,7 @@ body, html {
     display: none;
     flex-direction: column;
     pointer-events: auto;
-    font-family: 'PibotoCondensed', sans-serif;
+    font-family: var(--main-font, 'PibotoCondensed', sans-serif);
     color: #ffffcb;
     background-color: rgba(24, 28, 29, 0.95);
     border: 1px solid rgba(255, 255, 203, 0.2);
@@ -939,7 +939,7 @@ body, html {
     color: #f5cb5b;
     text-align: center;
     white-space: nowrap;
-    font-family: 'PibotoCondensed', sans-serif;
+    font-family: var(--main-font, 'PibotoCondensed', sans-serif);
 }
 
 .btn:hover .btn-text,
@@ -1109,7 +1109,7 @@ body, html {
     border: none;
     color: #ffffcb;
     padding: 4px 60px 4px 8px;
-    font-family: 'PibotoCondensed', sans-serif;
+    font-family: var(--main-font, 'PibotoCondensed', sans-serif);
     font-size: 16px;
     outline: none;
     margin: 4px 0;
@@ -1216,7 +1216,7 @@ body.is-ultralight #settings-menu-panel {
 .settings-tab {
     padding: 10px 15px;
     font-size: 24px;
-    font-family: 'PibotoCondensed', sans-serif;
+    font-family: var(--main-font, 'PibotoCondensed', sans-serif);
     font-weight: bold;
     cursor: pointer;
     text-transform: uppercase;
@@ -1292,7 +1292,7 @@ body.settings-open #player-layer {
 }
 
 .settings-row-title {
-    font-family: 'PibotoCondensed', sans-serif;
+    font-family: var(--main-font, 'PibotoCondensed', sans-serif);
     font-size: 20px;
     font-weight: bold;
     color: #ffffcb;
@@ -1344,7 +1344,7 @@ body.settings-open #player-layer {
 }
 
 .ui-control-value {
-    font-family: 'PibotoCondensed', sans-serif;
+    font-family: var(--main-font, 'PibotoCondensed', sans-serif);
     font-size: 20px;
     color: #ffffcb;
     min-width: 60px;
@@ -1410,7 +1410,7 @@ body.settings-open #player-layer {
     height: 30px;
     background-color: rgba(24, 28, 29, 0.5);
     color: #ffffcb;
-    font-family: 'PibotoCondensed', sans-serif;
+    font-family: var(--main-font, 'PibotoCondensed', sans-serif);
     font-size: 18px;
     line-height: 1.2;
     padding: 0 10px;
@@ -1531,3 +1531,5 @@ body.settings-open #player-layer {
 [data-dock="bottom-left"] { transform-origin: bottom left; }
 [data-dock="bottom-right"] { transform-origin: bottom right; }
 .floating-card:not([data-dock]) { transform-origin: top left; }
+body.disable-bold * { font-weight: normal !important; }
+body.disable-condensed { --main-font: 'Piboto', sans-serif; }

@@ -1,4 +1,5 @@
 import { SearchResult } from '@/types/search.js';
+import { t } from '@/core/i18n.js';
 
 import { EngineBridge } from '@/core/bridge.js';
 import { ASSET_ICON_POWER_ARMOR, ASSET_ICON_CUSTOM_MARKER } from '@/core/constants.js';
@@ -233,7 +234,7 @@ export const SearchPanel = {
         FocusManager.register({
             id: 'SEARCH_PANEL',
             getAvailableControls: () => {
-                const controls: import('../systems/focusManager.js').ControlActionDef[] = ['NAV_BACK', { action: 'NAV_UP', label: 'MOVE' }, { action: 'NAV_DOWN', label: 'MOVE' }, 'PAN_MOUSE'];
+                const controls: import('../systems/focusManager.js').ControlActionDef[] = ['NAV_BACK', 'NAV_UP', 'NAV_DOWN', 'PAN_MOUSE'];
                 if (searchBox?.isFocused()) {
                     return controls;
                 }
@@ -245,11 +246,11 @@ export const SearchPanel = {
                         if (!isCompleted) {
                             controls.push('TOGGLE_ACTIVE');
                             if (QuestUtils.hasActiveTargets(selected.originalRef)) {
-                                controls.push({ action: 'CENTER_ITEM', label: 'CENTER OBJECTIVE' });
+                                controls.push('CENTER_ITEM');
                             }
                         }
                     } else {
-                        controls.push({ action: 'CENTER_ITEM', label: 'CENTER MARKER' });
+                        controls.push({ action: 'CENTER_ITEM', label: t('markers.controls.centerMarker') });
                     }
                 }
                 return controls;
@@ -287,7 +288,18 @@ export const SearchPanel = {
             }
         });
 
+        window.addEventListener('languageChanged', () => {
+            this.reloadLocales();
+        });
+
         this.render();
+    },
+
+    reloadLocales(): void {
+        const container = document.getElementById('search-panel');
+        if (container) {
+            this.render();
+        }
     },
 
     handleKeyDown(e: KeyboardEvent): boolean {
@@ -452,9 +464,9 @@ export const SearchPanel = {
         container.classList.add('selectable-list');
         container.innerHTML = `
           <div class="cp-header">
-             <div class="cp-title">SEARCH</div>
+             <div class="cp-title">${t('search.title')}</div>
              <div class="cp-collapse-btn">
-               <span class="cp-collapse-text">COLLAPSE</span>
+               <span class="cp-collapse-text">${t('controls.collapse')}</span>
                <span class="cp-btn-icon"></span>
             </div>
           </div>
@@ -483,7 +495,7 @@ export const SearchPanel = {
         if (searchBarContainer) {
             searchBox = new SearchBox({
                 container: searchBarContainer,
-                placeholder: 'Type to search...',
+                placeholder: t('search.placeholder'),
                 initialValue: searchPanelState.searchTerm,
                 onInput: (text) => {
                     searchPanelState.searchTerm = text;
@@ -540,9 +552,21 @@ export const SearchPanel = {
         const isCollapsed = searchPanelState.isCollapsed;
         container.setAttribute('data-collapsed', String(isCollapsed));
 
+        const titleEl = container.querySelector('.cp-title');
+        if (titleEl) {
+            titleEl.textContent = t('search.title');
+        }
+        
+        if (searchBox) {
+            const inputEl = searchBox.getInputElement();
+            if (inputEl) inputEl.placeholder = t('search.placeholder');
+            const clearBtn = container.querySelector('.search-box-clear-btn');
+            if (clearBtn) clearBtn.textContent = t('search.clear', { defaultValue: 'CLEAR' });
+        }
+
         const collapseTextEl = container.querySelector('.cp-collapse-text');
         if (collapseTextEl) {
-            collapseTextEl.textContent = isCollapsed ? 'EXPAND' : 'COLLAPSE';
+            collapseTextEl.textContent = isCollapsed ? t('controls.expand') : t('controls.collapse');
         }
 
         const subHeader = container.querySelector('.tb-sub-header') as HTMLElement;
@@ -574,9 +598,9 @@ export const SearchPanel = {
 
         if (itemsToRender.length === 0) {
             if (searchPanelState.searchTerm) {
-                itemsHtml = `<div class="sl-empty">NO RESULTS FOUND</div>`;
+                itemsHtml = `<div class="sl-empty">${t('search.noResults')}</div>`;
             } else {
-                itemsHtml = `<div class="sl-empty">ENTER SEARCH TERM</div>`;
+                itemsHtml = `<div class="sl-empty">${t('search.empty')}</div>`;
             }
         } else {
             itemsHtml = itemsToRender.map((r, idx) => this.renderResultItem(r, idx)).join('');

@@ -1,6 +1,7 @@
 import { QuestItem } from '@/types/quests.js';
 
 import { toggleQuestActive, makeOnlyQuestActive } from '@/core/bridge.js';
+import { t } from '@/core/i18n.js';
 
 import { FocusManager } from '@/systems/focusManager.js';
 import { Corner } from '@/systems/layoutManager.js';
@@ -28,7 +29,7 @@ export const QuestCard = {
                 const controls: import('../systems/focusManager.js').ControlActionDef[] = ['NAV_BACK', 'PAN_MOUSE'];
                 if (QuestCard.activeAnchorMarker === null && QuestCard.activeQuest && !QuestUtils.isQuestCompleted(QuestCard.activeQuest)) {
                     if (QuestCard.activeQuest.isTracked && QuestUtils.hasActiveTargets(QuestCard.activeQuest)) {
-                        controls.push({ action: 'CENTER_ITEM', label: 'CENTER OBJECTIVE' });
+                        controls.push({ action: 'CENTER_ITEM', label: t('quests.controls.centerObjective') });
                     }
                 }
                 return controls;
@@ -173,7 +174,7 @@ export const QuestCard = {
         const journalSectionHtml = hasJournal ? `
             <div class="fc-section">
                 <div class="fc-section-box">
-                    <div class="fc-section-title">JOURNAL</div>
+                    <div class="fc-section-title">${t('quests.card.journal')}</div>
                     <div class="fc-section-text">${StringUtils.escapeHtml(journalText)}</div>
                 </div>
             </div>
@@ -182,7 +183,7 @@ export const QuestCard = {
         const objectivesSectionHtml = hasObjectives ? `
             <div class="fc-section">
                 <div class="fc-section-box">
-                    <div class="fc-section-title">OBJECTIVES</div>
+                    <div class="fc-section-title">${t('quests.card.objectives')}</div>
                     <div class="status-item-list">
                         ${objectivesHtml}
                     </div>
@@ -203,7 +204,7 @@ export const QuestCard = {
         ] : [
             {
                 id: 'toggleActive',
-                label: 'TOGGLE ACTIVE',
+                label: t('quests.controls.toggleActive'),
                 action: () => {
                     if (quest.formId !== undefined) {
                         quest.isTracked = !quest.isTracked;
@@ -214,7 +215,7 @@ export const QuestCard = {
             },
             {
                 id: 'makeOnlyActive',
-                label: 'MAKE ONLY THIS ACTIVE',
+                label: t('quests.controls.makeOnlyActive'),
                 action: () => {
                     if (quest.formId !== undefined) {
                         quest.isTracked = true;
@@ -226,3 +227,9 @@ export const QuestCard = {
         ];
     }
 };
+
+window.addEventListener('languageChanged', () => {
+    if (QuestCard.isOpen() && QuestCard.activeQuest) {
+        QuestCard.open(QuestCard.activeQuest, QuestCard.activeAnchorMarker || undefined, undefined, undefined, false);
+    }
+});

@@ -26,6 +26,11 @@ export class TabBar<T = string> {
         this.render();
     }
 
+    public updateTabs(newTabs: TabItem<T>[]): void {
+        this.options.tabs = newTabs;
+        this.render();
+    }
+
     public setActiveTab(tabId: T): void {
         if (this.options.activeTabId === tabId) return;
         const targetTab = this.options.tabs.find(t => t.id === tabId);

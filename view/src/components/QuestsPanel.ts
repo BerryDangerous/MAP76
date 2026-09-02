@@ -1,5 +1,6 @@
 import { QuestItem } from '@/types/quests.js';
 
+import { t } from '@/core/i18n.js';
 import { toggleQuestActive, EngineBridge } from '@/core/bridge.js';
 import { appSettings } from '@/core/settings.js';
 import { mapState } from '@/core/state.js';
@@ -112,7 +113,7 @@ const listController = new SelectableListController<QuestItem>({
     }
 });
 
-const tabBar = new TabBar<QuestFilterTab>({
+let tabBar = new TabBar<QuestFilterTab>({
     tabs: [
         { id: 'ALL', label: 'ALL' },
         { id: 'MAIN', label: 'MAIN' },
@@ -212,17 +213,25 @@ export const QuestList = {
     },
 
     init(): void {
+        tabBar.updateTabs([
+            { id: 'ALL', label: t('quests.tabs.all') },
+            { id: 'MAIN', label: t('quests.tabs.main') },
+            { id: 'SIDE', label: t('quests.tabs.side') },
+            { id: 'MISC', label: t('quests.tabs.misc') }
+        ]);
+
         FocusManager.register({
             id: 'QUEST_LIST',
             getAvailableControls: () => {
-                const controls: import('../systems/focusManager.js').ControlActionDef[] = ['NAV_BACK', { action: 'NAV_UP', label: 'MOVE' }, { action: 'NAV_DOWN', label: 'MOVE' }, 'PAN_MOUSE', { action: 'SORT', label: `SORT (${questListState.sortMode})` }];
+                const sortLabel = `${t('controls.actions.sort')} (${t(`quests.sortMode.${questListState.sortMode.toLowerCase()}`)})`;
+                const controls: import('../systems/focusManager.js').ControlActionDef[] = ['NAV_BACK', 'NAV_UP', 'NAV_DOWN', 'PAN_MOUSE', { action: 'SORT', label: sortLabel }];
                 const selected = listController.getSelectedItem();
                 if (selected) {
                     const isCompleted = QuestUtils.isQuestCompleted(selected);
                     if (!isCompleted) {
                         controls.push('TOGGLE_ACTIVE');
                         if (QuestUtils.hasActiveTargets(selected)) {
-                            controls.push({ action: 'CENTER_ITEM', label: 'CENTER OBJECTIVE' });
+                            controls.push('CENTER_ITEM');
                         }
                     }
                 }
@@ -254,7 +263,24 @@ export const QuestList = {
             }
         });
 
+        window.addEventListener('languageChanged', () => {
+            this.reloadLocales();
+        });
+
         this.render();
+    },
+
+    reloadLocales(): void {
+        const container = document.getElementById('quest-list-panel');
+        if (container) {
+            tabBar.updateTabs([
+                { id: 'ALL', label: t('quests.tabs.all') },
+                { id: 'MAIN', label: t('quests.tabs.main') },
+                { id: 'SIDE', label: t('quests.tabs.side') },
+                { id: 'MISC', label: t('quests.tabs.misc') }
+            ]);
+            this.render();
+        }
     },
 
     handleKeyDown(e: KeyboardEvent): boolean {
@@ -425,9 +451,9 @@ export const QuestList = {
         container.classList.add('selectable-list');
         container.innerHTML = `
           <div class="cp-header">
-             <div class="cp-title">QUESTS</div>
+             <div class="cp-title">${t('quests.title')}</div>
              <div class="cp-collapse-btn">
-               <span class="cp-collapse-text">COLLAPSE</span>
+               <span class="cp-collapse-text">${t('controls.collapse')}</span>
                <span class="cp-btn-icon"></span>
             </div>
           </div>
@@ -478,15 +504,16 @@ export const QuestList = {
 
         const collapseTextEl = container.querySelector('.cp-collapse-text');
         if (collapseTextEl) {
-            collapseTextEl.textContent = isCollapsed ? 'EXPAND' : 'COLLAPSE';
+            collapseTextEl.textContent = isCollapsed ? t('controls.expand') : t('controls.collapse');
         }
 
         const titleEl = container.querySelector('.cp-title');
         if (titleEl) {
             if (isCollapsed && questListState.currentTab !== 'ALL') {
-                titleEl.textContent = `QUESTS - ${questListState.currentTab}`;
+                const tabLabel = t(`quests.tabs.${questListState.currentTab.toLowerCase()}`);
+                titleEl.textContent = `${t('quests.title')} - ${tabLabel}`;
             } else {
-                titleEl.textContent = 'QUESTS';
+                titleEl.textContent = t('quests.title');
             }
         }
 
@@ -507,8 +534,9 @@ export const QuestList = {
         let itemsHtml = '';
 
         if (itemsToRender.length === 0) {
-            const tabName = questListState.currentTab === 'ALL' ? '' : `${questListState.currentTab} `;
-            itemsHtml = isCollapsed ? `<div class="sl-empty">NO ACTIVE ${tabName}QUESTS</div>` : `<div class="sl-empty">NO ${tabName}QUESTS</div>`;
+            const tabKey = questListState.currentTab.toLowerCase();
+            const emptyKey = isCollapsed ? `quests.emptyActive.${tabKey}` : `quests.empty.${tabKey}`;
+            itemsHtml = `<div class="sl-empty">${t(emptyKey)}</div>`;
         } else if (isCollapsed) {
             const activeNonMisc = itemsToRender.filter(q => !q.isMisc && q.type !== 'Misc');
             const activeMisc = itemsToRender.filter(q => q.isMisc || q.type === 'Misc');

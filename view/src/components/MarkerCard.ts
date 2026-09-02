@@ -2,6 +2,7 @@ import { FocusManager } from '@/systems/focusManager.js';
 import { Corner } from '@/systems/layoutManager.js';
 import { MarkerInteractionManager } from '@/systems/markerController.js';
 import { MapViewport } from '@/systems/viewport.js';
+import { t } from '@/core/i18n.js';
 
 import { ActionButtonConfig } from '@/components/ui/ButtonGroup.js';
 import { FloatingCard } from '@/components/ui/FloatingCard.js';
@@ -20,7 +21,7 @@ export const MarkerCard = {
             getAvailableControls: () => {
                 const controls: import('../systems/focusManager.js').ControlActionDef[] = ['NAV_BACK', 'PAN_MOUSE'];
                 if (MarkerCard.activeAnchorMarker === null && MarkerCard.activeMarkerFormId !== null) {
-                    controls.push({ action: 'CENTER_ITEM', label: 'CENTER MARKER' });
+                    controls.push({ action: 'CENTER_ITEM', label: t('markers.controls.centerMarker') });
                 }
                 return controls;
             },
@@ -150,7 +151,7 @@ export const MarkerCard = {
             return [
                 {
                     id: 'fastTravel',
-                    label: 'FAST TRAVEL',
+                    label: t('markers.controls.fastTravel'),
                     action: () => {
                         if (this.activeMarkerFormId !== null) {
                             MarkerInteractionManager.initiateFastTravel(this.activeMarkerFormId, this.activeMarkerName);
@@ -162,7 +163,7 @@ export const MarkerCard = {
             return [
                 {
                     id: 'undiscovered',
-                    label: 'UNDISCOVERED',
+                    label: t('markers.controls.undiscovered'),
                     enabled: false,
                     action: () => {}
                 }
@@ -170,3 +171,15 @@ export const MarkerCard = {
         }
     }
 };
+
+window.addEventListener('languageChanged', () => {
+    if (MarkerCard.isOpen() && MarkerCard.activeMarkerFormId !== null) {
+        MarkerCard.open(
+            MarkerCard.activeMarkerName, 
+            MarkerCard.activeMarkerFormId, 
+            MarkerCard.canFastTravel, 
+            MarkerCard.activeAnchorMarker || undefined, 
+            undefined, undefined, false
+        );
+    }
+});

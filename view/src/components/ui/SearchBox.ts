@@ -1,4 +1,5 @@
 import { EngineBridge } from '@/core/bridge.js';
+import { t } from '@/core/i18n.js';
 
 export interface SearchBoxOptions {
     container: HTMLElement;
@@ -33,7 +34,7 @@ export class SearchBox {
 
         this.clearBtnEl = document.createElement('div');
         this.clearBtnEl.className = 'search-box-clear-btn';
-        this.clearBtnEl.textContent = 'CLEAR';
+        this.clearBtnEl.textContent = t('search.clear', { defaultValue: 'CLEAR' });
         this.clearBtnEl.tabIndex = -1;
         
         if (this.options.placeholder) {

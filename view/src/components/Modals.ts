@@ -2,6 +2,7 @@ import { FastTravelStatus } from '@/types/map.js';
 
 import { FAST_TRAVEL_ERROR_MESSAGES } from '@/core/constants.js';
 import { appSettings } from '@/core/settings.js';
+import { t } from '@/core/i18n.js';
 
 import { ModalManager } from '@/systems/modalManager.js';
 
@@ -12,17 +13,17 @@ export function showFastTravelConfirmationModal(locationName: string, onConfirm:
     }
 
     ModalManager.show({
-        text: `Fast travel to ${locationName}?`,
+        text: t('fastTravel.confirm', { location: locationName, defaultValue: `Fast travel to ${locationName}?` }),
         buttons: [
             {
-                label: 'YES',
+                label: t('controls.actions.yes', { defaultValue: 'YES' }),
                 action: () => {
                     ModalManager.close();
                     onConfirm();
                 }
             },
             {
-                label: 'NO',
+                label: t('controls.actions.no', { defaultValue: 'NO' }),
                 action: () => {
                     ModalManager.close();
                     if (onCancel) onCancel();
@@ -33,13 +34,14 @@ export function showFastTravelConfirmationModal(locationName: string, onConfirm:
 }
 
 export function showFastTravelErrorModal(status: FastTravelStatus): void {
-    const message = FAST_TRAVEL_ERROR_MESSAGES[status] || "Fast travel unavailable at this moment.";
+    const fallback = FAST_TRAVEL_ERROR_MESSAGES[status] || "Fast travel unavailable at this moment.";
+    const message = t(`fastTravel.errors.${status}`, { defaultValue: fallback });
     
     ModalManager.show({
         text: message,
         buttons: [
             {
-                label: 'OK',
+                label: t('controls.actions.ok', { defaultValue: 'OK' }),
                 action: () => {
                     ModalManager.close();
                 }
@@ -59,14 +61,14 @@ export function showConfirmationModal(
         text: text,
         buttons: [
             {
-                label: confirmText,
+                label: t('controls.actions.yes', { defaultValue: confirmText }),
                 action: () => {
                     ModalManager.close();
                     onConfirm();
                 }
             },
             {
-                label: cancelText,
+                label: t('controls.actions.no', { defaultValue: cancelText }),
                 action: () => {
                     ModalManager.close();
                     if (onCancel) onCancel();

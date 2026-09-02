@@ -1,6 +1,7 @@
 import { F4SEMapPayload, FastTravelCheckPayload, FastTravelFailPayload } from '@/types/payloads.js';
 
 import { AssetManager } from '@/systems/assetManager.js';
+import { loadExternalLocales, initI18n } from '@/core/i18n.js';
 
 export const EngineBridge = {
     closeMap() {
@@ -88,6 +89,7 @@ export function makeOnlyQuestActive(formId: number): void {
 
 export function initializeF4SEBindings(onDataReceived: (payload: F4SEMapPayload) => void) {
     let isAssetsLoaded = false;
+    let isLocalesLoaded = false;
     let pendingPayload: F4SEMapPayload | null = null;
 
     const processPayload = (jsonString: string) => {
@@ -95,8 +97,8 @@ export function initializeF4SEBindings(onDataReceived: (payload: F4SEMapPayload)
         
         try {
             const payload: F4SEMapPayload = JSON.parse(jsonString);
-            if (!isAssetsLoaded) {
-                console.log(`[Bridge] Assets not loaded yet. Buffering payload.`);
+            if (!isAssetsLoaded || !isLocalesLoaded) {
+                console.log(`[Bridge] Assets or Locales not loaded yet. Buffering payload.`);
                 pendingPayload = payload;
                 return;
             }
@@ -116,13 +118,30 @@ export function initializeF4SEBindings(onDataReceived: (payload: F4SEMapPayload)
             const payload = JSON.parse(jsonString);
             AssetManager.init(payload);
             isAssetsLoaded = true;
-            if (pendingPayload) {
+            if (pendingPayload && isLocalesLoaded) {
                 console.log(`[Bridge] Assets loaded. Processing buffered payload.`);
                 onDataReceived(pendingPayload);
                 pendingPayload = null;
             }
         } catch (err) {
             console.error(`[Bridge] Asset Payload JSON Processing Failure: ${err}`);
+        }
+    };
+
+    window.__loadLocalesRegister = (jsonString: string) => {
+        try {
+            const payload = JSON.parse(jsonString);
+            loadExternalLocales(payload.locales);
+            initI18n(payload.gameLanguage).then(() => {
+                isLocalesLoaded = true;
+                if (pendingPayload && isAssetsLoaded) {
+                    console.log(`[Bridge] Locales loaded. Processing buffered payload.`);
+                    onDataReceived(pendingPayload);
+                    pendingPayload = null;
+                }
+            });
+        } catch (err) {
+            console.error(`[Bridge] Locale Payload JSON Processing Failure: ${err}`);
         }
     };
 
@@ -165,6 +184,13 @@ export function initializeF4SEBindings(onDataReceived: (payload: F4SEMapPayload)
         console.log(`[Bridge] Processing cached startup asset stream. Length: ${earlyAssetCache.length}`);
         window.__loadAssetsRegister!(earlyAssetCache);
         window.__f4seAssetCache = null;
+    }
+
+    const earlyLocaleCache = window.__f4seLocaleCache;
+    if (earlyLocaleCache) {
+        console.log(`[Bridge] Processing cached startup locale stream. Length: ${earlyLocaleCache.length}`);
+        window.__loadLocalesRegister!(earlyLocaleCache);
+        window.__f4seLocaleCache = null;
     }
 
     if (window.MapInterop) {

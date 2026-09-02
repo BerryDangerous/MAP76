@@ -1,5 +1,6 @@
 import { EngineBridge } from '@/core/bridge.js';
 
+import { t } from '@/core/i18n.js';
 import { SettingsControl } from '@/components/ui/SettingsRow.js';
 
 export class Toggle implements SettingsControl {
@@ -22,6 +23,10 @@ export class Toggle implements SettingsControl {
         this.valueElement.className = 'ui-control-value';
         
         this.build();
+    }
+
+    public updateLocales() {
+        this.updateValueText();
     }
 
     public setValue(val: boolean, triggerOnChange: boolean = false) {
@@ -67,7 +72,7 @@ export class Toggle implements SettingsControl {
     }
 
     private updateValueText() {
-        this.valueElement.textContent = this.value ? 'ON' : 'OFF';
+        this.valueElement.textContent = this.value ? t('controls.actions.on', { defaultValue: 'ON' }) : t('controls.actions.off', { defaultValue: 'OFF' });
     }
 
     public getElement(): HTMLElement {
