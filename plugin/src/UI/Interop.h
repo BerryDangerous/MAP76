@@ -13,6 +13,7 @@ namespace MAP76::UI
         inline PrismaView g_view = 0;
 
         inline std::atomic<bool> g_mapIsOpen{false};
+        inline std::atomic<bool> g_mapInputFocused{false};
     }
 
     /**
