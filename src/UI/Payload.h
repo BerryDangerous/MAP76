@@ -18,4 +18,5 @@ namespace MAP76::UI::Payload
     std::string GetMapPayloadAsJSON();
     std::string GetFrameTickPayloadAsJSON();
     std::string GetAssetPayloadAsJSON(bool forceRefresh = false);
+    std::string GetLocalePayloadAsJSON(bool forceRefresh = false);
 }

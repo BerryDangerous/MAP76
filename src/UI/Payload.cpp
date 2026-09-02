@@ -12,6 +12,7 @@
 #include <filesystem>
 #include <fstream>
 #include <sstream>
+#include "RE/S/Setting.h"
 
 namespace MAP76::UI::Payload
 {
@@ -347,6 +348,55 @@ namespace MAP76::UI::Payload
         catch (const std::exception &e)
         {
             REX::ERROR("Exception in GetAssetPayloadAsJSON: {}", e.what());
+            return "{}";
+        }
+    }
+    
+    std::string g_localePayloadCache;
+    
+    std::string GetLocalePayloadAsJSON(bool forceRefresh)
+    {
+        try
+        {
+            if (!forceRefresh && !g_localePayloadCache.empty())
+            {
+                return g_localePayloadCache;
+            }
+
+            nlohmann::json root = nlohmann::json::object();
+
+            auto *langSetting = RE::GetINISetting("sLanguage:General");
+            if (langSetting && !langSetting->GetString().empty()) {
+                root["gameLanguage"] = langSetting->GetString();
+            } else {
+                root["gameLanguage"] = "en";
+            }
+
+            nlohmann::json localesJson = nlohmann::json::object();
+            std::filesystem::path localesDir = "Data/PrismaUI_F4/views/MAP76/locales";
+            if (std::filesystem::exists(localesDir) && std::filesystem::is_directory(localesDir)) {
+                for (const auto& entry : std::filesystem::directory_iterator(localesDir)) {
+                    if (entry.is_regular_file() && entry.path().extension() == ".json") {
+                        std::ifstream file(entry.path());
+                        if (file.is_open()) {
+                            try {
+                                std::string langCode = entry.path().stem().string();
+                                localesJson[langCode] = nlohmann::json::parse(file);
+                            } catch (const std::exception& e) {
+                                REX::ERROR("Failed to parse locale {}: {}", entry.path().string(), e.what());
+                            }
+                        }
+                    }
+                }
+            }
+            root["locales"] = localesJson;
+            
+            g_localePayloadCache = root.dump(-1, ' ', false, nlohmann::json::error_handler_t::replace);
+            return g_localePayloadCache;
+        }
+        catch (const std::exception &e)
+        {
+            REX::ERROR("Exception in GetLocalePayloadAsJSON: {}", e.what());
             return "{}";
         }
     }
