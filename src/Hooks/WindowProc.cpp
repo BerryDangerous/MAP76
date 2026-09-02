@@ -9,6 +9,25 @@ namespace MAP76::Hooks
     {
         WNDPROC originalProc = g_oldWndProc;
 
+        if (uMsg == WM_ACTIVATEAPP && UI::State::g_mapIsOpen.load() && UI::State::g_api && UI::State::g_view)
+        {
+            if (!wParam)
+            {
+                if (UI::State::g_mapInputFocused.exchange(false))
+                {
+                    UI::State::g_api->Unfocus(UI::State::g_view);
+                }
+            }
+            else if (GetForegroundWindow() == hWnd && !UI::IsPlayerInMenuMode())
+            {
+                bool expected = false;
+                if (UI::State::g_mapInputFocused.compare_exchange_strong(expected, true))
+                {
+                    UI::State::g_api->Focus(UI::State::g_view, true);
+                }
+            }
+        }
+
         if (uMsg == WM_KEYDOWN)
         {
             if (wParam == Constants::Input::KEY_M)

@@ -10,6 +10,7 @@
 #include <chrono>
 #include <filesystem>
 #include <format>
+#include "RE/S/Setting.h"
 #include "RE/U/UIUtils.h"
 #include "REX/W32/OLE32.h"
 #include "REX/W32/SHELL32.h"
@@ -19,6 +20,71 @@ namespace MAP76::UI
 {
     namespace
     {
+        struct BackgroundActivityState
+        {
+            RE::Setting *alwaysActive = nullptr;
+            RE::Setting *pauseOnAltTab = nullptr;
+            bool alwaysActiveValue = false;
+            bool pauseOnAltTabValue = false;
+            bool active = false;
+        };
+
+        BackgroundActivityState g_backgroundActivityState;
+
+        void ApplyBackgroundActivityOverride()
+        {
+            if (g_backgroundActivityState.active)
+            {
+                return;
+            }
+
+            auto *alwaysActive = RE::GetINISetting("bAlwaysActive:General");
+            auto *pauseOnAltTab = RE::GetINISetting("bPauseOnAltTab:General");
+            bool applied = false;
+
+            if (alwaysActive && alwaysActive->GetType() == RE::Setting::SETTING_TYPE::kBinary)
+            {
+                g_backgroundActivityState.alwaysActive = alwaysActive;
+                g_backgroundActivityState.alwaysActiveValue = alwaysActive->GetBinary();
+                alwaysActive->SetBinary(true);
+                applied = true;
+            }
+
+            if (pauseOnAltTab && pauseOnAltTab->GetType() == RE::Setting::SETTING_TYPE::kBinary)
+            {
+                g_backgroundActivityState.pauseOnAltTab = pauseOnAltTab;
+                g_backgroundActivityState.pauseOnAltTabValue = pauseOnAltTab->GetBinary();
+                pauseOnAltTab->SetBinary(false);
+                applied = true;
+            }
+
+            g_backgroundActivityState.active = applied;
+        }
+
+        void RestoreBackgroundActivityOverride()
+        {
+            if (!g_backgroundActivityState.active)
+            {
+                return;
+            }
+
+            if (g_backgroundActivityState.alwaysActive &&
+                g_backgroundActivityState.alwaysActive->GetType() == RE::Setting::SETTING_TYPE::kBinary &&
+                g_backgroundActivityState.alwaysActive->GetBinary())
+            {
+                g_backgroundActivityState.alwaysActive->SetBinary(g_backgroundActivityState.alwaysActiveValue);
+            }
+
+            if (g_backgroundActivityState.pauseOnAltTab &&
+                g_backgroundActivityState.pauseOnAltTab->GetType() == RE::Setting::SETTING_TYPE::kBinary &&
+                !g_backgroundActivityState.pauseOnAltTab->GetBinary())
+            {
+                g_backgroundActivityState.pauseOnAltTab->SetBinary(g_backgroundActivityState.pauseOnAltTabValue);
+            }
+
+            g_backgroundActivityState = {};
+        }
+
         void HandleConsoleMessage(PrismaView, PRISMA_UI_API::ConsoleMessageLevel level, const char *message)
         {
             switch (level)
@@ -337,6 +403,7 @@ namespace MAP76::UI
 
             State::g_api->Hide(State::g_view);
             State::g_mapIsOpen.store(false);
+            State::g_mapInputFocused.store(false);
 
             Hooks::SetupWindowHook();
         }
@@ -446,22 +513,26 @@ namespace MAP76::UI
         auto *mainLoop = RE::Main::GetSingleton();
         if (currentMapState)
         {
+            ApplyBackgroundActivityOverride();
             if (mainLoop)
             {
                 mainLoop->freezeTime = Settings::freezeSimulation;
             }
             State::g_api->Show(State::g_view);
             State::g_api->Focus(State::g_view, true);
+            State::g_mapInputFocused.store(true);
             State::g_api->Invoke(State::g_view, "if (window.onMapOpened) { window.onMapOpened(); } if (window.resetUIState) { window.resetUIState(); } if (window.requestFreshMapData) { window.requestFreshMapData(''); }");
         }
         else
         {
+            RestoreBackgroundActivityOverride();
             if (mainLoop)
             {
                 mainLoop->freezeTime = false;
             }
             State::g_api->Invoke(State::g_view, "if (window.onMapClosed) { window.onMapClosed(); } if (window.resetUIState) { window.resetUIState(); }");
             State::g_api->Unfocus(State::g_view);
+            State::g_mapInputFocused.store(false);
             State::g_api->Hide(State::g_view);
         }
     }

@@ -22,6 +22,23 @@ namespace MAP76::Hooks
                 return;
             }
 
+            HWND gameWindow = FindWindowA("Fallout4", nullptr);
+            bool shouldOwnInput = gameWindow && GetForegroundWindow() == gameWindow && !MAP76::UI::IsPlayerInMenuMode();
+            bool ownsInput = MAP76::UI::State::g_mapInputFocused.load();
+
+            if (shouldOwnInput != ownsInput)
+            {
+                if (shouldOwnInput)
+                {
+                    MAP76::UI::State::g_api->Focus(MAP76::UI::State::g_view, true);
+                }
+                else
+                {
+                    MAP76::UI::State::g_api->Unfocus(MAP76::UI::State::g_view);
+                }
+                MAP76::UI::State::g_mapInputFocused.store(shouldOwnInput);
+            }
+
             std::string payloadStr = MAP76::UI::Payload::GetFrameTickPayloadAsJSON();
             if (!payloadStr.empty() && payloadStr != "{}")
             {
