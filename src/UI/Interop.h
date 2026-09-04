@@ -14,6 +14,7 @@ namespace MAP76::UI
 
         inline std::atomic<bool> g_mapIsOpen{false};
         inline std::atomic<bool> g_mapInputFocused{false};
+        inline std::atomic<bool> g_appIsActive{true};
     }
 
     /**
