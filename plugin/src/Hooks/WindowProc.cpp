@@ -9,21 +9,26 @@ namespace MAP76::Hooks
     {
         WNDPROC originalProc = g_oldWndProc;
 
-        if (uMsg == WM_ACTIVATEAPP && UI::State::g_mapIsOpen.load() && UI::State::g_api && UI::State::g_view)
+        if (uMsg == WM_ACTIVATEAPP)
         {
-            if (!wParam)
+            UI::State::g_appIsActive.store(wParam != 0);
+
+            if (UI::State::g_mapIsOpen.load() && UI::State::g_api && UI::State::g_view)
             {
-                if (UI::State::g_mapInputFocused.exchange(false))
+                if (!wParam)
                 {
-                    UI::State::g_api->Unfocus(UI::State::g_view);
+                    if (UI::State::g_mapInputFocused.exchange(false))
+                    {
+                        UI::State::g_api->Unfocus(UI::State::g_view);
+                    }
                 }
-            }
-            else if (GetForegroundWindow() == hWnd && !UI::IsPlayerInMenuMode())
-            {
-                bool expected = false;
-                if (UI::State::g_mapInputFocused.compare_exchange_strong(expected, true))
+                else if (!UI::IsPlayerInMenuMode())
                 {
-                    UI::State::g_api->Focus(UI::State::g_view, true);
+                    bool expected = false;
+                    if (UI::State::g_mapInputFocused.compare_exchange_strong(expected, true))
+                    {
+                        UI::State::g_api->Focus(UI::State::g_view, false);
+                    }
                 }
             }
         }
@@ -32,11 +37,17 @@ namespace MAP76::Hooks
         {
             if (wParam == Constants::Input::KEY_M)
             {
-                if (!UI::IsPlayerInMenuMode())
+                if (!UI::State::g_mapIsOpen.load() && !UI::IsPlayerInMenuMode())
                 {
                     UI::ToggleMAP76();
                     return 0;
                 }
+            }
+
+            if (wParam == VK_ESCAPE && UI::State::g_mapIsOpen.load())
+            {
+                UI::ToggleMAP76();
+                return 0;
             }
         }
 

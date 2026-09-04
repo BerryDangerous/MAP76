@@ -538,7 +538,7 @@ namespace MAP76::UI
                 mainLoop->freezeTime = Settings::freezeSimulation;
             }
             State::g_api->Show(State::g_view);
-            State::g_api->Focus(State::g_view, true);
+            State::g_api->Focus(State::g_view, false);
             State::g_mapInputFocused.store(true);
             State::g_api->Invoke(State::g_view, "if (window.onMapOpened) { window.onMapOpened(); } if (window.resetUIState) { window.resetUIState(); } if (window.requestFreshMapData) { window.requestFreshMapData(''); }");
         }
