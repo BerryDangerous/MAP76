@@ -124,7 +124,7 @@
       "owned": "OWNED",
       "unowned": "UNOWNED"
     },
-    "empty": "NO {{tab}}SETTLEMENTS",
+    "empty": "NO SETTLEMENTS",
     "stats": {
       "happiness": "HAPPINESS",
       "population": "POPULATION",
