@@ -12,6 +12,8 @@
 #include <format>
 #include "RE/S/Setting.h"
 #include "RE/U/UIUtils.h"
+#include "RE/I/IMenu.h"
+#include "RE/U/UIMessageQueue.h"
 #include "REX/W32/OLE32.h"
 #include "REX/W32/SHELL32.h"
 #include "F4SE/API.h"
@@ -406,8 +408,24 @@ namespace MAP76::UI
 
 namespace MAP76::UI
 {
+    class MAP76DummyMenu : public RE::IMenu
+    {
+    public:
+        static constexpr auto MENU_NAME = "MAP76DummyMenu";
+        MAP76DummyMenu() {
+            menuFlags.set(RE::UI_MENU_FLAGS::kUsesCursor, RE::UI_MENU_FLAGS::kUpdateUsesCursor, RE::UI_MENU_FLAGS::kCustomRendering);
+            depthPriority = RE::UI_DEPTH_PRIORITY::kStandard;
+            menuName = MENU_NAME;
+            inputEventHandlingEnabled = false;
+        }
+        static RE::IMenu* Create(const RE::UIMessage&) { return new MAP76DummyMenu(); }
+    };
+
     void Initialize()
     {
+        if (auto* ui = RE::UI::GetSingleton()) {
+            ui->RegisterMenu(MAP76DummyMenu::MENU_NAME, MAP76DummyMenu::Create);
+        }
         Settings::Load();
         if (State::g_api && State::g_view == 0)
         {
@@ -532,6 +550,9 @@ namespace MAP76::UI
         auto *mainLoop = RE::Main::GetSingleton();
         if (currentMapState)
         {
+            if (auto* msgQ = RE::UIMessageQueue::GetSingleton()) {
+                msgQ->AddMessage(MAP76DummyMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kShow);
+            }
             ApplyBackgroundActivityOverride();
             if (mainLoop)
             {
@@ -544,6 +565,9 @@ namespace MAP76::UI
         }
         else
         {
+            if (auto* msgQ = RE::UIMessageQueue::GetSingleton()) {
+                msgQ->AddMessage(MAP76DummyMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kHide);
+            }
             RestoreBackgroundActivityOverride();
             if (mainLoop)
             {
