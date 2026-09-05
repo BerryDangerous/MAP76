@@ -41,8 +41,8 @@ void OnF4SEMessage(F4SE::MessagingInterface::Message *a_msg)
 extern "C" __declspec(dllexport) bool F4SEAPI F4SEPlugin_Query(const F4SE::QueryInterface* a_f4se, F4SE::PluginInfo* a_info)
 {
     a_info->infoVersion = F4SE::PluginInfo::kVersion;
-    a_info->name = "MAP76";
-    a_info->version = 1;
+    a_info->name = MAP76_PLUGIN_NAME;
+    a_info->version = MAP76_VERSION_INT;
 
     if (a_f4se->IsEditor()) {
         return false;
@@ -54,10 +54,10 @@ extern "C" __declspec(dllexport) bool F4SEAPI F4SEPlugin_Query(const F4SE::Query
 extern "C" __declspec(dllexport) bool F4SEAPI F4SEPlugin_Load(const F4SE::LoadInterface *a_f4se)
 {
     F4SE::InitInfo info;
-    info.logName = "MAP76";
+    info.logName = MAP76_PLUGIN_NAME;
     F4SE::Init(a_f4se, info);
 
-    REX::INFO("MAP76: Log Engine Online.");
+    REX::INFO("{} : Log Engine Online.", MAP76_PLUGIN_NAME);
     F4SE::GetMessagingInterface()->RegisterListener(OnF4SEMessage);
     return true;
 }
