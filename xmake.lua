@@ -1,3 +1,11 @@
+local plugin_version = "0.9.6"
+local plugin_int_version = "1"
+local project_name = "MAP76"
+local license = "GPL-3.0"
+local author = "BerryDangerous"
+
+set_version(plugin_version)
+set_license(license)
 set_languages("c++23")
 
 if is_host("linux") then
@@ -40,18 +48,19 @@ end
 add_requires("nlohmann_json")
 
 includes("lib/commonlibf4")
+set_project(project_name)
 
-target("MAP76")
+target(project_name)
     set_kind("shared")
-    set_filename("MAP76.dll")
+    set_filename(project_name .. ".dll")
 
     add_deps("commonlibf4")
     add_packages("nlohmann_json")
 
     add_rules("commonlibf4.plugin", {
-        name    = "MAP76",
-        author  = "BerryDangerous",
-        version = "0.1.0",
+        name    = project_name,
+        author  = author,
+        version = plugin_version,
     })
 
     add_includedirs("src")
@@ -59,8 +68,15 @@ target("MAP76")
 
     add_defines("WIN32_LEAN_AND_MEAN", "NOMINMAX")
     add_defines("SPDLOG_USE_STD_FORMAT")
+    add_defines("MAP76_VERSION_INT=" .. plugin_int_version)
+    add_defines("MAP76_PLUGIN_NAME=\"" .. project_name .. "\"")
 
     if is_plat("windows") then
+        local home = os.getenv("HOME") or os.getenv("USERPROFILE")
+        if home then
+            add_cxflags("/d1trimfile:" .. home .. "/", {force = true})
+        end
         add_cxflags("/permissive-", "/wd4200", "/wd4201", "/wd4324")
         add_syslinks("Version", "Ole32", "OleAut32", "User32", "bcrypt", "crypt32")
+        add_shflags("/PDBALTPATH:%_PDB%")
     end
