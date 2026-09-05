@@ -12,6 +12,12 @@ export function initMockData(): void {
         }
     };
 
+    window.loadLocales = (jsonString: string) => {
+        if (typeof window.__loadLocalesRegister === 'function') {
+            window.__loadLocalesRegister(jsonString);
+        }
+    };
+
     const emitPayload = () => {
         const json = JSON.stringify(mockPayload);
         if (typeof window.__loadMarkersRegister === 'function') {
@@ -140,6 +146,15 @@ export function initMockData(): void {
         if (typeof window.loadAssets === 'function') {
             window.loadAssets(json);
         }
+
+        const localeJson = JSON.stringify({
+            gameLanguage: 'en',
+            locales: {}
+        });
+        if (typeof window.loadLocales === 'function') {
+            window.loadLocales(localeJson);
+        }
+
         emitPayload();
     };
 
