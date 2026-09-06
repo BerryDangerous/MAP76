@@ -54,8 +54,8 @@ export const WorldspaceUtils = {
             }
         }
 
-        const currentWsEditorID = WorldspaceUtils.getWorldspaceEditorID(currentWorldspace);
-        const targetWsEditorID = WorldspaceUtils.getWorldspaceEditorID(effectiveTargetWs);
+        const currentWsEditorID = WorldspaceUtils.getWorldspaceEditorID(currentWorldspace)?.toLowerCase();
+        const targetWsEditorID = WorldspaceUtils.getWorldspaceEditorID(effectiveTargetWs)?.toLowerCase();
 
         const getDLCGateway = (gw: { x: number, y: number, z: number, isGateway: boolean, plugin?: string, localFormId?: number }) => {
             if (gw.plugin && gw.localFormId && payload && payload.markers) {
@@ -67,16 +67,16 @@ export const WorldspaceUtils = {
             return gw;
         };
 
-        if (currentWsEditorID === DLC_GATEWAYS.COMMONWEALTH_ID && targetWsEditorID === DLC_GATEWAYS.NUKA_WORLD_ID) {
+        if (currentWsEditorID === DLC_GATEWAYS.COMMONWEALTH_ID.toLowerCase() && targetWsEditorID === DLC_GATEWAYS.NUKA_WORLD_ID.toLowerCase()) {
             return getDLCGateway(DLC_GATEWAYS.COMMONWEALTH_TO_NUKAWORLD[gatewayType]);
         }
-        if (currentWsEditorID === DLC_GATEWAYS.NUKA_WORLD_ID && targetWsEditorID === DLC_GATEWAYS.COMMONWEALTH_ID) {
+        if (currentWsEditorID === DLC_GATEWAYS.NUKA_WORLD_ID.toLowerCase() && targetWsEditorID === DLC_GATEWAYS.COMMONWEALTH_ID.toLowerCase()) {
             return getDLCGateway(DLC_GATEWAYS.NUKAWORLD_TO_COMMONWEALTH[gatewayType]);
         }
-        if (currentWsEditorID === DLC_GATEWAYS.COMMONWEALTH_ID && targetWsEditorID === DLC_GATEWAYS.FAR_HARBOR_ID) {
+        if (currentWsEditorID === DLC_GATEWAYS.COMMONWEALTH_ID.toLowerCase() && targetWsEditorID === DLC_GATEWAYS.FAR_HARBOR_ID.toLowerCase()) {
             return getDLCGateway(DLC_GATEWAYS.COMMONWEALTH_TO_FARHARBOR[gatewayType]);
         }
-        if (currentWsEditorID === DLC_GATEWAYS.FAR_HARBOR_ID && targetWsEditorID === DLC_GATEWAYS.COMMONWEALTH_ID) {
+        if (currentWsEditorID === DLC_GATEWAYS.FAR_HARBOR_ID.toLowerCase() && targetWsEditorID === DLC_GATEWAYS.COMMONWEALTH_ID.toLowerCase()) {
             return getDLCGateway(DLC_GATEWAYS.FARHARBOR_TO_COMMONWEALTH[gatewayType]);
         }
 

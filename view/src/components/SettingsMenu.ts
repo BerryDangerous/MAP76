@@ -347,15 +347,16 @@ export const SettingsMenu = {
 
         const mapControls = Object.entries(worldspaces).map(([wsIdStr, ws]) => {
             const wsId = parseInt(wsIdStr, 10);
-            const configs = allConfigs.filter(c => c.worldspaceEditorID === (ws as any).editorID);
+            const wsEditorID = ((ws as any).editorID || '').toLowerCase();
+            const configs = allConfigs.filter(c => c.worldspaceEditorID?.toLowerCase() === wsEditorID);
             return { ws: ws as any, entry: this.buildMapControlEntry(wsId, ws, configs) };
         });
 
-        const pinnedOrder = ['Commonwealth', 'NukaWorld', 'DLC03FarHarbor'];
+        const pinnedOrder = ['commonwealth', 'nukaworld', 'dlc03farharbor'];
 
         mapControls.sort((a, b) => {
-            const idxA = pinnedOrder.indexOf(a.ws.editorID);
-            const idxB = pinnedOrder.indexOf(b.ws.editorID);
+            const idxA = pinnedOrder.indexOf((a.ws.editorID || '').toLowerCase());
+            const idxB = pinnedOrder.indexOf((b.ws.editorID || '').toLowerCase());
             
             if (idxA !== -1 && idxB !== -1) return idxA - idxB;
             if (idxA !== -1) return -1;

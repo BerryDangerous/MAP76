@@ -95,10 +95,11 @@ export const AssetManager = {
     getDefaultMapConfigForWorldspace(worldspaceEditorID: string): MapConfig {
         const allConfigs = Object.values(this.mapConfigs);
         
-        const defaultFallback = allConfigs.find(c => c.worldspaceEditorID === worldspaceEditorID && c.configID?.toLowerCase().includes('default'));
+        const searchID = worldspaceEditorID.toLowerCase();
+        const defaultFallback = allConfigs.find(c => c.worldspaceEditorID?.toLowerCase() === searchID && c.configID?.toLowerCase().includes('default'));
         if (defaultFallback) return defaultFallback;
         
-        const anyFallback = allConfigs.find(c => c.worldspaceEditorID === worldspaceEditorID);
+        const anyFallback = allConfigs.find(c => c.worldspaceEditorID?.toLowerCase() === searchID);
         if (anyFallback) return anyFallback;
         
         return DEFAULT_BLANK_CONFIG;
