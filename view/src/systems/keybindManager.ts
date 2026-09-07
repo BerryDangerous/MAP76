@@ -1,5 +1,5 @@
 import { t } from '@/core/i18n.js';
-
+import { FocusManager } from './focusManager.js';
 export type KeyAction =
     | 'NAV_UP'
     | 'NAV_DOWN'
@@ -79,6 +79,55 @@ export const DEFAULT_LABELS: Record<KeyAction, string> = {
 
 export class KeybindsSystem {
     private static keymap: Record<KeyAction, string[]> = { ...DEFAULT_KEYMAP };
+    private static activeModalHandler: ((e: KeyboardEvent) => void) | null = null;
+
+    public static setActiveModalHandler(handler: ((e: KeyboardEvent) => void) | null) {
+        this.activeModalHandler = handler;
+    }
+
+    public static initGlobalListeners(globalFallback: (e: KeyboardEvent) => void): void {
+        window.addEventListener('keydown', (e: KeyboardEvent) => {
+            if (this.activeModalHandler) {
+                this.activeModalHandler(e);
+                return;
+            }
+
+            const activeEl = document.activeElement as HTMLElement;
+            const isInputFocused = activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA');
+
+            if (isInputFocused) {
+                const navKeys = ['Escape', 'Enter', 'Tab', 'ArrowUp', 'ArrowDown'];
+                if (!navKeys.includes(e.key)) {
+                    return;
+                }
+            }
+
+            const handledByFocus = FocusManager.handleKeyDown(e);
+            if (handledByFocus) {
+                e.preventDefault();
+                return;
+            }
+
+            if (globalFallback) {
+                globalFallback(e);
+            }
+
+            e.preventDefault();
+        });
+
+        window.addEventListener('keyup', (e: KeyboardEvent) => {
+            const handledByFocus = FocusManager.handleKeyUp(e);
+            if (handledByFocus) {
+                e.preventDefault();
+                e.stopPropagation();
+                return;
+            }
+
+            if (globalFallback) {
+                globalFallback(e);
+            }
+        });
+    }
 
     public static isAction(e: KeyboardEvent, action: KeyAction): boolean {
         const allowedKeys = this.keymap[action];

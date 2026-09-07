@@ -164,172 +164,152 @@ window.addEventListener('DOMContentLoaded', () => {
         window.requestFreshMapData(""); 
     }
 
-    window.addEventListener('keydown', (e: KeyboardEvent) => {
-        if (e.key === 'Escape' || e.code === 'Escape' || e.keyCode === 27) {
-            e.preventDefault();
-            e.stopPropagation();
-            return;
-        }
-
-        if (KeybindsSystem.isAction(e, 'NAV_BACK')) {
-            e.preventDefault();
-        }
-
-        if (KeybindsSystem.isAction(e, 'CLOSE_MAP') && FocusManager.getFocus() === 'MAP') {
-            console.log('Closing map via CLOSE_MAP action...');
-            resetUIState();
-            onMapClosed();
-            EngineBridge.closeMap();
-            return;
-        }
-
-        const handledByFocus = FocusManager.handleKeyDown(e);
-        if (handledByFocus) {
-            return;
-        }
-
-        if (KeybindsSystem.isAction(e, 'NAV_BACK')) {
-            if (SettingsMenu.isOpen) {
-                e.stopPropagation();
-                SettingsMenu.handleCloseRequest();
-                return;
-            }
-            console.log('[KeyHandler] Focus is MAP. Closing map via NAV_BACK');
-            e.stopPropagation();
-            resetUIState();
-            onMapClosed();
-            EngineBridge.closeMap();
-            return;
-        }
-
-        if (KeybindsSystem.isAction(e, 'OPEN_SETTINGS')) {
-            SettingsMenu.toggle();
-            return;
-        }
-
-        if (FocusManager.getFocus() === 'MAP') {
-            if (KeybindsSystem.isAction(e, 'ZOOM_IN')) {
-                EngineBridge.emitSound('UIPipBoyMapZoom');
-                MapViewport.performZoom('in', MapViewport.lastMouseX, MapViewport.lastMouseY);
-                return;
-            }
-            if (KeybindsSystem.isAction(e, 'ZOOM_OUT')) {
-                EngineBridge.emitSound('UIPipBoyMapZoom');
-                MapViewport.performZoom('out', MapViewport.lastMouseX, MapViewport.lastMouseY);
-                return;
-            }
-            if (KeybindsSystem.isAction(e, 'CENTER_CAMERA')) {
+    KeybindsSystem.initGlobalListeners((e: KeyboardEvent) => {
+        if (e.type === 'keydown') {
+            if (e.key === 'Escape' || e.code === 'Escape' || e.keyCode === 27) {
                 e.preventDefault();
-                EngineBridge.emitSound('UIPipBoyMapZoom');
-                if (mapState.player) {
-                    if (mapState.activeMapConfig) {
-                        mapState.worldViewports[mapState.activeMapConfig.worldspaceID] = {
-                            zoom: mapState.zoom,
-                            panX: mapState.panX,
-                            panY: mapState.panY
+                e.stopPropagation();
+                return;
+            }
+
+            if (KeybindsSystem.isAction(e, 'CLOSE_MAP')) {
+                console.log('Closing map via CLOSE_MAP action...');
+                e.preventDefault();
+                resetUIState();
+                onMapClosed();
+                EngineBridge.closeMap();
+                return;
+            }
+
+            if (KeybindsSystem.isAction(e, 'NAV_BACK')) {
+                console.log('[KeyHandler] Focus is MAP. Closing map via NAV_BACK');
+                e.preventDefault();
+                resetUIState();
+                onMapClosed();
+                EngineBridge.closeMap();
+                return;
+            }
+
+            if (KeybindsSystem.isAction(e, 'OPEN_SETTINGS')) {
+                SettingsMenu.toggle();
+                return;
+            }
+
+            if (FocusManager.getFocus() === 'MAP') {
+                if (KeybindsSystem.isAction(e, 'ZOOM_IN')) {
+                    EngineBridge.emitSound('UIPipBoyMapZoom');
+                    MapViewport.performZoom('in', MapViewport.lastMouseX, MapViewport.lastMouseY);
+                    return;
+                }
+                if (KeybindsSystem.isAction(e, 'ZOOM_OUT')) {
+                    EngineBridge.emitSound('UIPipBoyMapZoom');
+                    MapViewport.performZoom('out', MapViewport.lastMouseX, MapViewport.lastMouseY);
+                    return;
+                }
+                if (KeybindsSystem.isAction(e, 'CENTER_CAMERA')) {
+                    e.preventDefault();
+                    EngineBridge.emitSound('UIPipBoyMapZoom');
+                    if (mapState.player) {
+                        if (mapState.activeMapConfig) {
+                            mapState.worldViewports[mapState.activeMapConfig.worldspaceID] = {
+                                zoom: mapState.zoom,
+                                panX: mapState.panX,
+                                panY: mapState.panY
+                            };
+                        }
+                        mapState.selectedWorldspaceID = null;
+                        if (mapState.lastPayload) {
+                            loadMarkers(mapState.lastPayload, true);
+                        }
+                        if (mapState.player.active) {
+                            MapViewport.centerOnWorldCoords(mapState.player.x, mapState.player.y);
+                        }
+                    }
+                    return;
+                }
+                if (KeybindsSystem.isAction(e, 'PLACE_MARKER')) {
+                    const config = mapState.activeMapConfig;
+                    const worldspaceData = mapState.lastPayload?.worldspaces?.[config.worldspaceID];
+                    const bounds = worldspaceData?.bounds;
+                    if (bounds) {
+                        const worldCoords = MapUtils.screenToGameCoords(
+                            MapViewport.lastMouseX, 
+                            MapViewport.lastMouseY, 
+                            bounds,
+                            mapState.activeMapConfig!.gutters!,
+                            mapState.zoom,
+                            mapState.panX,
+                            mapState.panY
+                        );
+                        CustomMarkerCard.open({ gameCoords: worldCoords, pageCoords: { x: MapViewport.lastMouseX, y: MapViewport.lastMouseY }, worldspaceId: config.worldspaceID });
+                        FocusManager.setFocus('CUSTOM_MARKER_CARD');
+                    }
+                    return;
+                }
+                if (KeybindsSystem.isAction(e, 'PREV_WORLD') || KeybindsSystem.isAction(e, 'NEXT_WORLD')) {
+                    if (!mapState.lastPayload || !mapState.lastPayload.worldspaces) return;
+                    
+                    const wsKeys = Object.keys(mapState.lastPayload.worldspaces).map(k => parseInt(k, 10));
+                    if (wsKeys.length <= 1) return;
+
+                    wsKeys.sort((a, b) => {
+                        const getPriority = (id: number) => {
+                            if (id === 60) return 0; // Commonwealth
+                            if (id === 100673807) return 1; // Nuka-World
+                            if (id === 50334479) return 2; // The Island
+                            return 3;
                         };
-                    }
-                    mapState.selectedWorldspaceID = null;
-                    if (mapState.lastPayload) {
-                        loadMarkers(mapState.lastPayload, true);
-                    }
-                    if (mapState.player.active) {
-                        MapViewport.centerOnWorldCoords(mapState.player.x, mapState.player.y);
-                    }
-                }
-                return;
-            }
-            if (KeybindsSystem.isAction(e, 'PLACE_MARKER')) {
-                const config = mapState.activeMapConfig;
-                const worldspaceData = mapState.lastPayload?.worldspaces?.[config.worldspaceID];
-                const bounds = worldspaceData?.bounds;
-                if (bounds) {
-                    const worldCoords = MapUtils.screenToGameCoords(
-                        MapViewport.lastMouseX, 
-                        MapViewport.lastMouseY, 
-                        bounds,
-                        mapState.activeMapConfig!.gutters!,
-                        mapState.zoom,
-                        mapState.panX,
-                        mapState.panY
-                    );
-                    CustomMarkerCard.open({ gameCoords: worldCoords, pageCoords: { x: MapViewport.lastMouseX, y: MapViewport.lastMouseY }, worldspaceId: config.worldspaceID });
-                    FocusManager.setFocus('CUSTOM_MARKER_CARD');
-                }
-                return;
-            }
-            if (KeybindsSystem.isAction(e, 'PREV_WORLD') || KeybindsSystem.isAction(e, 'NEXT_WORLD')) {
-                if (!mapState.lastPayload || !mapState.lastPayload.worldspaces) return;
-                
-                const wsKeys = Object.keys(mapState.lastPayload.worldspaces).map(k => parseInt(k, 10));
-                if (wsKeys.length <= 1) return;
+                        const pA = getPriority(a);
+                        const pB = getPriority(b);
+                        if (pA !== pB) return pA - pB;
 
-                wsKeys.sort((a, b) => {
-                    const getPriority = (id: number) => {
-                        if (id === 60) return 0; // Commonwealth
-                        if (id === 100673807) return 1; // Nuka-World
-                        if (id === 50334479) return 2; // The Island
-                        return 3;
-                    };
-                    const pA = getPriority(a);
-                    const pB = getPriority(b);
-                    if (pA !== pB) return pA - pB;
+                        const nameA = mapState.lastPayload!.worldspaces![a].fullName.toLowerCase();
+                        const nameB = mapState.lastPayload!.worldspaces![b].fullName.toLowerCase();
+                        return nameA.localeCompare(nameB);
+                    });
 
-                    const nameA = mapState.lastPayload!.worldspaces![a].fullName.toLowerCase();
-                    const nameB = mapState.lastPayload!.worldspaces![b].fullName.toLowerCase();
-                    return nameA.localeCompare(nameB);
-                });
-
-                const currentIdx = wsKeys.indexOf(mapState.activeMapConfig.worldspaceID);
-                let nextIdx = 0;
-                if (KeybindsSystem.isAction(e, 'PREV_WORLD')) {
-                    nextIdx = currentIdx > 0 ? currentIdx - 1 : wsKeys.length - 1;
-                } else {
-                    nextIdx = currentIdx < wsKeys.length - 1 ? currentIdx + 1 : 0;
-                }
-                EngineBridge.emitSound(appSettings.alternativeMapSound ? 'UIGeneralFocus' : 'UIPerkMenuEnter');
-                switchWorldspace(wsKeys[nextIdx]);
-                return;
-            }
-
-            const questCorner = QuestList.getState().dockCorner;
-            const workshopCorner = WorkshopList.getState().dockCorner;
-            if (LayoutManager.isExpandKey(e, questCorner)) {
-                QuestList.expand();
-            } else if (LayoutManager.isExpandKey(e, workshopCorner)) {
-                WorkshopList.expand();
-            } else if (LayoutManager.isExpandKey(e, SearchPanel.getState().dockCorner)) {
-                SearchPanel.expand();
-            } else if (KeybindsSystem.isAction(e, 'TOGGLE_SUPPLY_LINES')) {
-                if (hasSupplyLines()) {
-                    toggleSupplyLinesView();
-                    if (mapState.lastPayload) {
-                        loadMarkers(mapState.lastPayload);
+                    const currentIdx = wsKeys.indexOf(mapState.activeMapConfig.worldspaceID);
+                    let nextIdx = 0;
+                    if (KeybindsSystem.isAction(e, 'PREV_WORLD')) {
+                        nextIdx = currentIdx > 0 ? currentIdx - 1 : wsKeys.length - 1;
                     } else {
-                        applySupplyLinesVisibilityFilter();
+                        nextIdx = currentIdx < wsKeys.length - 1 ? currentIdx + 1 : 0;
                     }
-                    window.dispatchEvent(new Event('settingsUpdated'));
+                    EngineBridge.emitSound(appSettings.alternativeMapSound ? 'UIGeneralFocus' : 'UIPerkMenuEnter');
+                    switchWorldspace(wsKeys[nextIdx]);
+                    return;
+                }
+
+                const questCorner = QuestList.getState().dockCorner;
+                const workshopCorner = WorkshopList.getState().dockCorner;
+                if (LayoutManager.isExpandKey(e, questCorner)) {
+                    QuestList.expand();
+                } else if (LayoutManager.isExpandKey(e, workshopCorner)) {
+                    WorkshopList.expand();
+                } else if (LayoutManager.isExpandKey(e, SearchPanel.getState().dockCorner)) {
+                    SearchPanel.expand();
+                } else if (KeybindsSystem.isAction(e, 'TOGGLE_SUPPLY_LINES')) {
+                    if (hasSupplyLines()) {
+                        toggleSupplyLinesView();
+                        if (mapState.lastPayload) {
+                            loadMarkers(mapState.lastPayload);
+                        } else {
+                            applySupplyLinesVisibilityFilter();
+                        }
+                        window.dispatchEvent(new Event('settingsUpdated'));
+                    }
                 }
             }
-        }
-    });
-
-    window.addEventListener('keyup', (e: KeyboardEvent) => {
-        const handledByFocus = FocusManager.handleKeyUp(e);
-        if (handledByFocus) {
-            e.preventDefault();
-            e.stopPropagation();
-            return;
-        }
-
-        if (e.key === 'Escape' || e.code === 'Escape' || e.keyCode === 27) {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('Closing map via Escape keyup...');
-            resetUIState();
-            onMapClosed();
-            EngineBridge.closeMap();
-            return;
+        } else if (e.type === 'keyup') {
+            if (e.key === 'Escape' || e.code === 'Escape' || e.keyCode === 27) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Closing map via Escape keyup...');
+                resetUIState();
+                onMapClosed();
+                EngineBridge.closeMap();
+                return;
+            }
         }
     });
 });

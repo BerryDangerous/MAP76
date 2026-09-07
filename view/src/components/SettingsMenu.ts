@@ -41,20 +41,6 @@ export const SettingsMenu = {
     activeTab: 'DISPLAY' as SettingsTab,
     pendingCloseKey: null as string | null,
 
-    attachRowNavigation(rowEl: HTMLElement) {
-        rowEl.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowDown') {
-                e.preventDefault();
-                const next = rowEl.nextElementSibling as HTMLElement;
-                if (next) next.focus();
-            } else if (e.key === 'ArrowUp') {
-                e.preventDefault();
-                const prev = rowEl.previousElementSibling as HTMLElement;
-                if (prev) prev.focus();
-            }
-        });
-    },
-
     init() {
         this.container = document.createElement('div');
         this.container.id = 'settings-menu-panel';
@@ -89,7 +75,6 @@ export const SettingsMenu = {
         ) => {
             const row = new SettingsRow(label, control);
             const rowEl = row.getElement();
-            this.attachRowNavigation(rowEl);
             this.controls.push({ key, label, tab, updateUI: (val: any) => control.setValue(val), row });
         };
 
@@ -152,19 +137,50 @@ export const SettingsMenu = {
             id: 'SETTINGS_MENU',
             getAvailableControls: () => ['NAV_BACK', 'RESET_DEFAULTS'] as import('../systems/focusManager.js').ControlActionDef[],
             handleKeyDown: (e) => {
-                if (e.key === 'Escape' || KeybindsSystem.isAction(e, 'NAV_BACK') || KeybindsSystem.isAction(e, 'CLOSE_MAP')) {
+                if (e.key === 'Escape' || KeybindsSystem.isAction(e, 'CLOSE_MAP')) {
                     e.preventDefault();
-                    e.stopPropagation();
                     this.pendingCloseKey = e.key || e.code || String(e.keyCode);
                     return true;
                 }
-                if (e.key === 't' || e.key === 'T') {
+
+                const activeEl = document.activeElement as HTMLElement;
+                const isFocusedOnTab = activeEl?.classList.contains('settings-tab');
+
+                if (KeybindsSystem.isAction(e, 'NAV_BACK')) {
+                    if (!isFocusedOnTab) {
+                        e.preventDefault();
+                        this.focusActiveTab();
+                        return true;
+                    } else {
+                        e.preventDefault();
+                        this.pendingCloseKey = e.key || e.code || String(e.keyCode);
+                        return true;
+                    }
+                }
+
+                if (KeybindsSystem.isAction(e, 'RESET_DEFAULTS')) {
                     showConfirmationModal("Restore default settings?\nThis cannot be undone.", () => {
                         updateSettings(getDefaultSettings());
                         this.updateUIFromSettings();
                     }, undefined, "RESTORE", "CANCEL");
                     return true;
                 }
+
+                if (KeybindsSystem.isAction(e, 'NAV_DOWN') || KeybindsSystem.isAction(e, 'NAV_UP')) {
+                    if (activeEl?.classList.contains('settings-row') || activeEl?.classList.contains('settings-tab')) {
+                        const target = KeybindsSystem.isAction(e, 'NAV_DOWN') ? activeEl.nextElementSibling : activeEl.previousElementSibling;
+                        if (target) (target as HTMLElement).focus();
+                        return true;
+                    }
+                }
+
+                if (activeEl?.classList.contains('settings-tab')) {
+                    if (KeybindsSystem.isAction(e, 'NAV_RIGHT') || KeybindsSystem.isAction(e, 'SELECT')) {
+                        this.focusFirstItemInList();
+                        return true;
+                    }
+                }
+
                 return false;
             },
             handleKeyUp: (e) => {
@@ -178,14 +194,6 @@ export const SettingsMenu = {
                 }
                 this.pendingCloseKey = null;
                 return false;
-            }
-        });
-        
-        this.listContainer.addEventListener('keydown', (e) => {
-            if (e.key === 'Tab') {
-                e.preventDefault();
-                e.stopPropagation();
-                this.focusActiveTab();
             }
         });
     },
@@ -218,21 +226,6 @@ export const SettingsMenu = {
 
             tabEl.addEventListener('mouseenter', () => {
                 tabEl.focus();
-            });
-
-            tabEl.addEventListener('keydown', (e) => {
-                if (e.key === 'ArrowDown') {
-                    e.preventDefault();
-                    const next = tabEl.nextElementSibling as HTMLElement;
-                    if (next) next.focus();
-                } else if (e.key === 'ArrowUp') {
-                    e.preventDefault();
-                    const prev = tabEl.previousElementSibling as HTMLElement;
-                    if (prev) prev.focus();
-                } else if (e.key === 'ArrowRight' || e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    this.focusFirstItemInList();
-                }
             });
 
             this.tabsContainer!.appendChild(tabEl);
@@ -326,7 +319,6 @@ export const SettingsMenu = {
         const label = t('settings.labels.mapStyle', { name: ws.fullName || ws.editorID });
 
         const row = new SettingsRow(label, control);
-        this.attachRowNavigation(row.getElement());
 
         return {
             key: `map_pref_${ws.editorID}`,

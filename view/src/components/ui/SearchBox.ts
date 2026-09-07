@@ -1,5 +1,6 @@
 import { EngineBridge } from '@/core/bridge.js';
 import { t } from '@/core/i18n.js';
+import { KeybindsSystem } from '@/systems/keybindManager.js';
 
 export interface SearchBoxOptions {
     container: HTMLElement;
@@ -65,10 +66,10 @@ export class SearchBox {
                 this.inputEl.focus();
                 e.preventDefault();
                 e.stopPropagation();
-            } else if (e.key === 'Enter' || e.key === ' ' || e.key.toLowerCase() === 'e') {
+            } else if (KeybindsSystem.isAction(e, 'SELECT')) {
                 EngineBridge.emitSound('UIMenuCancel');
                 this.clear();
-                this.inputEl.focus();
+                setTimeout(() => this.inputEl.focus(), 0);
                 e.preventDefault();
                 e.stopPropagation();
             }

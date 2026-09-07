@@ -1,5 +1,6 @@
 import { ButtonConfig } from '@/components/ui/Button.js';
 import { ActionButtonGroup } from '@/components/ui/ButtonGroup.js';
+import { KeybindsSystem } from '@/systems/keybindManager.js';
 
 export interface ModalConfig {
     text: string;
@@ -10,9 +11,11 @@ export class ModalManager {
     private static activeOverlay: HTMLElement | null = null;
     private static activeKeydownListener: ((e: KeyboardEvent) => void) | null = null;
     private static buttonGroup: ActionButtonGroup | null = null;
+    private static previousFocus: HTMLElement | null = null;
 
     public static show(config: ModalConfig): void {
         this.close();
+        this.previousFocus = document.activeElement as HTMLElement | null;
 
         const overlay = document.createElement('div');
         overlay.className = 'modal-overlay';
@@ -42,6 +45,7 @@ export class ModalManager {
 
         document.body.appendChild(overlay);
         this.activeOverlay = overlay;
+        this.buttonGroup.setSelectedIndex(0);
 
         this.activeKeydownListener = (e: KeyboardEvent) => {
             e.preventDefault();
@@ -51,7 +55,7 @@ export class ModalManager {
             }
         };
         
-        window.addEventListener('keydown', this.activeKeydownListener, true);
+        KeybindsSystem.setActiveModalHandler(this.activeKeydownListener);
     }
 
     public static close(): void {
@@ -66,8 +70,13 @@ export class ModalManager {
         }
 
         if (this.activeKeydownListener) {
-            window.removeEventListener('keydown', this.activeKeydownListener, true);
+            KeybindsSystem.setActiveModalHandler(null);
             this.activeKeydownListener = null;
+        }
+
+        if (this.previousFocus) {
+            this.previousFocus.focus();
+            this.previousFocus = null;
         }
     }
 }
