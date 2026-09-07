@@ -14,6 +14,10 @@
 #include "RE/U/UIUtils.h"
 #include "RE/I/IMenu.h"
 #include "RE/U/UIMessageQueue.h"
+#include "RE/B/BSInputEnableManager.h"
+#include "RE/B/BSInputEnableLayer.h"
+#include "RE/U/UserEvents.h"
+#include "RE/C/ControlMap.h"
 #include "REX/W32/OLE32.h"
 #include "REX/W32/SHELL32.h"
 #include "F4SE/API.h"
@@ -85,6 +89,31 @@ namespace MAP76::UI
             }
 
             g_backgroundActivityState = {};
+        }
+
+        RE::BSTSmartPointer<RE::BSInputEnableLayer> g_uiInputLayer;
+
+        void LockPlayerControls() {
+            auto* manager = RE::BSInputEnableManager::GetSingleton();
+            if (manager && !g_uiInputLayer) {
+                manager->AllocateNewLayer(g_uiInputLayer, "MAP76_UI");
+                manager->EnableUserEvent(
+                    g_uiInputLayer->layerID, 
+                    RE::UserEvents::USER_EVENT_FLAG::kAll,
+                    false, 
+                    RE::UserEvents::SENDER_ID::kMenu
+                );
+            }
+            if (auto* controlMap = RE::ControlMap::GetSingleton()) {
+                controlMap->SetTextEntryMode(true);
+            }
+        }
+
+        void UnlockPlayerControls() {
+            g_uiInputLayer.reset();
+            if (auto* controlMap = RE::ControlMap::GetSingleton()) {
+                controlMap->SetTextEntryMode(false);
+            }
         }
 
         void HandleConsoleMessage(PrismaView, PRISMA_UI_API::ConsoleMessageLevel level, const char *message)
@@ -554,6 +583,7 @@ namespace MAP76::UI
                 msgQ->AddMessage(MAP76DummyMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kShow);
             }
             ApplyBackgroundActivityOverride();
+            LockPlayerControls();
             if (mainLoop)
             {
                 mainLoop->freezeTime = Settings::freezeSimulation;
@@ -569,6 +599,7 @@ namespace MAP76::UI
                 msgQ->AddMessage(MAP76DummyMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kHide);
             }
             RestoreBackgroundActivityOverride();
+            UnlockPlayerControls();
             if (mainLoop)
             {
                 mainLoop->freezeTime = false;
