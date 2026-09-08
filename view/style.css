@@ -535,6 +535,14 @@ body, html {
     font-family: 'ControllerButtonsInverted', sans-serif;
 }
 
+body.controller-active .collapsible-panel .cp-btn-icon {
+    font-family: 'ControllerButtonsInverted', sans-serif;
+}
+
+body.controller-active .collapsible-panel .cp-collapse-btn:hover .cp-btn-icon {
+    font-family: 'ControllerButtons', sans-serif;
+}
+
 .collapsible-panel .cp-header {
     display: flex;
     align-items: center;
@@ -1565,3 +1573,24 @@ body.settings-open #player-layer {
 .floating-card:not([data-dock]) { transform-origin: top left; }
 body.disable-bold * { font-weight: normal !important; }
 body.disable-condensed { --main-font: 'Piboto', sans-serif; }
+
+/* ==========================================================================
+   CONTROLLER MODE OVERRIDES
+   ========================================================================== */
+body.controller-active #settings-bar,
+body.controller-active #info-bar,
+body.controller-active #control-bar,
+body.controller-active #info-card,
+body.controller-active #quest-list-panel,
+body.controller-active #workshop-list-panel,
+body.controller-active #search-panel,
+body.controller-active .floating-card,
+body.controller-active .collapsible-panel,
+body.controller-active #settings-menu-panel,
+body.controller-active #settings-backdrop {
+    pointer-events: none !important;
+}
+
+body.controller-active #custom-cursor {
+    z-index: 50 !important;
+}

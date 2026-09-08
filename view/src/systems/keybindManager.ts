@@ -117,6 +117,7 @@ export class KeybindsSystem {
         window.addEventListener('prisma-controller-action', ((e: CustomEvent) => {
             if (!this.isControllerActive) {
                 this.isControllerActive = true;
+                document.body.classList.add('controller-active');
                 window.dispatchEvent(new Event('controlsUpdated'));
             }
             
@@ -154,6 +155,7 @@ export class KeybindsSystem {
             const isGamepad = e.detail;
             if (this.isControllerActive !== isGamepad) {
                 this.isControllerActive = isGamepad;
+                document.body.classList.toggle('controller-active', isGamepad);
                 window.dispatchEvent(new Event('controlsUpdated'));
             }
         }) as EventListener);
@@ -190,6 +192,7 @@ export class KeybindsSystem {
         window.addEventListener('keyup', (e: KeyboardEvent) => {
             if (!e.key.startsWith('Gamepad_') && this.isControllerActive) {
                 this.isControllerActive = false;
+                document.body.classList.remove('controller-active');
                 window.dispatchEvent(new Event('controlsUpdated'));
             }
 
