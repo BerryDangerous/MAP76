@@ -9,6 +9,8 @@ namespace MAP76::UI {
     bool Settings::writePayloadToFile = false;
     bool Settings::showWorkshopInfoLog = false;
     bool Settings::skipSurvivalFastTravelCheck = false;
+    float Settings::gamepadCursorSpeed = 1200.0f;
+    float Settings::gamepadPanSensitivity = 0.5f;
 
     std::string Settings::GetConfigPath() {
         return "Data/F4SE/Plugins/MAP76.json";
@@ -37,6 +39,18 @@ namespace MAP76::UI {
             skipSurvivalFastTravelCheck = data["skipSurvivalFastTravelCheck"].get<bool>();
         } else {
             data["skipSurvivalFastTravelCheck"] = skipSurvivalFastTravelCheck;
+        }
+
+        if (data.contains("gamepadCursorSpeed") && data["gamepadCursorSpeed"].is_number()) {
+            gamepadCursorSpeed = data["gamepadCursorSpeed"].get<float>();
+        } else {
+            data["gamepadCursorSpeed"] = gamepadCursorSpeed;
+        }
+
+        if (data.contains("gamepadPanSensitivity") && data["gamepadPanSensitivity"].is_number()) {
+            gamepadPanSensitivity = data["gamepadPanSensitivity"].get<float>();
+        } else {
+            data["gamepadPanSensitivity"] = gamepadPanSensitivity;
         }
     }
 
