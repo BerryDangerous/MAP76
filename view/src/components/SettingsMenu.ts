@@ -110,9 +110,6 @@ export const SettingsMenu = {
         const altSoundToggle = new Toggle(appSettings.alternativeMapSound, (val) => { updateSettings({ alternativeMapSound: val }); });
         registerControl('alternativeMapSound', t('settings.labels.alternativeMapSound'), 'DISPLAY', altSoundToggle);
 
-        const dummySlider = new Slider(50, 0, 100, 1, () => { /* dummy */ });
-        registerControl('dummySlider' as any, t('settings.labels.dummySlider'), 'DISPLAY', dummySlider);
-
         const freezeToggle = new Toggle(appSettings.freezeSimulation, (val) => { updateSettings({ freezeSimulation: val }); });
         registerControl('freezeSimulation', t('settings.labels.freezeSimulation'), 'GAMEPLAY', freezeToggle);
 
