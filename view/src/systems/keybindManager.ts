@@ -18,6 +18,7 @@ export type KeyAction =
     | 'CENTER_CAMERA'
     | 'CENTER_ITEM'
     | 'OPEN_SETTINGS'
+    | 'OPEN_MENU'
     | 'RESET_DEFAULTS'
     | 'TOGGLE_ACTIVE'
     | 'TOGGLE_SUPPLY_LINES'
@@ -43,6 +44,7 @@ export const DEFAULT_KEYMAP: Record<KeyAction, string[]> = {
     CENTER_CAMERA: [' ', 'Space', 'Spacebar'],
     CENTER_ITEM: ['Shift'],
     OPEN_SETTINGS: ['z', 'Z'],
+    OPEN_MENU: ['Esc'],
     RESET_DEFAULTS: ['t', 'T'],
     TOGGLE_ACTIVE: ['t', 'T'],
     TOGGLE_SUPPLY_LINES: ['c', 'C'],
@@ -69,6 +71,7 @@ export const DEFAULT_LABELS: Record<KeyAction, string> = {
     CENTER_CAMERA: 'controls.actions.centerPlayer',
     CENTER_ITEM: 'controls.actions.centerObjective',
     OPEN_SETTINGS: 'controls.actions.settings',
+    OPEN_MENU: 'controls.actions.menu',
     RESET_DEFAULTS: 'controls.actions.defaults',
     TOGGLE_ACTIVE: 'controls.actions.toggleActive',
     TOGGLE_SUPPLY_LINES: 'controls.actions.supplyLines',

@@ -2,6 +2,9 @@
 #include "Hooks/WindowProc.h"
 #include "UI/Interop.h"
 #include "Constants.h"
+#include "F4SE/API.h"
+#include "RE/U/UIMessageQueue.h"
+#include "RE/B/BSFixedString.h"
 
 namespace MAP76::Hooks
 {
@@ -44,9 +47,32 @@ namespace MAP76::Hooks
                 }
             }
 
-            if (wParam == VK_ESCAPE && UI::State::g_mapIsOpen.load())
+            if (wParam == VK_ESCAPE)
             {
-                UI::ToggleMAP76();
+                bool isRepeat = (lParam & (1 << 30)) != 0;
+                if (UI::State::g_mapIsOpen.load())
+                {
+                    if (!isRepeat)
+                    {
+                        UI::ToggleMAP76();
+                        UI::State::g_waitingToOpenPauseMenu.store(true);
+                    }
+                    return 0;
+                }
+            }
+        }
+
+        if (uMsg == WM_KEYUP)
+        {
+            if (wParam == VK_ESCAPE && UI::State::g_waitingToOpenPauseMenu.load())
+            {
+                UI::State::g_waitingToOpenPauseMenu.store(false);
+                if (auto *task = F4SE::GetTaskInterface()) {
+                    task->AddUITask([]() {
+                        if (auto *msgQ = RE::UIMessageQueue::GetSingleton())
+                            msgQ->AddMessage(RE::BSFixedString("PauseMenu"), RE::UI_MESSAGE_TYPE::kShow);
+                    });
+                }
                 return 0;
             }
         }

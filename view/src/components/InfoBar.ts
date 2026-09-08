@@ -25,7 +25,7 @@ export class InfoBar {
         this.settingsContainer = document.getElementById('settings-bar');
 
         if (this.settingsContainer) {
-            this.settingsContainer.innerHTML = KeybindsSystem.getControlHtml('OPEN_SETTINGS');
+            this.settingsContainer.innerHTML = KeybindsSystem.getControlHtml('OPEN_MENU');
             FocusManager.subscribe((newFocus) => {
                 if (this.settingsContainer) {
                     this.settingsContainer.style.display = newFocus === 'MAP' ? '' : 'none';
@@ -40,7 +40,7 @@ export class InfoBar {
 
     public static reloadLocales(): void {
         if (this.settingsContainer) {
-            this.settingsContainer.innerHTML = KeybindsSystem.getControlHtml('OPEN_SETTINGS');
+            this.settingsContainer.innerHTML = KeybindsSystem.getControlHtml('OPEN_MENU');
         }
     }
 

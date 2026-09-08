@@ -38,7 +38,7 @@ export class ControlBar {
         if (activeComponent && activeComponent.getAvailableControls) {
             actions = activeComponent.getAvailableControls();
         } else if (focus === 'MAP') {
-            actions = ['NAV_BACK', 'PLACE_MARKER', 'ZOOM_IN', 'ZOOM_OUT', 'PAN_MOUSE'];
+            actions = ['OPEN_SETTINGS', 'NAV_BACK', 'PLACE_MARKER', 'ZOOM_IN', 'ZOOM_OUT', 'PAN_MOUSE'];
             
             if (hasSupplyLines()) {
                 actions.push('TOGGLE_SUPPLY_LINES');

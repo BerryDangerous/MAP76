@@ -58,7 +58,8 @@
       "no": "NO",
       "ok": "OK",
       "on": "ON",
-      "off": "OFF"
+      "off": "OFF",
+      "menu": "MENU"
     },
     "keys": {
       "space": "SPACE",
