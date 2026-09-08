@@ -225,6 +225,32 @@ export class KeybindsSystem {
         });
     }
 
+    public static isPanelCollapseKey(e: KeyboardEvent, layoutCollapseKey: string): boolean {
+        if (e.key === 'Gamepad_B' || e.key === 'Gamepad_Back') return true;
+        if (e.key === layoutCollapseKey) return true;
+        if (layoutCollapseKey === 'ArrowRight' && e.key === 'Gamepad_Right') return true;
+        if (layoutCollapseKey === 'ArrowLeft' && e.key === 'Gamepad_Left') return true;
+        if (layoutCollapseKey === 'ArrowDown' && e.key === 'Gamepad_Down') return true;
+        if (layoutCollapseKey === 'ArrowUp' && e.key === 'Gamepad_Up') return true;
+        return false;
+    }
+
+    public static isPanelExpandKey(e: KeyboardEvent, layoutExpandKey: string): boolean {
+        if (e.key === layoutExpandKey) return true;
+        if (layoutExpandKey === 'ArrowRight' && e.key === 'Gamepad_Right') return true;
+        if (layoutExpandKey === 'ArrowLeft' && e.key === 'Gamepad_Left') return true;
+        if (layoutExpandKey === 'ArrowDown' && e.key === 'Gamepad_Down') return true;
+        if (layoutExpandKey === 'ArrowUp' && e.key === 'Gamepad_Up') return true;
+        return false;
+    }
+
+    public static getPanelGlyph(rawGlyph: string): string {
+        if (this.isControllerActive) {
+            return rawGlyph.toLowerCase();
+        }
+        return rawGlyph;
+    }
+
     public static getActionKeys(action: KeyAction): string[] {
         return this.keymap[action] || [];
     }
@@ -287,8 +313,13 @@ export class KeybindsSystem {
             return `Mouse) ${labelHtml}`;
         }
         
+        const glyphHtml = this.getActionGlyphHtml(action);
+        return `${glyphHtml} ${labelHtml}`;
+    }
+
+    public static getActionGlyphHtml(action: KeyAction): string {
         const keys = this.keymap[action];
-        if (!keys || keys.length === 0) return `?) <b>${label}</b>`;
+        if (!keys || keys.length === 0) return `?)`;
         
         if (this.isControllerActive) {
             const gamepadKey = keys.find(k => k.startsWith('Gamepad_'));
@@ -296,7 +327,7 @@ export class KeybindsSystem {
                 const glyph = this.CONTROLLER_GLYPHS[gamepadKey];
                 const isLowercase = glyph === glyph.toLowerCase();
                 const fontFamily = isLowercase ? 'ControllerButtonsInverted' : 'ControllerButtons';
-                return `<span class="controller-btn-icon" style="font-family: '${fontFamily}'; font-size: 1em; vertical-align: text-bottom; margin-right: 4px; display: inline-block; position: relative; top: 1px;">${glyph}</span> ${labelHtml}`;
+                return `<span class="controller-btn-icon" style="font-family: '${fontFamily}'; font-size: 1em; vertical-align: text-bottom; margin-right: 4px; display: inline-block; position: relative; top: 1px;">${glyph}</span>`;
             }
         }
 
@@ -311,6 +342,6 @@ export class KeybindsSystem {
         else if (primaryKey === 'Shift') primaryKey = t('controls.keys.shift', { defaultValue: 'SHIFT' });
         else primaryKey = primaryKey.toUpperCase();
         
-        return `${primaryKey}) ${labelHtml}`;
+        return `${primaryKey})`;
     }
 }

@@ -304,7 +304,8 @@ export const SearchPanel = {
 
     handleKeyDown(e: KeyboardEvent): boolean {
         if (searchPanelState.isCollapsed) {
-            if (LayoutManager.isExpandKey(e, searchPanelState.dockCorner)) {
+            const config = LayoutManager.getCornerConfig(searchPanelState.dockCorner);
+            if (KeybindsSystem.isPanelExpandKey(e, config.expandKey)) {
                 this.expand();
                 return true;
             }
@@ -332,7 +333,8 @@ export const SearchPanel = {
             return true;
         }
 
-        if (LayoutManager.isCollapseKey(e, searchPanelState.dockCorner)) {
+        const config = LayoutManager.getCornerConfig(searchPanelState.dockCorner);
+        if (KeybindsSystem.isPanelCollapseKey(e, config.collapseKey)) {
             this.collapse();
             return true;
         }

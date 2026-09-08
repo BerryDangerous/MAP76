@@ -236,7 +236,8 @@ export const WorkshopList = {
 
     handleKeyDown(e: KeyboardEvent): boolean {
         if (workshopListState.isCollapsed) {
-            if (LayoutManager.isExpandKey(e, workshopListState.dockCorner)) {
+            const config = LayoutManager.getCornerConfig(workshopListState.dockCorner);
+            if (KeybindsSystem.isPanelExpandKey(e, config.expandKey)) {
                 this.expand();
                 return true;
             }
@@ -244,8 +245,8 @@ export const WorkshopList = {
         }
 
         const workshops = this.getVisibleWorkshops();
-
-        if (LayoutManager.isCollapseKey(e, workshopListState.dockCorner)) {
+        const config = LayoutManager.getCornerConfig(workshopListState.dockCorner);
+        if (KeybindsSystem.isPanelCollapseKey(e, config.collapseKey)) {
             this.collapse();
             return true;
         }

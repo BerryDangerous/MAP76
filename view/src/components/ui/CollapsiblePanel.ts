@@ -1,6 +1,7 @@
 import { EngineBridge } from '@/core/bridge.js';
 
 import { LayoutManager, Corner } from '@/systems/layoutManager.js';
+import { KeybindsSystem } from '@/systems/keybindManager.js';
 
 export interface CollapsiblePanelOptions {
     panelElement: HTMLElement;
@@ -34,6 +35,10 @@ export class CollapsiblePanel {
                 this.toggle();
             });
         }
+
+        window.addEventListener('controlsUpdated', () => {
+            this.updateGlyph();
+        });
     }
 
     public toggle(): void {
@@ -61,7 +66,9 @@ export class CollapsiblePanel {
     public updateGlyph(): void {
         const icon = this.options.panelElement.querySelector('.cp-btn-icon');
         if (icon) {
-            icon.textContent = LayoutManager.getGlyph(this.dockCorner, this.isCollapsed);
+            const config = LayoutManager.getCornerConfig(this.dockCorner);
+            const rawGlyph = this.isCollapsed ? config.expandGlyph : config.collapseGlyph;
+            icon.textContent = KeybindsSystem.getPanelGlyph(rawGlyph);
         }
     }
 

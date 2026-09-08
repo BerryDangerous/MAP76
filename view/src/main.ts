@@ -288,11 +288,17 @@ window.addEventListener('DOMContentLoaded', () => {
 
                 const questCorner = QuestList.getState().dockCorner;
                 const workshopCorner = WorkshopList.getState().dockCorner;
-                if (LayoutManager.isExpandKey(e, questCorner)) {
+                const searchCorner = SearchPanel.getState().dockCorner;
+                
+                const questConfig = LayoutManager.getCornerConfig(questCorner);
+                const workshopConfig = LayoutManager.getCornerConfig(workshopCorner);
+                const searchConfig = LayoutManager.getCornerConfig(searchCorner);
+
+                if (KeybindsSystem.isPanelExpandKey(e, questConfig.expandKey)) {
                     QuestList.expand();
-                } else if (LayoutManager.isExpandKey(e, workshopCorner)) {
+                } else if (KeybindsSystem.isPanelExpandKey(e, workshopConfig.expandKey)) {
                     WorkshopList.expand();
-                } else if (LayoutManager.isExpandKey(e, SearchPanel.getState().dockCorner)) {
+                } else if (KeybindsSystem.isPanelExpandKey(e, searchConfig.expandKey)) {
                     SearchPanel.expand();
                 } else if (KeybindsSystem.isAction(e, 'TOGGLE_SUPPLY_LINES')) {
                     if (hasSupplyLines()) {

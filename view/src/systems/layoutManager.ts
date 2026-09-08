@@ -60,21 +60,6 @@ export class LayoutManager {
         return this.cornerConfigs[corner];
     }
 
-    public static isCollapseKey(e: KeyboardEvent, corner: Corner): boolean {
-        const config = this.getCornerConfig(corner);
-        return e.key === config.collapseKey;
-    }
-
-    public static isExpandKey(e: KeyboardEvent, corner: Corner): boolean {
-        const config = this.getCornerConfig(corner);
-        return e.key === config.expandKey;
-    }
-
-    public static getGlyph(corner: Corner, isCollapsed: boolean): string {
-        const config = this.getCornerConfig(corner);
-        return isCollapsed ? config.expandGlyph : config.collapseGlyph;
-    }
-
     public static anchorToCorner(
         element: HTMLElement,
         corner: Corner,

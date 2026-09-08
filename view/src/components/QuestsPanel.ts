@@ -285,7 +285,8 @@ export const QuestList = {
 
     handleKeyDown(e: KeyboardEvent): boolean {
         if (questListState.isCollapsed) {
-            if (LayoutManager.isExpandKey(e, questListState.dockCorner)) {
+            const config = LayoutManager.getCornerConfig(questListState.dockCorner);
+            if (KeybindsSystem.isPanelExpandKey(e, config.expandKey)) {
                 this.expand();
                 return true;
             }
@@ -293,8 +294,8 @@ export const QuestList = {
         }
 
         const quests = this.getVisibleQuests();
-
-        if (LayoutManager.isCollapseKey(e, questListState.dockCorner)) {
+        const config = LayoutManager.getCornerConfig(questListState.dockCorner);
+        if (KeybindsSystem.isPanelCollapseKey(e, config.collapseKey)) {
             this.collapse();
             return true;
         }
@@ -458,9 +459,9 @@ export const QuestList = {
             </div>
           </div>
           <div class="tb-sub-header">
-             <span class="tb-nav-icon">Z)</span>
+             <span class="tb-nav-icon"></span>
              <div class="tb-tabs-bar"></div>
-             <span class="tb-nav-icon">C)</span>
+             <span class="tb-nav-icon"></span>
           </div>
           <div class="sl-body">
              <div class="sl-items-list"></div>

@@ -24,6 +24,19 @@ export class TabBar<T = string> {
     public mount(container: HTMLElement): void {
         this.container = container;
         this.render();
+        
+        window.addEventListener('controlsUpdated', () => {
+            this.updateIcons();
+        });
+    }
+
+    private updateIcons(): void {
+        if (!this.container || !this.container.parentElement) return;
+        const icons = this.container.parentElement.querySelectorAll('.tb-nav-icon');
+        if (icons.length >= 2) {
+            icons[0].innerHTML = KeybindsSystem.getActionGlyphHtml('TAB_PREV');
+            icons[icons.length - 1].innerHTML = KeybindsSystem.getActionGlyphHtml('TAB_NEXT');
+        }
     }
 
     public updateTabs(newTabs: TabItem<T>[]): void {
@@ -96,6 +109,8 @@ export class TabBar<T = string> {
 
             this.container!.appendChild(tabEl);
         });
+
+        this.updateIcons();
     }
 
     private updateDOMSelection(): void {
