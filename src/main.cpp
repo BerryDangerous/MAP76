@@ -18,7 +18,7 @@ void OnF4SEMessage(F4SE::MessagingInterface::Message *a_msg)
     case F4SE::MessagingInterface::kGameDataReady:
     {
         REX::INFO("MAP76: Game data ready. Requesting PrismaUI API...");
-        MAP76::UI::State::g_api = PRISMA_UI_API::RequestPluginAPI<PRISMA_UI_API::IVPrismaUI4>();
+        MAP76::UI::State::g_api = PRISMA_UI_API::RequestPluginAPI<PRISMA_UI_API::IVPrismaUI12>();
         if (!MAP76::UI::State::g_api)
         {
             REX::ERROR("MAP76: Failed to acquire PrismaUI API surface!");
