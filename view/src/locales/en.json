@@ -24,10 +24,13 @@
       "writePayloadToFile": "Write Payload to File",
       "showWorkshopInfoLog": "Show Workshop Info Log",
       "mapStyle": "{{name}} Map Style",
-      "language": "Language"
+      "language": "Language",
+      "controllerStyle": "Controller Icons"
     },
     "options": {
-      "none": "NONE"
+      "none": "NONE",
+      "xbox": "Xbox",
+      "playstation": "PlayStation"
     }
   },
   "controls": {

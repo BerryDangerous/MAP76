@@ -13,6 +13,7 @@ export interface AppSettings {
     showWorkshopInfoLog: boolean;
     gamepadCursorSpeed: number;
     gamepadPanSensitivity: number;
+    controllerStyle: number;
     preferredMapConfigs: Record<string, string>;
     language: string;
 }
@@ -32,6 +33,7 @@ export const defaultSettings: AppSettings = {
     showWorkshopInfoLog: false,
     gamepadCursorSpeed: 1200.0,
     gamepadPanSensitivity: 0.5,
+    controllerStyle: 0,
     preferredMapConfigs: {},
     language: "",
 };

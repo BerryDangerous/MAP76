@@ -1,4 +1,5 @@
 import { t } from '@/core/i18n.js';
+import { appSettings } from '@/core/settings.js';
 import { FocusManager } from './focusManager.js';
 export type KeyAction =
     | 'NAV_UP'
@@ -85,8 +86,9 @@ export class KeybindsSystem {
     private static activeModalHandler: ((e: KeyboardEvent) => void) | null = null;
     
     public static isControllerActive: boolean = false;
+    public static controllerStyle: number = 0; // 0 = Xbox, 1 = PlayStation
 
-    private static CONTROLLER_GLYPHS: Record<string, string> = {
+    private static CONTROLLER_GLYPHS_XBOX: Record<string, string> = {
         'Gamepad_A': 'A',
         'Gamepad_B': 'B',
         'Gamepad_X': 'C',
@@ -104,6 +106,26 @@ export class KeybindsSystem {
         'Gamepad_LS': 'H',
         'Gamepad_RS': 'M',
         'Gamepad_LStick': 'F'
+    };
+
+    private static CONTROLLER_GLYPHS_PS: Record<string, string> = {
+        'Gamepad_A': 'a',
+        'Gamepad_B': 'd',
+        'Gamepad_X': 'c',
+        'Gamepad_Y': 'b',
+        'Gamepad_LB': 'g',
+        'Gamepad_RB': 'm',
+        'Gamepad_LT': 'j',
+        'Gamepad_RT': 'o',
+        'Gamepad_Start': 'p',
+        'Gamepad_Back': 'e',
+        'Gamepad_Up': 'w',
+        'Gamepad_Down': 'v',
+        'Gamepad_Left': 't',
+        'Gamepad_Right': 'u',
+        'Gamepad_LS': 'f',
+        'Gamepad_RS': 'l',
+        'Gamepad_LStick': 'i'
     };
 
     private static lastRepeatTime: number = 0;
@@ -154,12 +176,20 @@ export class KeybindsSystem {
 
         window.addEventListener('gamepadStateChanged', ((e: CustomEvent<boolean>) => {
             const isGamepad = e.detail;
-            if (this.isControllerActive !== isGamepad) {
+            if (this.isControllerActive !== isGamepad || this.controllerStyle !== appSettings.controllerStyle) {
                 this.isControllerActive = isGamepad;
+                this.controllerStyle = appSettings.controllerStyle;
                 document.body.classList.toggle('controller-active', isGamepad);
                 window.dispatchEvent(new Event('controlsUpdated'));
             }
         }) as EventListener);
+
+        window.addEventListener('settingsUpdated', () => {
+            if (this.controllerStyle !== appSettings.controllerStyle) {
+                this.controllerStyle = appSettings.controllerStyle;
+                window.dispatchEvent(new Event('controlsUpdated'));
+            }
+        });
 
         window.addEventListener('thumbstick-nav', ((e: CustomEvent<{x: number, y: number}>) => {
             const now = Date.now();
@@ -315,8 +345,9 @@ export class KeybindsSystem {
         
         if (this.isControllerActive) {
             const gamepadKey = keys.find(k => k.startsWith('Gamepad_'));
-            if (gamepadKey && this.CONTROLLER_GLYPHS[gamepadKey]) {
-                const glyph = this.CONTROLLER_GLYPHS[gamepadKey];
+            const glyphs = this.controllerStyle === 1 ? this.CONTROLLER_GLYPHS_PS : this.CONTROLLER_GLYPHS_XBOX;
+            if (gamepadKey && glyphs[gamepadKey]) {
+                const glyph = glyphs[gamepadKey];
                 return `${glyph}) ${label}`;
             }
         }
@@ -356,8 +387,9 @@ export class KeybindsSystem {
         
         if (this.isControllerActive) {
             const gamepadKey = keys.find(k => k.startsWith('Gamepad_'));
-            if (gamepadKey && this.CONTROLLER_GLYPHS[gamepadKey]) {
-                const glyph = this.CONTROLLER_GLYPHS[gamepadKey];
+            const glyphs = this.controllerStyle === 1 ? this.CONTROLLER_GLYPHS_PS : this.CONTROLLER_GLYPHS_XBOX;
+            if (gamepadKey && glyphs[gamepadKey]) {
+                const glyph = glyphs[gamepadKey];
                 const isLowercase = glyph === glyph.toLowerCase();
                 const fontFamily = isLowercase ? 'ControllerButtonsInverted' : 'ControllerButtons';
                 return `<span class="controller-btn-icon" style="font-family: '${fontFamily}'; font-size: 1em; vertical-align: text-bottom; margin-right: 4px; display: inline-block; position: relative; top: 1px;">${glyph}</span>`;

@@ -128,6 +128,16 @@ export const SettingsMenu = {
         const panSensitivitySlider = new Slider(appSettings.gamepadPanSensitivity, 0.05, 2.0, 0.05, (val) => { updateSettings({ gamepadPanSensitivity: val }); });
         registerControl('gamepadPanSensitivity', t('settings.labels.gamepadPanSensitivity'), 'GAMEPLAY', panSensitivitySlider);
 
+        const controllerStyleOptions = [
+            { label: t('settings.options.xbox', { defaultValue: 'Xbox' }), value: 0 },
+            { label: t('settings.options.playstation', { defaultValue: 'PlayStation' }), value: 1 }
+        ];
+        const controllerStyleMulti = new MultiChoice(controllerStyleOptions, appSettings.controllerStyle, (val) => { 
+            updateSettings({ controllerStyle: val }); 
+            window.dispatchEvent(new Event('controlsUpdated'));
+        });
+        registerControl('controllerStyle', t('settings.labels.controllerStyle', { defaultValue: 'Controller Icons' }), 'DISPLAY', controllerStyleMulti);
+
         const writePayloadToggle = new Toggle(appSettings.writePayloadToFile, (val) => { updateSettings({ writePayloadToFile: val }); });
         registerControl('writePayloadToFile', t('settings.labels.writePayloadToFile'), 'DEBUG', writePayloadToggle);
 
