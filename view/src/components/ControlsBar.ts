@@ -85,9 +85,10 @@ export class ControlBar {
                 actionId === 'TOGGLE_SUPPLY_LINES' && isSupplyLinesViewActive()
             );
 
-            return html;
-        }).join('    ');
+            return `<span class="control-action" style="display: flex; align-items: center; gap: 4px;">${html}</span>`;
+        }).join('');
 
+        this.container.style.gap = '18px';
         this.container.innerHTML = text;
     }
 }

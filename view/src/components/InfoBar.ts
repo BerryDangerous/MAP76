@@ -25,7 +25,7 @@ export class InfoBar {
         this.settingsContainer = document.getElementById('settings-bar');
 
         if (this.settingsContainer) {
-            this.settingsContainer.innerHTML = KeybindsSystem.getControlHtml('OPEN_MENU');
+            this.settingsContainer.innerHTML = `<span style="display: flex; align-items: center; gap: 4px;">${KeybindsSystem.getControlHtml('OPEN_MENU')}</span>`;
             FocusManager.subscribe((newFocus) => {
                 if (this.settingsContainer) {
                     this.settingsContainer.style.display = newFocus === 'MAP' ? '' : 'none';
@@ -40,7 +40,7 @@ export class InfoBar {
 
     public static reloadLocales(): void {
         if (this.settingsContainer) {
-            this.settingsContainer.innerHTML = KeybindsSystem.getControlHtml('OPEN_MENU');
+            this.settingsContainer.innerHTML = `<span style="display: flex; align-items: center; gap: 4px;">${KeybindsSystem.getControlHtml('OPEN_MENU')}</span>`;
         }
     }
 
@@ -115,6 +115,7 @@ export class InfoBar {
 
         if (wsText) parts.push(wsText);
 
-        this.infoContainer.innerHTML = `<b>${parts.join('    ')}</b>`;
+        this.infoContainer.style.gap = '18px';
+        this.infoContainer.innerHTML = parts.map(p => `<b>${p}</b>`).join('');
     }
 }
