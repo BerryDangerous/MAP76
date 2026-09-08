@@ -1,6 +1,7 @@
 #include <nlohmann/json.hpp>
 #include "PCH.h"
 #include "Engine/QuestManager.h"
+#include "Hooks/ControllerInput.h"
 #include "Hooks/WindowProc.h"
 #include "UI/Actions.h"
 #include "UI/Interop.h"
@@ -468,6 +469,8 @@ namespace MAP76::UI
             State::g_mapInputFocused.store(false);
 
             Hooks::SetupWindowHook();
+
+            MAP76::Hooks::ControllerInput::Register();
         }
     }
 
