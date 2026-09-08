@@ -1,4 +1,4 @@
-local plugin_version = "0.9.6"
+local plugin_version = "0.9.7"
 local plugin_int_version = "1"
 local project_name = "MAP76"
 local license = "GPL-3.0"
