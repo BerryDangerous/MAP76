@@ -133,6 +133,15 @@ namespace MAP76::UI
             }
         }
 
+        void HandleSetMapViewportFocus(const char *arg)
+        {
+            if (arg && std::string(arg) == "true") {
+                State::g_mapViewportHasFocus.store(true);
+            } else {
+                State::g_mapViewportHasFocus.store(false);
+            }
+        }
+
         void HandleRequestFreshMapData(const char *arg)
         {
             if (auto *task = F4SE::GetTaskInterface())
@@ -496,6 +505,7 @@ namespace MAP76::UI
         State::g_api->BindUIEvent(view, "requestLocales", HandleRequestLocales);
         State::g_api->BindUIEvent(view, "saveSettings", HandleSaveSettings);
         State::g_api->BindUIEvent(view, "triggerEngineSound", HandleTriggerEngineSound);
+        State::g_api->BindUIEvent(view, "setMapViewportFocus", HandleSetMapViewportFocus);
 
         State::g_api->BindControllerAction(view, "A", "A");
         State::g_api->BindControllerAction(view, "B", "B");
