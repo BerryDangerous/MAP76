@@ -1,6 +1,7 @@
-import { setCustomMarker, removeCustomMarker } from '@/core/bridge.js';
+import { setCustomMarker, removeCustomMarker, EngineBridge } from '@/core/bridge.js';
 
 import { FocusManager } from '@/systems/focusManager.js';
+import { KeybindsSystem } from '@/systems/keybindManager.js';
 import { MapViewport } from '@/systems/viewport.js';
 import { t } from '@/core/i18n.js';
 
@@ -19,10 +20,11 @@ export const CustomMarkerCard = {
         FocusManager.register({
             id: 'CUSTOM_MARKER_CARD',
             getAvailableControls: () => {
-                const controls: import('../systems/focusManager.js').ControlActionDef[] = ['NAV_BACK', 'PAN_MOUSE'];
+                const controls: import('../systems/focusManager.js').ControlActionDef[] = ['NAV_BACK', 'NAV_UP', 'NAV_DOWN', 'PAN_MOUSE'];
                 if (CustomMarkerCard.activeAnchorMarker === null && (CustomMarkerCard.activeGameCoords || CustomMarkerCard.activeCoords)) {
                     controls.push({ action: 'CENTER_ITEM', label: t('markers.controls.centerMarker') });
                 }
+                controls.push('SELECT');
                 return controls;
             },
             handleKeyDown: (e: KeyboardEvent) => this.handleKeyDown(e),
@@ -30,12 +32,16 @@ export const CustomMarkerCard = {
                 const card = document.getElementById('custom-marker-card-panel');
                 if (card) card.classList.add('focused');
                 if (customMarkerCardInstance) {
+                    customMarkerCardInstance.setReferencePanelDimmed(true);
                     customMarkerCardInstance.getButtonGroup().setSelectedIndex(0);
                 }
             },
             onFocusLost: () => {
                 const card = document.getElementById('custom-marker-card-panel');
                 if (card) card.classList.remove('focused');
+                if (customMarkerCardInstance) {
+                    customMarkerCardInstance.setReferencePanelDimmed(false);
+                }
                 if (customMarkerCardInstance && customMarkerCardInstance.isOpen()) {
                     this.close();
                 }
@@ -44,6 +50,15 @@ export const CustomMarkerCard = {
     },
 
     handleKeyDown(e: KeyboardEvent): boolean {
+        if (KeybindsSystem.isAction(e, 'CENTER_ITEM')) {
+            if (this.activeAnchorMarker === null && (this.activeGameCoords || this.activeCoords)) {
+                EngineBridge.emitSound('UIPipBoyMapZoom');
+                if (this.activeGameCoords) {
+                    MapViewport.centerOnWorldCoords(this.activeGameCoords.x, this.activeGameCoords.y);
+                }
+                return true;
+            }
+        }
         return customMarkerCardInstance ? customMarkerCardInstance.handleKeyDown(e) : false;
     },
 

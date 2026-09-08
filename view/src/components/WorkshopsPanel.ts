@@ -12,7 +12,6 @@ import { MapViewport } from '@/systems/viewport.js';
 
 import { SettlementDataWithRatings, getWorkshopIconType, getWorkshopBadgesHtml, getWorkshopSubtitle, calculateSettlementRatings } from '@/utils/settlementUtils.js';
 import { StringUtils } from '@/utils/stringUtils.js';
-import { WorldspaceUtils } from '@/utils/worldspaceUtils.js';
 
 import { MarkerCard } from '@/components/MarkerCard.js';
 import { SettlementCard } from '@/components/SettlementCard.js';
@@ -188,7 +187,7 @@ export const WorkshopList = {
             id: 'WORKSHOP_LIST',
             getAvailableControls: () => {
                 const sortLabel = `${t('controls.actions.sort')} (${t(`workshops.sortMode.${workshopListState.sortMode.toLowerCase()}`)})`;
-                const controls: import('../systems/focusManager.js').ControlActionDef[] = ['NAV_BACK', 'NAV_UP', 'NAV_DOWN', 'PAN_MOUSE', { action: 'SORT', label: sortLabel }, { action: 'CENTER_ITEM', label: t('markers.controls.centerMarker') }];
+                const controls: import('../systems/focusManager.js').ControlActionDef[] = ['NAV_BACK', 'NAV_UP', 'NAV_DOWN', 'PAN_MOUSE', { action: 'SORT', label: sortLabel }, { action: 'CENTER_ITEM', label: t('markers.controls.centerMarker') }, 'SELECT'];
                 return controls;
             },
             handleKeyDown: (e: KeyboardEvent) => this.handleKeyDown(e),
@@ -252,7 +251,7 @@ export const WorkshopList = {
         }
 
         const isRightDocked = workshopListState.dockCorner.includes('right');
-        if (isRightDocked ? KeybindsSystem.isAction(e, 'NAV_LEFT') : KeybindsSystem.isAction(e, 'NAV_RIGHT')) {
+        if (KeybindsSystem.isAction(e, 'SELECT') || (isRightDocked ? KeybindsSystem.isAction(e, 'NAV_LEFT') : KeybindsSystem.isAction(e, 'NAV_RIGHT'))) {
             if (SettlementCard.isOpen()) {
                 FocusManager.setFocus('SETTLEMENT_CARD');
                 EngineBridge.emitSound('UIGeneralFocus');
@@ -300,20 +299,7 @@ export const WorkshopList = {
                 EngineBridge.emitSound('UIPipBoyMapZoom');
                 const marker = mapState.lastPayload?.markers?.find(m => m.formId === selected.markerFormId);
                 if (marker) {
-                    const worldspaceID = mapState.activeMapConfig?.worldspaceID ?? 0;
-                    const resolved = WorldspaceUtils.resolveGatewayTarget(
-                        marker.worldspace,
-                        worldspaceID,
-                        marker.x,
-                        marker.y,
-                        0,
-                        mapState.player.x,
-                        mapState.player.y,
-                        mapState.lastPayload
-                    );
-                    if (resolved) {
-                        MapViewport.centerOnWorldCoords(resolved.x, resolved.y);
-                    }
+                    MapViewport.centerOnTarget(marker.worldspace, marker.x, marker.y, 0);
                 }
             }
             return true;
@@ -330,20 +316,7 @@ export const WorkshopList = {
         
         const marker = mapState.lastPayload?.markers?.find(m => m.formId === workshop.markerFormId);
         if (marker && appSettings.focusMarkerOnSelection) {
-            const worldspaceID = mapState.activeMapConfig?.worldspaceID ?? 0;
-            const resolved = WorldspaceUtils.resolveGatewayTarget(
-                marker.worldspace,
-                worldspaceID,
-                marker.x,
-                marker.y,
-                0,
-                mapState.player.x,
-                mapState.player.y,
-                mapState.lastPayload
-            );
-            if (resolved) {
-                MapViewport.centerOnWorldCoords(resolved.x, resolved.y);
-            } else {
+            if (!MapViewport.centerOnTarget(marker.worldspace, marker.x, marker.y, 0)) {
                 MapViewport.clearSavedViewport(appSettings.focusMarkerOnSelection);
             }
         } else {

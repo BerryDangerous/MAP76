@@ -62,28 +62,12 @@ const listController = new SelectableListController<SearchResult>({
             SearchPanel.openCardForResult(selectedResult);
             if (selectedResult.markerCoords) {
                 if (appSettings.focusMarkerOnSelection) {
-                    let targetX = selectedResult.markerCoords.x;
-                    let targetY = selectedResult.markerCoords.y;
-                    const currentWs = mapState.activeMapConfig?.worldspaceID ?? 0;
-                    if (selectedResult.markerCoords.worldspace !== undefined && selectedResult.markerCoords.worldspace !== currentWs) {
-                        const refX = mapState.player.active ? mapState.player.x : 0;
-                        const refY = mapState.player.active ? mapState.player.y : 0;
-                        const resolved = WorldspaceUtils.resolveGatewayTarget(
-                            selectedResult.markerCoords.worldspace,
-                            currentWs,
-                            targetX,
-                            targetY,
-                            0,
-                            refX,
-                            refY,
-                            mapState.lastPayload
-                        );
-                        if (resolved) {
-                            targetX = resolved.x;
-                            targetY = resolved.y;
-                        }
-                    }
-                    MapViewport.centerOnWorldCoords(targetX, targetY);
+                    MapViewport.centerOnTarget(
+                        selectedResult.markerCoords.worldspace ?? mapState.activeMapConfig?.worldspaceID ?? 0,
+                        selectedResult.markerCoords.x,
+                        selectedResult.markerCoords.y,
+                        0
+                    );
                 }
             } else {
                 MapViewport.clearSavedViewport(appSettings.focusMarkerOnSelection);
@@ -253,6 +237,7 @@ export const SearchPanel = {
                         controls.push({ action: 'CENTER_ITEM', label: t('markers.controls.centerMarker') });
                     }
                 }
+                controls.push('SELECT');
                 return controls;
             },
             handleKeyDown: (e: KeyboardEvent) => this.handleKeyDown(e),
@@ -340,13 +325,14 @@ export const SearchPanel = {
         }
 
         const isRightDocked = searchPanelState.dockCorner.includes('right');
-        if (isRightDocked ? KeybindsSystem.isAction(e, 'NAV_LEFT') : KeybindsSystem.isAction(e, 'NAV_RIGHT')) {
+        if (KeybindsSystem.isAction(e, 'SELECT') || (isRightDocked ? KeybindsSystem.isAction(e, 'NAV_LEFT') : KeybindsSystem.isAction(e, 'NAV_RIGHT'))) {
             const selected = listController.getSelectedItem();
             if (selected) {
                 if (selected.type === 'marker' && MarkerCard.isOpen()) FocusManager.setFocus('MARKER_CARD');
                 else if (selected.type === 'quest' && QuestCard.isOpen()) FocusManager.setFocus('QUEST_CARD');
                 else if (selected.type === 'workshop' && SettlementCard.isOpen()) FocusManager.setFocus('SETTLEMENT_CARD');
                 else if (selected.type === 'customMarker' && CustomMarkerCard.isOpen()) FocusManager.setFocus('CUSTOM_MARKER_CARD');
+                EngineBridge.emitSound('UIGeneralFocus');
             }
             return true;
         }
@@ -403,28 +389,12 @@ export const SearchPanel = {
             if (selected) {
                 EngineBridge.emitSound('UIPipBoyMapZoom');
                 if (selected.markerCoords) {
-                    let targetX = selected.markerCoords.x;
-                    let targetY = selected.markerCoords.y;
-                    const currentWs = mapState.activeMapConfig?.worldspaceID ?? 0;
-                    if (selected.markerCoords.worldspace !== undefined && selected.markerCoords.worldspace !== currentWs) {
-                        const refX = mapState.player.active ? mapState.player.x : 0;
-                        const refY = mapState.player.active ? mapState.player.y : 0;
-                        const resolved = WorldspaceUtils.resolveGatewayTarget(
-                            selected.markerCoords.worldspace,
-                            currentWs,
-                            targetX,
-                            targetY,
-                            0,
-                            refX,
-                            refY,
-                            mapState.lastPayload
-                        );
-                        if (resolved) {
-                            targetX = resolved.x;
-                            targetY = resolved.y;
-                        }
-                    }
-                    MapViewport.centerOnWorldCoords(targetX, targetY);
+                    MapViewport.centerOnTarget(
+                        selected.markerCoords.worldspace ?? mapState.activeMapConfig?.worldspaceID ?? 0,
+                        selected.markerCoords.x,
+                        selected.markerCoords.y,
+                        0
+                    );
                 } else if (selected.type === 'quest') {
                     const markerId = selected.originalRef.formId ?? selected.originalRef.questName;
                     const markerContainer = document.querySelector(`.marker-container[data-form-id="${markerId}"]`) ||

@@ -13,7 +13,6 @@ import { MapViewport } from '@/systems/viewport.js';
 
 import { QuestUtils } from '@/utils/questUtils.js';
 import { StringUtils } from '@/utils/stringUtils.js';
-import { WorldspaceUtils } from '@/utils/worldspaceUtils.js';
 
 import { QuestCard } from '@/components/QuestCard.js';
 
@@ -235,6 +234,7 @@ export const QuestList = {
                         }
                     }
                 }
+                controls.push('SELECT');
                 return controls;
             },
             handleKeyDown: (e: KeyboardEvent) => this.handleKeyDown(e),
@@ -301,9 +301,11 @@ export const QuestList = {
         }
 
         const isRightDocked = questListState.dockCorner.includes('right');
-        if (isRightDocked ? KeybindsSystem.isAction(e, 'NAV_LEFT') : KeybindsSystem.isAction(e, 'NAV_RIGHT')) {
-            FocusManager.setFocus('QUEST_CARD');
-            EngineBridge.emitSound('UIGeneralFocus');
+        if (KeybindsSystem.isAction(e, 'SELECT') || (isRightDocked ? KeybindsSystem.isAction(e, 'NAV_LEFT') : KeybindsSystem.isAction(e, 'NAV_RIGHT'))) {
+            if (QuestCard.isOpen()) {
+                FocusManager.setFocus('QUEST_CARD');
+                EngineBridge.emitSound('UIGeneralFocus');
+            }
             return true;
         }
 
@@ -355,20 +357,7 @@ export const QuestList = {
                 QuestCard.open(selected, undefined, undefined, questListState.dockCorner, false, 'QUEST_LIST', () => QuestList.collapse());
                 const firstTarget = selected.objectives?.find(o => o.targets && o.targets.length > 0)?.targets[0];
                 if (firstTarget) {
-                    const worldspaceID = mapState.activeMapConfig?.worldspaceID ?? 0;
-                    const resolved = WorldspaceUtils.resolveGatewayTarget(
-                        firstTarget.worldspace,
-                        worldspaceID,
-                        firstTarget.x,
-                        firstTarget.y,
-                        firstTarget.z,
-                        mapState.player.x,
-                        mapState.player.y,
-                        mapState.lastPayload
-                    );
-                    if (resolved) {
-                        MapViewport.centerOnWorldCoords(resolved.x, resolved.y);
-                    }
+                    MapViewport.centerOnTarget(firstTarget.worldspace, firstTarget.x, firstTarget.y, firstTarget.z);
                 }
             }
             return true;
@@ -402,20 +391,7 @@ export const QuestList = {
 
         const target = activeObj.targets[0];
         if (appSettings.focusMarkerOnSelection) {
-            const worldspaceID = mapState.activeMapConfig?.worldspaceID ?? 0;
-            const resolved = WorldspaceUtils.resolveGatewayTarget(
-                target.worldspace,
-                worldspaceID,
-                target.x,
-                target.y,
-                target.z,
-                mapState.player.x,
-                mapState.player.y,
-                mapState.lastPayload
-            );
-            if (resolved) {
-                MapViewport.centerOnWorldCoords(resolved.x, resolved.y);
-            }
+            MapViewport.centerOnTarget(target.worldspace, target.x, target.y, target.z);
         }
     },
 

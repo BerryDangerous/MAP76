@@ -589,6 +589,11 @@ body.controller-active .collapsible-panel .cp-collapse-btn:hover .cp-btn-icon {
     text-shadow: 1.5px 1.5px 0 #000000;
 }
 
+.collapsible-panel.dimmed {
+    filter: brightness(0.4);
+    transition: filter 0.15s ease;
+}
+
 
 /* ==========================================================================
    10. TAB BAR

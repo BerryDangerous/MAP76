@@ -1,9 +1,11 @@
 import { SettlementData } from '@/types/payloads.js';
 
 import { mapState } from '@/core/state.js';
+import { EngineBridge } from '@/core/bridge.js';
 
 import { AssetManager } from '@/systems/assetManager.js';
 import { FocusManager } from '@/systems/focusManager.js';
+import { KeybindsSystem } from '@/systems/keybindManager.js';
 import { Corner } from '@/systems/layoutManager.js';
 import { MarkerInteractionManager } from '@/systems/markerController.js';
 import { MapViewport } from '@/systems/viewport.js';
@@ -27,11 +29,19 @@ export const SettlementCard = {
         FocusManager.register({
             id: 'SETTLEMENT_CARD',
             getAvailableControls: () => {
-                const controls: import('../systems/focusManager.js').ControlActionDef[] = ['NAV_BACK', 'PAN_MOUSE'];
+                const controls: import('../systems/focusManager.js').ControlActionDef[] = ['NAV_BACK'];
+                const buttons = SettlementCard.activeSettlement ? SettlementCard.buildButtonConfigs(SettlementCard.activeSettlement) : [];
+                if (buttons.length > 1) {
+                    controls.push('NAV_UP', 'NAV_DOWN');
+                }
+                controls.push('PAN_MOUSE');
                 if (SettlementCard.activeAnchorMarker === null && SettlementCard.activeSettlement) {
                     if (SettlementCard.activeSettlement.worldspace !== undefined && WorldspaceUtils.isSameWorldspace(SettlementCard.activeSettlement.worldspace, mapState.activeMapConfig.worldspaceID)) {
                         controls.push({ action: 'CENTER_ITEM', label: t('markers.controls.centerMarker') });
                     }
+                }
+                if (buttons.length > 0) {
+                    controls.push('SELECT');
                 }
                 return controls;
             },
@@ -40,6 +50,7 @@ export const SettlementCard = {
                 const card = document.getElementById('settlement-card-panel');
                 if (card) card.classList.add('focused');
                 if (settlementCardInstance) {
+                    settlementCardInstance.setReferencePanelDimmed(true);
                     settlementCardInstance.getButtonGroup().setSelectedIndex(0);
                 }
                 this.updateButtonSelection();
@@ -47,6 +58,9 @@ export const SettlementCard = {
             onFocusLost: (newFocusId?: string) => {
                 const card = document.getElementById('settlement-card-panel');
                 if (card) card.classList.remove('focused');
+                if (settlementCardInstance) {
+                    settlementCardInstance.setReferencePanelDimmed(false);
+                }
                 this.updateButtonSelection();
                 if (newFocusId === 'MAP' || newFocusId === 'QUEST_CARD' || newFocusId === 'QUEST_LIST' || newFocusId === 'MARKER_CARD') {
                     this.close();
@@ -56,6 +70,18 @@ export const SettlementCard = {
     },
 
     handleKeyDown(e: KeyboardEvent): boolean {
+        if (KeybindsSystem.isAction(e, 'CENTER_ITEM')) {
+            if (this.activeAnchorMarker === null && this.activeSettlement) {
+                if (this.activeSettlement.worldspace !== undefined && WorldspaceUtils.isSameWorldspace(this.activeSettlement.worldspace, mapState.activeMapConfig.worldspaceID)) {
+                    EngineBridge.emitSound('UIPipBoyMapZoom');
+                    const marker = mapState.lastPayload?.markers?.find(m => m.formId === this.activeMarkerFormId);
+                    if (marker) {
+                        MapViewport.centerOnTarget(marker.worldspace, marker.x, marker.y, 0);
+                    }
+                    return true;
+                }
+            }
+        }
         return settlementCardInstance ? settlementCardInstance.handleKeyDown(e) : false;
     },
 

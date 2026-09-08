@@ -108,6 +108,16 @@ export class FloatingCard {
         }
     }
 
+    public setReferencePanelDimmed(dimmed: boolean): void {
+        if (this.options.referencePanel) {
+            if (dimmed) {
+                this.options.referencePanel.classList.add('dimmed');
+            } else {
+                this.options.referencePanel.classList.remove('dimmed');
+            }
+        }
+    }
+
     public handleKeyDown(e: KeyboardEvent): boolean {
         const { dockCorner, returnFocusId, onNavBack } = this.options;
 
@@ -123,14 +133,19 @@ export class FloatingCard {
         }
 
         if (KeybindsSystem.isAction(e, 'NAV_BACK')) {
-            if (onNavBack) {
-                onNavBack();
+            if (returnFocusId && this.options.referencePanel) {
+                FocusManager.setFocus(returnFocusId);
+                EngineBridge.emitSound('UIGeneralFocus');
             } else {
-                this.close();
-                if (returnFocusId) {
-                    FocusManager.setFocus(returnFocusId);
+                if (onNavBack) {
+                    onNavBack();
                 } else {
-                    FocusManager.setFocus('MAP');
+                    this.close();
+                    if (returnFocusId) {
+                        FocusManager.setFocus(returnFocusId);
+                    } else {
+                        FocusManager.setFocus('MAP');
+                    }
                 }
             }
             return true;

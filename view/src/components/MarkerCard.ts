@@ -1,7 +1,12 @@
+import { mapState } from '@/core/state.js';
+import { EngineBridge } from '@/core/bridge.js';
+
 import { FocusManager } from '@/systems/focusManager.js';
+import { KeybindsSystem } from '@/systems/keybindManager.js';
 import { Corner } from '@/systems/layoutManager.js';
 import { MarkerInteractionManager } from '@/systems/markerController.js';
 import { MapViewport } from '@/systems/viewport.js';
+
 import { t } from '@/core/i18n.js';
 
 import { ActionButtonConfig } from '@/components/ui/ButtonGroup.js';
@@ -19,9 +24,17 @@ export const MarkerCard = {
         FocusManager.register({
             id: 'MARKER_CARD',
             getAvailableControls: () => {
-                const controls: import('../systems/focusManager.js').ControlActionDef[] = ['NAV_BACK', 'PAN_MOUSE'];
+                const controls: import('../systems/focusManager.js').ControlActionDef[] = ['NAV_BACK'];
+                const buttons = MarkerCard.buildButtonConfigs();
+                if (buttons.length > 1) {
+                    controls.push('NAV_UP', 'NAV_DOWN');
+                }
+                controls.push('PAN_MOUSE');
                 if (MarkerCard.activeAnchorMarker === null && MarkerCard.activeMarkerFormId !== null) {
                     controls.push({ action: 'CENTER_ITEM', label: t('markers.controls.centerMarker') });
+                }
+                if (buttons.length > 0) {
+                    controls.push('SELECT');
                 }
                 return controls;
             },
@@ -30,6 +43,7 @@ export const MarkerCard = {
                 const card = document.getElementById('marker-card-panel');
                 if (card) card.classList.add('focused');
                 if (markerCardInstance) {
+                    markerCardInstance.setReferencePanelDimmed(true);
                     markerCardInstance.getButtonGroup().setSelectedIndex(0);
                 }
                 this.updateButtonSelection();
@@ -37,6 +51,9 @@ export const MarkerCard = {
             onFocusLost: (newFocusId?: string) => {
                 const card = document.getElementById('marker-card-panel');
                 if (card) card.classList.remove('focused');
+                if (markerCardInstance) {
+                    markerCardInstance.setReferencePanelDimmed(false);
+                }
                 this.updateButtonSelection();
                 if (newFocusId === 'MAP' || newFocusId === 'QUEST_CARD' || newFocusId === 'QUEST_LIST' || newFocusId === 'SETTLEMENT_CARD') {
                     this.close();
@@ -46,6 +63,16 @@ export const MarkerCard = {
     },
 
     handleKeyDown(e: KeyboardEvent): boolean {
+        if (KeybindsSystem.isAction(e, 'CENTER_ITEM')) {
+            if (this.activeAnchorMarker === null && this.activeMarkerFormId !== null) {
+                EngineBridge.emitSound('UIPipBoyMapZoom');
+                const marker = mapState.lastPayload?.markers?.find(m => m.formId === this.activeMarkerFormId);
+                if (marker) {
+                    MapViewport.centerOnTarget(marker.worldspace, marker.x, marker.y, 0);
+                }
+                return true;
+            }
+        }
         return markerCardInstance ? markerCardInstance.handleKeyDown(e) : false;
     },
 

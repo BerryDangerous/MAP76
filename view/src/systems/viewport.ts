@@ -6,6 +6,7 @@ import { FocusManager } from '@/systems/focusManager.js';
 import { activeHoveredMarker } from '@/systems/markerController.js';
 
 import { MapUtils } from '@/utils/mapUtils.js';
+import { WorldspaceUtils } from '@/utils/worldspaceUtils.js';
 
 import { CustomMarkerCard } from '@/components/CustomMarkerCard.js';
 import { MarkerCard } from '@/components/MarkerCard.js';
@@ -142,6 +143,28 @@ export const MapViewport = {
         mapState.panY = screenCenterY - pixelOnZoomedY;
 
         this.updateViewportTransform();
+    },
+
+    centerOnTarget(worldspace: number, x: number, y: number, z: number = 0, targetZoom: number = 2.5): boolean {
+        const config = mapState.activeMapConfig;
+        if (!config || !mapState.lastPayload) return false;
+        
+        const resolved = WorldspaceUtils.resolveGatewayTarget(
+            worldspace,
+            config.worldspaceID,
+            x,
+            y,
+            z,
+            mapState.player.x,
+            mapState.player.y,
+            mapState.lastPayload
+        );
+        
+        if (resolved) {
+            this.centerOnWorldCoords(resolved.x, resolved.y, targetZoom);
+            return true;
+        }
+        return false;
     },
 
     centerOnWorldCoords(gameX: number, gameY: number, targetZoom: number = 2.5): void {

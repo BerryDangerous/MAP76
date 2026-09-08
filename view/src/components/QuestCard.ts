@@ -1,9 +1,10 @@
 import { QuestItem } from '@/types/quests.js';
 
-import { toggleQuestActive, makeOnlyQuestActive } from '@/core/bridge.js';
+import { toggleQuestActive, makeOnlyQuestActive, EngineBridge } from '@/core/bridge.js';
 import { t } from '@/core/i18n.js';
 
 import { FocusManager } from '@/systems/focusManager.js';
+import { KeybindsSystem } from '@/systems/keybindManager.js';
 import { Corner } from '@/systems/layoutManager.js';
 import { MapViewport } from '@/systems/viewport.js';
 
@@ -26,11 +27,19 @@ export const QuestCard = {
         FocusManager.register({
             id: 'QUEST_CARD',
             getAvailableControls: () => {
-                const controls: import('../systems/focusManager.js').ControlActionDef[] = ['NAV_BACK', 'PAN_MOUSE'];
+                const controls: import('../systems/focusManager.js').ControlActionDef[] = ['NAV_BACK'];
+                const buttons = QuestCard.activeQuest ? QuestCard.buildButtonConfigs(QuestCard.activeQuest) : [];
+                if (buttons.length > 1) {
+                    controls.push('NAV_UP', 'NAV_DOWN');
+                }
+                controls.push('PAN_MOUSE');
                 if (QuestCard.activeAnchorMarker === null && QuestCard.activeQuest && !QuestUtils.isQuestCompleted(QuestCard.activeQuest)) {
-                    if (QuestCard.activeQuest.isTracked && QuestUtils.hasActiveTargets(QuestCard.activeQuest)) {
+                    if (QuestUtils.hasActiveTargets(QuestCard.activeQuest)) {
                         controls.push({ action: 'CENTER_ITEM', label: t('quests.controls.centerObjective') });
                     }
+                }
+                if (buttons.length > 0) {
+                    controls.push('SELECT');
                 }
                 return controls;
             },
@@ -39,6 +48,7 @@ export const QuestCard = {
                 const card = document.getElementById('quest-card-panel');
                 if (card) card.classList.add('focused');
                 if (floatingCard) {
+                    floatingCard.setReferencePanelDimmed(true);
                     floatingCard.getButtonGroup().setSelectedIndex(0);
                 }
                 this.updateButtonSelection();
@@ -46,6 +56,9 @@ export const QuestCard = {
             onFocusLost: (newFocusId?: string) => {
                 const card = document.getElementById('quest-card-panel');
                 if (card) card.classList.remove('focused');
+                if (floatingCard) {
+                    floatingCard.setReferencePanelDimmed(false);
+                }
                 this.updateButtonSelection();
                 if (newFocusId === 'MAP' || newFocusId === 'WORKSHOP_LIST' || newFocusId === 'SETTLEMENT_CARD' || newFocusId === 'MARKER_CARD') {
                     this.close();
@@ -55,6 +68,18 @@ export const QuestCard = {
     },
 
     handleKeyDown(e: KeyboardEvent): boolean {
+        if (KeybindsSystem.isAction(e, 'CENTER_ITEM')) {
+            if (this.activeAnchorMarker === null && this.activeQuest && !QuestUtils.isQuestCompleted(this.activeQuest)) {
+                if (QuestUtils.hasActiveTargets(this.activeQuest)) {
+                    EngineBridge.emitSound('UIPipBoyMapZoom');
+                    const firstTarget = this.activeQuest.objectives?.find(o => o.targets && o.targets.length > 0)?.targets[0];
+                    if (firstTarget) {
+                        MapViewport.centerOnTarget(firstTarget.worldspace, firstTarget.x, firstTarget.y, firstTarget.z);
+                    }
+                    return true;
+                }
+            }
+        }
         return floatingCard ? floatingCard.handleKeyDown(e) : false;
     },
 
