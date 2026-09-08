@@ -122,6 +122,12 @@ export const SettingsMenu = {
         const skipSurvivalToggle = new Toggle(appSettings.skipSurvivalFastTravelCheck, (val) => { updateSettings({ skipSurvivalFastTravelCheck: val }); });
         registerControl('skipSurvivalFastTravelCheck', t('settings.labels.skipSurvivalFastTravelCheck'), 'GAMEPLAY', skipSurvivalToggle);
 
+        const cursorSpeedSlider = new Slider(appSettings.gamepadCursorSpeed, 100, 3000, 50, (val) => { updateSettings({ gamepadCursorSpeed: val }); });
+        registerControl('gamepadCursorSpeed', t('settings.labels.gamepadCursorSpeed'), 'GAMEPLAY', cursorSpeedSlider);
+
+        const panSensitivitySlider = new Slider(appSettings.gamepadPanSensitivity, 0.05, 2.0, 0.05, (val) => { updateSettings({ gamepadPanSensitivity: val }); });
+        registerControl('gamepadPanSensitivity', t('settings.labels.gamepadPanSensitivity'), 'GAMEPLAY', panSensitivitySlider);
+
         const writePayloadToggle = new Toggle(appSettings.writePayloadToFile, (val) => { updateSettings({ writePayloadToFile: val }); });
         registerControl('writePayloadToFile', t('settings.labels.writePayloadToFile'), 'DEBUG', writePayloadToggle);
 

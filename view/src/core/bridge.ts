@@ -2,6 +2,7 @@ import { F4SEMapPayload, FastTravelCheckPayload, FastTravelFailPayload } from '@
 
 import { AssetManager } from '@/systems/assetManager.js';
 import { loadExternalLocales, initI18n } from '@/core/i18n.js';
+import { MapViewport } from '@/systems/viewport.js';
 
 export const EngineBridge = {
     closeMap() {
@@ -198,4 +199,8 @@ export function initializeF4SEBindings(onDataReceived: (payload: F4SEMapPayload)
             console.log("[Interop] Workshop Data received:", jsonString);
         };
     }
+
+    window.__panViewport = (dx: number, dy: number) => {
+        MapViewport.panBy(dx, dy);
+    };
 }

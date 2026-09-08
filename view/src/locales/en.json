@@ -17,6 +17,8 @@
       "alternativeMapSound": "Alternative Map Change Sound",
       "dummySlider": "Dummy Slider",
       "freezeSimulation": "Pause Game While in Map",
+      "gamepadCursorSpeed": "Gamepad Cursor Speed",
+      "gamepadPanSensitivity": "Gamepad Map Edge Pan Sensitivity",
       "confirmFastTravel": "Fast Travel Confirmation",
       "skipSurvivalFastTravelCheck": "Skip Survival Fast Travel Check",
       "writePayloadToFile": "Write Payload to File",

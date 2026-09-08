@@ -14,6 +14,8 @@ namespace MAP76::UI {
         static bool writePayloadToFile;
         static bool showWorkshopInfoLog;
         static bool skipSurvivalFastTravelCheck;
+        static float gamepadCursorSpeed;
+        static float gamepadPanSensitivity;
         
     private:
         static nlohmann::json data;

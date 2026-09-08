@@ -98,6 +98,25 @@ export const MapViewport = {
         }
     },
 
+    setPan(x: number, y: number) {
+        mapState.panX = x;
+        mapState.panY = y;
+
+        if (mapState.savedViewport) {
+            mapState.savedViewport = {
+                zoom: mapState.zoom,
+                panX: mapState.panX,
+                panY: mapState.panY
+            };
+        }
+
+        this.updateViewportTransform();
+    },
+
+    panBy(dx: number, dy: number) {
+        this.setPan(mapState.panX + dx, mapState.panY + dy);
+    },
+
     centerOnMapCoords(gameX: number, gameY: number, bounds: GameBounds, targetZoom: number = 2.5) {
         if (!viewport || !mapState.activeMapConfig) return;
 
@@ -261,18 +280,7 @@ export const MapViewport = {
                     FocusManager.setFocus('MAP');
                 }
             }
-            mapState.panX = e.clientX - mapState.startX;
-            mapState.panY = e.clientY - mapState.startY;
-
-            if (mapState.savedViewport) {
-                mapState.savedViewport = {
-                    zoom: mapState.zoom,
-                    panX: mapState.panX,
-                    panY: mapState.panY
-                };
-            }
-
-            this.updateViewportTransform();
+            this.setPan(e.clientX - mapState.startX, e.clientY - mapState.startY);
         });
 
         window.addEventListener('mouseup', () => {

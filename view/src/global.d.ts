@@ -44,6 +44,8 @@ declare global {
             updateWorkshopStats?: (jsonString: string) => void;
         };
 
+        __panViewport?: (dx: number, dy: number) => void;
+
         loadSettings?: (jsonString: string) => void;
         saveSettings?: (jsonString: string) => void;
         requestSettings?: () => void;
