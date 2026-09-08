@@ -10,6 +10,7 @@ declare global {
 
         GetDiscoveredMapMarkersAsJSON?: (jsonString: string) => void;
         requestFreshMapData?: (arg: string) => void;
+        setMapViewportFocus?: (arg: string) => void;
 
         requestClose?: () => void;
         triggerEngineSound?: (soundName: string) => void;

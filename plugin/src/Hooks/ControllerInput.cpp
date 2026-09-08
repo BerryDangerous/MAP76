@@ -200,49 +200,58 @@ namespace MAP76::Hooks
             if (std::abs(y) < 0.2f)
                 y = 0.0f;
 
-            if (x == 0.0f && y == 0.0f)
-                return;
-
-            static float fracX = 0.0f;
-            static float fracY = 0.0f;
-            static auto lastTime = std::chrono::steady_clock::now();
-            auto now = std::chrono::steady_clock::now();
-            float dt = std::chrono::duration<float>(now - lastTime).count();
-            lastTime = now;
-
-            if (dt > 0.1f)
-                dt = 0.016f;
-
-            POINT beforePt;
-            if (!::GetCursorPos(&beforePt))
-                return;
-
-            float speed = MAP76::UI::Settings::gamepadCursorSpeed * dt;
-            float totalDx = (x * speed) + fracX;
-            float totalDy = (y * speed) + fracY;
-            int dx = static_cast<int>(totalDx);
-            int dy = static_cast<int>(totalDy);
-            fracX = totalDx - dx;
-            fracY = totalDy - dy;
-
-            ::SetCursorPos(beforePt.x + dx, beforePt.y - dy);
-
-            POINT afterPt;
-            if (!::GetCursorPos(&afterPt))
-                return;
-
-            int leftoverX = dx - (afterPt.x - beforePt.x);
-            int leftoverY = -dy - (afterPt.y - beforePt.y);
-
-            if (leftoverX != 0 || leftoverY != 0)
+            if (MAP76::UI::State::g_mapViewportHasFocus.load())
             {
-                char buffer[128];
-                snprintf(buffer, sizeof(buffer),
-                         "if (window.__panViewport) { window.__panViewport(%f, %f); }",
-                         (float)-leftoverX * MAP76::UI::Settings::gamepadPanSensitivity,
-                         (float)-leftoverY * MAP76::UI::Settings::gamepadPanSensitivity);
-                if (MAP76::UI::State::g_api && MAP76::UI::State::g_view)
+                if (x == 0.0f && y == 0.0f)
+                    return;
+
+                static float fracX = 0.0f;
+                static float fracY = 0.0f;
+                static auto lastTime = std::chrono::steady_clock::now();
+                auto now = std::chrono::steady_clock::now();
+                float dt = std::chrono::duration<float>(now - lastTime).count();
+                lastTime = now;
+
+                if (dt > 0.1f)
+                    dt = 0.016f;
+
+                POINT beforePt;
+                if (!::GetCursorPos(&beforePt))
+                    return;
+
+                float speed = MAP76::UI::Settings::gamepadCursorSpeed * dt;
+                float totalDx = (x * speed) + fracX;
+                float totalDy = (y * speed) + fracY;
+                int dx = static_cast<int>(totalDx);
+                int dy = static_cast<int>(totalDy);
+                fracX = totalDx - dx;
+                fracY = totalDy - dy;
+
+                ::SetCursorPos(beforePt.x + dx, beforePt.y - dy);
+
+                POINT afterPt;
+                if (!::GetCursorPos(&afterPt))
+                    return;
+
+                int leftoverX = dx - (afterPt.x - beforePt.x);
+                int leftoverY = -dy - (afterPt.y - beforePt.y);
+
+                if (leftoverX != 0 || leftoverY != 0)
                 {
+                    char buffer[128];
+                    snprintf(buffer, sizeof(buffer),
+                             "if (window.__panViewport) { window.__panViewport(%f, %f); }",
+                             (float)-leftoverX * MAP76::UI::Settings::gamepadPanSensitivity,
+                             (float)-leftoverY * MAP76::UI::Settings::gamepadPanSensitivity);
+                    MAP76::UI::State::g_api->Invoke(MAP76::UI::State::g_view, buffer);
+                }
+            }
+            else
+            {
+                if (std::abs(x) >= 0.2f || std::abs(y) >= 0.2f)
+                {
+                    char buffer[128];
+                    snprintf(buffer, sizeof(buffer), "window.dispatchEvent(new CustomEvent('thumbstick-nav', { detail: { x: %f, y: %f } }));", x, y);
                     MAP76::UI::State::g_api->Invoke(MAP76::UI::State::g_view, buffer);
                 }
             }

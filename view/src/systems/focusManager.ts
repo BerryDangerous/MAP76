@@ -1,3 +1,5 @@
+import { setMapViewportFocus } from '@/core/bridge.js';
+
 export type FocusOwner = 'MAP' | 'QUEST_LIST' | 'QUEST_CARD' | 'WORKSHOP_LIST' | 'WORKSHOP_CARD' | string;
 
 export type ControlActionDef = import('./keybindManager.js').KeyAction | { action: import('./keybindManager.js').KeyAction, label: string };
@@ -60,8 +62,10 @@ class FocusManagerSystem {
 
         if (id === 'MAP') {
             document.body.classList.remove('has-active-focus');
+            setMapViewportFocus(true);
         } else {
             document.body.classList.add('has-active-focus');
+            setMapViewportFocus(false);
         }
 
         this.listeners.forEach(listener => listener(id, prevFocus));

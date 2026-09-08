@@ -59,6 +59,9 @@ export class ControlBar {
 
         const filteredActions = actions.filter(actionDef => {
             const actionId = typeof actionDef === 'string' ? actionDef : actionDef.action;
+            if (actionId === 'PAN_MOUSE' && KeybindsSystem.isControllerActive && focus !== 'MAP') {
+                return false;
+            }
             if (actionId === 'CENTER_ITEM' && appSettings.focusMarkerOnSelection) {
                 return false;
             }

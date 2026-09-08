@@ -108,6 +108,7 @@ export class KeybindsSystem {
 
     private static lastRepeatTime: number = 0;
     private static lastPressedTime: Record<string, number> = {};
+    private static lastThumbstickNavTime: number = 0;
 
     public static setActiveModalHandler(handler: ((e: KeyboardEvent) => void) | null) {
         this.activeModalHandler = handler;
@@ -157,6 +158,35 @@ export class KeybindsSystem {
                 this.isControllerActive = isGamepad;
                 document.body.classList.toggle('controller-active', isGamepad);
                 window.dispatchEvent(new Event('controlsUpdated'));
+            }
+        }) as EventListener);
+
+        window.addEventListener('thumbstick-nav', ((e: CustomEvent<{x: number, y: number}>) => {
+            const now = Date.now();
+            if (now - this.lastThumbstickNavTime < 200) return;
+            
+            const { x, y } = e.detail;
+            let keyName = '';
+            
+            if (Math.abs(x) > Math.abs(y)) {
+                if (x > 0.5) keyName = 'Gamepad_Right';
+                else if (x < -0.5) keyName = 'Gamepad_Left';
+            } else {
+                if (y > 0.5) keyName = 'Gamepad_Up';
+                else if (y < -0.5) keyName = 'Gamepad_Down';
+            }
+            
+            if (keyName) {
+                this.lastThumbstickNavTime = now;
+                const syntheticEvent = new KeyboardEvent('keydown', {
+                    key: keyName,
+                    code: keyName,
+                    bubbles: true,
+                    cancelable: true,
+                    repeat: false
+                });
+                const target = document.activeElement || window;
+                target.dispatchEvent(syntheticEvent);
             }
         }) as EventListener);
 
