@@ -5,6 +5,7 @@
 #include "RE/B/BSInputEventUser.h"
 #include "RE/B/ButtonEvent.h"
 #include "RE/C/ControlMap.h"
+#include "RE/D/DeviceConnectEvent.h"
 #include "RE/M/MenuControls.h"
 #include "RE/M/MenuOpenHandler.h"
 #include "RE/T/ThumbstickEvent.h"
@@ -108,8 +109,54 @@ namespace MAP76::Hooks
         NeuterButtonEvent(a_event);
     }
 
+    bool UpdateGamepadStateFromInput(const RE::InputEvent *a_eventQueue, bool a_currentState)
+    {
+        bool isGamepad = a_currentState;
+        for (auto *event = a_eventQueue; event; event = event->next)
+        {
+            if (event->eventType == RE::INPUT_EVENT_TYPE::kDeviceConnect)
+            {
+                auto *connectEvent = static_cast<const RE::DeviceConnectEvent *>(event);
+                if (connectEvent->device == RE::INPUT_DEVICE::kGamepad)
+                {
+                    isGamepad = connectEvent->connected;
+                }
+            }
+            else if (event->eventType != RE::INPUT_EVENT_TYPE::kMouseMove &&
+                     event->eventType != RE::INPUT_EVENT_TYPE::kCursorMove)
+            {
+                if (event->device == RE::INPUT_DEVICE::kGamepad)
+                {
+                    isGamepad = true;
+                }
+                else if (event->device == RE::INPUT_DEVICE::kKeyboard || event->device == RE::INPUT_DEVICE::kMouse)
+                {
+                    isGamepad = false;
+                }
+            }
+        }
+        return isGamepad;
+    }
+
     void Hook_PerformInputProcessing(RE::MenuControls *a_this, const RE::InputEvent *a_eventQueue)
     {
+        static bool s_lastGamepadState = false;
+        bool isGamepad = UpdateGamepadStateFromInput(a_eventQueue, s_lastGamepadState);
+
+        static bool s_wasMapOpen = false;
+        bool isMapOpen = MAP76::UI::State::g_mapIsOpen.load();
+        bool justOpened = isMapOpen && !s_wasMapOpen;
+        if (justOpened || isGamepad != s_lastGamepadState)
+        {
+            s_lastGamepadState = isGamepad;
+
+            if (isMapOpen && MAP76::UI::State::g_api && MAP76::UI::State::g_view)
+            {
+                MAP76::UI::State::g_api->Invoke(MAP76::UI::State::g_view, isGamepad ? "window.dispatchEvent(new CustomEvent('gamepadStateChanged', {detail: true}))" : "window.dispatchEvent(new CustomEvent('gamepadStateChanged', {detail: false}))");
+            }
+        }
+        s_wasMapOpen = isMapOpen;
+
         for (auto *event = a_eventQueue; event; event = event->next)
         {
             if (event->eventType == RE::INPUT_EVENT_TYPE::kButton)

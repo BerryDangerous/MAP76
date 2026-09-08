@@ -36,6 +36,12 @@ export class InfoBar {
         window.addEventListener('languageChanged', () => {
             this.reloadLocales();
         });
+
+        window.addEventListener('controlsUpdated', () => {
+            if (this.settingsContainer) {
+                this.settingsContainer.innerHTML = KeybindsSystem.getControlHtml('OPEN_MENU');
+            }
+        });
     }
 
     public static reloadLocales(): void {

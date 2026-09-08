@@ -26,6 +26,10 @@ export class ControlBar {
             this.render(FocusManager.getFocus());
         });
 
+        window.addEventListener('controlsUpdated', () => {
+            this.render(FocusManager.getFocus());
+        });
+
         this.render(FocusManager.getFocus());
     }
 

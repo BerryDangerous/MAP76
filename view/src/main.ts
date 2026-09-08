@@ -10,7 +10,7 @@ import { initI18n, changeLanguage } from '@/core/i18n.js';
 import { FocusManager } from '@/systems/focusManager.js';
 import { KeybindsSystem } from '@/systems/keybindManager.js';
 import { LayoutManager } from '@/systems/layoutManager.js';
-import { MarkerInteractionManager } from '@/systems/markerController.js';
+import { MarkerInteractionManager, activeHoveredMarker } from '@/systems/markerController.js';
 import { loadMarkers, applySupplyLinesVisibilityFilter, switchWorldspace, updatePlayerMarker } from '@/systems/markerRenderer.js';
 import { ModalManager } from '@/systems/modalManager.js';
 import { MapViewport } from '@/systems/viewport.js';
@@ -226,6 +226,12 @@ window.addEventListener('DOMContentLoaded', () => {
                         }
                     }
                     return;
+                }
+                if (KeybindsSystem.isAction(e, 'SELECT')) {
+                    if (activeHoveredMarker) {
+                        activeHoveredMarker.click();
+                        return;
+                    }
                 }
                 if (KeybindsSystem.isAction(e, 'PLACE_MARKER')) {
                     const config = mapState.activeMapConfig;

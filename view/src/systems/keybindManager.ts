@@ -27,30 +27,30 @@ export type KeyAction =
     | 'SORT';
 
 export const DEFAULT_KEYMAP: Record<KeyAction, string[]> = {
-    NAV_UP: ['ArrowUp'],
-    NAV_DOWN: ['ArrowDown'],
-    NAV_LEFT: ['ArrowLeft'],
-    NAV_RIGHT: ['ArrowRight'],
-    NAV_BACK: ['Tab'],
-    TAB_PREV: ['z', 'Z'],
-    TAB_NEXT: ['c', 'C'],
-    SELECT: ['Enter', 'e', 'E'],
-    COLLAPSE: ['ArrowLeft'],
-    CLOSE_MAP: ['m', 'M'],
-    PLACE_MARKER: ['Enter'],
-    ZOOM_IN: ['+', '='],
-    ZOOM_OUT: ['-'],
-    PAN_MOUSE: ['Mouse'], // Pseudo-key for the mouse
-    CENTER_CAMERA: [' ', 'Space', 'Spacebar'],
-    CENTER_ITEM: ['Shift'],
-    OPEN_SETTINGS: ['z', 'Z'],
-    OPEN_MENU: ['Esc'],
-    RESET_DEFAULTS: ['t', 'T'],
-    TOGGLE_ACTIVE: ['t', 'T'],
-    TOGGLE_SUPPLY_LINES: ['c', 'C'],
-    PREV_WORLD: ['<', ',', 'PageUp'],
-    NEXT_WORLD: ['>', '.', 'PageDown'],
-    SORT: ['r', 'R']
+    NAV_UP: ['ArrowUp', 'Gamepad_Up'],
+    NAV_DOWN: ['ArrowDown', 'Gamepad_Down'],
+    NAV_LEFT: ['ArrowLeft', 'Gamepad_Left'],
+    NAV_RIGHT: ['ArrowRight', 'Gamepad_Right'],
+    NAV_BACK: ['Tab', 'Gamepad_B'],
+    TAB_PREV: ['z', 'Z', 'Gamepad_LB'],
+    TAB_NEXT: ['c', 'C', 'Gamepad_RB'],
+    SELECT: ['Enter', 'e', 'E', 'Gamepad_A'],
+    COLLAPSE: ['ArrowLeft', 'Gamepad_B'],
+    CLOSE_MAP: ['m', 'M', 'Gamepad_B', 'Gamepad_Back'],
+    PLACE_MARKER: ['Enter', 'Gamepad_A'],
+    ZOOM_IN: ['+', '=', 'Gamepad_RT'],
+    ZOOM_OUT: ['-', 'Gamepad_LT'],
+    PAN_MOUSE: ['Mouse', 'Gamepad_LStick'],
+    CENTER_CAMERA: [' ', 'Space', 'Spacebar', 'Gamepad_RS'],
+    CENTER_ITEM: ['Shift', 'Gamepad_LS'],
+    OPEN_SETTINGS: ['z', 'Z', 'Gamepad_Y'],
+    OPEN_MENU: ['Esc', 'Gamepad_Start'],
+    RESET_DEFAULTS: ['t', 'T', 'Gamepad_X'],
+    TOGGLE_ACTIVE: ['t', 'T', 'Gamepad_X'],
+    TOGGLE_SUPPLY_LINES: ['c', 'C', 'Gamepad_X'],
+    PREV_WORLD: ['<', ',', 'PageUp', 'Gamepad_LB'],
+    NEXT_WORLD: ['>', '.', 'PageDown', 'Gamepad_RB'],
+    SORT: ['r', 'R', 'Gamepad_Y']
 };
 
 export const DEFAULT_LABELS: Record<KeyAction, string> = {
@@ -83,12 +83,81 @@ export const DEFAULT_LABELS: Record<KeyAction, string> = {
 export class KeybindsSystem {
     private static keymap: Record<KeyAction, string[]> = { ...DEFAULT_KEYMAP };
     private static activeModalHandler: ((e: KeyboardEvent) => void) | null = null;
+    
+    public static isControllerActive: boolean = false;
+
+    private static CONTROLLER_GLYPHS: Record<string, string> = {
+        'Gamepad_A': 'A',
+        'Gamepad_B': 'B',
+        'Gamepad_X': 'C',
+        'Gamepad_Y': 'D',
+        'Gamepad_LB': 'G',
+        'Gamepad_RB': 'L',
+        'Gamepad_LT': 'I',
+        'Gamepad_RT': 'N',
+        'Gamepad_Start': 'O',
+        'Gamepad_Back': 'E',
+        'Gamepad_Up': 'w',
+        'Gamepad_Down': 'v',
+        'Gamepad_Left': 't',
+        'Gamepad_Right': 'u',
+        'Gamepad_LS': 'H',
+        'Gamepad_RS': 'M',
+        'Gamepad_LStick': 'F'
+    };
+
+    private static lastRepeatTime: number = 0;
+    private static lastPressedTime: Record<string, number> = {};
 
     public static setActiveModalHandler(handler: ((e: KeyboardEvent) => void) | null) {
         this.activeModalHandler = handler;
     }
 
     public static initGlobalListeners(globalFallback: (e: KeyboardEvent) => void): void {
+        window.addEventListener('prisma-controller-action', ((e: CustomEvent) => {
+            if (!this.isControllerActive) {
+                this.isControllerActive = true;
+                window.dispatchEvent(new Event('controlsUpdated'));
+            }
+            
+            const { action, state } = e.detail;
+            
+            if (state !== 'pressed' && state !== 'repeat' && state !== 'released') return;
+            
+            const now = Date.now();
+            
+            if (state === 'pressed') {
+                if (this.lastPressedTime[action] && now - this.lastPressedTime[action] < 150) {
+                    return;
+                }
+                this.lastPressedTime[action] = now;
+                this.lastRepeatTime = now + 300;
+            } else if (state === 'repeat') {
+                if (now - this.lastRepeatTime < 100) return;
+                this.lastRepeatTime = now;
+            }
+            
+            let keyName = `Gamepad_${action}`;
+            
+            const syntheticEvent = new KeyboardEvent(state === 'released' ? 'keyup' : 'keydown', {
+                key: keyName,
+                code: keyName,
+                bubbles: true,
+                cancelable: true,
+                repeat: state === 'repeat'
+            });
+            const target = document.activeElement || window;
+            target.dispatchEvent(syntheticEvent);
+        }) as EventListener);
+
+        window.addEventListener('gamepadStateChanged', ((e: CustomEvent<boolean>) => {
+            const isGamepad = e.detail;
+            if (this.isControllerActive !== isGamepad) {
+                this.isControllerActive = isGamepad;
+                window.dispatchEvent(new Event('controlsUpdated'));
+            }
+        }) as EventListener);
+
         window.addEventListener('keydown', (e: KeyboardEvent) => {
             if (this.activeModalHandler) {
                 this.activeModalHandler(e);
@@ -100,7 +169,7 @@ export class KeybindsSystem {
 
             if (isInputFocused) {
                 const navKeys = ['Escape', 'Enter', 'Tab', 'ArrowUp', 'ArrowDown'];
-                if (!navKeys.includes(e.key)) {
+                if (!navKeys.includes(e.key) && !e.key.startsWith('Gamepad_')) {
                     return;
                 }
             }
@@ -119,6 +188,11 @@ export class KeybindsSystem {
         });
 
         window.addEventListener('keyup', (e: KeyboardEvent) => {
+            if (!e.key.startsWith('Gamepad_') && this.isControllerActive) {
+                this.isControllerActive = false;
+                window.dispatchEvent(new Event('controlsUpdated'));
+            }
+
             const handledByFocus = FocusManager.handleKeyUp(e);
             if (handledByFocus) {
                 e.preventDefault();
@@ -162,7 +236,7 @@ export class KeybindsSystem {
     public static getBadgeText(action: KeyAction): string {
         const keys = this.keymap[action];
         if (!keys || keys.length === 0) return '';
-        const primaryKey = keys[0];
+        const primaryKey = keys.find(k => !k.startsWith('Gamepad_')) || keys[0];
         if (primaryKey === ' ') return '[SPACE]';
         if (primaryKey === 'ArrowUp') return '[▲]';
         if (primaryKey === 'ArrowDown') return '[▼]';
@@ -173,14 +247,22 @@ export class KeybindsSystem {
 
     public static getControlText(action: KeyAction, overrideLabel?: string): string {
         const label = overrideLabel || t(DEFAULT_LABELS[action]) || action;
-        if (action === 'PAN_MOUSE') {
+        if (action === 'PAN_MOUSE' && !this.isControllerActive) {
             return `Mouse) ${label}`;
         }
         
         const keys = this.keymap[action];
         if (!keys || keys.length === 0) return `?) ${label}`;
         
-        let primaryKey = keys[0];
+        if (this.isControllerActive) {
+            const gamepadKey = keys.find(k => k.startsWith('Gamepad_'));
+            if (gamepadKey && this.CONTROLLER_GLYPHS[gamepadKey]) {
+                const glyph = this.CONTROLLER_GLYPHS[gamepadKey];
+                return `${glyph}) ${label}`;
+            }
+        }
+
+        let primaryKey = keys.find(k => !k.startsWith('Gamepad_')) || keys[0];
         if (primaryKey === ' ') primaryKey = t('controls.keys.space', { defaultValue: 'SPACE' });
         else if (primaryKey === 'Tab') primaryKey = t('controls.keys.tab', { defaultValue: 'TAB' });
         else if (primaryKey === 'Enter') primaryKey = t('controls.keys.enter', { defaultValue: 'ENTER' });
@@ -201,14 +283,24 @@ export class KeybindsSystem {
             labelHtml = `<span style="text-decoration: underline;">${labelHtml}</span>`;
         }
 
-        if (action === 'PAN_MOUSE') {
+        if (action === 'PAN_MOUSE' && !this.isControllerActive) {
             return `Mouse) ${labelHtml}`;
         }
         
         const keys = this.keymap[action];
         if (!keys || keys.length === 0) return `?) <b>${label}</b>`;
         
-        let primaryKey = keys[0];
+        if (this.isControllerActive) {
+            const gamepadKey = keys.find(k => k.startsWith('Gamepad_'));
+            if (gamepadKey && this.CONTROLLER_GLYPHS[gamepadKey]) {
+                const glyph = this.CONTROLLER_GLYPHS[gamepadKey];
+                const isLowercase = glyph === glyph.toLowerCase();
+                const fontFamily = isLowercase ? 'ControllerButtonsInverted' : 'ControllerButtons';
+                return `<span class="controller-btn-icon" style="font-family: '${fontFamily}'; font-size: 1em; vertical-align: text-bottom; margin-right: 4px; display: inline-block; position: relative; top: 1px;">${glyph}</span> ${labelHtml}`;
+            }
+        }
+
+        let primaryKey = keys.find(k => !k.startsWith('Gamepad_')) || keys[0];
         if (primaryKey === ' ') primaryKey = t('controls.keys.space', { defaultValue: 'SPACE' });
         else if (primaryKey === 'Tab') primaryKey = t('controls.keys.tab', { defaultValue: 'TAB' });
         else if (primaryKey === 'Enter') primaryKey = t('controls.keys.enter', { defaultValue: 'ENTER' });
