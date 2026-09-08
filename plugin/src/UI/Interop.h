@@ -9,7 +9,8 @@ namespace MAP76::UI
      */
     namespace State
     {
-        inline PRISMA_UI_API::IVPrismaUI12 *g_api = nullptr;
+        inline PRISMA_UI_API::IVPrismaUI4 *g_api = nullptr;
+        inline PRISMA_UI_API::IVPrismaUI12 *g_api_v12 = nullptr;
         inline PrismaView g_view = 0;
 
         inline std::atomic<bool> g_mapIsOpen{false};

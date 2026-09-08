@@ -18,10 +18,19 @@ void OnF4SEMessage(F4SE::MessagingInterface::Message *a_msg)
     case F4SE::MessagingInterface::kGameDataReady:
     {
         REX::INFO("MAP76: Game data ready. Requesting PrismaUI API...");
-        MAP76::UI::State::g_api = PRISMA_UI_API::RequestPluginAPI<PRISMA_UI_API::IVPrismaUI12>();
+        MAP76::UI::State::g_api_v12 = PRISMA_UI_API::RequestPluginAPI<PRISMA_UI_API::IVPrismaUI12>();
+        
+        if (MAP76::UI::State::g_api_v12) {
+            REX::INFO("MAP76: Acquired PrismaUI V12 API surface.");
+            MAP76::UI::State::g_api = MAP76::UI::State::g_api_v12;
+        } else {
+            REX::INFO("MAP76: V12 unavailable, falling back to V4.");
+            MAP76::UI::State::g_api = PRISMA_UI_API::RequestPluginAPI<PRISMA_UI_API::IVPrismaUI4>();
+        }
+
         if (!MAP76::UI::State::g_api)
         {
-            REX::ERROR("MAP76: Failed to acquire PrismaUI API surface!");
+            REX::ERROR("MAP76: Failed to acquire any PrismaUI API surface!");
         }
         MAP76::UI::IconOverrides::Load();
         MAP76::Hooks::InstallMainUpdateHook();
