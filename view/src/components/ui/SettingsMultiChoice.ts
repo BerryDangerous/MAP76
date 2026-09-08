@@ -1,6 +1,7 @@
 import { EngineBridge } from '@/core/bridge.js';
 
 import { SettingsControl } from '@/components/ui/SettingsRow.js';
+import { KeybindsSystem } from '@/systems/keybindManager.js';
 
 export class MultiChoice<T> implements SettingsControl {
     private container: HTMLElement;
@@ -103,10 +104,10 @@ export class MultiChoice<T> implements SettingsControl {
     }
 
     public handleKey(e: KeyboardEvent): boolean {
-        if (e.key === 'ArrowLeft') {
+        if (KeybindsSystem.isAction(e, 'NAV_LEFT')) {
             this.prev();
             return true;
-        } else if (e.key === 'ArrowRight' || e.key === 'Enter' || e.key === ' ') {
+        } else if (KeybindsSystem.isAction(e, 'NAV_RIGHT') || KeybindsSystem.isAction(e, 'SELECT')) {
             this.next();
             return true;
         }

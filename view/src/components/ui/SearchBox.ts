@@ -54,7 +54,7 @@ export class SearchBox {
         });
 
         this.inputEl.addEventListener('keydown', (e: KeyboardEvent) => {
-            if (e.key === 'ArrowRight' && this.inputEl.selectionStart === this.inputEl.value.length && this.inputEl.value.length > 0) {
+            if (KeybindsSystem.isAction(e, 'NAV_RIGHT') && this.inputEl.selectionStart === this.inputEl.value.length && this.inputEl.value.length > 0) {
                 this.clearBtnEl.focus();
                 e.preventDefault();
                 e.stopPropagation();
@@ -62,7 +62,7 @@ export class SearchBox {
         });
 
         this.clearBtnEl.addEventListener('keydown', (e: KeyboardEvent) => {
-            if (e.key === 'ArrowLeft') {
+            if (KeybindsSystem.isAction(e, 'NAV_LEFT')) {
                 this.inputEl.focus();
                 e.preventDefault();
                 e.stopPropagation();

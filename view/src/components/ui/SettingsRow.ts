@@ -26,13 +26,6 @@ export class SettingsRow {
         this.container.addEventListener('focus', () => {
             EngineBridge.emitSound('UIGeneralFocus');
         });
-
-        this.container.addEventListener('keydown', (e) => {
-            if (this.control.handleKey(e)) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
-        });
     }
 
     private build() {

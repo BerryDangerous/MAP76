@@ -1,6 +1,7 @@
 import { EngineBridge } from '@/core/bridge.js';
 
 import { SettingsControl } from '@/components/ui/SettingsRow.js';
+import { KeybindsSystem } from '@/systems/keybindManager.js';
 
 export class Slider implements SettingsControl {
     private container: HTMLElement;
@@ -141,10 +142,10 @@ export class Slider implements SettingsControl {
     }
 
     public handleKey(e: KeyboardEvent): boolean {
-        if (e.key === 'ArrowLeft') {
+        if (KeybindsSystem.isAction(e, 'NAV_LEFT')) {
             this.decrease();
             return true;
-        } else if (e.key === 'ArrowRight') {
+        } else if (KeybindsSystem.isAction(e, 'NAV_RIGHT')) {
             this.increase();
             return true;
         }

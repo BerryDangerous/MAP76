@@ -88,14 +88,14 @@ export class ActionButtonGroup {
     }
 
     public handleKeyDown(e: KeyboardEvent): boolean {
-        const nextKey = this.layout === 'row' ? 'ArrowRight' : 'ArrowDown';
-        const prevKey = this.layout === 'row' ? 'ArrowLeft' : 'ArrowUp';
+        const nextAction = this.layout === 'row' ? 'NAV_RIGHT' : 'NAV_DOWN';
+        const prevAction = this.layout === 'row' ? 'NAV_LEFT' : 'NAV_UP';
 
-        if (e.key === nextKey) {
+        if (KeybindsSystem.isAction(e, nextAction)) {
             this.navigateNext();
             return true;
         }
-        if (e.key === prevKey) {
+        if (KeybindsSystem.isAction(e, prevAction)) {
             this.navigatePrev();
             return true;
         }

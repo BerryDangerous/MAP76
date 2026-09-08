@@ -143,14 +143,17 @@ export const SettingsMenu = {
             id: 'SETTINGS_MENU',
             getAvailableControls: () => ['NAV_BACK', 'RESET_DEFAULTS'] as import('../systems/focusManager.js').ControlActionDef[],
             handleKeyDown: (e) => {
-                if (e.key === 'Escape' || KeybindsSystem.isAction(e, 'CLOSE_MAP')) {
-                    e.preventDefault();
-                    this.pendingCloseKey = e.key || e.code || String(e.keyCode);
-                    return true;
-                }
-
                 const activeEl = document.activeElement as HTMLElement;
                 const isFocusedOnTab = activeEl?.classList.contains('settings-tab');
+
+                if (activeEl?.classList.contains('settings-row')) {
+                    const controlEntry = this.controls.find(c => c.row.getElement() === activeEl);
+                    if (controlEntry) {
+                        if (controlEntry.row.control.handleKey(e)) {
+                            return true;
+                        }
+                    }
+                }
 
                 if (KeybindsSystem.isAction(e, 'NAV_BACK')) {
                     if (!isFocusedOnTab) {
@@ -162,6 +165,12 @@ export const SettingsMenu = {
                         this.pendingCloseKey = e.key || e.code || String(e.keyCode);
                         return true;
                     }
+                }
+
+                if (e.key === 'Escape' || KeybindsSystem.isAction(e, 'CLOSE_MAP')) {
+                    e.preventDefault();
+                    this.pendingCloseKey = e.key || e.code || String(e.keyCode);
+                    return true;
                 }
 
                 if (KeybindsSystem.isAction(e, 'RESET_DEFAULTS')) {

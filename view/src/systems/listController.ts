@@ -1,4 +1,5 @@
 import { EngineBridge } from '@/core/bridge.js';
+import { KeybindsSystem } from '@/systems/keybindManager.js';
 
 export interface ListNavigationOptions<T> {
     getItems: () => T[];
@@ -92,11 +93,11 @@ export class SelectableListController<T> {
     }
 
     public handleKeyDown(e: KeyboardEvent): boolean {
-        if (e.key === 'ArrowDown') {
+        if (KeybindsSystem.isAction(e, 'NAV_DOWN')) {
             this.navigateNext();
             return true;
         }
-        if (e.key === 'ArrowUp') {
+        if (KeybindsSystem.isAction(e, 'NAV_UP')) {
             this.navigatePrev();
             return true;
         }

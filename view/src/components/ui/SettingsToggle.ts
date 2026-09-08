@@ -2,6 +2,7 @@ import { EngineBridge } from '@/core/bridge.js';
 
 import { t } from '@/core/i18n.js';
 import { SettingsControl } from '@/components/ui/SettingsRow.js';
+import { KeybindsSystem } from '@/systems/keybindManager.js';
 
 export class Toggle implements SettingsControl {
     private container: HTMLElement;
@@ -80,7 +81,7 @@ export class Toggle implements SettingsControl {
     }
 
     public handleKey(e: KeyboardEvent): boolean {
-        if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'Enter' || e.key === ' ') {
+        if (KeybindsSystem.isAction(e, 'NAV_LEFT') || KeybindsSystem.isAction(e, 'NAV_RIGHT') || KeybindsSystem.isAction(e, 'SELECT')) {
             this.toggle();
             return true;
         }
