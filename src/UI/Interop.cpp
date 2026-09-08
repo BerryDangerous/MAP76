@@ -507,22 +507,24 @@ namespace MAP76::UI
         State::g_api->BindUIEvent(view, "triggerEngineSound", HandleTriggerEngineSound);
         State::g_api->BindUIEvent(view, "setMapViewportFocus", HandleSetMapViewportFocus);
 
-        State::g_api->BindControllerAction(view, "A", "A");
-        State::g_api->BindControllerAction(view, "B", "B");
-        State::g_api->BindControllerAction(view, "X", "X");
-        State::g_api->BindControllerAction(view, "Y", "Y");
-        State::g_api->BindControllerAction(view, "LB", "LB");
-        State::g_api->BindControllerAction(view, "RB", "RB");
-        State::g_api->BindControllerAction(view, "LT", "LT");
-        State::g_api->BindControllerAction(view, "RT", "RT");
-        State::g_api->BindControllerAction(view, "DUp", "Up");
-        State::g_api->BindControllerAction(view, "DDown", "Down");
-        State::g_api->BindControllerAction(view, "DLeft", "Left");
-        State::g_api->BindControllerAction(view, "DRight", "Right");
-        State::g_api->BindControllerAction(view, "LS", "LS");
-        State::g_api->BindControllerAction(view, "RS", "RS");
-        State::g_api->BindControllerAction(view, "Back", "Back");
-        State::g_api->BindControllerAction(view, "Start", "Start");
+        if (State::g_api_v12) {
+            State::g_api_v12->BindControllerAction(view, "A", "A");
+            State::g_api_v12->BindControllerAction(view, "B", "B");
+            State::g_api_v12->BindControllerAction(view, "X", "X");
+            State::g_api_v12->BindControllerAction(view, "Y", "Y");
+            State::g_api_v12->BindControllerAction(view, "LB", "LB");
+            State::g_api_v12->BindControllerAction(view, "RB", "RB");
+            State::g_api_v12->BindControllerAction(view, "LT", "LT");
+            State::g_api_v12->BindControllerAction(view, "RT", "RT");
+            State::g_api_v12->BindControllerAction(view, "DUp", "Up");
+            State::g_api_v12->BindControllerAction(view, "DDown", "Down");
+            State::g_api_v12->BindControllerAction(view, "DLeft", "Left");
+            State::g_api_v12->BindControllerAction(view, "DRight", "Right");
+            State::g_api_v12->BindControllerAction(view, "LS", "LS");
+            State::g_api_v12->BindControllerAction(view, "RS", "RS");
+            State::g_api_v12->BindControllerAction(view, "Back", "Back");
+            State::g_api_v12->BindControllerAction(view, "Start", "Start");
+        }
 
         std::string settingsJson = Settings::Get().dump();
         State::g_api->InteropCall(view, "loadSettings", settingsJson.c_str());
