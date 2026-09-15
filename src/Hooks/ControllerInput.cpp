@@ -268,6 +268,7 @@ namespace MAP76::Hooks
         REL::Relocation<uintptr_t> vtable{*reinterpret_cast<uintptr_t *>(menuControls)};
         g_originalPerformInputProcessing = vtable.write_vfunc(0x0, Hook_PerformInputProcessing);
 
-        menuControls->handlers.insert(menuControls->handlers.begin(), ControllerThumbstickHandler::GetSingleton());
+        menuControls->RegisterHandler(ControllerThumbstickHandler::GetSingleton());
+        REX::INFO("MAP76: Successfully hooked MenuControls::PerformInputProcessing.");
     }
 }
