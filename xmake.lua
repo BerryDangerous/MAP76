@@ -9,19 +9,19 @@ set_license(license)
 set_languages("c++23")
 
 if is_host("linux") then
-    local home = os.getenv("HOME")
+    local msvc_wine_path = os.getenv("MSVC_WINE_PATH")
 
-    local function latest(rel_path)
+    local function latest(base_path)
         local best
-        for _, d in ipairs(os.dirs(home .. rel_path .. "/*") or {}) do
+        for _, d in ipairs(os.dirs(base_path .. "/*") or {}) do
             local name = d:match("([^/]+)$")
             if name and name:match("^%d+%.%d+%.%d+%.?%d*$") and (not best or name > best) then best = name end
         end
-        return best and (home .. rel_path .. "/" .. best), rel_path
+        return best and (base_path .. "/" .. best), base_path
     end
 
-    local function check(base, rel_base, subpath, name, is_file, fn)
-        local path = base and (base .. subpath) or (home .. rel_base .. "/<ver>" .. subpath)
+    local function check(base, base_path, subpath, name, is_file, fn)
+        local path = base and (base .. subpath) or (base_path .. "/<ver>" .. subpath)
         if base and (is_file and os.isfile(path) or os.isdir(path)) then
             fn(path)
         elseif not _g_msvc_wine_checked then
@@ -29,14 +29,20 @@ if is_host("linux") then
         end
     end
 
-    local sdk, sdk_rel = latest("/msvc-wine/kits/10/bin")
-    local msvc, msvc_rel = latest("/msvc-wine/VC/Tools/MSVC")
-    local kit, kit_rel = latest("/msvc-wine/Windows Kits/10/Include")
+    if msvc_wine_path then
+        local sdk, sdk_base = latest(msvc_wine_path .. "/kits/10/bin")
+        local msvc, msvc_base = latest(msvc_wine_path .. "/VC/Tools/MSVC")
+        local kit, kit_base = latest(msvc_wine_path .. "/Windows Kits/10/Include")
 
-    check(sdk, sdk_rel, "/x64/rc.exe", "Resource compiler (rc.exe)", true, function(p) set_config("mrc", "wine " .. p) end)
-    check(msvc, msvc_rel, "/include", "MSVC include directory", false, add_includedirs)
-    check(kit, kit_rel, "/um", "Windows SDK 'um' include path", false, add_includedirs)
-    check(kit, kit_rel, "/shared", "Windows SDK 'shared' include path", false, add_includedirs)
+        check(sdk, sdk_base, "/x64/rc.exe", "Resource compiler (rc.exe)", true, function(p) set_config("mrc", "wine " .. p) end)
+        check(msvc, msvc_base, "/include", "MSVC include directory", false, add_includedirs)
+        check(kit, kit_base, "/um", "Windows SDK 'um' include path", false, add_includedirs)
+        check(kit, kit_base, "/shared", "Windows SDK 'shared' include path", false, add_includedirs)
+    else
+        if not _g_msvc_wine_checked then
+            print("Warning: MSVC_WINE_PATH is not set in the environment. Cross-compilation via wine will not be configured.")
+        end
+    end
 
     set_runenv("TMPDIR", "/tmp")
     set_runenv("TMP", "/tmp")
