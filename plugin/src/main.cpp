@@ -40,7 +40,6 @@ void OnF4SEMessage(F4SE::MessagingInterface::Message *a_msg)
     case F4SE::MessagingInterface::kNewGame:
         if (MAP76::UI::State::g_api && MAP76::UI::State::g_view == 0)
         {
-            REX::INFO("MAP76: Creating HTML view surface...");
             MAP76::UI::Initialize();
         }
         break;
@@ -66,7 +65,7 @@ extern "C" __declspec(dllexport) bool F4SEAPI F4SEPlugin_Load(const F4SE::LoadIn
     info.logName = MAP76_PLUGIN_NAME;
     F4SE::Init(a_f4se, info);
 
-    REX::INFO("{} : Log Engine Online.", MAP76_PLUGIN_NAME);
+    REX::INFO("{}: Log Engine Online.", MAP76_PLUGIN_NAME);
     F4SE::GetMessagingInterface()->RegisterListener(OnF4SEMessage);
     return true;
 }

@@ -96,6 +96,7 @@ namespace MAP76::Hooks
                     gameWindow,
                     GWLP_WNDPROC,
                     reinterpret_cast<LONG_PTR>(MAP76WindowProcessor)));
+                REX::INFO("MAP76: Successfully subclassed Window Procedure.");
             }
         }
         else

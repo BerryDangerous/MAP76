@@ -18,12 +18,19 @@ namespace MAP76::UI
         inline std::atomic<bool> g_waitingToOpenPauseMenu{false};
         inline std::atomic<bool> g_mapViewportHasFocus{true};
         inline std::atomic<bool> g_appIsActive{true};
+        inline std::atomic<bool> g_isDomReady{false};
+        inline std::atomic<int> g_recoveryRetries{0};
     }
 
     /**
      * @brief Initializes the Prisma UI HTML view surface, registers console callbacks, and sets up window input hooks.
      */
     void Initialize();
+
+    /**
+     * @brief Tears down the current view and creates a new one as part of bounded recovery.
+     */
+    void RecreateView();
 
     /**
      * @brief Toggles the MAP76 UI surface open or closed.

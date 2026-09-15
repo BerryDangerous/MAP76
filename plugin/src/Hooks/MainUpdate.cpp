@@ -45,6 +45,7 @@ namespace MAP76::Hooks
                     }
                 }
             }).detach();
+            REX::INFO("MAP76: Successfully registered frame tick thread.");
         }
         else
         {

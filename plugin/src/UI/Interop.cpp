@@ -470,16 +470,53 @@ namespace MAP76::UI
         {
             REX::INFO("MAP76: Creating HTML view surface...");
             State::g_view = State::g_api->CreateView("MAP76/index.html", OnDomReady);
+            if (!State::g_view)
+            {
+                REX::ERROR("MAP76: CreateView failed to return a valid view handle!");
+            }
+            else
+            {
+                REX::INFO("MAP76: CreateView succeeded. Handle: {}", State::g_view);
+                if (State::g_api_v12)
+                {
+                    State::g_api_v12->SetViewRole(State::g_view, PRISMA_UI_API::ViewRole::kPanel);
+                }
+                State::g_api->RegisterConsoleCallback(State::g_view, HandleConsoleMessage);
+                State::g_api->Hide(State::g_view);
+            }
 
-            State::g_api->RegisterConsoleCallback(State::g_view, HandleConsoleMessage);
-
-            State::g_api->Hide(State::g_view);
             State::g_mapIsOpen.store(false);
             State::g_mapInputFocused.store(false);
 
             Hooks::SetupWindowHook();
 
             MAP76::Hooks::ControllerInput::Register();
+        }
+    }
+
+    void RecreateView()
+    {
+        if (!State::g_api) return;
+
+        if (State::g_view && State::g_api->IsValid(State::g_view)) {
+            State::g_api->Unfocus(State::g_view);
+            State::g_api->Hide(State::g_view);
+            State::g_api->Destroy(State::g_view);
+        }
+        State::g_view = 0;
+        State::g_isDomReady.store(false);
+
+        REX::INFO("MAP76: Recreating HTML view surface...");
+        State::g_view = State::g_api->CreateView("MAP76/index.html", OnDomReady);
+        if (State::g_view) {
+            REX::INFO("MAP76: CreateView succeeded during recovery. Handle: {}", State::g_view);
+            if (State::g_api_v12) {
+                State::g_api_v12->SetViewRole(State::g_view, PRISMA_UI_API::ViewRole::kPanel);
+            }
+            State::g_api->RegisterConsoleCallback(State::g_view, HandleConsoleMessage);
+            State::g_api->Hide(State::g_view);
+        } else {
+            REX::ERROR("MAP76: CreateView failed to return a valid view handle during recovery!");
         }
     }
 
@@ -542,6 +579,10 @@ namespace MAP76::UI
                 }
             });
         }
+
+        State::g_isDomReady.store(true);
+        State::g_recoveryRetries.store(0);
+        REX::INFO("MAP76: Thread-Safe Event Listeners registered successfully.");
     }
 
     void OnCloseRequestedFromJS(const char *a_argument)
@@ -604,9 +645,45 @@ namespace MAP76::UI
             return;
         }
 
-        bool expected = State::g_mapIsOpen.load();
-        State::g_mapIsOpen.store(!expected);
-        bool currentMapState = State::g_mapIsOpen.load();
+        bool isOpening = !State::g_mapIsOpen.load();
+
+        if (isOpening)
+        {
+            if (State::g_api_v12)
+            {
+                using VH = PRISMA_UI_API::ViewHealth;
+                const auto health = State::g_api_v12->GetViewHealth(State::g_view);
+                
+                if (health == VH::kLoadFailed || health == VH::kDomReadyTimeout || health == VH::kUnresponsive)
+                {
+                    if (State::g_recoveryRetries.load() < 3)
+                    {
+                        State::g_recoveryRetries++;
+                        REX::WARN("MAP76: View health check failed (health={}). Attempting recovery ({}/3)...", static_cast<int>(health), State::g_recoveryRetries.load());
+                        RecreateView();
+                        return;
+                    }
+                    else
+                    {
+                        REX::ERROR("MAP76: View health check failed (health={}). Max recovery attempts reached. Map will not open.", static_cast<int>(health));
+                        return;
+                    }
+                }
+                else if (health == VH::kJsError)
+                {
+                    REX::WARN("MAP76: Prisma view reported a JavaScript error. Check preceding logs for details.");
+                }
+            }
+
+            if (!State::g_isDomReady.load())
+            {
+                REX::WARN("MAP76: Attempted to open map, but DOM is not yet ready. Ignoring input.");
+                return;
+            }
+        }
+
+        State::g_mapIsOpen.store(isOpening);
+        bool currentMapState = isOpening;
 
         auto *mainLoop = RE::Main::GetSingleton();
         if (currentMapState)
