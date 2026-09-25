@@ -17,7 +17,7 @@ namespace MAP76::Hooks
                 return;
             }
 
-            if (!MAP76::UI::State::g_api || !MAP76::UI::State::g_view)
+            if (!MAP76::UI::State::g_coreApi || !MAP76::UI::State::g_view)
             {
                 return;
             }
@@ -25,7 +25,7 @@ namespace MAP76::Hooks
             std::string payloadStr = MAP76::UI::Payload::GetFrameTickPayloadAsJSON();
             if (!payloadStr.empty() && payloadStr != "{}")
             {
-                MAP76::UI::State::g_api->InteropCall(MAP76::UI::State::g_view, "onFrameTick", payloadStr.c_str());
+                MAP76::UI::State::g_coreApi->InteropCall(MAP76::UI::State::g_view, "onFrameTick", payloadStr.c_str());
             }
         }
     }

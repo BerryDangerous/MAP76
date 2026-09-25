@@ -1,5 +1,5 @@
 #pragma once
-#include "PrismaUI_F4_API.h"
+#include "PrismaUI_F4_Modern_API.h"
 #include <atomic>
 
 namespace MAP76::UI
@@ -9,8 +9,10 @@ namespace MAP76::UI
      */
     namespace State
     {
-        inline PRISMA_UI_API::IVPrismaUI4 *g_api = nullptr;
-        inline PRISMA_UI_API::IVPrismaUI12 *g_api_v12 = nullptr;
+        inline PRISMA_UI_FLAT_API::CoreAPI *g_coreApi = nullptr;
+        inline PRISMA_UI_FLAT_API::ViewAPI *g_viewApi = nullptr;
+        inline PRISMA_UI_FLAT_API::InteropAPI *g_interopApi = nullptr;
+        inline PRISMA_UI_FLAT_API::ControllerAPI *g_controllerApi = nullptr;
         inline PrismaView g_view = 0;
 
         inline std::atomic<bool> g_mapIsOpen{false};

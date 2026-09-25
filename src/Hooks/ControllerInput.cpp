@@ -150,9 +150,9 @@ namespace MAP76::Hooks
         {
             s_lastGamepadState = isGamepad;
 
-            if (isMapOpen && MAP76::UI::State::g_api && MAP76::UI::State::g_view)
+            if (isMapOpen && MAP76::UI::State::g_coreApi && MAP76::UI::State::g_view)
             {
-                MAP76::UI::State::g_api->Invoke(MAP76::UI::State::g_view, isGamepad ? "window.dispatchEvent(new CustomEvent('gamepadStateChanged', {detail: true}))" : "window.dispatchEvent(new CustomEvent('gamepadStateChanged', {detail: false}))");
+                MAP76::UI::State::g_coreApi->Invoke(MAP76::UI::State::g_view, isGamepad ? "window.dispatchEvent(new CustomEvent('gamepadStateChanged', {detail: true}))" : "window.dispatchEvent(new CustomEvent('gamepadStateChanged', {detail: false}))", nullptr);
             }
         }
         s_wasMapOpen = isMapOpen;
@@ -243,7 +243,7 @@ namespace MAP76::Hooks
                              "if (window.__panViewport) { window.__panViewport(%f, %f); }",
                              (float)-leftoverX * MAP76::UI::Settings::gamepadPanSensitivity,
                              (float)-leftoverY * MAP76::UI::Settings::gamepadPanSensitivity);
-                    MAP76::UI::State::g_api->Invoke(MAP76::UI::State::g_view, buffer);
+                    MAP76::UI::State::g_coreApi->Invoke(MAP76::UI::State::g_view, buffer, nullptr);
                 }
             }
             else
@@ -252,7 +252,7 @@ namespace MAP76::Hooks
                 {
                     char buffer[128];
                     snprintf(buffer, sizeof(buffer), "window.dispatchEvent(new CustomEvent('thumbstick-nav', { detail: { x: %f, y: %f } }));", x, y);
-                    MAP76::UI::State::g_api->Invoke(MAP76::UI::State::g_view, buffer);
+                    MAP76::UI::State::g_coreApi->Invoke(MAP76::UI::State::g_view, buffer, nullptr);
                 }
             }
         }
