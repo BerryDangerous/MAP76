@@ -16,10 +16,8 @@ namespace MAP76::UI
         inline PrismaView g_view = 0;
 
         inline std::atomic<bool> g_mapIsOpen{false};
-        inline std::atomic<bool> g_mapInputFocused{false};
         inline std::atomic<bool> g_waitingToOpenPauseMenu{false};
         inline std::atomic<bool> g_mapViewportHasFocus{true};
-        inline std::atomic<bool> g_appIsActive{true};
         inline std::atomic<bool> g_isDomReady{false};
         inline std::atomic<int> g_recoveryRetries{0};
     }

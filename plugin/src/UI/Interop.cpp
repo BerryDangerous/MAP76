@@ -447,24 +447,8 @@ namespace MAP76::UI
 
 namespace MAP76::UI
 {
-    class MAP76DummyMenu : public RE::IMenu
-    {
-    public:
-        static constexpr auto MENU_NAME = "MAP76DummyMenu";
-        MAP76DummyMenu() {
-            menuFlags.set(RE::UI_MENU_FLAGS::kUsesCursor, RE::UI_MENU_FLAGS::kUpdateUsesCursor, RE::UI_MENU_FLAGS::kCustomRendering);
-            depthPriority = RE::UI_DEPTH_PRIORITY::kStandard;
-            menuName = MENU_NAME;
-            inputEventHandlingEnabled = false;
-        }
-        static RE::IMenu* Create(const RE::UIMessage&) { return new MAP76DummyMenu(); }
-    };
-
     void Initialize()
     {
-        if (auto* ui = RE::UI::GetSingleton()) {
-            ui->RegisterMenu(MAP76DummyMenu::MENU_NAME, MAP76DummyMenu::Create);
-        }
         Settings::Load();
         if (State::g_coreApi && State::g_view == 0)
         {
@@ -486,7 +470,6 @@ namespace MAP76::UI
             }
 
             State::g_mapIsOpen.store(false);
-            State::g_mapInputFocused.store(false);
 
             Hooks::SetupWindowHook();
 
@@ -688,9 +671,6 @@ namespace MAP76::UI
         auto *mainLoop = RE::Main::GetSingleton();
         if (currentMapState)
         {
-            if (auto* msgQ = RE::UIMessageQueue::GetSingleton()) {
-                msgQ->AddMessage(MAP76DummyMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kShow);
-            }
             ApplyBackgroundActivityOverride();
             LockPlayerControls();
             if (mainLoop)
@@ -699,14 +679,10 @@ namespace MAP76::UI
             }
             State::g_coreApi->Show(State::g_view);
             State::g_coreApi->Focus(State::g_view, false, false);
-            State::g_mapInputFocused.store(true);
             State::g_coreApi->Invoke(State::g_view, "if (window.onMapOpened) { window.onMapOpened(); } if (window.resetUIState) { window.resetUIState(); } if (window.requestFreshMapData) { window.requestFreshMapData(''); }", nullptr);
         }
         else
         {
-            if (auto* msgQ = RE::UIMessageQueue::GetSingleton()) {
-                msgQ->AddMessage(MAP76DummyMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kHide);
-            }
             RestoreBackgroundActivityOverride();
             UnlockPlayerControls();
             if (mainLoop)
@@ -715,7 +691,6 @@ namespace MAP76::UI
             }
             State::g_coreApi->Invoke(State::g_view, "if (window.onMapClosed) { window.onMapClosed(); } if (window.resetUIState) { window.resetUIState(); }", nullptr);
             State::g_coreApi->Unfocus(State::g_view);
-            State::g_mapInputFocused.store(false);
             State::g_coreApi->Hide(State::g_view);
         }
     }
