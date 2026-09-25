@@ -117,14 +117,14 @@ namespace MAP76::UI
             }
         }
 
-        void HandleConsoleMessage(PrismaView, PRISMA_UI_API::ConsoleMessageLevel level, const char *message)
+        void HandleConsoleMessage(PrismaView, PRISMA_UI_FLAT_API::ConsoleMessageLevel level, const char *message)
         {
             switch (level)
             {
-            case PRISMA_UI_API::ConsoleMessageLevel::Warning:
+            case PRISMA_UI_FLAT_API::ConsoleMessageLevel::Warning:
                 REX::WARN("MAP76 view: {}", message);
                 break;
-            case PRISMA_UI_API::ConsoleMessageLevel::Error:
+            case PRISMA_UI_FLAT_API::ConsoleMessageLevel::Error:
                 REX::ERROR("MAP76 view: {}", message);
                 break;
             default:
@@ -176,9 +176,9 @@ namespace MAP76::UI
                         }
                     }
 
-                    if (MAP76::UI::State::g_api && MAP76::UI::State::g_view)
+                    if (MAP76::UI::State::g_coreApi && MAP76::UI::State::g_view)
                     {
-                        MAP76::UI::State::g_api->InteropCall(MAP76::UI::State::g_view, "loadMarkers", freshMapJson.c_str());
+                        MAP76::UI::State::g_coreApi->InteropCall(MAP76::UI::State::g_view, "loadMarkers", freshMapJson.c_str());
                     }
                 });
             }
@@ -190,9 +190,9 @@ namespace MAP76::UI
             {
                 task->AddTask([]() {
                     std::string settingsJson = Settings::Get().dump();
-                    if (MAP76::UI::State::g_api && MAP76::UI::State::g_view)
+                    if (MAP76::UI::State::g_coreApi && MAP76::UI::State::g_view)
                     {
-                        MAP76::UI::State::g_api->InteropCall(MAP76::UI::State::g_view, "loadSettings", settingsJson.c_str());
+                        MAP76::UI::State::g_coreApi->InteropCall(MAP76::UI::State::g_view, "loadSettings", settingsJson.c_str());
                     }
                 });
             }
@@ -205,9 +205,9 @@ namespace MAP76::UI
             {
                 task->AddTask([forceRefresh]() {
                     std::string assetPayload = MAP76::UI::Payload::GetAssetPayloadAsJSON(forceRefresh);
-                    if (MAP76::UI::State::g_api && MAP76::UI::State::g_view)
+                    if (MAP76::UI::State::g_coreApi && MAP76::UI::State::g_view)
                     {
-                        MAP76::UI::State::g_api->InteropCall(MAP76::UI::State::g_view, "loadAssets", assetPayload.c_str());
+                        MAP76::UI::State::g_coreApi->InteropCall(MAP76::UI::State::g_view, "loadAssets", assetPayload.c_str());
                     }
                 });
             }
@@ -220,9 +220,9 @@ namespace MAP76::UI
             {
                 task->AddTask([forceRefresh]() {
                     std::string localePayload = MAP76::UI::Payload::GetLocalePayloadAsJSON(forceRefresh);
-                    if (MAP76::UI::State::g_api && MAP76::UI::State::g_view)
+                    if (MAP76::UI::State::g_coreApi && MAP76::UI::State::g_view)
                     {
-                        MAP76::UI::State::g_api->InteropCall(MAP76::UI::State::g_view, "loadLocales", localePayload.c_str());
+                        MAP76::UI::State::g_coreApi->InteropCall(MAP76::UI::State::g_view, "loadLocales", localePayload.c_str());
                     }
                 });
             }
@@ -310,13 +310,13 @@ namespace MAP76::UI
                             }
                             
                             std::string status = MAP76::UI::Actions::VerifyFastTravelConditions(player, destMarker);
-                            if (MAP76::UI::State::g_api && MAP76::UI::State::g_view)
+                            if (MAP76::UI::State::g_coreApi && MAP76::UI::State::g_view)
                             {
                                 nlohmann::json response;
                                 response["status"] = status;
 
                                 std::string responseStr = response.dump();
-                                MAP76::UI::State::g_api->InteropCall(MAP76::UI::State::g_view, "onFastTravelCheckResult", responseStr.c_str());
+                                MAP76::UI::State::g_coreApi->InteropCall(MAP76::UI::State::g_view, "onFastTravelCheckResult", responseStr.c_str());
                             }
                         }
                         catch (const std::exception &e)
@@ -466,10 +466,10 @@ namespace MAP76::UI
             ui->RegisterMenu(MAP76DummyMenu::MENU_NAME, MAP76DummyMenu::Create);
         }
         Settings::Load();
-        if (State::g_api && State::g_view == 0)
+        if (State::g_coreApi && State::g_view == 0)
         {
             REX::INFO("MAP76: Creating HTML view surface...");
-            State::g_view = State::g_api->CreateView("MAP76/index.html", OnDomReady);
+            State::g_view = State::g_coreApi->CreateView("MAP76/index.html", OnDomReady);
             if (!State::g_view)
             {
                 REX::ERROR("MAP76: CreateView failed to return a valid view handle!");
@@ -477,12 +477,12 @@ namespace MAP76::UI
             else
             {
                 REX::INFO("MAP76: CreateView succeeded. Handle: {}", State::g_view);
-                if (State::g_api_v12)
+                if (State::g_controllerApi)
                 {
-                    State::g_api_v12->SetViewRole(State::g_view, PRISMA_UI_API::ViewRole::kPanel);
+                    State::g_controllerApi->SetViewRole(State::g_view, PRISMA_UI_FLAT_API::ViewRole::kPanel);
                 }
-                State::g_api->RegisterConsoleCallback(State::g_view, HandleConsoleMessage);
-                State::g_api->Hide(State::g_view);
+                State::g_coreApi->RegisterConsoleCallback(State::g_view, HandleConsoleMessage);
+                State::g_coreApi->Hide(State::g_view);
             }
 
             State::g_mapIsOpen.store(false);
@@ -496,25 +496,25 @@ namespace MAP76::UI
 
     void RecreateView()
     {
-        if (!State::g_api) return;
+        if (!State::g_coreApi) return;
 
-        if (State::g_view && State::g_api->IsValid(State::g_view)) {
-            State::g_api->Unfocus(State::g_view);
-            State::g_api->Hide(State::g_view);
-            State::g_api->Destroy(State::g_view);
+        if (State::g_view && State::g_coreApi->IsValid(State::g_view)) {
+            State::g_coreApi->Unfocus(State::g_view);
+            State::g_coreApi->Hide(State::g_view);
+            State::g_coreApi->Destroy(State::g_view);
         }
         State::g_view = 0;
         State::g_isDomReady.store(false);
 
         REX::INFO("MAP76: Recreating HTML view surface...");
-        State::g_view = State::g_api->CreateView("MAP76/index.html", OnDomReady);
+        State::g_view = State::g_coreApi->CreateView("MAP76/index.html", OnDomReady);
         if (State::g_view) {
             REX::INFO("MAP76: CreateView succeeded during recovery. Handle: {}", State::g_view);
-            if (State::g_api_v12) {
-                State::g_api_v12->SetViewRole(State::g_view, PRISMA_UI_API::ViewRole::kPanel);
+            if (State::g_controllerApi) {
+                State::g_controllerApi->SetViewRole(State::g_view, PRISMA_UI_FLAT_API::ViewRole::kPanel);
             }
-            State::g_api->RegisterConsoleCallback(State::g_view, HandleConsoleMessage);
-            State::g_api->Hide(State::g_view);
+            State::g_coreApi->RegisterConsoleCallback(State::g_view, HandleConsoleMessage);
+            State::g_coreApi->Hide(State::g_view);
         } else {
             REX::ERROR("MAP76: CreateView failed to return a valid view handle during recovery!");
         }
@@ -522,49 +522,49 @@ namespace MAP76::UI
 
     void OnDomReady(PrismaView view)
     {
-        if (!State::g_api)
+        if (!State::g_coreApi)
             return;
 
         REX::INFO("DOM Ready. Registering Thread-Safe Event Listeners...");
 
-        State::g_api->RegisterJSListener(view, "requestClose", [](const char *arg)
+        State::g_coreApi->RegisterJSListener(view, "requestClose", [](const char *arg)
                                          { OnCloseRequestedFromJS(arg); });
 
-        State::g_api->BindUIEvent(view, "requestFreshMapData", HandleRequestFreshMapData);
-        State::g_api->BindUIEvent(view, "requestFastTravel", HandleRequestFastTravel);
-        State::g_api->BindUIEvent(view, "checkFastTravel", HandleCheckFastTravel);
-        State::g_api->BindUIEvent(view, "setCustomMarker", HandleSetCustomMarker);
-        State::g_api->BindUIEvent(view, "removeCustomMarker", HandleRemoveCustomMarker);
-        State::g_api->BindUIEvent(view, "toggleQuestActive", HandleToggleQuestActive);
-        State::g_api->BindUIEvent(view, "makeOnlyQuestActive", HandleMakeOnlyQuestActive);
-        State::g_api->BindUIEvent(view, "requestSettings", HandleRequestSettings);
-        State::g_api->BindUIEvent(view, "requestAssetCache", HandleRequestAssetCache);
-        State::g_api->BindUIEvent(view, "requestLocales", HandleRequestLocales);
-        State::g_api->BindUIEvent(view, "saveSettings", HandleSaveSettings);
-        State::g_api->BindUIEvent(view, "triggerEngineSound", HandleTriggerEngineSound);
-        State::g_api->BindUIEvent(view, "setMapViewportFocus", HandleSetMapViewportFocus);
+        State::g_coreApi->BindUIEvent(view, "requestFreshMapData", HandleRequestFreshMapData);
+        State::g_coreApi->BindUIEvent(view, "requestFastTravel", HandleRequestFastTravel);
+        State::g_coreApi->BindUIEvent(view, "checkFastTravel", HandleCheckFastTravel);
+        State::g_coreApi->BindUIEvent(view, "setCustomMarker", HandleSetCustomMarker);
+        State::g_coreApi->BindUIEvent(view, "removeCustomMarker", HandleRemoveCustomMarker);
+        State::g_coreApi->BindUIEvent(view, "toggleQuestActive", HandleToggleQuestActive);
+        State::g_coreApi->BindUIEvent(view, "makeOnlyQuestActive", HandleMakeOnlyQuestActive);
+        State::g_coreApi->BindUIEvent(view, "requestSettings", HandleRequestSettings);
+        State::g_coreApi->BindUIEvent(view, "requestAssetCache", HandleRequestAssetCache);
+        State::g_coreApi->BindUIEvent(view, "requestLocales", HandleRequestLocales);
+        State::g_coreApi->BindUIEvent(view, "saveSettings", HandleSaveSettings);
+        State::g_coreApi->BindUIEvent(view, "triggerEngineSound", HandleTriggerEngineSound);
+        State::g_coreApi->BindUIEvent(view, "setMapViewportFocus", HandleSetMapViewportFocus);
 
-        if (State::g_api_v12) {
-            State::g_api_v12->BindControllerAction(view, "A", "A");
-            State::g_api_v12->BindControllerAction(view, "B", "B");
-            State::g_api_v12->BindControllerAction(view, "X", "X");
-            State::g_api_v12->BindControllerAction(view, "Y", "Y");
-            State::g_api_v12->BindControllerAction(view, "LB", "LB");
-            State::g_api_v12->BindControllerAction(view, "RB", "RB");
-            State::g_api_v12->BindControllerAction(view, "LT", "LT");
-            State::g_api_v12->BindControllerAction(view, "RT", "RT");
-            State::g_api_v12->BindControllerAction(view, "DUp", "Up");
-            State::g_api_v12->BindControllerAction(view, "DDown", "Down");
-            State::g_api_v12->BindControllerAction(view, "DLeft", "Left");
-            State::g_api_v12->BindControllerAction(view, "DRight", "Right");
-            State::g_api_v12->BindControllerAction(view, "LS", "LS");
-            State::g_api_v12->BindControllerAction(view, "RS", "RS");
-            State::g_api_v12->BindControllerAction(view, "Back", "Back");
-            State::g_api_v12->BindControllerAction(view, "Start", "Start");
+        if (State::g_controllerApi) {
+            State::g_controllerApi->BindControllerAction(view, "A", "A");
+            State::g_controllerApi->BindControllerAction(view, "B", "B");
+            State::g_controllerApi->BindControllerAction(view, "X", "X");
+            State::g_controllerApi->BindControllerAction(view, "Y", "Y");
+            State::g_controllerApi->BindControllerAction(view, "LB", "LB");
+            State::g_controllerApi->BindControllerAction(view, "RB", "RB");
+            State::g_controllerApi->BindControllerAction(view, "LT", "LT");
+            State::g_controllerApi->BindControllerAction(view, "RT", "RT");
+            State::g_controllerApi->BindControllerAction(view, "DUp", "Up");
+            State::g_controllerApi->BindControllerAction(view, "DDown", "Down");
+            State::g_controllerApi->BindControllerAction(view, "DLeft", "Left");
+            State::g_controllerApi->BindControllerAction(view, "DRight", "Right");
+            State::g_controllerApi->BindControllerAction(view, "LS", "LS");
+            State::g_controllerApi->BindControllerAction(view, "RS", "RS");
+            State::g_controllerApi->BindControllerAction(view, "Back", "Back");
+            State::g_controllerApi->BindControllerAction(view, "Start", "Start");
         }
 
         std::string settingsJson = Settings::Get().dump();
-        State::g_api->InteropCall(view, "loadSettings", settingsJson.c_str());
+        State::g_coreApi->InteropCall(view, "loadSettings", settingsJson.c_str());
 
         if (auto *task = F4SE::GetTaskInterface())
         {
@@ -572,10 +572,10 @@ namespace MAP76::UI
                 std::string assetPayload = MAP76::UI::Payload::GetAssetPayloadAsJSON(false);
                 std::string localePayload = MAP76::UI::Payload::GetLocalePayloadAsJSON(false);
                 
-                if (MAP76::UI::State::g_api && view)
+                if (MAP76::UI::State::g_coreApi && view)
                 {
-                    MAP76::UI::State::g_api->InteropCall(view, "loadLocales", localePayload.c_str());
-                    MAP76::UI::State::g_api->InteropCall(view, "loadAssets", assetPayload.c_str());
+                    MAP76::UI::State::g_coreApi->InteropCall(view, "loadLocales", localePayload.c_str());
+                    MAP76::UI::State::g_coreApi->InteropCall(view, "loadAssets", assetPayload.c_str());
                 }
             });
         }
@@ -587,7 +587,7 @@ namespace MAP76::UI
 
     void OnCloseRequestedFromJS(const char *a_argument)
     {
-        if (!State::g_api)
+        if (!State::g_coreApi)
             return;
 
         if (auto *task = F4SE::GetTaskInterface())
@@ -640,7 +640,7 @@ namespace MAP76::UI
 
     void ToggleMAP76()
     {
-        if (!State::g_api || !State::g_view)
+        if (!State::g_coreApi || !State::g_view)
         {
             return;
         }
@@ -649,10 +649,10 @@ namespace MAP76::UI
 
         if (isOpening)
         {
-            if (State::g_api_v12)
+            if (State::g_coreApi)
             {
-                using VH = PRISMA_UI_API::ViewHealth;
-                const auto health = State::g_api_v12->GetViewHealth(State::g_view);
+                using VH = PRISMA_UI_FLAT_API::ViewHealth;
+                const auto health = State::g_coreApi->GetViewHealth(State::g_view);
                 
                 if (health == VH::kLoadFailed || health == VH::kDomReadyTimeout || health == VH::kUnresponsive)
                 {
@@ -697,10 +697,10 @@ namespace MAP76::UI
             {
                 mainLoop->freezeTime = Settings::freezeSimulation;
             }
-            State::g_api->Show(State::g_view);
-            State::g_api->Focus(State::g_view, false);
+            State::g_coreApi->Show(State::g_view);
+            State::g_coreApi->Focus(State::g_view, false, false);
             State::g_mapInputFocused.store(true);
-            State::g_api->Invoke(State::g_view, "if (window.onMapOpened) { window.onMapOpened(); } if (window.resetUIState) { window.resetUIState(); } if (window.requestFreshMapData) { window.requestFreshMapData(''); }");
+            State::g_coreApi->Invoke(State::g_view, "if (window.onMapOpened) { window.onMapOpened(); } if (window.resetUIState) { window.resetUIState(); } if (window.requestFreshMapData) { window.requestFreshMapData(''); }", nullptr);
         }
         else
         {
@@ -713,10 +713,10 @@ namespace MAP76::UI
             {
                 mainLoop->freezeTime = false;
             }
-            State::g_api->Invoke(State::g_view, "if (window.onMapClosed) { window.onMapClosed(); } if (window.resetUIState) { window.resetUIState(); }");
-            State::g_api->Unfocus(State::g_view);
+            State::g_coreApi->Invoke(State::g_view, "if (window.onMapClosed) { window.onMapClosed(); } if (window.resetUIState) { window.resetUIState(); }", nullptr);
+            State::g_coreApi->Unfocus(State::g_view);
             State::g_mapInputFocused.store(false);
-            State::g_api->Hide(State::g_view);
+            State::g_coreApi->Hide(State::g_view);
         }
     }
 

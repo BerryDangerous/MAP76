@@ -16,13 +16,13 @@ namespace MAP76::Hooks
         {
             UI::State::g_appIsActive.store(wParam != 0);
 
-            if (UI::State::g_mapIsOpen.load() && UI::State::g_api && UI::State::g_view)
+            if (UI::State::g_mapIsOpen.load() && UI::State::g_coreApi && UI::State::g_view)
             {
                 if (!wParam)
                 {
                     if (UI::State::g_mapInputFocused.exchange(false))
                     {
-                        UI::State::g_api->Unfocus(UI::State::g_view);
+                        UI::State::g_coreApi->Unfocus(UI::State::g_view);
                     }
                 }
                 else if (!UI::IsPlayerInMenuMode())
@@ -30,7 +30,7 @@ namespace MAP76::Hooks
                     bool expected = false;
                     if (UI::State::g_mapInputFocused.compare_exchange_strong(expected, true))
                     {
-                        UI::State::g_api->Focus(UI::State::g_view, false);
+                        UI::State::g_coreApi->Focus(UI::State::g_view, false, false);
                     }
                 }
             }

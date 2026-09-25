@@ -18,19 +18,38 @@ void OnF4SEMessage(F4SE::MessagingInterface::Message *a_msg)
     case F4SE::MessagingInterface::kGameDataReady:
     {
         REX::INFO("MAP76: Game data ready. Requesting PrismaUI API...");
-        MAP76::UI::State::g_api_v12 = PRISMA_UI_API::RequestPluginAPI<PRISMA_UI_API::IVPrismaUI12>();
+        MAP76::UI::State::g_coreApi = new PRISMA_UI_FLAT_API::CoreAPI();
+        MAP76::UI::State::g_viewApi = new PRISMA_UI_FLAT_API::ViewAPI();
+        MAP76::UI::State::g_interopApi = new PRISMA_UI_FLAT_API::InteropAPI();
+        MAP76::UI::State::g_controllerApi = new PRISMA_UI_FLAT_API::ControllerAPI();
+
+        bool success = true;
         
-        if (MAP76::UI::State::g_api_v12) {
-            REX::INFO("MAP76: Acquired PrismaUI V12 API surface.");
-            MAP76::UI::State::g_api = MAP76::UI::State::g_api_v12;
-        } else {
-            REX::INFO("MAP76: V12 unavailable, falling back to V4.");
-            MAP76::UI::State::g_api = PRISMA_UI_API::RequestPluginAPI<PRISMA_UI_API::IVPrismaUI4>();
+        if (!PRISMA_UI_FLAT_API::Discover<PRISMA_UI_FLAT_API::ApiFeature::Core>(1, *MAP76::UI::State::g_coreApi)) {
+            REX::ERROR("MAP76: Failed to discover PrismaUI Core API");
+            success = false;
+        }
+        if (!PRISMA_UI_FLAT_API::Discover<PRISMA_UI_FLAT_API::ApiFeature::View>(1, *MAP76::UI::State::g_viewApi)) {
+            REX::ERROR("MAP76: Failed to discover PrismaUI View API");
+            success = false;
+        }
+        if (!PRISMA_UI_FLAT_API::Discover<PRISMA_UI_FLAT_API::ApiFeature::Interop>(1, *MAP76::UI::State::g_interopApi)) {
+            REX::ERROR("MAP76: Failed to discover PrismaUI Interop API");
+            success = false;
+        }
+        if (!PRISMA_UI_FLAT_API::Discover<PRISMA_UI_FLAT_API::ApiFeature::Controller>(1, *MAP76::UI::State::g_controllerApi)) {
+            REX::ERROR("MAP76: Failed to discover PrismaUI Controller API");
+            success = false;
         }
 
-        if (!MAP76::UI::State::g_api)
-        {
-            REX::ERROR("MAP76: Failed to acquire any PrismaUI API surface!");
+        if (success) {
+            REX::INFO("MAP76: Acquired PrismaUI Flat API surface.");
+        } else {
+            REX::ERROR("MAP76: Failed to acquire required PrismaUI API capabilities!");
+            delete MAP76::UI::State::g_coreApi; MAP76::UI::State::g_coreApi = nullptr;
+            delete MAP76::UI::State::g_viewApi; MAP76::UI::State::g_viewApi = nullptr;
+            delete MAP76::UI::State::g_interopApi; MAP76::UI::State::g_interopApi = nullptr;
+            delete MAP76::UI::State::g_controllerApi; MAP76::UI::State::g_controllerApi = nullptr;
         }
         MAP76::UI::IconOverrides::Load();
         MAP76::Hooks::InstallMainUpdateHook();
@@ -38,7 +57,7 @@ void OnF4SEMessage(F4SE::MessagingInterface::Message *a_msg)
     }
     case F4SE::MessagingInterface::kPostLoadGame:
     case F4SE::MessagingInterface::kNewGame:
-        if (MAP76::UI::State::g_api && MAP76::UI::State::g_view == 0)
+        if (MAP76::UI::State::g_coreApi && MAP76::UI::State::g_view == 0)
         {
             MAP76::UI::Initialize();
         }
