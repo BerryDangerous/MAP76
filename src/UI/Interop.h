@@ -13,6 +13,7 @@ namespace MAP76::UI
         inline PRISMA_UI_FLAT_API::ViewAPI *g_viewApi = nullptr;
         inline PRISMA_UI_FLAT_API::InteropAPI *g_interopApi = nullptr;
         inline PRISMA_UI_FLAT_API::ControllerAPI *g_controllerApi = nullptr;
+        inline PRISMA_UI_FLAT_API::LocalizationAPI *g_localizationApi = nullptr;
         inline PrismaView g_view = 0;
 
         inline std::atomic<bool> g_mapIsOpen{false};
