@@ -268,7 +268,7 @@ namespace MAP76::UI::Actions
 
         if (status != Constants::FastTravel::SUCCESS)
         {
-            if (UI::State::g_api && UI::State::g_view)
+            if (UI::State::g_coreApi && UI::State::g_view)
             {
                 nlohmann::json response;
                 response["status"] = status;
@@ -276,7 +276,7 @@ namespace MAP76::UI::Actions
                 response["locationName"] = markerRef->GetDisplayFullName();
 
                 std::string responseStr = response.dump();
-                UI::State::g_api->InteropCall(UI::State::g_view, "onFastTravelFailed", responseStr.c_str());
+                UI::State::g_coreApi->InteropCall(UI::State::g_view, "onFastTravelFailed", responseStr.c_str());
             }
             return;
         }
@@ -288,10 +288,10 @@ namespace MAP76::UI::Actions
                 {
                     UI::ToggleMAP76();
                 }
-                else if (UI::State::g_api && UI::State::g_view)
+                else if (UI::State::g_coreApi && UI::State::g_view)
                 {
-                    UI::State::g_api->Unfocus(UI::State::g_view);
-                    UI::State::g_api->Hide(UI::State::g_view);
+                    UI::State::g_coreApi->Unfocus(UI::State::g_view);
+                    UI::State::g_coreApi->Hide(UI::State::g_view);
                 }
 
                 auto *p = RE::PlayerCharacter::GetSingleton();
