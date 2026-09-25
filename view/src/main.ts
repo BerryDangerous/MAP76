@@ -4,8 +4,6 @@ import { initializeF4SEBindings, EngineBridge } from '@/core/bridge.js';
 import { appSettings } from '@/core/settings.js';
 import { requestSettings } from '@/core/settings.js';
 import { mapState } from '@/core/state.js';
-import i18next from 'i18next';
-import { initI18n, changeLanguage } from '@/core/i18n.js';
 
 import { FocusManager } from '@/systems/focusManager.js';
 import { KeybindsSystem } from '@/systems/keybindManager.js';
@@ -102,10 +100,6 @@ window.addEventListener('FrameTick', (e: Event) => {
 });
 
 window.addEventListener('settingsUpdated', () => {
-    if (appSettings.language && i18next.language !== appSettings.language) {
-        changeLanguage(appSettings.language);
-    }
-    
     if (mapState.lastPayload) {
         loadMarkers(mapState.lastPayload);
     }

@@ -22,6 +22,7 @@ void OnF4SEMessage(F4SE::MessagingInterface::Message *a_msg)
         MAP76::UI::State::g_viewApi = new PRISMA_UI_FLAT_API::ViewAPI();
         MAP76::UI::State::g_interopApi = new PRISMA_UI_FLAT_API::InteropAPI();
         MAP76::UI::State::g_controllerApi = new PRISMA_UI_FLAT_API::ControllerAPI();
+        MAP76::UI::State::g_localizationApi = new PRISMA_UI_FLAT_API::LocalizationAPI();
 
         bool success = true;
         
@@ -41,6 +42,10 @@ void OnF4SEMessage(F4SE::MessagingInterface::Message *a_msg)
             REX::ERROR("MAP76: Failed to discover PrismaUI Controller API");
             success = false;
         }
+        if (!PRISMA_UI_FLAT_API::Discover<PRISMA_UI_FLAT_API::ApiFeature::Localization>(1, *MAP76::UI::State::g_localizationApi)) {
+            REX::ERROR("MAP76: Failed to discover PrismaUI Localization API");
+            success = false;
+        }
 
         if (success) {
             REX::INFO("MAP76: Acquired PrismaUI Flat API surface.");
@@ -50,6 +55,7 @@ void OnF4SEMessage(F4SE::MessagingInterface::Message *a_msg)
             delete MAP76::UI::State::g_viewApi; MAP76::UI::State::g_viewApi = nullptr;
             delete MAP76::UI::State::g_interopApi; MAP76::UI::State::g_interopApi = nullptr;
             delete MAP76::UI::State::g_controllerApi; MAP76::UI::State::g_controllerApi = nullptr;
+            delete MAP76::UI::State::g_localizationApi; MAP76::UI::State::g_localizationApi = nullptr;
         }
         MAP76::UI::IconOverrides::Load();
         MAP76::Hooks::InstallMainUpdateHook();

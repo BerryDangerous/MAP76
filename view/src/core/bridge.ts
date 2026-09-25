@@ -1,7 +1,7 @@
 import { F4SEMapPayload, FastTravelCheckPayload, FastTravelFailPayload } from '@/types/payloads.js';
 
 import { AssetManager } from '@/systems/assetManager.js';
-import { loadExternalLocales, initI18n } from '@/core/i18n.js';
+import { initI18n } from '@/core/i18n.js';
 import { MapViewport } from '@/systems/viewport.js';
 
 export const EngineBridge = {
@@ -138,22 +138,14 @@ export function initializeF4SEBindings(onDataReceived: (payload: F4SEMapPayload)
         }
     };
 
-    window.__loadLocalesRegister = (jsonString: string) => {
-        try {
-            const payload = JSON.parse(jsonString);
-            loadExternalLocales(payload.locales);
-            initI18n(payload.gameLanguage).then(() => {
-                isLocalesLoaded = true;
-                if (pendingPayload && isAssetsLoaded) {
-                    console.log(`[Bridge] Locales loaded. Processing buffered payload.`);
-                    onDataReceived(pendingPayload);
-                    pendingPayload = null;
-                }
-            });
-        } catch (err) {
-            console.error(`[Bridge] Locale Payload JSON Processing Failure: ${err}`);
+    initI18n().then(() => {
+        isLocalesLoaded = true;
+        if (pendingPayload && isAssetsLoaded) {
+            console.log(`[Bridge] Locales loaded. Processing buffered payload.`);
+            onDataReceived(pendingPayload);
+            pendingPayload = null;
         }
-    };
+    });
 
     window.onFastTravelFailed = (jsonString: string) => {
         try {
@@ -194,13 +186,6 @@ export function initializeF4SEBindings(onDataReceived: (payload: F4SEMapPayload)
         console.log(`[Bridge] Processing cached startup asset stream. Length: ${earlyAssetCache.length}`);
         window.__loadAssetsRegister!(earlyAssetCache);
         window.__f4seAssetCache = null;
-    }
-
-    const earlyLocaleCache = window.__f4seLocaleCache;
-    if (earlyLocaleCache) {
-        console.log(`[Bridge] Processing cached startup locale stream. Length: ${earlyLocaleCache.length}`);
-        window.__loadLocalesRegister!(earlyLocaleCache);
-        window.__f4seLocaleCache = null;
     }
 
     if (window.MapInterop) {

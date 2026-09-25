@@ -15,8 +15,7 @@ import { MultiChoice } from '@/components/ui/SettingsMultiChoice.js';
 import { SettingsRow, SettingsControl } from '@/components/ui/SettingsRow.js';
 import { Slider } from '@/components/ui/SettingsSlider.js';
 import { Toggle } from '@/components/ui/SettingsToggle.js';
-import { t, changeLanguage } from '@/core/i18n.js';
-import { getAvailableLanguages } from '@/utils/localeUtils.js';
+import { t } from '@/core/i18n.js';
 
 export const SETTINGS_TABS = ['DISPLAY', 'GAMEPLAY', 'MAPS', 'DEBUG'] as const;
 export type SettingsTab = (typeof SETTINGS_TABS)[number];
@@ -82,12 +81,6 @@ export const SettingsMenu = {
         for (let i = 50; i <= 200; i += 10) {
             uiScaleOptions.push({ label: `${i}%`, value: i / 100 });
         }
-        const langOptions = getAvailableLanguages();
-        const langMulti = new MultiChoice(langOptions, appSettings.language || 'en', (val) => { 
-            updateSettings({ language: val }); 
-            changeLanguage(val);
-        });
-        registerControl('language', t('settings.labels.language'), 'DISPLAY', langMulti);
 
         const scaleMulti = new MultiChoice(uiScaleOptions, appSettings.uiScale, (val) => { updateSettings({ uiScale: val }); });
         registerControl('uiScale', t('settings.labels.uiScale'), 'DISPLAY', scaleMulti);

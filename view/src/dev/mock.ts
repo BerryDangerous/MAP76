@@ -2,6 +2,7 @@ import { FastTravelStatus } from '@/types/map.js';
 import { FrameTickPayload } from '@/types/payloads.js';
 
 import { mockPayload, mockAssetPayload } from '@/dev/mockData.js';
+import enStrings from '../../locales/MAP76_Plugin_en.json';
 
 export function initMockData(): void {
     console.log('[DevMode] Initializing Mock Data Sandbox...');
@@ -12,9 +13,20 @@ export function initMockData(): void {
         }
     };
 
-    window.loadLocales = (jsonString: string) => {
-        if (typeof window.__loadLocalesRegister === 'function') {
-            window.__loadLocalesRegister(jsonString);
+    window.PrismaL10N = {
+        locale: "en",
+        messages: enStrings as any,
+        t: function(k: string, vars?: any) {
+            let keys = k.split('.');
+            let v: any = this.messages;
+            for (let i = 0; i < keys.length; i++) {
+                if (v && typeof v === 'object') v = v[keys[i]];
+                else { v = undefined; break; }
+            }
+            if (typeof v !== "string") return k;
+            return v.replace(/\{\{([^{}]+)\}\}/g, function(_: string, name: string) {
+                return vars && Object.prototype.hasOwnProperty.call(vars, name) ? String(vars[name]) : "{{" + name + "}}";
+            });
         }
     };
 
@@ -145,14 +157,6 @@ export function initMockData(): void {
         const json = JSON.stringify(mockAssetPayload);
         if (typeof window.loadAssets === 'function') {
             window.loadAssets(json);
-        }
-
-        const localeJson = JSON.stringify({
-            gameLanguage: 'en',
-            locales: {}
-        });
-        if (typeof window.loadLocales === 'function') {
-            window.loadLocales(localeJson);
         }
 
         emitPayload();

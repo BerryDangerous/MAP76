@@ -37,9 +37,11 @@ declare global {
         __f4seAssetCache?: string | null;
         requestAssetCache?: (arg: string) => void;
 
-        loadLocales?: (jsonString: string) => void;
-        __loadLocalesRegister?: (jsonString: string) => void;
-        __f4seLocaleCache?: string | null;
+        PrismaL10N?: {
+            locale: string;
+            messages: Record<string, string>;
+            t: (key: string, vars?: any) => string;
+        };
 
         MapInterop?: {
             updateWorkshopStats?: (jsonString: string) => void;

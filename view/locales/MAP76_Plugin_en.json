@@ -1,6 +1,5 @@
 {
   "settings": {
-    "languageName": "English",
     "tabs": {
       "DISPLAY": "DISPLAY",
       "GAMEPLAY": "GAMEPLAY",
@@ -17,21 +16,22 @@
       "alternativeMapSound": "Alternative Map Change Sound",
       "dummySlider": "Dummy Slider",
       "freezeSimulation": "Pause Game While in Map",
-      "gamepadCursorSpeed": "Gamepad Cursor Speed",
-      "gamepadPanSensitivity": "Gamepad Map Edge Pan Sensitivity",
       "confirmFastTravel": "Fast Travel Confirmation",
       "skipSurvivalFastTravelCheck": "Skip Survival Fast Travel Check",
       "writePayloadToFile": "Write Payload to File",
       "showWorkshopInfoLog": "Show Workshop Info Log",
       "mapStyle": "{{name}} Map Style",
       "language": "Language",
-      "controllerStyle": "Controller Icons"
+      "controllerStyle": "Controller Icons",
+      "gamepadCursorSpeed": "Gamepad Cursor Speed",
+      "gamepadPanSensitivity": "Gamepad Map Edge Pan Sensitivity"
     },
     "options": {
       "none": "NONE",
       "xbox": "Xbox",
       "playstation": "PlayStation"
-    }
+    },
+    "languageName": "English"
   },
   "controls": {
     "actions": {
