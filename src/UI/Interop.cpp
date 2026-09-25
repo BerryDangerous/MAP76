@@ -679,6 +679,10 @@ namespace MAP76::UI
             }
             State::g_coreApi->Show(State::g_view);
             State::g_coreApi->Focus(State::g_view, false, false);
+            if (State::g_viewApi)
+            {
+                State::g_viewApi->SetViewCursorPolicy(State::g_view, PRISMA_UI_FLAT_API::CursorPolicy::Hidden);
+            }
             State::g_coreApi->Invoke(State::g_view, "if (window.onMapOpened) { window.onMapOpened(); } if (window.resetUIState) { window.resetUIState(); } if (window.requestFreshMapData) { window.requestFreshMapData(''); }", nullptr);
         }
         else
