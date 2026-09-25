@@ -213,21 +213,6 @@ namespace MAP76::UI
             }
         }
 
-        void HandleRequestLocales(const char *arg)
-        {
-            bool forceRefresh = (arg && std::string(arg) == "refresh");
-            if (auto *task = F4SE::GetTaskInterface())
-            {
-                task->AddTask([forceRefresh]() {
-                    std::string localePayload = MAP76::UI::Payload::GetLocalePayloadAsJSON(forceRefresh);
-                    if (MAP76::UI::State::g_coreApi && MAP76::UI::State::g_view)
-                    {
-                        MAP76::UI::State::g_coreApi->InteropCall(MAP76::UI::State::g_view, "loadLocales", localePayload.c_str());
-                    }
-                });
-            }
-        }
-
         void HandleSaveSettings(const char *arg)
         {
             std::string jsonStr = arg ? arg : "";
@@ -522,7 +507,6 @@ namespace MAP76::UI
         State::g_coreApi->BindUIEvent(view, "makeOnlyQuestActive", HandleMakeOnlyQuestActive);
         State::g_coreApi->BindUIEvent(view, "requestSettings", HandleRequestSettings);
         State::g_coreApi->BindUIEvent(view, "requestAssetCache", HandleRequestAssetCache);
-        State::g_coreApi->BindUIEvent(view, "requestLocales", HandleRequestLocales);
         State::g_coreApi->BindUIEvent(view, "saveSettings", HandleSaveSettings);
         State::g_coreApi->BindUIEvent(view, "triggerEngineSound", HandleTriggerEngineSound);
         State::g_coreApi->BindUIEvent(view, "setMapViewportFocus", HandleSetMapViewportFocus);
@@ -553,14 +537,16 @@ namespace MAP76::UI
         {
             task->AddTask([view]() {
                 std::string assetPayload = MAP76::UI::Payload::GetAssetPayloadAsJSON(false);
-                std::string localePayload = MAP76::UI::Payload::GetLocalePayloadAsJSON(false);
                 
                 if (MAP76::UI::State::g_coreApi && view)
                 {
-                    MAP76::UI::State::g_coreApi->InteropCall(view, "loadLocales", localePayload.c_str());
                     MAP76::UI::State::g_coreApi->InteropCall(view, "loadAssets", assetPayload.c_str());
                 }
             });
+        }
+
+        if (State::g_localizationApi) {
+            State::g_localizationApi->RegisterTranslationsV4(view, "MAP76_Plugin");
         }
 
         State::g_isDomReady.store(true);
