@@ -41,7 +41,7 @@ export const DEFAULT_KEYMAP: Record<KeyAction, string[]> = {
     PLACE_MARKER: ['Enter', 'Gamepad_A'],
     ZOOM_IN: ['+', '=', 'Gamepad_RT'],
     ZOOM_OUT: ['-', 'Gamepad_LT'],
-    PAN_MOUSE: ['Mouse', 'Gamepad_LStick'],
+    PAN_MOUSE: ['Mouse', 'Gamepad_RStick'],
     CENTER_CAMERA: [' ', 'Space', 'Spacebar', 'Gamepad_LS'],
     CENTER_ITEM: [' ', 'Space', 'Spacebar', 'Gamepad_LS'],
     OPEN_SETTINGS: ['z', 'Z', 'Gamepad_Y'],
@@ -105,7 +105,8 @@ export class KeybindsSystem {
         'Gamepad_Right': 'u',
         'Gamepad_LS': 'H',
         'Gamepad_RS': 'M',
-        'Gamepad_LStick': 'F'
+        'Gamepad_LStick': 'F',
+        'Gamepad_RStick': 'K'
     };
 
     private static CONTROLLER_GLYPHS_PS: Record<string, string> = {
@@ -125,7 +126,8 @@ export class KeybindsSystem {
         'Gamepad_Right': 'u',
         'Gamepad_LS': 'f',
         'Gamepad_RS': 'l',
-        'Gamepad_LStick': 'i'
+        'Gamepad_LStick': 'i',
+        'Gamepad_RStick': 'n'
     };
 
     private static lastRepeatTime: number = 0;
@@ -190,35 +192,6 @@ export class KeybindsSystem {
                 window.dispatchEvent(new Event('controlsUpdated'));
             }
         });
-
-        window.addEventListener('thumbstick-nav', ((e: CustomEvent<{x: number, y: number}>) => {
-            const now = Date.now();
-            if (now - this.lastThumbstickNavTime < 200) return;
-            
-            const { x, y } = e.detail;
-            let keyName = '';
-            
-            if (Math.abs(x) > Math.abs(y)) {
-                if (x > 0.5) keyName = 'Gamepad_Right';
-                else if (x < -0.5) keyName = 'Gamepad_Left';
-            } else {
-                if (y > 0.5) keyName = 'Gamepad_Up';
-                else if (y < -0.5) keyName = 'Gamepad_Down';
-            }
-            
-            if (keyName) {
-                this.lastThumbstickNavTime = now;
-                const syntheticEvent = new KeyboardEvent('keydown', {
-                    key: keyName,
-                    code: keyName,
-                    bubbles: true,
-                    cancelable: true,
-                    repeat: false
-                });
-                const target = document.activeElement || window;
-                target.dispatchEvent(syntheticEvent);
-            }
-        }) as EventListener);
 
         window.addEventListener('keydown', (e: KeyboardEvent) => {
             if (this.activeModalHandler) {

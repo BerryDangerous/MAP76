@@ -10,7 +10,6 @@ declare global {
 
         GetDiscoveredMapMarkersAsJSON?: (jsonString: string) => void;
         requestFreshMapData?: (arg: string) => void;
-        setMapViewportFocus?: (arg: string) => void;
 
         requestClose?: () => void;
         triggerEngineSound?: (soundName: string) => void;
@@ -46,8 +45,6 @@ declare global {
         MapInterop?: {
             updateWorkshopStats?: (jsonString: string) => void;
         };
-
-        __panViewport?: (dx: number, dy: number) => void;
 
         loadSettings?: (jsonString: string) => void;
         saveSettings?: (jsonString: string) => void;

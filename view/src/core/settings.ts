@@ -11,7 +11,6 @@ export interface AppSettings {
     hideInactiveQuestMarkers: boolean;
     writePayloadToFile: boolean;
     showWorkshopInfoLog: boolean;
-    gamepadCursorSpeed: number;
     gamepadPanSensitivity: number;
     controllerStyle: number;
     preferredMapConfigs: Record<string, string>;
@@ -31,7 +30,6 @@ export const defaultSettings: AppSettings = {
     hideInactiveQuestMarkers: false,
     writePayloadToFile: false,
     showWorkshopInfoLog: false,
-    gamepadCursorSpeed: 1200.0,
     gamepadPanSensitivity: 0.5,
     controllerStyle: 0,
     preferredMapConfigs: {},

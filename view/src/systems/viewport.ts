@@ -1,4 +1,5 @@
 import { GameBounds, MapPosition } from '@/types/map.js';
+import { appSettings } from '@/core/settings.js';
 
 import { mapState } from '@/core/state.js';
 
@@ -273,6 +274,58 @@ export const MapViewport = {
             this.lastMouseX = e.clientX;
             this.lastMouseY = e.clientY;
         });
+
+        let lastPanTime = performance.now();
+        let fracX = 0;
+        let fracY = 0;
+
+        const edgePanLoop = () => {
+            const now = performance.now();
+            const isControllerActive = document.body.classList.contains('controller-active');
+
+            if (isControllerActive && FocusManager.getFocus() === 'MAP') {
+                const edgeThresholdX = window.innerWidth * 0.02;
+                const edgeThresholdY = window.innerHeight * 0.02;
+                let panDx = 0;
+                let panDy = 0;
+                
+                if (this.lastMouseX < edgeThresholdX) panDx = 1;
+                else if (this.lastMouseX > window.innerWidth - edgeThresholdX) panDx = -1;
+                
+                if (this.lastMouseY < edgeThresholdY) panDy = 1;
+                else if (this.lastMouseY > window.innerHeight - edgeThresholdY) panDy = -1;
+
+                if (panDx !== 0 || panDy !== 0) {
+                    let dt = (now - lastPanTime) / 1000;
+                    if (dt > 0.1) dt = 0.016;
+                    
+                    const speed = 1000 * dt;
+                    
+                    const totalDx = (panDx * speed) + fracX;
+                    const totalDy = (panDy * speed) + fracY;
+                    
+                    const dx = Math.trunc(totalDx);
+                    const dy = Math.trunc(totalDy);
+                    
+                    fracX = totalDx - dx;
+                    fracY = totalDy - dy;
+
+                    if (dx !== 0 || dy !== 0) {
+                        this.panBy(
+                            dx * appSettings.gamepadPanSensitivity, 
+                            dy * appSettings.gamepadPanSensitivity
+                        );
+                    }
+                }
+            }
+            
+            lastPanTime = performance.now();
+            requestAnimationFrame(edgePanLoop);
+        };
+        
+        if (typeof requestAnimationFrame === 'function') {
+            requestAnimationFrame(edgePanLoop);
+        }
 
         container.addEventListener('wheel', (e: WheelEvent) => {
             if (FocusManager.getFocus() !== 'MAP') return;

@@ -70,11 +70,6 @@ export const EngineBridge = {
             console.warn(`[Bridge] requestAssetCache not bound yet.`);
         }
     },
-    setMapViewportFocus(hasFocus: boolean) {
-        if (typeof window.setMapViewportFocus === 'function') {
-            window.setMapViewportFocus(hasFocus ? "true" : "false");
-        }
-    },
 };
 
 export function setCustomMarker(x: number, y: number, worldspaceId?: number): void {
@@ -91,10 +86,6 @@ export function toggleQuestActive(formId: number): void {
 
 export function makeOnlyQuestActive(formId: number): void {
     EngineBridge.makeOnlyQuestActive(formId);
-}
-
-export function setMapViewportFocus(hasFocus: boolean): void {
-    EngineBridge.setMapViewportFocus(hasFocus);
 }
 
 export function initializeF4SEBindings(onDataReceived: (payload: F4SEMapPayload) => void) {
@@ -193,8 +184,4 @@ export function initializeF4SEBindings(onDataReceived: (payload: F4SEMapPayload)
             console.log("[Interop] Workshop Data received:", jsonString);
         };
     }
-
-    window.__panViewport = (dx: number, dy: number) => {
-        MapViewport.panBy(dx, dy);
-    };
 }
