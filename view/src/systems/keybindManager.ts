@@ -25,7 +25,8 @@ export type KeyAction =
     | 'TOGGLE_SUPPLY_LINES'
     | 'PREV_WORLD'
     | 'NEXT_WORLD'
-    | 'SORT';
+    | 'SORT'
+    | 'CHANGE_LAYOUT';
 
 export const DEFAULT_KEYMAP: Record<KeyAction, string[]> = {
     NAV_UP: ['ArrowUp', 'Gamepad_Up'],
@@ -51,7 +52,8 @@ export const DEFAULT_KEYMAP: Record<KeyAction, string[]> = {
     TOGGLE_SUPPLY_LINES: ['c', 'C', 'Gamepad_X'],
     PREV_WORLD: ['<', ',', 'PageUp', 'Gamepad_LB'],
     NEXT_WORLD: ['>', '.', 'PageDown', 'Gamepad_RB'],
-    SORT: ['r', 'R', 'Gamepad_Y']
+    SORT: ['r', 'R', 'Gamepad_Y'],
+    CHANGE_LAYOUT: ['Gamepad_LBRB']
 };
 
 export const DEFAULT_LABELS: Record<KeyAction, string> = {
@@ -78,7 +80,8 @@ export const DEFAULT_LABELS: Record<KeyAction, string> = {
     TOGGLE_SUPPLY_LINES: 'controls.actions.supplyLines',
     PREV_WORLD: 'controls.actions.prevWorld',
     NEXT_WORLD: 'controls.actions.nextWorld',
-    SORT: 'controls.actions.sort'
+    SORT: 'controls.actions.sort',
+    CHANGE_LAYOUT: 'controls.actions.layout'
 };
 
 export class KeybindsSystem {
@@ -95,6 +98,7 @@ export class KeybindsSystem {
         'Gamepad_Y': 'D',
         'Gamepad_LB': 'G',
         'Gamepad_RB': 'L',
+        'Gamepad_LBRB': 'Z',
         'Gamepad_LT': 'I',
         'Gamepad_RT': 'N',
         'Gamepad_Start': 'O',
@@ -116,6 +120,7 @@ export class KeybindsSystem {
         'Gamepad_Y': 'b',
         'Gamepad_LB': 'g',
         'Gamepad_RB': 'm',
+        'Gamepad_LBRB': 'h',
         'Gamepad_LT': 'j',
         'Gamepad_RT': 'o',
         'Gamepad_Start': 'p',

@@ -1599,3 +1599,34 @@ body.controller-active #settings-backdrop {
 body.controller-active #custom-cursor {
     z-index: 50 !important;
 }
+
+
+/* ==========================================================================
+   ON-SCREEN KEYBOARD
+   ========================================================================== */
+
+#prisma-osk-host {
+    position: absolute;
+    z-index: 10000;
+    background-color: rgba(24, 28, 29, 0.95);
+    border: none;
+    outline: 1px solid rgba(245, 203, 91, 0.4);
+    padding: 10px;
+    box-shadow: -4px 4px 16px rgba(0, 0, 0, 0.6);
+    zoom: var(--ui-scale, 1.0);
+    pointer-events: auto;
+    color: #ffffcb;
+    font-family: var(--main-font, 'PibotoCondensed', sans-serif);
+}
+
+.prisma-osk-key {
+    background-color: #101314;
+    border: none !important;
+}
+
+.prisma-osk-key.focused {
+    background-color: #f5cb5b !important;
+    color: #000000 !important;
+    outline: none !important;
+    border: none !important;
+}

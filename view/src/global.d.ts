@@ -49,5 +49,25 @@ declare global {
         loadSettings?: (jsonString: string) => void;
         saveSettings?: (jsonString: string) => void;
         requestSettings?: () => void;
+
+        PrismaInput?: {
+            isTextEntryTarget: (node: Node) => boolean;
+            isSelectControl: (node: Node) => boolean;
+            isFormEntryTarget: (node: Node) => boolean;
+            isKeyboardCaptureTarget: (node: Node) => boolean;
+        };
+
+        PrismaOSK?: {
+            bindHost: (host: HTMLElement) => void;
+            open: (element: HTMLInputElement | HTMLTextAreaElement, options?: any) => boolean;
+            paste: (text: string) => boolean;
+            close: (options?: { commit?: boolean }) => boolean;
+            isOpen: () => boolean;
+            getTarget: () => HTMLElement | null;
+            owns: (element: HTMLElement) => boolean;
+            getState: () => any;
+            handleButton: (button: string) => boolean;
+            render: () => void;
+        };
     }
 }

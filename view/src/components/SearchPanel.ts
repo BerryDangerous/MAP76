@@ -156,6 +156,10 @@ export const SearchPanel = {
         if (searchBox) {
             searchBox.blur();
         }
+        
+        if (window.PrismaOSK && window.PrismaOSK.isOpen()) {
+            window.PrismaOSK.close();
+        }
 
         if (searchPanelState.isCollapsed) {
             this.closeCards();
@@ -220,6 +224,10 @@ export const SearchPanel = {
             getAvailableControls: () => {
                 const controls: import('../systems/focusManager.js').ControlActionDef[] = ['NAV_BACK', 'NAV_UP', 'NAV_DOWN', 'PAN_MOUSE'];
                 if (searchBox?.isFocused()) {
+                    if (KeybindsSystem.isControllerActive && window.PrismaOSK && window.PrismaOSK.isOpen()) {
+                        controls.push({ action: 'CHANGE_LAYOUT', label: t('controls.actions.layout', { defaultValue: 'Layouts' }) });
+                        controls.push({ action: 'RESET_DEFAULTS', label: t('search.clear', { defaultValue: 'Clear' }) });
+                    }
                     return controls;
                 }
 
@@ -301,6 +309,14 @@ export const SearchPanel = {
         const results = this.getVisibleResults();
 
         if (inputIsFocused) {
+            if (KeybindsSystem.isControllerActive && window.PrismaOSK && window.PrismaOSK.isOpen()) {
+                if (KeybindsSystem.isAction(e, 'RESET_DEFAULTS')) {
+                    e.preventDefault();
+                    if (searchBox) searchBox.clear();
+                    EngineBridge.emitSound('UIMenuCancel');
+                }
+                return true;
+            }
             if (KeybindsSystem.isAction(e, 'NAV_DOWN')) {
                 if (results.length > 0) {
                     searchBox?.blur();
@@ -312,7 +328,14 @@ export const SearchPanel = {
             if (KeybindsSystem.isAction(e, 'NAV_BACK')) {
                 e.preventDefault();
                 searchBox?.blur();
-                EngineBridge.emitSound('UIMenuCancel');
+                
+                if (results.length > 0) {
+                    EngineBridge.emitSound('UIGeneralFocus');
+                    listController.setSelectedIndex(0, true, true);
+                } else {
+                    EngineBridge.emitSound('UIMenuCancel');
+                }
+                
                 return true;
             }
             return true;

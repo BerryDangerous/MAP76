@@ -1,6 +1,7 @@
 import { EngineBridge } from '@/core/bridge.js';
 import { t } from '@/core/i18n.js';
 import { KeybindsSystem } from '@/systems/keybindManager.js';
+import { LayoutManager } from '@/systems/layoutManager.js';
 
 export interface SearchBoxOptions {
     container: HTMLElement;
@@ -61,6 +62,12 @@ export class SearchBox {
             }
         });
 
+        this.inputEl.addEventListener('focus', () => {
+            if (KeybindsSystem.isControllerActive && window.PrismaOSK && !window.PrismaOSK.isOpen()) {
+                window.PrismaOSK.open(this.inputEl);
+            }
+        });
+
         this.clearBtnEl.addEventListener('keydown', (e: KeyboardEvent) => {
             if (KeybindsSystem.isAction(e, 'NAV_LEFT')) {
                 this.inputEl.focus();
@@ -113,6 +120,60 @@ export class SearchBox {
         this.container.appendChild(this.wrapperEl);
 
         this.updateClearBtnVisibility();
+
+        if (window.PrismaOSK) {
+            const host = document.getElementById('prisma-osk-host');
+            if (host) {
+                window.PrismaOSK.bindHost(host);
+
+                const observer = new MutationObserver((mutations) => {
+                    mutations.forEach((mutation) => {
+                        if (mutation.attributeName === 'hidden') {
+                            window.dispatchEvent(new CustomEvent('controlsUpdated'));
+                            
+                            if (!host.hidden) {
+                                const searchPanel = document.getElementById('search-panel');
+                                if (searchPanel) {
+                                    const dockCorner = (searchPanel.getAttribute('data-dock') as any) || 'top-left';
+                                    LayoutManager.anchorToPanel(host, searchPanel, dockCorner, 10);
+                                }
+                            }
+                        }
+                    });
+                });
+                observer.observe(host, { attributes: true });
+                
+                window.addEventListener('controlsUpdated', () => {
+                    if (!KeybindsSystem.isControllerActive && window.PrismaOSK && window.PrismaOSK.isOpen()) {
+                        window.PrismaOSK.close({ commit: true });
+                    }
+                });
+            }
+
+            window.addEventListener('prisma-controller-action', (e: any) => {
+                if (window.PrismaOSK && window.PrismaOSK.isOpen() && e.detail?.state === 'pressed') {
+                    const btn = e.detail.button;
+                    if (btn !== 'B' && !btn.startsWith('DPad') && btn !== 'LeftThumb' && btn !== 'RightThumb') {
+                        EngineBridge.emitSound('UIGeneralFocus');
+                    }
+                }
+            }, true);
+            
+            // Intercept B button to commit instead of cancel, and trigger NAV_BACK
+            window.addEventListener('prisma-controller-action', (e: any) => {
+                if (e.detail && e.detail.button === 'B' && window.PrismaOSK && window.PrismaOSK.isOpen()) {
+                    if (document.activeElement === this.inputEl) {
+                        e.stopImmediatePropagation();
+                        
+                        if (e.detail.state === 'pressed') {
+                            window.PrismaOSK.close({ commit: true });                            
+                            const ev = new KeyboardEvent('keydown', { key: 'Gamepad_B', bubbles: true, cancelable: true });
+                            window.dispatchEvent(ev);
+                        }
+                    }
+                }
+            }, true);
+        }
     }
 
     public clear(): void {

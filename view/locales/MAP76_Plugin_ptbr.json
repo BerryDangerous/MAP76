@@ -64,7 +64,8 @@
       "ok": "OK",
       "on": "LIGADO",
       "off": "DESLIGADO",
-      "menu": "MENU"
+      "menu": "MENU",
+      "layout": "LAYOUTS"
     },
     "keys": {
       "space": "ESPAÇO",
