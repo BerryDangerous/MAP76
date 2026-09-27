@@ -16,6 +16,7 @@ export interface SearchResult {
     };
     iconType?: number;
     customIcon?: string;
+    discovered?: boolean;
     badgesHtml?: string;
     score: number;
 }

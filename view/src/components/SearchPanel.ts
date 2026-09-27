@@ -670,7 +670,8 @@ export const SearchPanel = {
             }
             iconSvg = AssetManager.getQuestMarkerIconSvg(isDoor, q.isTracked);
         } else {
-            iconSvg = AssetManager.getLocationIconSvg(result.iconType || 0, true, result.customIcon);
+            const isDiscovered = result.discovered !== false;
+            iconSvg = AssetManager.getLocationIconSvg(result.iconType || 0, isDiscovered, result.customIcon);
         }
 
         const badgesHtml = result.badgesHtml || '';

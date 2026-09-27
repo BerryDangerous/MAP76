@@ -62,6 +62,7 @@ export const SearchEngine = {
                         markerCoords: { x: m.x, y: m.y, worldspace: m.worldspace },
                         iconType: m.type,
                         customIcon: m.customIcon,
+                        discovered: m.discovered || m.canFastTravel,
                         score: match.score
                     });
                 }
@@ -111,6 +112,7 @@ export const SearchEngine = {
                         markerCoords: markerCoords,
                         iconType: iconType,
                         customIcon: marker?.customIcon,
+                        discovered: marker ? (marker.discovered || marker.canFastTravel) : w.owned,
                         badgesHtml: badgesHtml,
                         score: score
                     });
