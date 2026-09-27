@@ -1,0 +1,213 @@
+{
+  "settings": {
+    "tabs": {
+      "DISPLAY": "ЭКРАН",
+      "GAMEPLAY": "ИГРОВОЙ ПРОЦЕСС",
+      "MAPS": "КАРТЫ",
+      "DEBUG": "ОТЛАДКА"
+    },
+    "labels": {
+      "uiScale": "Масштаб интерфейса",
+      "markerSize": "Размер меток карты",
+      "hideInactiveQuestMarkers": "Скрыть метки неактивных заданий",
+      "focusMarkerOnSelection": "Центрировать метку при выборе из списка",
+      "resetViewportOnPanelCollapse": "Восстанавливать положение карты при закрытии панели",
+      "limitQuestPanelHeight": "Ограничить высоту панели заданий",
+      "alternativeMapSound": "Альтернативный звук переключения карты",
+      "dummySlider": "Тестовый ползунок",
+      "freezeSimulation": "Пауза в режиме карты",
+      "confirmFastTravel": "Подтверждение быстрого перемещения",
+      "skipSurvivalFastTravelCheck": "Пропустить проверку быстрого перемещения для Выживания",
+      "writePayloadToFile": "Записать данные в файл",
+      "showWorkshopInfoLog": "Показывать журнал информации мастерской",
+      "mapStyle": "Стиль карты {{name}}",
+      "language": "Язык",
+      "controllerStyle": "Значки Контроллера",
+      "gamepadCursorSpeed": "Скорость курсора геймпада",
+      "gamepadPanSensitivity": "Чувствительность панорамирования карты",
+      "compactPanels": "Компактные панели"
+    },
+    "options": {
+      "none": "НЕТ",
+      "xbox": "Xbox",
+      "playstation": "PlayStation"
+    },
+    "languageName": "Русский"
+  },
+  "controls": {
+    "actions": {
+      "up": "ПЕРЕМЕСТИТЬ",
+      "down": "ПЕРЕМЕСТИТЬ",
+      "left": "ПЕРЕМЕСТИТЬ",
+      "right": "ПЕРЕМЕСТИТЬ",
+      "back": "НАЗАД",
+      "prevTab": "ПРЕД. ВКЛАДКА",
+      "nextTab": "СЛЕД. ВКЛАДКА",
+      "select": "ВЫБРАТЬ",
+      "collapse": "СВЕРНУТЬ",
+      "expand": "РАЗВЕРНУТЬ",
+      "close": "ЗАКРЫТЬ",
+      "placeMarker": "ПОСТАВИТЬ МЕТКУ",
+      "zoomIn": "ПРИБЛИЗИТЬ",
+      "zoomOut": "ОТДАЛИТЬ",
+      "move": "ПЕРЕДВИНУТЬ КАРТУ",
+      "centerPlayer": "ЦЕНТРИРОВАТЬ ИГРОКА",
+      "centerObjective": "ЦЕНТРИРОВАТЬ ЦЕЛЬ",
+      "settings": "НАСТРОЙКИ",
+      "defaults": "СБРОС",
+      "toggleActive": "ВКЛ./ВЫКЛ. АКТИВНОСТЬ",
+      "supplyLines": "ЛИНИИ СНАБЖЕНИЯ",
+      "prevWorld": "ПРЕД. КАРТА",
+      "nextWorld": "СЛЕД. КАРТА",
+      "sort": "СОРТИРОВКА",
+      "yes": "ДА",
+      "no": "НЕТ",
+      "ok": "ОК",
+      "on": "ВКЛ",
+      "off": "ВЫКЛ",
+      "menu": "МЕНЮ",
+      "layout": "РАСКЛАДКИ"
+    },
+    "keys": {
+      "space": "ПРОБЕЛ",
+      "tab": "TAB",
+      "enter": "ENTER",
+      "up": "ВВЕРХ",
+      "down": "ВНИЗ",
+      "left": "ВЛЕВО",
+      "right": "ВПРАВО",
+      "shift": "SHIFT"
+    },
+    "collapse": "СВЕРНУТЬ",
+    "expand": "РАЗВЕРНУТЬ"
+  },
+  "quests": {
+    "title": "ЗАДАНИЯ",
+    "tabs": {
+      "all": "ВСЕ",
+      "main": "ОСНОВНЫЕ",
+      "side": "ПОБОЧНЫЕ",
+      "misc": "РАЗНОЕ"
+    },
+    "type": {
+      "Main": "Основное задание",
+      "Side": "Побочное задание",
+      "Misc": "Разное задание",
+      "Event": "Событие",
+      "Daily": "Ежедневное задание",
+      "Unknown": "Задание",
+      "completed": "Задание (Завершено)"
+    },
+    "emptyActive": {
+      "all": "НЕТ АКТИВНЫХ ЗАДАНИЙ",
+      "main": "НЕТ АКТИВНЫХ ОСНОВНЫХ ЗАДАНИЙ",
+      "side": "НЕТ АКТИВНЫХ ПОБОЧНЫХ ЗАДАНИЙ",
+      "misc": "НЕТ АКТИВНЫХ РАЗНЫХ ЗАДАНИЙ"
+    },
+    "empty": {
+      "all": "НЕТ ЗАДАНИЙ",
+      "main": "НЕТ ОСНОВНЫХ ЗАДАНИЙ",
+      "side": "НЕТ ПОБОЧНЫХ ЗАДАНИЙ",
+      "misc": "НЕТ РАЗНЫХ ЗАДАНИЙ"
+    },
+    "sortMode": {
+      "recent": "НЕДАВНИЕ",
+      "alphabetical": "А-Я",
+      "active": "АКТИВНЫЕ"
+    },
+    "controls": {
+      "toggleActive": "ВКЛ./ВЫКЛ. АКТИВНОСТЬ",
+      "makeOnlyActive": "СДЕЛАТЬ ЕДИНСТВЕННЫМ АКТИВНЫМ",
+      "centerObjective": "ЦЕНТРИРОВАТЬ ЦЕЛЬ"
+    },
+    "card": {
+      "journal": "ЖУРНАЛ",
+      "objectives": "ЦЕЛИ"
+    }
+  },
+  "workshops": {
+    "title": "ПОСЕЛЕНИЯ",
+    "tabs": {
+      "all": "ВСЕ",
+      "owned": "ДОСТУПНЫЕ",
+      "unowned": "НЕДОСТУПНЫЕ"
+    },
+    "empty": "НЕТ ПОСЕЛЕНИЙ",
+    "stats": {
+      "happiness": "СЧАСТЬЕ",
+      "population": "НАСЕЛЕНИЕ",
+      "food": "ЕДА",
+      "water": "ВОДА",
+      "power": "ЭНЕРГИЯ",
+      "defense": "ЗАЩИТА",
+      "beds": "КРОВАТИ"
+    },
+    "subtitle": {
+      "raider": "Аванпост рейдеров",
+      "vassal": "Подконтрольное поселение",
+      "vr": "VR-мастерская",
+      "default": "Поселение"
+    },
+    "sortMode": {
+      "attention": "ТРЕБУЕТ ВНИМАНИЯ",
+      "alphabetical": "А-Я",
+      "happiness": "СЧАСТЬЕ",
+      "population": "НАСЕЛЕНИЕ"
+    }
+  },
+  "search": {
+    "title": "ПОИСК",
+    "placeholder": "ВВЕДИТЕ ЗАПРОС...",
+    "clear": "ОЧИСТИТЬ",
+    "noResults": "НИЧЕГО НЕ НАЙДЕНО",
+    "empty": "ИСТОРИЯ ПОИСКА ПУСТА",
+    "tabs": {
+      "markers": "МЕТКИ",
+      "quests": "ЗАДАНИЯ",
+      "workshops": "ПОСЕЛЕНИЯ"
+    },
+    "resultType": {
+      "location": "Локация",
+      "powerArmor": "Силовая броня",
+      "customMarker": "Пользовательская метка"
+    }
+  },
+  "fastTravel": {
+    "confirm": "Быстро переместиться в: {{location}}?",
+    "errors": {
+      "SUCCESS": "",
+      "PLAYER_DEAD": "Сейчас быстрое перемещение невозможно.",
+      "COMBAT": "Нельзя перемещаться, пока рядом враги.",
+      "INTERIOR": "Быстрое перемещение из этого места невозможно.",
+      "SURVIVAL": "Быстрое перемещение в это место невозможно.",
+      "OVERBURDENED": "Вы перегружены и не можете перемещаться!",
+      "QUEST_LOCKED": "Быстрое перемещение из этого места сейчас недоступно.",
+      "UNKNOWN_ERROR": "Сейчас быстрое перемещение невозможно."
+    }
+  },
+  "markers": {
+    "controls": {
+      "centerMarker": "ЦЕНТРИРОВАТЬ МЕТКУ",
+      "fastTravel": "БЫСТРОЕ ПЕРЕМЕЩЕНИЕ",
+      "undiscovered": "НЕ НАЙДЕНО"
+    },
+    "customMarker": {
+      "placePrompt": "Поставить метку?",
+      "removePrompt": "Удалить текущую метку?",
+      "movePrompt": "Переместить или удалить текущую метку?",
+      "placeMarker": "ПОСТАВИТЬ МЕТКУ",
+      "moveMarker": "ПЕРЕМЕСТИТЬ МЕТКУ",
+      "removeMarker": "УДАЛИТЬ МЕТКУ",
+      "cancel": "ОТМЕНА"
+    }
+  },
+  "settlements": {
+    "card": {
+      "location": "МЕСТО",
+      "stats": "ПАРАМЕТРЫ"
+    }
+  },
+  "info": {
+    "unknownWorldspace": "Неизвестно"
+  }
+}

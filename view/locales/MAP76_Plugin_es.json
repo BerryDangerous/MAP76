@@ -1,0 +1,213 @@
+{
+  "settings": {
+    "tabs": {
+      "DISPLAY": "PANTALLA",
+      "GAMEPLAY": "JUGABILIDAD",
+      "MAPS": "MAPAS",
+      "DEBUG": "DEPURACIÓN"
+    },
+    "labels": {
+      "uiScale": "Escala de la interfaz",
+      "markerSize": "Tamaño de marcadores",
+      "hideInactiveQuestMarkers": "Ocultar marcadores de misiones inactivas",
+      "focusMarkerOnSelection": "Centrar marcador al seleccionar en lista",
+      "resetViewportOnPanelCollapse": "Restablecer posición del mapa al cerrar el panel",
+      "limitQuestPanelHeight": "Limitar altura del panel de misiones",
+      "alternativeMapSound": "Sonido alternativo de cambio de mapa",
+      "dummySlider": "Control deslizante ficticio",
+      "freezeSimulation": "Pausar juego en el mapa",
+      "confirmFastTravel": "Confirmación de viaje rápido",
+      "skipSurvivalFastTravelCheck": "Omitir comprobación de viaje rápido en Supervivencia",
+      "writePayloadToFile": "Escribir carga útil en archivo",
+      "showWorkshopInfoLog": "Mostrar registro de info del taller",
+      "mapStyle": "Estilo de mapa de {{name}}",
+      "language": "Idioma",
+      "controllerStyle": "Iconos del Mando",
+      "gamepadCursorSpeed": "Velocidad del cursor del mando",
+      "gamepadPanSensitivity": "Sensibilidad de desplazamiento de mapa con mando",
+      "compactPanels": "Paneles Compactos"
+    },
+    "options": {
+      "none": "NINGUNO",
+      "xbox": "Xbox",
+      "playstation": "PlayStation"
+    },
+    "languageName": "Español"
+  },
+  "controls": {
+    "actions": {
+      "up": "MOVER",
+      "down": "MOVER",
+      "left": "MOVER",
+      "right": "MOVER",
+      "back": "ATRÁS",
+      "prevTab": "PESTAÑA ANTERIOR",
+      "nextTab": "PESTAÑA SIGUIENTE",
+      "select": "SELECCIONAR",
+      "collapse": "CONTRAER",
+      "expand": "EXPANDIR",
+      "close": "CERRAR",
+      "placeMarker": "COLOCAR MARCADOR",
+      "zoomIn": "ACERCAR",
+      "zoomOut": "ALEJAR",
+      "move": "MOVER MAPA",
+      "centerPlayer": "CENTRAR JUGADOR",
+      "centerObjective": "CENTRAR OBJETIVO",
+      "settings": "AJUSTES",
+      "defaults": "RESTABLECER",
+      "toggleActive": "ACTIVAR / DESACTIVAR",
+      "supplyLines": "LÍNEAS DE SUMINISTRO",
+      "prevWorld": "MAPA ANTERIOR",
+      "nextWorld": "SIGUIENTE MAPA",
+      "sort": "ORDENAR",
+      "yes": "SÍ",
+      "no": "NO",
+      "ok": "ACEPTAR",
+      "on": "SÍ",
+      "off": "NO",
+      "menu": "MENÚ",
+      "layout": "FORMATOS"
+    },
+    "keys": {
+      "space": "ESPACIO",
+      "tab": "TAB",
+      "enter": "INTRO",
+      "up": "ARRIBA",
+      "down": "ABAJO",
+      "left": "IZQ",
+      "right": "DCH",
+      "shift": "MAYÚS"
+    },
+    "collapse": "CONTRAER",
+    "expand": "EXPANDIR"
+  },
+  "quests": {
+    "title": "MISIONES",
+    "tabs": {
+      "all": "TODAS",
+      "main": "PRINCIPALES",
+      "side": "SECUNDARIAS",
+      "misc": "VARIAS"
+    },
+    "type": {
+      "Main": "Misión principal",
+      "Side": "Misión secundaria",
+      "Misc": "Misión varia",
+      "Event": "Evento",
+      "Daily": "Misión diaria",
+      "Unknown": "Misión",
+      "completed": "Misión (Completada)"
+    },
+    "emptyActive": {
+      "all": "NO HAY MISIONES ACTIVAS",
+      "main": "NO HAY MISIONES PRINCIPALES ACTIVAS",
+      "side": "NO HAY MISIONES SECUNDARIAS ACTIVAS",
+      "misc": "NO HAY MISIONES VARIAS ACTIVAS"
+    },
+    "empty": {
+      "all": "NO HAY MISIONES",
+      "main": "NO HAY MISIONES PRINCIPALES",
+      "side": "NO HAY MISIONES SECUNDARIAS",
+      "misc": "NO HAY MISIONES VARIAS"
+    },
+    "sortMode": {
+      "recent": "RECIENTES",
+      "alphabetical": "A-Z",
+      "active": "ACTIVAS"
+    },
+    "controls": {
+      "toggleActive": "ACTIVAR / DESACTIVAR",
+      "makeOnlyActive": "ACTIVAR SOLO ESTA",
+      "centerObjective": "CENTRAR OBJETIVO"
+    },
+    "card": {
+      "journal": "DIARIO",
+      "objectives": "OBJETIVOS"
+    }
+  },
+  "workshops": {
+    "title": "ASENTAMIENTOS",
+    "tabs": {
+      "all": "TODOS",
+      "owned": "EN POSESIÓN",
+      "unowned": "NO ADQUIRIDOS"
+    },
+    "empty": "NO HAY ASENTAMIENTOS",
+    "stats": {
+      "happiness": "FELICIDAD",
+      "population": "POBLACIÓN",
+      "food": "COMIDA",
+      "water": "AGUA",
+      "power": "ENERGÍA",
+      "defense": "DEFENSA",
+      "beds": "CAMAS"
+    },
+    "subtitle": {
+      "raider": "Puesto de saqueadores",
+      "vassal": "Asentamiento vasallo",
+      "vr": "Taller de RV",
+      "default": "Asentamiento"
+    },
+    "sortMode": {
+      "attention": "ATENCIÓN",
+      "alphabetical": "A-Z",
+      "happiness": "FELICIDAD",
+      "population": "POBLACIÓN"
+    }
+  },
+  "search": {
+    "title": "BUSCAR",
+    "placeholder": "INTRODUCIR TÉRMINO...",
+    "clear": "LIMPIAR",
+    "noResults": "NO SE ENCONTRARON RESULTADOS",
+    "empty": "SIN HISTORIAL DE BÚSQUEDA",
+    "tabs": {
+      "markers": "MARCADORES",
+      "quests": "MISIONES",
+      "workshops": "ASENTAMIENTOS"
+    },
+    "resultType": {
+      "location": "Ubicación",
+      "powerArmor": "Servoarmadura",
+      "customMarker": "Marcador personalizado"
+    }
+  },
+  "fastTravel": {
+    "confirm": "¿Viajar rápidamente a {{location}}?",
+    "errors": {
+      "SUCCESS": "",
+      "PLAYER_DEAD": "No puedes viajar rápidamente en este momento.",
+      "COMBAT": "No puedes viajar rápidamente con enemigos cerca.",
+      "INTERIOR": "No puedes viajar rápidamente desde esta ubicación.",
+      "SURVIVAL": "No puedes viajar rápidamente a esta ubicación.",
+      "OVERBURDENED": "¡Llevas demasiado peso para viajar rápidamente!",
+      "QUEST_LOCKED": "El viaje rápido no está disponible desde esta ubicación en este momento.",
+      "UNKNOWN_ERROR": "No puedes viajar rápidamente en este momento."
+    }
+  },
+  "markers": {
+    "controls": {
+      "centerMarker": "CENTRAR MARCADOR",
+      "fastTravel": "VIAJE RÁPIDO",
+      "undiscovered": "NO DESCUBIERTO"
+    },
+    "customMarker": {
+      "placePrompt": "¿Colocar un marcador?",
+      "removePrompt": "¿Eliminar marcador actual?",
+      "movePrompt": "¿Mover marcador actual o eliminarlo?",
+      "placeMarker": "COLOCAR MARCADOR",
+      "moveMarker": "MOVER MARCADOR",
+      "removeMarker": "ELIMINAR MARCADOR",
+      "cancel": "CANCELAR"
+    }
+  },
+  "settlements": {
+    "card": {
+      "location": "UBICACIÓN",
+      "stats": "ESTADÍSTICAS"
+    }
+  },
+  "info": {
+    "unknownWorldspace": "Desconocido"
+  }
+}

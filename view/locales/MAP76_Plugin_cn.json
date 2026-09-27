@@ -1,0 +1,213 @@
+{
+  "settings": {
+    "tabs": {
+      "DISPLAY": "显示",
+      "GAMEPLAY": "游戏性",
+      "MAPS": "地图",
+      "DEBUG": "调试"
+    },
+    "labels": {
+      "uiScale": "界面缩放",
+      "markerSize": "地图标记大小",
+      "hideInactiveQuestMarkers": "隐藏非活动任务标记",
+      "focusMarkerOnSelection": "在列表中选中时自动居中标记",
+      "resetViewportOnPanelCollapse": "关闭面板时重置地图位置",
+      "limitQuestPanelHeight": "限制任务面板高度",
+      "alternativeMapSound": "备选地图切换音效",
+      "dummySlider": "虚拟滑块",
+      "freezeSimulation": "在地图界面暂停游戏",
+      "confirmFastTravel": "快速旅行确认",
+      "skipSurvivalFastTravelCheck": "跳过生存模式快速旅行检查",
+      "writePayloadToFile": "将有效载荷写入文件",
+      "showWorkshopInfoLog": "显示工坊信息日志",
+      "mapStyle": "{{name}} 地图风格",
+      "language": "语言",
+      "controllerStyle": "控制器图标",
+      "gamepadCursorSpeed": "手柄光标速度",
+      "gamepadPanSensitivity": "手柄地图边缘平移灵敏度",
+      "compactPanels": "紧凑面板"
+    },
+    "options": {
+      "none": "无",
+      "xbox": "Xbox",
+      "playstation": "PlayStation"
+    },
+    "languageName": "简体中文"
+  },
+  "controls": {
+    "actions": {
+      "up": "移动",
+      "down": "移动",
+      "left": "移动",
+      "right": "移动",
+      "back": "返回",
+      "prevTab": "上一标签",
+      "nextTab": "下一标签",
+      "select": "选择",
+      "collapse": "折叠",
+      "expand": "展开",
+      "close": "关闭",
+      "placeMarker": "放置标记",
+      "zoomIn": "放大",
+      "zoomOut": "缩小",
+      "move": "移动地图",
+      "centerPlayer": "居中玩家",
+      "centerObjective": "居中目标",
+      "settings": "打开设置",
+      "defaults": "重置",
+      "toggleActive": "切换激活状态",
+      "supplyLines": "补给线",
+      "prevWorld": "上一张地图",
+      "nextWorld": "下一张地图",
+      "sort": "排序",
+      "yes": "是",
+      "no": "否",
+      "ok": "确定",
+      "on": "开",
+      "off": "关",
+      "menu": "菜单",
+      "layout": "布局"
+    },
+    "keys": {
+      "space": "空格",
+      "tab": "TAB",
+      "enter": "回车",
+      "up": "上",
+      "down": "下",
+      "left": "左",
+      "right": "右",
+      "shift": "SHIFT"
+    },
+    "collapse": "折叠",
+    "expand": "展开"
+  },
+  "quests": {
+    "title": "任务",
+    "tabs": {
+      "all": "全部",
+      "main": "主线",
+      "side": "支线",
+      "misc": "杂项"
+    },
+    "type": {
+      "Main": "主线任务",
+      "Side": "支线任务",
+      "Misc": "杂项任务",
+      "Event": "事件",
+      "Daily": "每日任务",
+      "Unknown": "任务",
+      "completed": "任务（已完成）"
+    },
+    "emptyActive": {
+      "all": "无进行中的任务",
+      "main": "无进行中的主线任务",
+      "side": "无进行中的支线任务",
+      "misc": "无进行中的杂项任务"
+    },
+    "empty": {
+      "all": "无任务",
+      "main": "无主线任务",
+      "side": "无支线任务",
+      "misc": "无杂项任务"
+    },
+    "sortMode": {
+      "recent": "最近",
+      "alphabetical": "首字母",
+      "active": "已激活"
+    },
+    "controls": {
+      "toggleActive": "切换激活状态",
+      "makeOnlyActive": "仅激活此项",
+      "centerObjective": "居中目标"
+    },
+    "card": {
+      "journal": "日志",
+      "objectives": "目标"
+    }
+  },
+  "workshops": {
+    "title": "定居点",
+    "tabs": {
+      "all": "全部",
+      "owned": "已拥有",
+      "unowned": "未拥有"
+    },
+    "empty": "无定居点",
+    "stats": {
+      "happiness": "幸福度",
+      "population": "人口",
+      "food": "食物",
+      "water": "水",
+      "power": "电力",
+      "defense": "防御",
+      "beds": "床位"
+    },
+    "subtitle": {
+      "raider": "掠夺者前哨",
+      "vassal": "附庸定居点",
+      "vr": "VR 工坊",
+      "default": "定居点"
+    },
+    "sortMode": {
+      "attention": "需要注意",
+      "alphabetical": "首字母",
+      "happiness": "幸福度",
+      "population": "人口"
+    }
+  },
+  "search": {
+    "title": "搜索",
+    "placeholder": "输入搜索内容...",
+    "clear": "清除",
+    "noResults": "未找到结果",
+    "empty": "无搜索历史",
+    "tabs": {
+      "markers": "标记",
+      "quests": "任务",
+      "workshops": "定居点"
+    },
+    "resultType": {
+      "location": "地点",
+      "powerArmor": "动力装甲",
+      "customMarker": "自定义标记"
+    }
+  },
+  "fastTravel": {
+    "confirm": "快速旅行至 {{location}}？",
+    "errors": {
+      "SUCCESS": "",
+      "PLAYER_DEAD": "你目前无法进行快速旅行。",
+      "COMBAT": "周围有敌人时无法快速旅行。",
+      "INTERIOR": "无法从当前地点进行快速旅行。",
+      "SURVIVAL": "无法快速旅行至此地点。",
+      "OVERBURDENED": "负重过大，无法快速旅行！",
+      "QUEST_LOCKED": "目前无法从此地点进行快速旅行。",
+      "UNKNOWN_ERROR": "你目前无法进行快速旅行。"
+    }
+  },
+  "markers": {
+    "controls": {
+      "centerMarker": "居中标记",
+      "fastTravel": "快速旅行",
+      "undiscovered": "未发现"
+    },
+    "customMarker": {
+      "placePrompt": "放置标记？",
+      "removePrompt": "移除当前标记？",
+      "movePrompt": "移动或移除当前标记？",
+      "placeMarker": "放置标记",
+      "moveMarker": "移动标记",
+      "removeMarker": "移除标记",
+      "cancel": "取消"
+    }
+  },
+  "settlements": {
+    "card": {
+      "location": "地点",
+      "stats": "状态"
+    }
+  },
+  "info": {
+    "unknownWorldspace": "未知"
+  }
+}

@@ -1,0 +1,213 @@
+{
+  "settings": {
+    "tabs": {
+      "DISPLAY": "画面表示",
+      "GAMEPLAY": "ゲームプレイ",
+      "MAPS": "マップ",
+      "DEBUG": "デバッグ"
+    },
+    "labels": {
+      "uiScale": "UIスケール",
+      "markerSize": "マップマーカーのサイズ",
+      "hideInactiveQuestMarkers": "非アクティブなクエストマーカーを非表示",
+      "focusMarkerOnSelection": "リスト選択時にマーカーへフォーカス",
+      "resetViewportOnPanelCollapse": "パネルを閉じた時にマップ位置を復元",
+      "limitQuestPanelHeight": "クエストパネルの高さを制限",
+      "alternativeMapSound": "マップ切り替えの代替サウンド",
+      "dummySlider": "ダミースライダー",
+      "freezeSimulation": "マップ表示中にゲームを一時停止",
+      "confirmFastTravel": "ファストトラベルの確認",
+      "skipSurvivalFastTravelCheck": "サバイバルモードのトラベル制限をスキップ",
+      "writePayloadToFile": "ペイロードをファイルに出力",
+      "showWorkshopInfoLog": "ワークショップ情報ログを表示",
+      "mapStyle": "{{name}} マップスタイル",
+      "language": "言語",
+      "controllerStyle": "コントローラーのアイコン",
+      "gamepadCursorSpeed": "ゲームパッドのカーソル速度",
+      "gamepadPanSensitivity": "ゲームパッドのマップスクロール感度",
+      "compactPanels": "コンパクトパネル"
+    },
+    "options": {
+      "none": "なし",
+      "xbox": "Xbox",
+      "playstation": "PlayStation"
+    },
+    "languageName": "日本語"
+  },
+  "controls": {
+    "actions": {
+      "up": "移動",
+      "down": "移動",
+      "left": "移動",
+      "right": "移動",
+      "back": "戻る",
+      "prevTab": "前のタブ",
+      "nextTab": "次のタブ",
+      "select": "選択",
+      "collapse": "折りたたむ",
+      "expand": "展開",
+      "close": "閉じる",
+      "placeMarker": "マーカーを配置",
+      "zoomIn": "拡大",
+      "zoomOut": "縮小",
+      "move": "マップ移動",
+      "centerPlayer": "プレイヤーを中央揃え",
+      "centerObjective": "目標を中央揃え",
+      "settings": "設定を開く",
+      "defaults": "リセット",
+      "toggleActive": "有効/無効の切り替え",
+      "supplyLines": "供給ライン",
+      "prevWorld": "前のマップ",
+      "nextWorld": "次のマップ",
+      "sort": "並べ替え",
+      "yes": "はい",
+      "no": "いいえ",
+      "ok": "OK",
+      "on": "ON",
+      "off": "OFF",
+      "menu": "メニュー",
+      "layout": "レイアウト"
+    },
+    "keys": {
+      "space": "SPACE",
+      "tab": "TAB",
+      "enter": "ENTER",
+      "up": "上",
+      "down": "下",
+      "left": "左",
+      "right": "右",
+      "shift": "SHIFT"
+    },
+    "collapse": "折りたたむ",
+    "expand": "展開"
+  },
+  "quests": {
+    "title": "クエスト",
+    "tabs": {
+      "all": "すべて",
+      "main": "メイン",
+      "side": "サイド",
+      "misc": "その他"
+    },
+    "type": {
+      "Main": "メインクエスト",
+      "Side": "サイドクエスト",
+      "Misc": "その他のクエスト",
+      "Event": "イベント",
+      "Daily": "デイリークエスト",
+      "Unknown": "クエスト",
+      "completed": "クエスト（完了）"
+    },
+    "emptyActive": {
+      "all": "アクティブなクエストはありません",
+      "main": "アクティブなメインクエストはありません",
+      "side": "アクティブなサイドクエストはありません",
+      "misc": "アクティブなその他のクエストはありません"
+    },
+    "empty": {
+      "all": "クエストがありません",
+      "main": "メインクエストがありません",
+      "side": "サイドクエストがありません",
+      "misc": "その他のクエストがありません"
+    },
+    "sortMode": {
+      "recent": "新着順",
+      "alphabetical": "五十音/アルファベット順",
+      "active": "アクティブ順"
+    },
+    "controls": {
+      "toggleActive": "有効/無効の切り替え",
+      "makeOnlyActive": "これのみをアクティブにする",
+      "centerObjective": "目標を中央揃え"
+    },
+    "card": {
+      "journal": "ジャーナル",
+      "objectives": "目標"
+    }
+  },
+  "workshops": {
+    "title": "居住地",
+    "tabs": {
+      "all": "すべて",
+      "owned": "所有中",
+      "unowned": "未所有"
+    },
+    "empty": "居住地はありません",
+    "stats": {
+      "happiness": "幸福度",
+      "population": "人口",
+      "food": "食料",
+      "water": "水",
+      "power": "電力",
+      "defense": "防御",
+      "beds": "ベッド"
+    },
+    "subtitle": {
+      "raider": "レイダーの前哨基地",
+      "vassal": "従属居住地",
+      "vr": "VRワークショップ",
+      "default": "居住地"
+    },
+    "sortMode": {
+      "attention": "要対応",
+      "alphabetical": "五十音/アルファベット順",
+      "happiness": "幸福度",
+      "population": "人口"
+    }
+  },
+  "search": {
+    "title": "検索",
+    "placeholder": "検索キーワードを入力...",
+    "clear": "クリア",
+    "noResults": "結果が見つかりません",
+    "empty": "検索履歴はありません",
+    "tabs": {
+      "markers": "マーカー",
+      "quests": "クエスト",
+      "workshops": "居住地"
+    },
+    "resultType": {
+      "location": "ロケーション",
+      "powerArmor": "パワーアーマー",
+      "customMarker": "カスタムマーカー"
+    }
+  },
+  "fastTravel": {
+    "confirm": "{{location}} へファストトラベルしますか？",
+    "errors": {
+      "SUCCESS": "",
+      "PLAYER_DEAD": "現在はファストトラベルできません。",
+      "COMBAT": "敵が近くにいる時はファストトラベルできません。",
+      "INTERIOR": "この場所からはファストトラベルできません。",
+      "SURVIVAL": "この場所へはファストトラベルできません。",
+      "OVERBURDENED": "所持重量オーバーのためファストトラベルできません！",
+      "QUEST_LOCKED": "現在、この場所からのファストトラベルは利用できません。",
+      "UNKNOWN_ERROR": "現在はファストトラベルできません。"
+    }
+  },
+  "markers": {
+    "controls": {
+      "centerMarker": "マーカーを中央揃え",
+      "fastTravel": "ファストトラベル",
+      "undiscovered": "未発見"
+    },
+    "customMarker": {
+      "placePrompt": "マーカーを配置しますか？",
+      "removePrompt": "現在のマーカーを削除しますか？",
+      "movePrompt": "現在のマーカーを移動または削除しますか？",
+      "placeMarker": "マーカーを配置",
+      "moveMarker": "マーカーを移動",
+      "removeMarker": "マーカーを削除",
+      "cancel": "キャンセル"
+    }
+  },
+  "settlements": {
+    "card": {
+      "location": "場所",
+      "stats": "ステータス"
+    }
+  },
+  "info": {
+    "unknownWorldspace": "不明"
+  }
+}

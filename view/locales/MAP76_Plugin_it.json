@@ -1,0 +1,213 @@
+{
+  "settings": {
+    "tabs": {
+      "DISPLAY": "SCHERMO",
+      "GAMEPLAY": "GIOCO",
+      "MAPS": "MAPPE",
+      "DEBUG": "DEBUG"
+    },
+    "labels": {
+      "uiScale": "Scala interfaccia",
+      "markerSize": "Dimensione marcatori mappa",
+      "hideInactiveQuestMarkers": "Nascondi marcatori missioni inattive",
+      "focusMarkerOnSelection": "Centra marcatore alla selezione nell'elenco",
+      "resetViewportOnPanelCollapse": "Ripristina posizione mappa alla chiusura del pannello",
+      "limitQuestPanelHeight": "Limita altezza pannello missioni",
+      "alternativeMapSound": "Suono alternativo cambio mappa",
+      "dummySlider": "Cursore di prova",
+      "freezeSimulation": "Metti in pausa il gioco sulla mappa",
+      "confirmFastTravel": "Conferma viaggio rapido",
+      "skipSurvivalFastTravelCheck": "Salta controllo viaggio rapido in Sopravvivenza",
+      "writePayloadToFile": "Scrivi payload su file",
+      "showWorkshopInfoLog": "Mostra registro info officina",
+      "mapStyle": "Stile Mappa {{name}}",
+      "language": "Lingua",
+      "controllerStyle": "Icone del Controller",
+      "gamepadCursorSpeed": "Velocità cursore del controller",
+      "gamepadPanSensitivity": "Sensibilità spostamento mappa del controller",
+      "compactPanels": "Pannelli Compatti"
+    },
+    "options": {
+      "none": "NESSUNO",
+      "xbox": "Xbox",
+      "playstation": "PlayStation"
+    },
+    "languageName": "Italiano"
+  },
+  "controls": {
+    "actions": {
+      "up": "SPOSTA",
+      "down": "SPOSTA",
+      "left": "SPOSTA",
+      "right": "SPOSTA",
+      "back": "INDIETRO",
+      "prevTab": "SCHEDA PREC.",
+      "nextTab": "SCHEDA SUCC.",
+      "select": "SELEZIONA",
+      "collapse": "RIDUCI",
+      "expand": "ESPANDI",
+      "close": "CHIUDI",
+      "placeMarker": "PIAZZA MARCATORE",
+      "zoomIn": "INGRANDISCI",
+      "zoomOut": "RIMPICCIOLISCI",
+      "move": "SPOSTA MAPPA",
+      "centerPlayer": "CENTRA GIOCATORE",
+      "centerObjective": "CENTRA OBIETTIVO",
+      "settings": "APRI IMPOSTAZIONI",
+      "defaults": "RIPRISTINA",
+      "toggleActive": "ATTIVA / DISATTIVA",
+      "supplyLines": "LINEE DI RIFORNIMENTO",
+      "prevWorld": "MAPPA PREC.",
+      "nextWorld": "MAPPA SUCC.",
+      "sort": "ORDINA",
+      "yes": "SÌ",
+      "no": "NO",
+      "ok": "OK",
+      "on": "ACCESO",
+      "off": "SPENTO",
+      "menu": "MENU",
+      "layout": "FORMATI"
+    },
+    "keys": {
+      "space": "SPAZIO",
+      "tab": "TAB",
+      "enter": "INVIO",
+      "up": "SU",
+      "down": "GIÙ",
+      "left": "SINISTRA",
+      "right": "DESTRA",
+      "shift": "MAIUSC"
+    },
+    "collapse": "RIDUCI",
+    "expand": "ESPANDI"
+  },
+  "quests": {
+    "title": "MISSIONI",
+    "tabs": {
+      "all": "TUTTE",
+      "main": "PRINCIPALI",
+      "side": "SECONDARIE",
+      "misc": "VARIE"
+    },
+    "type": {
+      "Main": "Missione principale",
+      "Side": "Missione secondaria",
+      "Misc": "Missione varia",
+      "Event": "Evento",
+      "Daily": "Missione giornaliera",
+      "Unknown": "Missione",
+      "completed": "Missione (Completata)"
+    },
+    "emptyActive": {
+      "all": "NESSUNA MISSIONE ATTIVA",
+      "main": "NESSUNA MISSIONE PRINCIPALE ATTIVA",
+      "side": "NESSUNA MISSIONE SECONDARIA ATTIVA",
+      "misc": "NESSUNA MISSIONE VARIA ATTIVA"
+    },
+    "empty": {
+      "all": "NESSUNA MISSIONE",
+      "main": "NESSUNA MISSIONE PRINCIPALE",
+      "side": "NESSUNA MISSIONE SECONDARIA",
+      "misc": "NESSUNA MISSIONE VARIA"
+    },
+    "sortMode": {
+      "recent": "RECENTI",
+      "alphabetical": "A-Z",
+      "active": "ATTIVE"
+    },
+    "controls": {
+      "toggleActive": "ATTIVA / DISATTIVA",
+      "makeOnlyActive": "ATTIVA SOLO QUESTA",
+      "centerObjective": "CENTRA OBIETTIVO"
+    },
+    "card": {
+      "journal": "DIARIO",
+      "objectives": "OBIETTIVI"
+    }
+  },
+  "workshops": {
+    "title": "INSEDIAMENTI",
+    "tabs": {
+      "all": "TUTTI",
+      "owned": "POSSEDUTI",
+      "unowned": "NON POSSEDUTI"
+    },
+    "empty": "NESSUN INSEDIAMENTO",
+    "stats": {
+      "happiness": "FELICITÀ",
+      "population": "POPOLAZIONE",
+      "food": "CIBO",
+      "water": "ACQUA",
+      "power": "ENERGIA",
+      "defense": "DIFESA",
+      "beds": "LETTI"
+    },
+    "subtitle": {
+      "raider": "Avamposto predoni",
+      "vassal": "Insediamento vassallo",
+      "vr": "Officina VR",
+      "default": "Insediamento"
+    },
+    "sortMode": {
+      "attention": "ATTENZIONE",
+      "alphabetical": "A-Z",
+      "happiness": "FELICITÀ",
+      "population": "POPOLAZIONE"
+    }
+  },
+  "search": {
+    "title": "CERCA",
+    "placeholder": "INSERISCI TESTO...",
+    "clear": "CANCELLA",
+    "noResults": "NESSUN RISULTATO TROVATO",
+    "empty": "NESSUNA CRONOLOGIA DI RICERCA",
+    "tabs": {
+      "markers": "MARCATORI",
+      "quests": "MISSIONI",
+      "workshops": "INSEDIAMENTI"
+    },
+    "resultType": {
+      "location": "Luogo",
+      "powerArmor": "Armatura atomica",
+      "customMarker": "Marcatore personalizzato"
+    }
+  },
+  "fastTravel": {
+    "confirm": "Viaggio rapido verso {{location}}?",
+    "errors": {
+      "SUCCESS": "",
+      "PLAYER_DEAD": "Impossibile effettuare il viaggio rapido al momento.",
+      "COMBAT": "Impossibile effettuare il viaggio rapido con nemici nelle vicinanze.",
+      "INTERIOR": "Impossibile effettuare il viaggio rapido da questa posizione.",
+      "SURVIVAL": "Impossibile effettuare il viaggio rapido verso questa posizione.",
+      "OVERBURDENED": "Stai trasportando troppo peso per il viaggio rapido!",
+      "QUEST_LOCKED": "Il viaggio rapido non è attualmente disponibile da questa posizione.",
+      "UNKNOWN_ERROR": "Impossibile effettuare il viaggio rapido al momento."
+    }
+  },
+  "markers": {
+    "controls": {
+      "centerMarker": "CENTRA MARCATORE",
+      "fastTravel": "VIAGGIO RAPIDO",
+      "undiscovered": "NON SCOPERTO"
+    },
+    "customMarker": {
+      "placePrompt": "Piazzare un marcatore?",
+      "removePrompt": "Rimuovere il marcatore attuale?",
+      "movePrompt": "Spostare il marcatore attuale o rimuoverlo?",
+      "placeMarker": "PIAZZA MARCATORE",
+      "moveMarker": "SPOSTA MARCATORE",
+      "removeMarker": "RIMUOVI MARCATORE",
+      "cancel": "ANNULLA"
+    }
+  },
+  "settlements": {
+    "card": {
+      "location": "POSIZIONE",
+      "stats": "STATISTICHE"
+    }
+  },
+  "info": {
+    "unknownWorldspace": "Sconosciuto"
+  }
+}

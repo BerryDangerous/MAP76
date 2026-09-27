@@ -1,0 +1,213 @@
+{
+  "settings": {
+    "tabs": {
+      "DISPLAY": "ANZEIGE",
+      "GAMEPLAY": "GAMEPLAY",
+      "MAPS": "KARTEN",
+      "DEBUG": "DEBUG"
+    },
+    "labels": {
+      "uiScale": "Interface-Skalierung",
+      "markerSize": "Kartensymbolgröße",
+      "hideInactiveQuestMarkers": "Inaktive Quest-Markierungen ausblenden",
+      "focusMarkerOnSelection": "Markierung bei Listenauswahl zentrieren",
+      "resetViewportOnPanelCollapse": "Kartenposition beim Schließen des Fensters zurücksetzen",
+      "limitQuestPanelHeight": "Quest-Fensterhöhe begrenzen",
+      "alternativeMapSound": "Alternativer Kartenwechselsound",
+      "dummySlider": "Platzhalter-Schieberegler",
+      "freezeSimulation": "Spiel im Kartenmenü pausieren",
+      "confirmFastTravel": "Schnellreise-Bestätigung",
+      "skipSurvivalFastTravelCheck": "Schnellreise-Überprüfung im Überlebensmodus überspringen",
+      "writePayloadToFile": "Nutzdaten in Datei schreiben",
+      "showWorkshopInfoLog": "Werkstatt-Infoprotokoll anzeigen",
+      "mapStyle": "{{name}} Kartenstil",
+      "language": "Sprache",
+      "controllerStyle": "Controller-Symbole",
+      "gamepadCursorSpeed": "Gamepad-Cursor-Geschwindigkeit",
+      "gamepadPanSensitivity": "Gamepad-Kartenrand-Schwenkempfindlichkeit",
+      "compactPanels": "Kompakte Panels"
+    },
+    "options": {
+      "none": "KEINER",
+      "xbox": "Xbox",
+      "playstation": "PlayStation"
+    },
+    "languageName": "Deutsch"
+  },
+  "controls": {
+    "actions": {
+      "up": "BEWEGEN",
+      "down": "BEWEGEN",
+      "left": "BEWEGEN",
+      "right": "BEWEGEN",
+      "back": "ZURÜCK",
+      "prevTab": "VORHERIGER REITER",
+      "nextTab": "NÄCHSTER REITER",
+      "select": "AUSWÄHLEN",
+      "collapse": "EINKLAPPEN",
+      "expand": "AUSKLAPPEN",
+      "close": "SCHLIESSEN",
+      "placeMarker": "MARKIERUNG SETZEN",
+      "zoomIn": "HERANZOOMEN",
+      "zoomOut": "HERAUSZOOMEN",
+      "move": "KARTE VERSCHIEBEN",
+      "centerPlayer": "SPIELER ZENTRIEREN",
+      "centerObjective": "ZIEL ZENTRIEREN",
+      "settings": "EINSTELLUNGEN ÖFFNEN",
+      "defaults": "ZURÜCKSETZEN",
+      "toggleActive": "AKTIVIEREN / DEAKTIVIEREN",
+      "supplyLines": "VERSORGUNGSLINIEN",
+      "prevWorld": "VORHERIGE KARTE",
+      "nextWorld": "NÄCHSTE KARTE",
+      "sort": "SORTIEREN",
+      "yes": "JA",
+      "no": "NEIN",
+      "ok": "OK",
+      "on": "EIN",
+      "off": "AUS",
+      "menu": "MENÜ",
+      "layout": "LAYOUTS"
+    },
+    "keys": {
+      "space": "LEERTASTE",
+      "tab": "TAB",
+      "enter": "EINGABE",
+      "up": "HOCH",
+      "down": "RUNTER",
+      "left": "LINKS",
+      "right": "RECHTS",
+      "shift": "UMSCHALT"
+    },
+    "collapse": "EINKLAPPEN",
+    "expand": "AUSKLAPPEN"
+  },
+  "quests": {
+    "title": "QUESTS",
+    "tabs": {
+      "all": "ALLE",
+      "main": "HAUPT",
+      "side": "NEBEN",
+      "misc": "SONSTIGE"
+    },
+    "type": {
+      "Main": "Hauptquest",
+      "Side": "Nebenquest",
+      "Misc": "Sonstige Quest",
+      "Event": "Ereignis",
+      "Daily": "Tägliche Quest",
+      "Unknown": "Quest",
+      "completed": "Quest (Abgeschlossen)"
+    },
+    "emptyActive": {
+      "all": "KEINE AKTIVEN QUESTS",
+      "main": "KEINE AKTIVEN HAUPTQUESTS",
+      "side": "KEINE AKTIVEN NEBENQUESTS",
+      "misc": "KEINE AKTIVEN SONSTIGEN QUESTS"
+    },
+    "empty": {
+      "all": "KEINE QUESTS",
+      "main": "KEINE HAUPTQUESTS",
+      "side": "KEINE NEBENQUESTS",
+      "misc": "KEINE SONSTIGEN QUESTS"
+    },
+    "sortMode": {
+      "recent": "KÜRZLICH",
+      "alphabetical": "A–Z",
+      "active": "AKTIV"
+    },
+    "controls": {
+      "toggleActive": "AKTIVIEREN / DEAKTIVIEREN",
+      "makeOnlyActive": "NUR DIESE AKTIVIEREN",
+      "centerObjective": "ZIEL ZENTRIEREN"
+    },
+    "card": {
+      "journal": "TAGEBUCH",
+      "objectives": "ZIELE"
+    }
+  },
+  "workshops": {
+    "title": "SIEDLUNGEN",
+    "tabs": {
+      "all": "ALLE",
+      "owned": "EIGENE",
+      "unowned": "FREIE"
+    },
+    "empty": "KEINE SIEDLUNGEN",
+    "stats": {
+      "happiness": "ZUFRIEDENHEIT",
+      "population": "BEVÖLKERUNG",
+      "food": "NAHRUNG",
+      "water": "WASSER",
+      "power": "ENERGIE",
+      "defense": "VERTEIDIGUNG",
+      "beds": "BETTEN"
+    },
+    "subtitle": {
+      "raider": "Raider-Außenposten",
+      "vassal": "Vasallensiedlung",
+      "vr": "VR-Werkstatt",
+      "default": "Siedlung"
+    },
+    "sortMode": {
+      "attention": "AUFMERKSAMKEIT",
+      "alphabetical": "A–Z",
+      "happiness": "ZUFRIEDENHEIT",
+      "population": "BEVÖLKERUNG"
+    }
+  },
+  "search": {
+    "title": "SUCHE",
+    "placeholder": "SUCHBEGRIFF EINGEBEN...",
+    "clear": "LÖSCHEN",
+    "noResults": "KEINE ERGEBNISSE GEFUNDEN",
+    "empty": "KEIN SUCHVERLAUF",
+    "tabs": {
+      "markers": "MARKIERUNGEN",
+      "quests": "QUESTS",
+      "workshops": "SIEDLUNGEN"
+    },
+    "resultType": {
+      "location": "Ort",
+      "powerArmor": "Powerrüstung",
+      "customMarker": "Eigene Markierung"
+    }
+  },
+  "fastTravel": {
+    "confirm": "Schnellreise nach {{location}}?",
+    "errors": {
+      "SUCCESS": "",
+      "PLAYER_DEAD": "Du kannst derzeit keine Schnellreise nutzen.",
+      "COMBAT": "Schnellreise nicht möglich, wenn Feinde in der Nähe sind.",
+      "INTERIOR": "Schnellreise von diesem Ort aus nicht möglich.",
+      "SURVIVAL": "Schnellreise zu diesem Ort nicht möglich.",
+      "OVERBURDENED": "Du trägst zu viel und kannst nicht schnellreisen!",
+      "QUEST_LOCKED": "Schnellreise ist von diesem Ort aus derzeit nicht verfügbar.",
+      "UNKNOWN_ERROR": "Du kannst derzeit keine Schnellreise nutzen."
+    }
+  },
+  "markers": {
+    "controls": {
+      "centerMarker": "MARKIERUNG ZENTRIEREN",
+      "fastTravel": "SCHNELLREISE",
+      "undiscovered": "UNENTDECKT"
+    },
+    "customMarker": {
+      "placePrompt": "Markierung setzen?",
+      "removePrompt": "Aktuelle Markierung entfernen?",
+      "movePrompt": "Aktuelle Markierung verschieben oder entfernen?",
+      "placeMarker": "MARKIERUNG SETZEN",
+      "moveMarker": "MARKIERUNG VERSCHIEBEN",
+      "removeMarker": "MARKIERUNG ENTFERNEN",
+      "cancel": "ABBRECHEN"
+    }
+  },
+  "settlements": {
+    "card": {
+      "location": "ORT",
+      "stats": "STATUS"
+    }
+  },
+  "info": {
+    "unknownWorldspace": "Unbekannt"
+  }
+}

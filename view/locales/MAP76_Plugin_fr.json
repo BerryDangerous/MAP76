@@ -1,0 +1,213 @@
+{
+  "settings": {
+    "tabs": {
+      "DISPLAY": "AFFICHAGE",
+      "GAMEPLAY": "JOUABILITÉ",
+      "MAPS": "CARTES",
+      "DEBUG": "DÉBOGAGE"
+    },
+    "labels": {
+      "uiScale": "Échelle de l'interface",
+      "markerSize": "Taille des marqueurs",
+      "hideInactiveQuestMarkers": "Masquer les marqueurs de quêtes inactives",
+      "focusMarkerOnSelection": "Centrer le marqueur lors de la sélection",
+      "resetViewportOnPanelCollapse": "Rétablir la position de la carte à la fermeture du panneau",
+      "limitQuestPanelHeight": "Limiter la hauteur du panneau de quêtes",
+      "alternativeMapSound": "Son alternatif de changement de carte",
+      "dummySlider": "Curseur fictif",
+      "freezeSimulation": "Mettre le jeu en pause sur la carte",
+      "confirmFastTravel": "Confirmation de voyage rapide",
+      "skipSurvivalFastTravelCheck": "Ignorer la vérification de voyage rapide en Survie",
+      "writePayloadToFile": "Écrire la charge utile dans un fichier",
+      "showWorkshopInfoLog": "Afficher le journal d'infos de l'atelier",
+      "mapStyle": "Style de la Carte {{name}}",
+      "language": "Langue",
+      "controllerStyle": "Icônes de la Manette",
+      "gamepadCursorSpeed": "Vitesse du curseur de la manette",
+      "gamepadPanSensitivity": "Sensibilité du défilement de la carte à la manette",
+      "compactPanels": "Panneaux Compacts"
+    },
+    "options": {
+      "none": "AUCUN",
+      "xbox": "Xbox",
+      "playstation": "PlayStation"
+    },
+    "languageName": "Français"
+  },
+  "controls": {
+    "actions": {
+      "up": "DÉPLACER",
+      "down": "DÉPLACER",
+      "left": "DÉPLACER",
+      "right": "DÉPLACER",
+      "back": "RETOUR",
+      "prevTab": "ONGLET PRÉCÉDENT",
+      "nextTab": "ONGLET SUIVANT",
+      "select": "SÉLECTIONNER",
+      "collapse": "RÉDUIRE",
+      "expand": "DÉVELOPPER",
+      "close": "FERMER",
+      "placeMarker": "PLACER MARQUEUR",
+      "zoomIn": "ZOOM AVANT",
+      "zoomOut": "ZOOM ARRIÈRE",
+      "move": "DÉPLACER CARTE",
+      "centerPlayer": "CENTRER JOUEUR",
+      "centerObjective": "CENTRER OBJECTIF",
+      "settings": "PARAMÈTRES",
+      "defaults": "RÉINITIALISER",
+      "toggleActive": "ACTIVER / DÉSACTIVER",
+      "supplyLines": "VOIES DE RAVITAILLEMENT",
+      "prevWorld": "CARTE PRÉCÉDENTE",
+      "nextWorld": "CARTE SUIVANTE",
+      "sort": "TRIER",
+      "yes": "OUI",
+      "no": "NON",
+      "ok": "OK",
+      "on": "ACTIVÉ",
+      "off": "DÉSACTIVÉ",
+      "menu": "MENU",
+      "layout": "DISPOSITIONS"
+    },
+    "keys": {
+      "space": "ESPACE",
+      "tab": "TAB",
+      "enter": "ENTRÉE",
+      "up": "HAUT",
+      "down": "BAS",
+      "left": "GAUCHE",
+      "right": "DROITE",
+      "shift": "MAJ"
+    },
+    "collapse": "RÉDUIRE",
+    "expand": "DÉVELOPPER"
+  },
+  "quests": {
+    "title": "QUÊTES",
+    "tabs": {
+      "all": "TOUTES",
+      "main": "PRINCIPALES",
+      "side": "SECONDAIRES",
+      "misc": "DIVERS"
+    },
+    "type": {
+      "Main": "Quête principale",
+      "Side": "Quête secondaire",
+      "Misc": "Quête diverse",
+      "Event": "Événement",
+      "Daily": "Quête quotidienne",
+      "Unknown": "Quête",
+      "completed": "Quête (Terminée)"
+    },
+    "emptyActive": {
+      "all": "AUCUNE QUÊTE ACTIVE",
+      "main": "AUCUNE QUÊTE PRINCIPALE ACTIVE",
+      "side": "AUCUNE QUÊTE SECONDAIRE ACTIVE",
+      "misc": "AUCUNE QUÊTE DIVERSE ACTIVE"
+    },
+    "empty": {
+      "all": "AUCUNE QUÊTE",
+      "main": "AUCUNE QUÊTE PRINCIPALE",
+      "side": "AUCUNE QUÊTE SECONDAIRE",
+      "misc": "AUCUNE QUÊTE DIVERSE"
+    },
+    "sortMode": {
+      "recent": "RÉCENTES",
+      "alphabetical": "A-Z",
+      "active": "ACTIVES"
+    },
+    "controls": {
+      "toggleActive": "ACTIVER / DÉSACTIVER",
+      "makeOnlyActive": "ACTIVER CETTE QUÊTE UNIQUEMENT",
+      "centerObjective": "CENTRER OBJECTIF"
+    },
+    "card": {
+      "journal": "JOURNAL",
+      "objectives": "OBJECTIFS"
+    }
+  },
+  "workshops": {
+    "title": "COLONIES",
+    "tabs": {
+      "all": "TOUTES",
+      "owned": "POSSÉDÉES",
+      "unowned": "NON POSSÉDÉES"
+    },
+    "empty": "AUCUNE COLONIE",
+    "stats": {
+      "happiness": "BONHEUR",
+      "population": "POPULATION",
+      "food": "NOURRITURE",
+      "water": "EAU",
+      "power": "ÉNERGIE",
+      "defense": "DÉFENSE",
+      "beds": "LITS"
+    },
+    "subtitle": {
+      "raider": "Avant-poste de pillards",
+      "vassal": "Colonie vassale",
+      "vr": "Atelier RV",
+      "default": "Colonie"
+    },
+    "sortMode": {
+      "attention": "ATTENTION REQUISE",
+      "alphabetical": "A-Z",
+      "happiness": "BONHEUR",
+      "population": "POPULATION"
+    }
+  },
+  "search": {
+    "title": "RECHERCHER",
+    "placeholder": "RECHERCHER...",
+    "clear": "EFFACER",
+    "noResults": "AUCUN RÉSULTAT TROUVÉ",
+    "empty": "AUCUN HISTORIQUE DE RECHERCHE",
+    "tabs": {
+      "markers": "MARQUEURS",
+      "quests": "QUÊTES",
+      "workshops": "COLONIES"
+    },
+    "resultType": {
+      "location": "Lieu",
+      "powerArmor": "Armure assistée",
+      "customMarker": "Marqueur personnalisé"
+    }
+  },
+  "fastTravel": {
+    "confirm": "Voyage rapide vers {{location}} ?",
+    "errors": {
+      "SUCCESS": "",
+      "PLAYER_DEAD": "Impossible de faire un voyage rapide pour le moment.",
+      "COMBAT": "Impossible de faire un voyage rapide avec des ennemis proches.",
+      "INTERIOR": "Impossible de faire un voyage rapide depuis cet endroit.",
+      "SURVIVAL": "Impossible de faire un voyage rapide vers cet endroit.",
+      "OVERBURDENED": "Vous portez trop de poids pour voyager rapidement !",
+      "QUEST_LOCKED": "Le voyage rapide est indisponible depuis cet endroit.",
+      "UNKNOWN_ERROR": "Impossible de faire un voyage rapide pour le moment."
+    }
+  },
+  "markers": {
+    "controls": {
+      "centerMarker": "CENTRER MARQUEUR",
+      "fastTravel": "VOYAGE RAPIDE",
+      "undiscovered": "NON DÉCOUVERT"
+    },
+    "customMarker": {
+      "placePrompt": "Placer un marqueur ?",
+      "removePrompt": "Supprimer le marqueur actuel ?",
+      "movePrompt": "Déplacer ou supprimer le marqueur actuel ?",
+      "placeMarker": "PLACER MARQUEUR",
+      "moveMarker": "DÉPLACER MARQUEUR",
+      "removeMarker": "SUPPRIMER MARQUEUR",
+      "cancel": "ANNULER"
+    }
+  },
+  "settlements": {
+    "card": {
+      "location": "LIEU",
+      "stats": "STATS"
+    }
+  },
+  "info": {
+    "unknownWorldspace": "Inconnu"
+  }
+}

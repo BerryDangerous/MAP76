@@ -1,0 +1,213 @@
+{
+  "settings": {
+    "tabs": {
+      "DISPLAY": "EKRAN",
+      "GAMEPLAY": "ROZGRYWKA",
+      "MAPS": "MAPY",
+      "DEBUG": "DEBUGOWANIE"
+    },
+    "labels": {
+      "uiScale": "Skala interfejsu",
+      "markerSize": "Rozmiar znaczników mapy",
+      "hideInactiveQuestMarkers": "Ukryj znaczniki nieaktywnych zadań",
+      "focusMarkerOnSelection": "Wyśrodkuj znacznik po wybraniu z listy",
+      "resetViewportOnPanelCollapse": "Przywróć pozycję mapy po zamknięciu panelu",
+      "limitQuestPanelHeight": "Ogranicz wysokość panelu zadań",
+      "alternativeMapSound": "Alternatywny dźwięk zmiany mapy",
+      "dummySlider": "Suwak testowy",
+      "freezeSimulation": "Pauza w menu mapy",
+      "confirmFastTravel": "Potwierdzenie szybkiej podróży",
+      "skipSurvivalFastTravelCheck": "Pomiń sprawdzanie szybkiej podróży w trybie Przetrwania",
+      "writePayloadToFile": "Zapisz dane w pliku",
+      "showWorkshopInfoLog": "Pokaż dziennik informacji warsztatu",
+      "mapStyle": "Styl mapy {{name}}",
+      "language": "Język",
+      "controllerStyle": "Ikony Kontrolera",
+      "gamepadCursorSpeed": "Szybkość kursora na kontrolerze",
+      "gamepadPanSensitivity": "Czułość przesuwania mapy na kontrolerze",
+      "compactPanels": "Kompaktowe panele"
+    },
+    "options": {
+      "none": "BRAK",
+      "xbox": "Xbox",
+      "playstation": "PlayStation"
+    },
+    "languageName": "Polski"
+  },
+  "controls": {
+    "actions": {
+      "up": "RUCH",
+      "down": "RUCH",
+      "left": "RUCH",
+      "right": "RUCH",
+      "back": "WSTECZ",
+      "prevTab": "POPRZEDNIA ZAKŁADKA",
+      "nextTab": "NASTĘPNA ZAKŁADKA",
+      "select": "WYBIERZ",
+      "collapse": "ZWIŃ",
+      "expand": "ROZWIŃ",
+      "close": "ZAMKNIJ",
+      "placeMarker": "POSTAW ZNACZNIK",
+      "zoomIn": "PRZYBLIŻ",
+      "zoomOut": "ODDALAJ",
+      "move": "PRZESUŃ MAPĘ",
+      "centerPlayer": "WYŚRODKUJ GRACZA",
+      "centerObjective": "WYŚRODKUJ CEL",
+      "settings": "OTWÓRZ USTAWIENIA",
+      "defaults": "RESETUJ",
+      "toggleActive": "PRZEŁĄCZ AKTYWNOŚĆ",
+      "supplyLines": "SZLAKI ZAOPATRZENIOWE",
+      "prevWorld": "POPRZEDNIA MAPA",
+      "nextWorld": "NASTĘPNA MAPA",
+      "sort": "SORTUJ",
+      "yes": "TAK",
+      "no": "NIE",
+      "ok": "OK",
+      "on": "WŁ.",
+      "off": "WYŁ.",
+      "menu": "MENU",
+      "layout": "UKŁADY"
+    },
+    "keys": {
+      "space": "SPACJA",
+      "tab": "TAB",
+      "enter": "ENTER",
+      "up": "W GÓRĘ",
+      "down": "W DÓŁ",
+      "left": "W LEWO",
+      "right": "W PRAWO",
+      "shift": "SHIFT"
+    },
+    "collapse": "ZWIŃ",
+    "expand": "ROZWIŃ"
+  },
+  "quests": {
+    "title": "ZADANIA",
+    "tabs": {
+      "all": "WSZYSTKIE",
+      "main": "GŁÓWNE",
+      "side": "POBOCZNE",
+      "misc": "RÓŻNE"
+    },
+    "type": {
+      "Main": "Zadanie główne",
+      "Side": "Zadanie poboczne",
+      "Misc": "Zadanie różne",
+      "Event": "Wydarzenie",
+      "Daily": "Zadanie codzienne",
+      "Unknown": "Zadanie",
+      "completed": "Zadanie (Ukończone)"
+    },
+    "emptyActive": {
+      "all": "BRAK AKTYWNYCH ZADAŃ",
+      "main": "BRAK AKTYWNYCH ZADAŃ GŁÓWNYCH",
+      "side": "BRAK AKTYWNYCH ZADAŃ POBOCZNYCH",
+      "misc": "BRAK AKTYWNYCH ZADAŃ RÓŻNYCH"
+    },
+    "empty": {
+      "all": "BRAK ZADAŃ",
+      "main": "BRAK ZADAŃ GŁÓWNYCH",
+      "side": "BRAK ZADAŃ POBOCZNYCH",
+      "misc": "BRAK ZADAŃ RÓŻNYCH"
+    },
+    "sortMode": {
+      "recent": "OSTATNIE",
+      "alphabetical": "A-Z",
+      "active": "AKTYWNE"
+    },
+    "controls": {
+      "toggleActive": "PRZEŁĄCZ AKTYWNOŚĆ",
+      "makeOnlyActive": "TYLKO TO JAKO AKTYWNE",
+      "centerObjective": "WYŚRODKUJ CEL"
+    },
+    "card": {
+      "journal": "DZIENNIK",
+      "objectives": "CELE"
+    }
+  },
+  "workshops": {
+    "title": "OSADY",
+    "tabs": {
+      "all": "WSZYSTKIE",
+      "owned": "POSIADANE",
+      "unowned": "NIEPOSIADANE"
+    },
+    "empty": "BRAK OSAD",
+    "stats": {
+      "happiness": "ZADOWOLENIE",
+      "population": "POPULACJA",
+      "food": "JEDZENIE",
+      "water": "WODA",
+      "power": "MOC",
+      "defense": "OBRONA",
+      "beds": "ŁÓŻKA"
+    },
+    "subtitle": {
+      "raider": "Placówka bandytów",
+      "vassal": "Osada wasalna",
+      "vr": "Warsztat VR",
+      "default": "Osada"
+    },
+    "sortMode": {
+      "attention": "UWAGA",
+      "alphabetical": "A-Z",
+      "happiness": "ZADOWOLENIE",
+      "population": "POPULACJA"
+    }
+  },
+  "search": {
+    "title": "SZUKAJ",
+    "placeholder": "WPISZ FRAZĘ...",
+    "clear": "WYCZYŚĆ",
+    "noResults": "BRAK WYNIKÓW",
+    "empty": "BRAK HISTORII WYSZUKIWANIA",
+    "tabs": {
+      "markers": "ZNACZNIKI",
+      "quests": "ZADANIA",
+      "workshops": "OSADY"
+    },
+    "resultType": {
+      "location": "Lokalizacja",
+      "powerArmor": "Pancerz wspomagany",
+      "customMarker": "Własny znacznik"
+    }
+  },
+  "fastTravel": {
+    "confirm": "Szybka podróż do: {{location}}?",
+    "errors": {
+      "SUCCESS": "",
+      "PLAYER_DEAD": "Nie możesz teraz skorzystać z szybkiej podróży.",
+      "COMBAT": "Nie możesz podróżować, gdy w pobliżu są wrogowie.",
+      "INTERIOR": "Nie możesz podróżować z tej lokacji.",
+      "SURVIVAL": "Nie możesz podróżować do tej lokacji.",
+      "OVERBURDENED": "Masz zbyt duże obciążenie, aby podróżować!",
+      "QUEST_LOCKED": "Szybka podróż jest obecnie niedostępna z tego miejsca.",
+      "UNKNOWN_ERROR": "Nie możesz teraz skorzystać z szybkiej podróży."
+    }
+  },
+  "markers": {
+    "controls": {
+      "centerMarker": "WYŚRODKUJ ZNACZNIK",
+      "fastTravel": "SZYBKA PODRÓŻ",
+      "undiscovered": "NIEODKRYTE"
+    },
+    "customMarker": {
+      "placePrompt": "Postawić znacznik?",
+      "removePrompt": "Usunąć obecny znacznik?",
+      "movePrompt": "Przesunąć obecny znacznik czy go usunąć?",
+      "placeMarker": "POSTAW ZNACZNIK",
+      "moveMarker": "PRZESUŃ ZNACZNIK",
+      "removeMarker": "USUŃ ZNACZNIK",
+      "cancel": "ANULUJ"
+    }
+  },
+  "settlements": {
+    "card": {
+      "location": "LOKALIZACJA",
+      "stats": "STATYSTYKI"
+    }
+  },
+  "info": {
+    "unknownWorldspace": "Nieznane"
+  }
+}
