@@ -8,6 +8,7 @@ export interface AppSettings {
     skipSurvivalFastTravelCheck: boolean;
     alternativeMapSound: boolean;
     limitQuestPanelHeight: boolean;
+    compactPanels: boolean;
     hideInactiveQuestMarkers: boolean;
     writePayloadToFile: boolean;
     showWorkshopInfoLog: boolean;
@@ -27,6 +28,7 @@ export const defaultSettings: AppSettings = {
     skipSurvivalFastTravelCheck: false,
     alternativeMapSound: false,
     limitQuestPanelHeight: false,
+    compactPanels: false,
     hideInactiveQuestMarkers: false,
     writePayloadToFile: false,
     showWorkshopInfoLog: false,
@@ -50,6 +52,12 @@ export function updateSettings(newSettings: Partial<AppSettings>) {
 function applySettings() {
     document.documentElement.style.setProperty('--ui-scale', appSettings.uiScale.toString());
     document.documentElement.style.setProperty('--marker-size-mult', appSettings.markerSize.toString());
+    
+    if (appSettings.compactPanels) {
+        document.body.classList.add('compact-panels');
+    } else {
+        document.body.classList.remove('compact-panels');
+    }
     
     const questPanel = document.getElementById('quest-list-panel');
     if (questPanel) {

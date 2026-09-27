@@ -547,6 +547,7 @@ body.controller-active .collapsible-panel .cp-collapse-btn:hover .cp-btn-icon {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 10px;
     width: 100%;
     height: 30px;
     min-height: 30px;
@@ -592,6 +593,20 @@ body.controller-active .collapsible-panel .cp-collapse-btn:hover .cp-btn-icon {
 .collapsible-panel.dimmed {
     filter: brightness(0.4);
     transition: filter 0.15s ease;
+}
+
+body.compact-panels .collapsible-panel[data-collapsed="true"] {
+    width: max-content !important;
+    min-width: unset !important;
+    max-width: max-content !important;
+}
+
+body.compact-panels .collapsible-panel[data-collapsed="true"] .cp-collapse-text {
+    display: none !important;
+}
+
+body.compact-panels .collapsible-panel[data-collapsed="true"] > *:not(.cp-header) {
+    display: none !important;
 }
 
 

@@ -24,7 +24,8 @@
       "language": "Idioma",
       "controllerStyle": "Ícones do Controle",
       "gamepadCursorSpeed": "Velocidade do Cursor no Controle",
-      "gamepadPanSensitivity": "Sensibilidade de Movimento nas Bordas do Mapa"
+      "gamepadPanSensitivity": "Sensibilidade de Movimento nas Bordas do Mapa",
+      "compactPanels": "Painéis Compactos"
     },
     "options": {
       "none": "NENHUM",

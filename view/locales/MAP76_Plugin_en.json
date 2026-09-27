@@ -24,7 +24,8 @@
       "language": "Language",
       "controllerStyle": "Controller Icons",
       "gamepadCursorSpeed": "Gamepad Cursor Speed",
-      "gamepadPanSensitivity": "Gamepad Map Edge Pan Sensitivity"
+      "gamepadPanSensitivity": "Gamepad Map Edge Pan Sensitivity",
+      "compactPanels": "Compact Panels"
     },
     "options": {
       "none": "NONE",

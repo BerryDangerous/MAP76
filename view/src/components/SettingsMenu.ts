@@ -100,6 +100,9 @@ export const SettingsMenu = {
         const limitQuestToggle = new Toggle(appSettings.limitQuestPanelHeight, (val) => { updateSettings({ limitQuestPanelHeight: val }); });
         registerControl('limitQuestPanelHeight', t('settings.labels.limitQuestPanelHeight'), 'DISPLAY', limitQuestToggle);
 
+        const compactPanelsToggle = new Toggle(appSettings.compactPanels, (val) => { updateSettings({ compactPanels: val }); });
+        registerControl('compactPanels', t('settings.labels.compactPanels', { defaultValue: 'Compact Panels' }), 'DISPLAY', compactPanelsToggle);
+
         const altSoundToggle = new Toggle(appSettings.alternativeMapSound, (val) => { updateSettings({ alternativeMapSound: val }); });
         registerControl('alternativeMapSound', t('settings.labels.alternativeMapSound'), 'DISPLAY', altSoundToggle);
 
