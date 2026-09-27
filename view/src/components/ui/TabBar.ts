@@ -44,10 +44,20 @@ export class TabBar<T = string> {
         this.render();
     }
 
-    public setActiveTab(tabId: T): void {
+    public setActiveTab(tabId: T, playSound: boolean = true): void {
         if (this.options.activeTabId === tabId) return;
         const targetTab = this.options.tabs.find(t => t.id === tabId);
         if (!targetTab) return;
+
+        if (playSound) {
+            const currentIndex = this.options.tabs.findIndex(t => t.id === this.options.activeTabId);
+            const targetIndex = this.options.tabs.findIndex(t => t.id === tabId);
+            if (targetIndex > currentIndex) {
+                EngineBridge.emitSound('UIPipBoyRotaryVerticalUp');
+            } else if (targetIndex < currentIndex) {
+                EngineBridge.emitSound('UIPipBoyRotaryVerticalDown');
+            }
+        }
 
         this.options.activeTabId = tabId;
         this.updateDOMSelection();
@@ -61,7 +71,6 @@ export class TabBar<T = string> {
     public nextTab(): void {
         const currentIndex = this.options.tabs.findIndex(t => t.id === this.options.activeTabId);
         if (currentIndex < this.options.tabs.length - 1) {
-            EngineBridge.emitSound('UIPipBoyRotaryVerticalUp');
             this.setActiveTab(this.options.tabs[currentIndex + 1].id);
         }
     }
@@ -69,7 +78,6 @@ export class TabBar<T = string> {
     public prevTab(): void {
         const currentIndex = this.options.tabs.findIndex(t => t.id === this.options.activeTabId);
         if (currentIndex > 0) {
-            EngineBridge.emitSound('UIPipBoyRotaryVerticalDown');
             this.setActiveTab(this.options.tabs[currentIndex - 1].id);
         }
     }
