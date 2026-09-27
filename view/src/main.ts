@@ -14,6 +14,7 @@ import { ModalManager } from '@/systems/modalManager.js';
 import { MapViewport } from '@/systems/viewport.js';
 
 import { MapUtils } from '@/utils/mapUtils.js';
+import { injectSVGFilters } from '@/utils/svgFilters.js';
 
 import { ControlBar } from '@/components/ControlsBar.js';
 import { CustomMarkerCard } from '@/components/CustomMarkerCard.js';
@@ -138,6 +139,7 @@ function initCustomCursor() {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
+    injectSVGFilters();
     initCustomCursor();
     MapViewport.initEvents();
     MarkerInteractionManager.initEvents();

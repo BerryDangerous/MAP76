@@ -321,13 +321,15 @@ body, html {
     transform: translate(-50%, 0);
     color: #ffffcb;
     font-family: var(--main-font, 'PibotoCondensed', sans-serif);
-    font-size: 20px;
-    text-shadow: 1.5px 1.5px 0 rgba(0, 0, 0, 0.8);
+    font-size: 28px;
+    filter: url('#fo76-text-shadow');
+    padding: 20px;
+    margin-top: -20px;
     white-space: nowrap;
     pointer-events: none;
     opacity: 0;
     visibility: hidden;
-    will-change: opacity, transform;
+    will-change: opacity, filter, transform;
     backface-visibility: hidden;
     zoom: var(--ui-scale, 1.0);
 }
