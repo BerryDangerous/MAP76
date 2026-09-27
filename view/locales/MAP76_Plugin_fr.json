@@ -25,7 +25,8 @@
       "controllerStyle": "Icônes de la Manette",
       "gamepadCursorSpeed": "Vitesse du curseur de la manette",
       "gamepadPanSensitivity": "Sensibilité du défilement de la carte à la manette",
-      "compactPanels": "Panneaux Compacts"
+      "compactPanels": "Panneaux Compacts",
+      "centerOnPlayerWhenOpened": "Centrer sur le joueur à l'ouverture"
     },
     "options": {
       "none": "AUCUN",

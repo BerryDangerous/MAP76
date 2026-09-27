@@ -25,7 +25,8 @@
       "controllerStyle": "コントローラーのアイコン",
       "gamepadCursorSpeed": "ゲームパッドのカーソル速度",
       "gamepadPanSensitivity": "ゲームパッドのマップスクロール感度",
-      "compactPanels": "コンパクトパネル"
+      "compactPanels": "コンパクトパネル",
+      "centerOnPlayerWhenOpened": "開いたときにプレイヤーを中心に"
     },
     "options": {
       "none": "なし",

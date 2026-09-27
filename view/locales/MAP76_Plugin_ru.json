@@ -25,7 +25,8 @@
       "controllerStyle": "Значки Контроллера",
       "gamepadCursorSpeed": "Скорость курсора геймпада",
       "gamepadPanSensitivity": "Чувствительность панорамирования карты",
-      "compactPanels": "Компактные панели"
+      "compactPanels": "Компактные панели",
+      "centerOnPlayerWhenOpened": "Центрировать на игроке при открытии"
     },
     "options": {
       "none": "НЕТ",

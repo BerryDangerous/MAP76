@@ -38,5 +38,6 @@ export const mapState = {
     selectedWorldspaceID: null as number | null,
     lastPayload: null as F4SEMapPayload | null,
 
-    animatedElements: [] as HTMLElement[]
+    animatedElements: [] as HTMLElement[],
+    pendingCenterOnPlayer: true
 };

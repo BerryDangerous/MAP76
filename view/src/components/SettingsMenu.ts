@@ -97,6 +97,9 @@ export const SettingsMenu = {
         const resetViewportToggle = new Toggle(appSettings.resetViewportOnPanelCollapse, (val) => { updateSettings({ resetViewportOnPanelCollapse: val }); });
         registerControl('resetViewportOnPanelCollapse', t('settings.labels.resetViewportOnPanelCollapse'), 'DISPLAY', resetViewportToggle);
 
+        const centerOnPlayerToggle = new Toggle(appSettings.centerOnPlayerWhenOpened, (val) => { updateSettings({ centerOnPlayerWhenOpened: val }); });
+        registerControl('centerOnPlayerWhenOpened', t('settings.labels.centerOnPlayerWhenOpened', { defaultValue: 'Center on Player when Opened' }), 'DISPLAY', centerOnPlayerToggle);
+
         const limitQuestToggle = new Toggle(appSettings.limitQuestPanelHeight, (val) => { updateSettings({ limitQuestPanelHeight: val }); });
         registerControl('limitQuestPanelHeight', t('settings.labels.limitQuestPanelHeight'), 'DISPLAY', limitQuestToggle);
 

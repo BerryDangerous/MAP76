@@ -10,6 +10,7 @@ export interface AppSettings {
     limitQuestPanelHeight: boolean;
     compactPanels: boolean;
     hideInactiveQuestMarkers: boolean;
+    centerOnPlayerWhenOpened: boolean;
     writePayloadToFile: boolean;
     showWorkshopInfoLog: boolean;
     gamepadPanSensitivity: number;
@@ -30,6 +31,7 @@ export const defaultSettings: AppSettings = {
     limitQuestPanelHeight: false,
     compactPanels: false,
     hideInactiveQuestMarkers: false,
+    centerOnPlayerWhenOpened: true,
     writePayloadToFile: false,
     showWorkshopInfoLog: false,
     gamepadPanSensitivity: 0.5,

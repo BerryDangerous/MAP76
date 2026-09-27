@@ -165,7 +165,10 @@ export function loadMarkers(payload: F4SEMapPayload, isSwitchingWorld: boolean =
     }
 
     applySupplyLinesVisibilityFilter();
-    if (isSwitchingWorld) {
+    if (mapState.pendingCenterOnPlayer && mapState.player.active) {
+        MapViewport.centerOnWorldCoords(mapState.player.x, mapState.player.y);
+        mapState.pendingCenterOnPlayer = false;
+    } else if (isSwitchingWorld) {
         const saved = mapState.worldViewports[config.worldspaceID];
         if (saved) {
             mapState.zoom = saved.zoom;

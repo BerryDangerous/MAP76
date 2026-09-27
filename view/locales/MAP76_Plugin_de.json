@@ -25,7 +25,8 @@
       "controllerStyle": "Controller-Symbole",
       "gamepadCursorSpeed": "Gamepad-Cursor-Geschwindigkeit",
       "gamepadPanSensitivity": "Gamepad-Kartenrand-Schwenkempfindlichkeit",
-      "compactPanels": "Kompakte Panels"
+      "compactPanels": "Kompakte Panels",
+      "centerOnPlayerWhenOpened": "Beim Öffnen auf Spieler zentrieren"
     },
     "options": {
       "none": "KEINER",

@@ -25,7 +25,8 @@
       "controllerStyle": "控制器图标",
       "gamepadCursorSpeed": "手柄光标速度",
       "gamepadPanSensitivity": "手柄地图边缘平移灵敏度",
-      "compactPanels": "紧凑面板"
+      "compactPanels": "紧凑面板",
+      "centerOnPlayerWhenOpened": "打开时以玩家为中心"
     },
     "options": {
       "none": "无",

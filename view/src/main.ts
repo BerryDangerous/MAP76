@@ -47,12 +47,28 @@ export function onMapOpened(): void {
     if (!mapClosedFlag) return;
     mapClosedFlag = false;
     EngineBridge.emitSound(appSettings.alternativeMapSound ? 'UIGeneralFocus' : 'UIPerkMenuEnter');
+    
+    if (appSettings.centerOnPlayerWhenOpened) {
+        if (mapState.player && mapState.player.active) {
+            MapViewport.centerOnWorldCoords(mapState.player.x, mapState.player.y);
+        } else {
+            mapState.pendingCenterOnPlayer = true;
+        }
+    }
 }
 
 export function onMapClosed(): void {
     if (mapClosedFlag) return;
     mapClosedFlag = true;
     EngineBridge.emitSound(appSettings.alternativeMapSound ? 'UIGeneralFocus' : 'UIPerkMenuExit');
+    
+    if (appSettings.centerOnPlayerWhenOpened) {
+        mapState.selectedWorldspaceID = null;
+        if (mapState.lastPayload) {
+            mapState.pendingCenterOnPlayer = true;
+            loadMarkers(mapState.lastPayload, true);
+        }
+    }
 }
 
 (window as any).onMapOpened = onMapOpened;

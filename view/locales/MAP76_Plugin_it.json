@@ -25,7 +25,8 @@
       "controllerStyle": "Icone del Controller",
       "gamepadCursorSpeed": "Velocità cursore del controller",
       "gamepadPanSensitivity": "Sensibilità spostamento mappa del controller",
-      "compactPanels": "Pannelli Compatti"
+      "compactPanels": "Pannelli Compatti",
+      "centerOnPlayerWhenOpened": "Centra sul giocatore all'apertura"
     },
     "options": {
       "none": "NESSUNO",
