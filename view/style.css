@@ -325,7 +325,11 @@ body, html {
     filter: url('#fo76-text-shadow');
     padding: 20px;
     margin-top: -20px;
-    white-space: nowrap;
+    white-space: normal;
+    text-align: center;
+    text-wrap: balance;
+    width: max-content;
+    max-width: 400px;
     pointer-events: none;
     opacity: 0;
     visibility: hidden;

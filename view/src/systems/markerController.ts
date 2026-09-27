@@ -182,7 +182,7 @@ export const MarkerInteractionManager = {
                 container.style.left = `${rect.left + rect.width / 2}px`;
                 container.style.top = `${rect.bottom}px`;
                 
-                globalTag.textContent = target.dataset.displayName;
+                globalTag.textContent = target.dataset.displayName.replace(/-/g, '\u2011');
 
                 if (!target.classList.contains('menu-active') && !target.classList.contains('hide-tooltip-override')) {
                     globalTag.classList.add('is-visible');
