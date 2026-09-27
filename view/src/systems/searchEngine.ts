@@ -72,6 +72,14 @@ export const SearchEngine = {
             for (const w of payload.settlements) {
                 if (!w.name) continue;
 
+                const marker = payload.markers.find(m => m.formId === w.markerFormId || m.formId === w.formId || m.formId === w.locationFormId);
+                if (marker) {
+                    const shouldRender = marker.visible || marker.discovered || marker.canFastTravel;
+                    if (!shouldRender && !w.owned) continue;
+                } else if (!w.owned) {
+                    continue;
+                }
+
                 const titleMatch = SearchUtils.fuzzyMatch(query, w.name);
                 
                 const subtitleType = getWorkshopSubtitle(w);
@@ -85,7 +93,6 @@ export const SearchEngine = {
                     const score = Math.max(titleMatch?.score || -Infinity, subtitleMatch?.score || -Infinity);
                     
                     let markerCoords;
-                    const marker = payload.markers.find(m => m.formId === w.markerFormId || m.formId === w.formId || m.formId === w.locationFormId);
                     if (marker) {
                         markerCoords = { x: marker.x, y: marker.y, worldspace: marker.worldspace };
                     }
