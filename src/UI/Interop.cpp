@@ -7,6 +7,7 @@
 #include "UI/Interop.h"
 #include "UI/Payload.h"
 #include "UI/Settings.h"
+#include "Engine/Player.h"
 #include <thread>
 #include <chrono>
 #include <filesystem>
@@ -659,7 +660,21 @@ namespace MAP76::UI
             {
                 State::g_viewApi->SetViewCursorPolicy(State::g_view, PRISMA_UI_FLAT_API::CursorPolicy::Hidden);
             }
-            State::g_coreApi->Invoke(State::g_view, "if (window.onMapOpened) { window.onMapOpened(); } if (window.resetUIState) { window.resetUIState(); } if (window.requestFreshMapData) { window.requestFreshMapData(''); }", nullptr);
+            
+            uint32_t currentWorldspace = MAP76::Engine::Player::GetCurrentState().worldspace;
+            std::string editorID = "";
+            if (auto* wspace = RE::TESForm::GetFormByID<RE::TESWorldSpace>(currentWorldspace)) {
+                editorID = wspace->GetFormEditorID() ? wspace->GetFormEditorID() : "";
+            }
+            
+            std::string jsCode = std::format(
+                "if (window.setInitialWorldspace) {{ window.setInitialWorldspace({}, '{}'); }} "
+                "if (window.onMapOpened) {{ window.onMapOpened(); }} "
+                "if (window.resetUIState) {{ window.resetUIState(); }} "
+                "if (window.requestFreshMapData) {{ window.requestFreshMapData(''); }}", 
+                currentWorldspace, editorID);
+                
+            State::g_coreApi->Invoke(State::g_view, jsCode.c_str(), nullptr);
         }
         else
         {
