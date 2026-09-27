@@ -50,14 +50,6 @@ export class InfoBar {
         }
     }
 
-    public static initPlayer(player?: PlayerData) {
-        if (player && player.worldspace !== undefined) {
-            this.updateWorldspace(player.worldspace);
-        } else {
-            this.renderInfo();
-        }
-    }
-
     public static updateWorldspace(wsId: number) {
         this.worldspace = WorldspaceUtils.getWorldspaceName(wsId) || t('info.unknownWorldspace');
         this.renderInfo();

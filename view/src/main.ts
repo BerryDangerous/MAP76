@@ -93,7 +93,6 @@ export function resetUIState(): void {
 initializeF4SEBindings(async (payload: F4SEMapPayload) => {
     requestSettings();
     loadMarkers(payload);
-    InfoBar.initPlayer(payload.player);
     InfoCard.init(payload.player);
     QuestList.init();
     WorkshopList.init();
