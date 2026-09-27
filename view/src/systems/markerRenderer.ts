@@ -252,13 +252,15 @@ function renderLocationMarkers(markers: POIMarker[], worldspaceID: number, bound
                          m.type;
 
         const defaultIconSvg = AssetManager.getLocationIconSvg(iconType, (m.discovered || m.canFastTravel), m.customIcon);
-        container.dataset.defaultIconSvg = defaultIconSvg;
+        const shadowedDefaultIconSvg = defaultIconSvg.replace(/<svg\s+/, '<svg class="marker-shadow" ') + defaultIconSvg;
+        container.dataset.defaultIconSvg = shadowedDefaultIconSvg;
 
         const potentialVassalIconSvg = AssetManager.getLocationIconSvg(MARKER_ICON_POTENTIAL_VASSAL_SETTLEMENT, (m.discovered || m.canFastTravel), m.customIcon);
-        container.dataset.potentialVassalIconSvg = potentialVassalIconSvg;
+        const shadowedPotentialVassalIconSvg = potentialVassalIconSvg.replace(/<svg\s+/, '<svg class="marker-shadow" ') + potentialVassalIconSvg;
+        container.dataset.potentialVassalIconSvg = shadowedPotentialVassalIconSvg;
         container.dataset.isRaiderOutpost = isRaiderOutpost ? 'true' : 'false';
 
-        container.innerHTML = defaultIconSvg;
+        container.innerHTML = shadowedDefaultIconSvg;
         container.dataset.canFastTravel = m.canFastTravel.toString();
 
         markerLayer.appendChild(container);
@@ -362,7 +364,9 @@ function renderCustomMarker(marker: CustomMarker | null | undefined, worldspaceI
     }
     container.classList.add('custom-marker');
 
-    container.innerHTML = AssetManager.getIconSvg(ASSET_ICON_CUSTOM_MARKER);
+    const iconSvg = AssetManager.getIconSvg(ASSET_ICON_CUSTOM_MARKER);
+    const shadowSvg = iconSvg.replace(/<svg\s+/, '<svg class="marker-shadow" ');
+    container.innerHTML = shadowSvg + iconSvg;
 
     questLayer.appendChild(container);
     mapState.animatedElements.push(container);
@@ -405,7 +409,9 @@ function renderPowerArmor(pa: PowerArmorMarker | null | undefined, worldspaceID:
     }
     container.classList.add('power-armor-marker');
 
-    container.innerHTML = AssetManager.getIconSvg(ASSET_ICON_POWER_ARMOR);
+    const iconSvg = AssetManager.getIconSvg(ASSET_ICON_POWER_ARMOR);
+    const shadowSvg = iconSvg.replace(/<svg\s+/, '<svg class="marker-shadow" ');
+    container.innerHTML = shadowSvg + iconSvg;
 
     questLayer.appendChild(container);
     mapState.animatedElements.push(container);

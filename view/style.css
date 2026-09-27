@@ -235,6 +235,20 @@ body, html {
     object-fit: contain;
 }
 
+.marker-shadow {
+    position: absolute;
+    left: 0;
+    top: 0;
+    transform: translate(calc(-50% + 2px), calc(-50% + 2px)) !important;
+    z-index: -1;
+    opacity: 0.85;
+    overflow: visible !important;
+}
+
+.marker-shadow * {
+    fill: #000000 !important;
+}
+
 .quest-marker svg,
 .custom-marker svg,
 .power-armor-marker svg {
