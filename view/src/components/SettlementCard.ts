@@ -263,6 +263,7 @@ export const SettlementCard = {
                 {
                     id: 'undiscovered',
                     label: t('markers.controls.undiscovered'),
+                    enabled: false,
                     action: () => {}
                 }
             ];
