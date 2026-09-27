@@ -877,6 +877,7 @@ body.compact-panels .collapsible-panel[data-collapsed="true"] > *:not(.cp-header
     background-color: rgba(24, 28, 29, 0.95);
     border: 1px solid rgba(255, 255, 203, 0.2);
     box-shadow: -4px 4px 16px rgba(0, 0, 0, 0.6);
+    width: min-content;
 }
 
 .floating-card[data-anchored]::before,
@@ -1569,26 +1570,22 @@ body.settings-open #player-layer {
 #quest-card-panel {
     min-width: 380px;
     max-width: 500px;
-    width: max-content;
     max-height: 520px;
 }
 
 #settlement-card-panel {
     min-width: 280px;
     max-width: 400px;
-    width: max-content;
 }
 
 #marker-card-panel {
     min-width: 260px;
     max-width: 400px;
-    width: max-content;
 }
 
 #custom-marker-card-panel {
     min-width: 300px;
     max-width: 450px;
-    width: max-content;
 }
 
 #marker-card-panel .fc-header,
