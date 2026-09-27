@@ -9,7 +9,7 @@ import { FocusManager } from '@/systems/focusManager.js';
 import { KeybindsSystem } from '@/systems/keybindManager.js';
 import { LayoutManager } from '@/systems/layoutManager.js';
 import { MarkerInteractionManager, activeHoveredMarker } from '@/systems/markerController.js';
-import { loadMarkers, applySupplyLinesVisibilityFilter, switchWorldspace, updatePlayerMarker } from '@/systems/markerRenderer.js';
+import { loadMarkers, applySupplyLinesVisibilityFilter, switchWorldspace, updatePlayerMarker, updateWorldspaceConfig } from '@/systems/markerRenderer.js';
 import { ModalManager } from '@/systems/modalManager.js';
 import { MapViewport } from '@/systems/viewport.js';
 
@@ -71,8 +71,17 @@ export function onMapClosed(): void {
     }
 }
 
+export function setInitialWorldspace(worldspaceId: number, editorId: string): void {
+    if (mapState.selectedWorldspaceID !== null && mapState.selectedWorldspaceID !== undefined) {
+        return;
+    }
+
+    updateWorldspaceConfig(worldspaceId, editorId, false);
+}
+
 (window as any).onMapOpened = onMapOpened;
 (window as any).onMapClosed = onMapClosed;
+(window as any).setInitialWorldspace = setInitialWorldspace;
 
 export function resetUIState(): void {
     setSupplyLinesViewActive(false);
