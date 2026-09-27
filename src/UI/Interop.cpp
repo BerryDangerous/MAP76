@@ -528,10 +528,12 @@ namespace MAP76::UI
         {
             task->AddTask([view]() {
                 std::string assetPayload = MAP76::UI::Payload::GetAssetPayloadAsJSON(false);
+                std::string mapPayload = MAP76::UI::Payload::GetMapPayloadAsJSON();
                 
                 if (MAP76::UI::State::g_coreApi && view)
                 {
                     MAP76::UI::State::g_coreApi->InteropCall(view, "loadAssets", assetPayload.c_str());
+                    MAP76::UI::State::g_coreApi->InteropCall(view, "loadMarkers", mapPayload.c_str());
                 }
             });
         }
