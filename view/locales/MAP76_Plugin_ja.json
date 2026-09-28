@@ -126,34 +126,33 @@
       "objectives": "目標"
     }
   },
-  "workshops": {
-    "title": "居住地",
+  "locations": {
+    "title": "ロケーション",
     "tabs": {
       "all": "すべて",
-      "owned": "所有中",
-      "unowned": "未所有"
+      "favorites": "お気に入り",
+      "workshops": "ワークショップ"
     },
-    "empty": "居住地はありません",
-    "stats": {
-      "happiness": "幸福度",
-      "population": "人口",
-      "food": "食料",
-      "water": "水",
-      "power": "電力",
-      "defense": "防御",
-      "beds": "ベッド"
+    "controls": {
+      "favorite": "お気に入りに追加",
+      "unfavorite": "お気に入り解除"
     },
-    "subtitle": {
-      "raider": "レイダーの前哨基地",
-      "vassal": "従属居住地",
-      "vr": "VRワークショップ",
-      "default": "居住地"
+    "empty": {
+      "all": "ロケーションなし",
+      "favorites": "お気に入りなし",
+      "workshops": "ワークショップなし"
     },
     "sortMode": {
       "attention": "要対応",
       "alphabetical": "五十音/アルファベット順",
       "happiness": "幸福度",
       "population": "人口"
+    },
+    "subtitle": {
+      "raider": "レイダーの前哨基地",
+      "vassal": "従属居住地",
+      "vr": "VRワークショップ",
+      "default": "居住地"
     }
   },
   "search": {
@@ -162,11 +161,6 @@
     "clear": "クリア",
     "noResults": "結果が見つかりません",
     "empty": "検索履歴はありません",
-    "tabs": {
-      "markers": "マーカー",
-      "quests": "クエスト",
-      "workshops": "居住地"
-    },
     "resultType": {
       "location": "ロケーション",
       "powerArmor": "パワーアーマー",

@@ -1548,22 +1548,22 @@ body.settings-open #player-layer {
     max-height: none !important;
 }
 
-#workshop-list-panel {
+#locations-list-panel {
     min-width: 350px;
     max-width: 500px;
     width: max-content;
     max-height: 402px;
 }
 
-#workshop-list-panel[data-collapsed="true"] {
+#locations-list-panel[data-collapsed="true"] {
     max-height: 402px;
 }
 
-#workshop-list-panel[data-collapsed="false"] {
+#locations-list-panel[data-collapsed="false"] {
     height: 402px;
 }
 
-#workshop-list-panel .sl-body {
+#locations-list-panel .sl-body {
     height: calc(100% - 30px);
 }
 
@@ -1619,7 +1619,7 @@ body.controller-active #info-bar,
 body.controller-active #control-bar,
 body.controller-active #info-card,
 body.controller-active #quest-list-panel,
-body.controller-active #workshop-list-panel,
+body.controller-active #locations-list-panel,
 body.controller-active #search-panel,
 body.controller-active .floating-card,
 body.controller-active .collapsible-panel,

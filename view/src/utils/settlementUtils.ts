@@ -96,8 +96,8 @@ export function getWorkshopBadgesHtml(workshop: SettlementDataWithRatings): stri
 }
 
 export function getWorkshopSubtitle(workshop: SettlementData): string {
-    if (workshop.raider) return t('workshops.subtitle.raider');
-    if (workshop.vassal) return t('workshops.subtitle.vassal');
-    if (workshop.vr) return t('workshops.subtitle.vr');
-    return t('workshops.subtitle.default');
+    if (workshop.raider) return t('locations.subtitle.raider');
+    if (workshop.vassal) return t('locations.subtitle.vassal');
+    if (workshop.vr) return t('locations.subtitle.vr');
+    return t('locations.subtitle.default');
 }

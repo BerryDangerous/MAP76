@@ -1,7 +1,8 @@
 import { mapState } from '@/core/state.js';
-import { EngineBridge } from '@/core/bridge.js';
+import { EngineBridge, toggleFavoriteLocation } from '@/core/bridge.js';
 
 import { FocusManager } from '@/systems/focusManager.js';
+import { LocationsList } from './WorkshopsPanel.js';
 import { KeybindsSystem } from '@/systems/keybindManager.js';
 import { Corner } from '@/systems/layoutManager.js';
 import { MarkerInteractionManager } from '@/systems/markerController.js';
@@ -174,28 +175,62 @@ export const MarkerCard = {
     },
 
     buildButtonConfigs(): ActionButtonConfig[] {
+        const buttons: ActionButtonConfig[] = [];
+        
         if (this.canFastTravel) {
-            return [
-                {
-                    id: 'fastTravel',
-                    label: t('markers.controls.fastTravel'),
-                    action: () => {
-                        if (this.activeMarkerFormId !== null) {
-                            MarkerInteractionManager.initiateFastTravel(this.activeMarkerFormId, this.activeMarkerName);
-                        }
+            buttons.push({
+                id: 'fastTravel',
+                label: t('markers.controls.fastTravel'),
+                action: () => {
+                    if (this.activeMarkerFormId !== null) {
+                        MarkerInteractionManager.initiateFastTravel(this.activeMarkerFormId, this.activeMarkerName);
                     }
                 }
-            ];
+            });
         } else {
-            return [
-                {
-                    id: 'undiscovered',
-                    label: t('markers.controls.undiscovered'),
-                    enabled: false,
-                    action: () => {}
-                }
-            ];
+            buttons.push({
+                id: 'undiscovered',
+                label: t('markers.controls.undiscovered'),
+                enabled: false,
+                action: () => {}
+            });
         }
+
+        if (this.activeMarkerFormId !== null) {
+            const isFav = mapState.lastPayload?.favoriteLocations?.includes(this.activeMarkerFormId);
+            buttons.push({
+                id: 'favorite',
+                label: isFav ? t('locations.controls.unfavorite') : t('locations.controls.favorite'),
+                action: () => {
+                    if (this.activeMarkerFormId !== null) {
+                        toggleFavoriteLocation(this.activeMarkerFormId);
+                        
+                        if (mapState.lastPayload) {
+                            if (!mapState.lastPayload.favoriteLocations) {
+                                mapState.lastPayload.favoriteLocations = [];
+                            }
+                            if (isFav) {
+                                mapState.lastPayload.favoriteLocations = mapState.lastPayload.favoriteLocations.filter(id => id !== this.activeMarkerFormId);
+                            } else {
+                                mapState.lastPayload.favoriteLocations.push(this.activeMarkerFormId);
+                            }
+                        }
+                        
+                        MarkerCard.open(
+                            MarkerCard.activeMarkerName,
+                            MarkerCard.activeMarkerFormId as number,
+                            MarkerCard.canFastTravel,
+                            MarkerCard.activeAnchorMarker || undefined,
+                            undefined, undefined, false
+                        );
+                        
+                        LocationsList.render();
+                    }
+                }
+            });
+        }
+
+        return buttons;
     }
 };
 
@@ -203,7 +238,7 @@ window.addEventListener('languageChanged', () => {
     if (MarkerCard.isOpen() && MarkerCard.activeMarkerFormId !== null) {
         MarkerCard.open(
             MarkerCard.activeMarkerName, 
-            MarkerCard.activeMarkerFormId, 
+            MarkerCard.activeMarkerFormId as number, 
             MarkerCard.canFastTravel, 
             MarkerCard.activeAnchorMarker || undefined, 
             undefined, undefined, false

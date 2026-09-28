@@ -126,34 +126,33 @@
       "objectives": "ЦЕЛИ"
     }
   },
-  "workshops": {
-    "title": "ПОСЕЛЕНИЯ",
+  "locations": {
+    "title": "ЛОКАЦИИ",
     "tabs": {
       "all": "ВСЕ",
-      "owned": "ДОСТУПНЫЕ",
-      "unowned": "НЕДОСТУПНЫЕ"
+      "favorites": "ИЗБРАННОЕ",
+      "workshops": "МАСТЕРСКИЕ"
     },
-    "empty": "НЕТ ПОСЕЛЕНИЙ",
-    "stats": {
-      "happiness": "СЧАСТЬЕ",
-      "population": "НАСЕЛЕНИЕ",
-      "food": "ЕДА",
-      "water": "ВОДА",
-      "power": "ЭНЕРГИЯ",
-      "defense": "ЗАЩИТА",
-      "beds": "КРОВАТИ"
+    "controls": {
+      "favorite": "В ИЗБРАННОЕ",
+      "unfavorite": "УБРАТЬ ИЗ ИЗБРАННОГО"
     },
-    "subtitle": {
-      "raider": "Аванпост рейдеров",
-      "vassal": "Подконтрольное поселение",
-      "vr": "VR-мастерская",
-      "default": "Поселение"
+    "empty": {
+      "all": "НЕТ ЛОКАЦИЙ",
+      "favorites": "НЕТ ИЗБРАННОГО",
+      "workshops": "НЕТ МАСТЕРСКИХ"
     },
     "sortMode": {
       "attention": "ТРЕБУЕТ ВНИМАНИЯ",
       "alphabetical": "А-Я",
       "happiness": "СЧАСТЬЕ",
       "population": "НАСЕЛЕНИЕ"
+    },
+    "subtitle": {
+      "raider": "Аванпост рейдеров",
+      "vassal": "Подконтрольное поселение",
+      "vr": "VR-мастерская",
+      "default": "Поселение"
     }
   },
   "search": {
@@ -162,11 +161,6 @@
     "clear": "ОЧИСТИТЬ",
     "noResults": "НИЧЕГО НЕ НАЙДЕНО",
     "empty": "ИСТОРИЯ ПОИСКА ПУСТА",
-    "tabs": {
-      "markers": "МЕТКИ",
-      "quests": "ЗАДАНИЯ",
-      "workshops": "ПОСЕЛЕНИЯ"
-    },
     "resultType": {
       "location": "Локация",
       "powerArmor": "Силовая броня",

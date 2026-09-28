@@ -126,34 +126,33 @@
       "objectives": "CELE"
     }
   },
-  "workshops": {
-    "title": "OSADY",
+  "locations": {
+    "title": "LOKACJE",
     "tabs": {
       "all": "WSZYSTKIE",
-      "owned": "POSIADANE",
-      "unowned": "NIEPOSIADANE"
+      "favorites": "ULUBIONE",
+      "workshops": "WARSZTATY"
     },
-    "empty": "BRAK OSAD",
-    "stats": {
-      "happiness": "ZADOWOLENIE",
-      "population": "POPULACJA",
-      "food": "JEDZENIE",
-      "water": "WODA",
-      "power": "MOC",
-      "defense": "OBRONA",
-      "beds": "ŁÓŻKA"
+    "controls": {
+      "favorite": "DODAJ DO ULUBIONYCH",
+      "unfavorite": "USUŃ Z ULUBIONYCH"
     },
-    "subtitle": {
-      "raider": "Placówka bandytów",
-      "vassal": "Osada wasalna",
-      "vr": "Warsztat VR",
-      "default": "Osada"
+    "empty": {
+      "all": "BRAK LOKACJI",
+      "favorites": "BRAK ULUBIONYCH",
+      "workshops": "BRAK WARSZTATÓW"
     },
     "sortMode": {
       "attention": "UWAGA",
       "alphabetical": "A-Z",
       "happiness": "ZADOWOLENIE",
       "population": "POPULACJA"
+    },
+    "subtitle": {
+      "raider": "Placówka bandytów",
+      "vassal": "Osada wasalna",
+      "vr": "Warsztat VR",
+      "default": "Osada"
     }
   },
   "search": {
@@ -162,11 +161,6 @@
     "clear": "WYCZYŚĆ",
     "noResults": "BRAK WYNIKÓW",
     "empty": "BRAK HISTORII WYSZUKIWANIA",
-    "tabs": {
-      "markers": "ZNACZNIKI",
-      "quests": "ZADANIA",
-      "workshops": "OSADY"
-    },
     "resultType": {
       "location": "Lokalizacja",
       "powerArmor": "Pancerz wspomagany",

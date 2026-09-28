@@ -12,45 +12,68 @@ import { MapViewport } from '@/systems/viewport.js';
 
 import { SettlementDataWithRatings, getWorkshopIconType, getWorkshopBadgesHtml, getWorkshopSubtitle, calculateSettlementRatings } from '@/utils/settlementUtils.js';
 import { StringUtils } from '@/utils/stringUtils.js';
+import { WorldspaceUtils } from '@/utils/worldspaceUtils.js';
+import { POIMarker } from '@/types/markers.js';
 
 import { MarkerCard } from '@/components/MarkerCard.js';
 import { SettlementCard } from '@/components/SettlementCard.js';
 
 import { CollapsiblePanel } from '@/components/ui/CollapsiblePanel.js';
 import { CustomScrollbar } from '@/components/ui/Scrollbar.js';
+import { TabBar } from '@/components/ui/TabBar.js';
 
-export type WorkshopSortMode = 'ATTENTION' | 'ALPHABETICAL' | 'HAPPINESS' | 'POPULATION';
+export type LocationSortMode = 'ATTENTION' | 'ALPHABETICAL' | 'HAPPINESS' | 'POPULATION';
+export type LocationFilterTab = 'ALL' | 'FAVORITES' | 'WORKSHOPS';
 
-export interface WorkshopListState {
-    sortMode: WorkshopSortMode;
+export interface LocationsListState {
+    currentTab: LocationFilterTab;
+    sortMode: LocationSortMode;
     isCollapsed: boolean;
     hoverIndex: number;
-    selectedMarkerFormId: number | null;
+    selectedItemKey: string | null;
     dockCorner: Corner;
 }
 
-const workshopListState: WorkshopListState = {
+export type LocationListItem = 
+    | { type: 'favorite'; marker: POIMarker; key: string; isFavoriteGroup?: boolean }
+    | { type: 'workshop'; data: SettlementDataWithRatings; key: string; isFavoriteGroup?: boolean }
+    | { type: 'divider'; key: string; label: string; isFavoriteGroup?: boolean };
+
+const locationsListState: LocationsListState = {
+    currentTab: 'ALL',
     sortMode: 'ATTENTION',
     isCollapsed: true,
     hoverIndex: -1,
-    selectedMarkerFormId: null,
+    selectedItemKey: null,
     dockCorner: 'bottom-left'
 };
 
-const listController = new SelectableListController<SettlementDataWithRatings>({
-    getItems: () => WorkshopList.getVisibleWorkshops(),
-    getItemId: (settlement) => settlement.markerFormId,
-    containerSupplier: () => document.getElementById('workshop-list-panel'),
-    itemSelector: '.sl-item',
-    onSelectionChange: (selectedWorkshop) => {
-        if (workshopListState.isCollapsed) return;
+let tabBar = new TabBar<LocationFilterTab>({
+    tabs: [
+        { id: 'ALL', label: 'ALL' },
+        { id: 'FAVORITES', label: 'FAVORITES' },
+        { id: 'WORKSHOPS', label: 'WORKSHOPS' }
+    ],
+    activeTabId: 'ALL',
+    onTabChange: (tabId) => {
+        LocationsList.setFilterTab(tabId);
+    }
+});
 
-        if (selectedWorkshop) {
-            workshopListState.selectedMarkerFormId = selectedWorkshop.markerFormId;
-            WorkshopList.notifyWorkshopFocused(selectedWorkshop);
-            WorkshopList.openCardForWorkshop(selectedWorkshop);
+const listController = new SelectableListController<LocationListItem>({
+    getItems: () => LocationsList.getVisibleItems(),
+    getItemId: (item) => item.key,
+    containerSupplier: () => document.getElementById('locations-list-panel'),
+    itemSelector: '.sl-item',
+    onSelectionChange: (selectedItem) => {
+        if (locationsListState.isCollapsed) return;
+
+        if (selectedItem && selectedItem.type !== 'divider') {
+            locationsListState.selectedItemKey = selectedItem.key;
+            LocationsList.notifyItemFocused(selectedItem);
+            LocationsList.openCardForItem(selectedItem);
         } else {
-            workshopListState.selectedMarkerFormId = null;
+            locationsListState.selectedItemKey = null;
             SettlementCard.close();
             MarkerCard.close();
         }
@@ -61,20 +84,20 @@ const listController = new SelectableListController<SettlementDataWithRatings>({
             customScrollbar.updateThumbPosition();
         }
     },
-    onItemClick: (workshop, index) => {
-        const container = document.getElementById('workshop-list-panel');
+    onItemClick: (item, index) => {
+        const container = document.getElementById('locations-list-panel');
         if (!container) return;
 
         FocusManager.setFocus('WORKSHOP_LIST');
 
         if (index === -2) {
-            WorkshopList.collapse();
+            LocationsList.collapse();
             return;
         }
 
-        if (index === -1 || workshopListState.isCollapsed) {
-            if (workshop) {
-                workshopListState.selectedMarkerFormId = workshop.markerFormId;
+        if (index === -1 || locationsListState.isCollapsed) {
+            if (item && item.type !== 'divider') {
+                locationsListState.selectedItemKey = item.key;
             }
             const panelRect = container.getBoundingClientRect();
             const items = container.querySelectorAll('.sl-item');
@@ -82,22 +105,24 @@ const listController = new SelectableListController<SettlementDataWithRatings>({
             const itemRect = itemEl ? itemEl.getBoundingClientRect() : panelRect;
             const targetRelativeOffset = panelRect.bottom - itemRect.bottom;
 
-            WorkshopList.expand(targetRelativeOffset);
+            LocationsList.expand(targetRelativeOffset);
             return;
         }
 
-        listController.setSelectedIndex(index, false);
-        if (workshop) {
-            WorkshopList.notifyWorkshopFocused(workshop);
+        if (item && item.type !== 'divider') {
+            listController.setSelectedIndex(index, false);
+            LocationsList.notifyItemFocused(item);
         }
     },
-    onItemHover: (workshop, index) => {
-        if ((WorkshopList as any)._ignoreHover) return;
-        if (workshopListState.isCollapsed) {
-            if (workshopListState.hoverIndex !== index) {
+    onItemHover: (item, index) => {
+        if ((LocationsList as any)._ignoreHover) return;
+        if (item && item.type === 'divider') return;
+
+        if (locationsListState.isCollapsed) {
+            if (locationsListState.hoverIndex !== index) {
                 if (index !== -1) EngineBridge.emitSound('UIGeneralFocus');
-                workshopListState.hoverIndex = index;
-                WorkshopList.updateSelection();
+                locationsListState.hoverIndex = index;
+                LocationsList.updateSelection();
             }
         } else {
             if (index !== -1 && listController.getSelectedIndex() !== index) {
@@ -111,14 +136,22 @@ let collapsiblePanel: CollapsiblePanel | null = null;
 let customScrollbar: CustomScrollbar | null = null;
 let isLayoutMounted = false;
 
-export const WorkshopList = {
-    getState(): WorkshopListState {
-        return workshopListState;
+export const LocationsList = {
+    getState(): LocationsListState {
+        return locationsListState;
+    },
+
+    setFilterTab(tab: LocationFilterTab): void {
+        locationsListState.currentTab = tab;
+        listController.setSelectedIndex(0, false);
+        this.render();
+        this.updateSelection();
+        FocusManager.triggerControlsUpdate();
     },
 
     expand(targetRelativeOffset: number | null = null): void {
-        if (!workshopListState.isCollapsed) return;
-        workshopListState.isCollapsed = false;
+        if (!locationsListState.isCollapsed) return;
+        locationsListState.isCollapsed = false;
 
         (this as any)._ignoreHover = true;
         setTimeout(() => { (this as any)._ignoreHover = false; }, 200);
@@ -127,17 +160,20 @@ export const WorkshopList = {
             collapsiblePanel.setCollapsed(false);
         }
 
-        const expandedWorkshops = this.getVisibleWorkshops();
+        const expandedItems = this.getVisibleItems();
         let targetIndex = 0;
-        if (workshopListState.selectedMarkerFormId !== null) {
-            const foundIdx = expandedWorkshops.findIndex(w => w.markerFormId === workshopListState.selectedMarkerFormId);
+        if (locationsListState.selectedItemKey !== null) {
+            const foundIdx = expandedItems.findIndex(i => i.key === locationsListState.selectedItemKey);
             targetIndex = foundIdx !== -1 ? foundIdx : 0;
-        } else if (expandedWorkshops.length > 0) {
-            targetIndex = 0;
-            workshopListState.selectedMarkerFormId = expandedWorkshops[0].markerFormId;
         } else {
-            targetIndex = -1;
-            workshopListState.selectedMarkerFormId = null;
+            const firstSelectable = expandedItems.findIndex(i => i.type !== 'divider');
+            if (firstSelectable !== -1) {
+                targetIndex = firstSelectable;
+                locationsListState.selectedItemKey = expandedItems[firstSelectable].key;
+            } else {
+                targetIndex = -1;
+                locationsListState.selectedItemKey = null;
+            }
         }
 
         listController.setSelectedIndex(targetIndex, false, false);
@@ -152,14 +188,14 @@ export const WorkshopList = {
     },
 
     collapse(): void {
-        if (workshopListState.isCollapsed) {
+        if (locationsListState.isCollapsed) {
             SettlementCard.close();
             MarkerCard.close();
             MapViewport.clearSavedViewport(appSettings.resetViewportOnPanelCollapse);
             return;
         }
-        workshopListState.isCollapsed = true;
-        workshopListState.hoverIndex = -1;
+        locationsListState.isCollapsed = true;
+        locationsListState.hoverIndex = -1;
         if (collapsiblePanel) {
             collapsiblePanel.setCollapsed(true);
         }
@@ -175,7 +211,7 @@ export const WorkshopList = {
     },
 
     toggleCollapse(): void {
-        if (workshopListState.isCollapsed) {
+        if (locationsListState.isCollapsed) {
             this.expand();
         } else {
             this.collapse();
@@ -183,29 +219,42 @@ export const WorkshopList = {
     },
 
     init(): void {
+        tabBar.updateTabs([
+            { id: 'ALL', label: t('locations.tabs.all') },
+            { id: 'FAVORITES', label: t('locations.tabs.favorites') },
+            { id: 'WORKSHOPS', label: t('locations.tabs.workshops') }
+        ]);
+
         FocusManager.register({
             id: 'WORKSHOP_LIST',
             getAvailableControls: () => {
-                const sortLabel = `${t('controls.actions.sort')} (${t(`workshops.sortMode.${workshopListState.sortMode.toLowerCase()}`)})`;
-                const controls: import('../systems/focusManager.js').ControlActionDef[] = ['NAV_BACK', 'NAV_UP', 'NAV_DOWN', 'PAN_MOUSE', { action: 'SORT', label: sortLabel }, { action: 'CENTER_ITEM', label: t('markers.controls.centerMarker') }, 'SELECT'];
+                const controls: import('../systems/focusManager.js').ControlActionDef[] = ['NAV_BACK', 'NAV_UP', 'NAV_DOWN', 'PAN_MOUSE'];
+                
+                if (locationsListState.currentTab === 'WORKSHOPS') {
+                    const sortLabel = `${t('controls.actions.sort')} (${t(`locations.sortMode.${locationsListState.sortMode.toLowerCase()}`)})`;
+                    controls.push({ action: 'SORT', label: sortLabel });
+                }
+
+                controls.push({ action: 'CENTER_ITEM', label: t('markers.controls.centerMarker') });
+                controls.push('SELECT');
                 return controls;
             },
             handleKeyDown: (e: KeyboardEvent) => this.handleKeyDown(e),
             onFocusGained: () => {
-                const container = document.getElementById('workshop-list-panel');
+                const container = document.getElementById('locations-list-panel');
                 if (container) { container.classList.add('focused'); container.classList.add('collapsible-panel'); }
             },
             onFocusLost: (newFocusId?: string) => {
-                const container = document.getElementById('workshop-list-panel');
+                const container = document.getElementById('locations-list-panel');
                 if (container) container.classList.remove('focused');
-                if (newFocusId !== 'SETTLEMENT_CARD' && newFocusId !== 'MARKER_CARD' && !workshopListState.isCollapsed) {
+                if (newFocusId !== 'SETTLEMENT_CARD' && newFocusId !== 'MARKER_CARD' && !locationsListState.isCollapsed) {
                     this.collapse();
                 }
             }
         });
 
         window.addEventListener('click', (e: MouseEvent) => {
-            const container = document.getElementById('workshop-list-panel');
+            const container = document.getElementById('locations-list-panel');
             const settlementCard = document.getElementById('settlement-card-panel');
             const markerCard = document.getElementById('marker-card-panel');
             const targetNode = e.target as Node;
@@ -213,7 +262,7 @@ export const WorkshopList = {
             if (container && !container.contains(targetNode) && 
                 (!settlementCard || !settlementCard.contains(targetNode)) && 
                 (!markerCard || !markerCard.contains(targetNode))) {
-                if (!workshopListState.isCollapsed) {
+                if (!locationsListState.isCollapsed) {
                     this.collapse();
                 }
             }
@@ -227,15 +276,20 @@ export const WorkshopList = {
     },
 
     reloadLocales(): void {
-        const container = document.getElementById('workshop-list-panel');
+        const container = document.getElementById('locations-list-panel');
         if (container) {
+            tabBar.updateTabs([
+                { id: 'ALL', label: t('locations.tabs.all') },
+                { id: 'FAVORITES', label: t('locations.tabs.favorites') },
+                { id: 'WORKSHOPS', label: t('locations.tabs.workshops') }
+            ]);
             this.render();
         }
     },
 
     handleKeyDown(e: KeyboardEvent): boolean {
-        if (workshopListState.isCollapsed) {
-            const config = LayoutManager.getCornerConfig(workshopListState.dockCorner);
+        if (locationsListState.isCollapsed) {
+            const config = LayoutManager.getCornerConfig(locationsListState.dockCorner);
             if (KeybindsSystem.isPanelExpandKey(e, config.expandKey)) {
                 this.expand();
                 return true;
@@ -243,14 +297,14 @@ export const WorkshopList = {
             return false;
         }
 
-        const workshops = this.getVisibleWorkshops();
-        const config = LayoutManager.getCornerConfig(workshopListState.dockCorner);
+        const items = this.getVisibleItems();
+        const config = LayoutManager.getCornerConfig(locationsListState.dockCorner);
         if (KeybindsSystem.isPanelCollapseKey(e, config.collapseKey)) {
             this.collapse();
             return true;
         }
 
-        const isRightDocked = workshopListState.dockCorner.includes('right');
+        const isRightDocked = locationsListState.dockCorner.includes('right');
         if (KeybindsSystem.isAction(e, 'SELECT') || (isRightDocked ? KeybindsSystem.isAction(e, 'NAV_LEFT') : KeybindsSystem.isAction(e, 'NAV_RIGHT'))) {
             if (SettlementCard.isOpen()) {
                 FocusManager.setFocus('SETTLEMENT_CARD');
@@ -262,24 +316,36 @@ export const WorkshopList = {
             return true;
         }
 
+        if (tabBar.handleKeyDown(e)) {
+            return true;
+        }
+
         if (KeybindsSystem.isAction(e, 'NAV_DOWN')) {
-            if (workshops.length > 0) {
+            if (items.length > 0) {
                 listController.navigateNext();
+                const selected = listController.getSelectedItem();
+                if (selected && selected.type === 'divider') {
+                    listController.navigateNext();
+                }
             }
             return true;
         }
 
         if (KeybindsSystem.isAction(e, 'NAV_UP')) {
-            if (workshops.length > 0) {
+            if (items.length > 0) {
                 listController.navigatePrev();
+                const selected = listController.getSelectedItem();
+                if (selected && selected.type === 'divider') {
+                    listController.navigatePrev();
+                }
             }
             return true;
         }
 
-        if (KeybindsSystem.isAction(e, 'SORT')) {
-            const modes: WorkshopSortMode[] = ['ATTENTION', 'ALPHABETICAL', 'HAPPINESS', 'POPULATION'];
-            const nextIdx = (modes.indexOf(workshopListState.sortMode) + 1) % modes.length;
-            workshopListState.sortMode = modes[nextIdx];
+        if (KeybindsSystem.isAction(e, 'SORT') && locationsListState.currentTab === 'WORKSHOPS') {
+            const modes: LocationSortMode[] = ['ATTENTION', 'ALPHABETICAL', 'HAPPINESS', 'POPULATION'];
+            const nextIdx = (modes.indexOf(locationsListState.sortMode) + 1) % modes.length;
+            locationsListState.sortMode = modes[nextIdx];
             EngineBridge.emitSound('UIGeneralFocus');
             this.render();
             FocusManager.triggerControlsUpdate();
@@ -291,15 +357,19 @@ export const WorkshopList = {
             return true;
         }
 
-
-
         if (KeybindsSystem.isAction(e, 'CENTER_ITEM')) {
             const selected = listController.getSelectedItem();
-            if (selected && selected.markerFormId !== undefined) {
+            if (selected && selected.type !== 'divider') {
                 EngineBridge.emitSound('UIPipBoyMapZoom');
-                const marker = mapState.lastPayload?.markers?.find(m => m.formId === selected.markerFormId);
-                if (marker) {
-                    MapViewport.centerOnTarget(marker.worldspace, marker.x, marker.y, 0);
+                let formId: number | undefined;
+                if (selected.type === 'favorite') formId = selected.marker.formId;
+                else if (selected.type === 'workshop') formId = selected.data.markerFormId;
+
+                if (formId !== undefined) {
+                    const marker = mapState.lastPayload?.markers?.find(m => m.formId === formId);
+                    if (marker) {
+                        MapViewport.centerOnTarget(marker.worldspace, marker.x, marker.y, 0);
+                    }
                 }
             }
             return true;
@@ -308,40 +378,55 @@ export const WorkshopList = {
         return false;
     },
 
-    notifyWorkshopFocused(workshop: SettlementDataWithRatings | null): void {
-        if (!workshop || workshop.markerFormId === undefined) {
+    notifyItemFocused(item: LocationListItem | null): void {
+        if (!item || item.type === 'divider') {
             MapViewport.clearSavedViewport(appSettings.focusMarkerOnSelection);
             return;
         }
         
-        const marker = mapState.lastPayload?.markers?.find(m => m.formId === workshop.markerFormId);
-        if (marker && appSettings.focusMarkerOnSelection) {
-            if (!MapViewport.centerOnTarget(marker.worldspace, marker.x, marker.y, 0)) {
+        let formId: number | undefined;
+        if (item.type === 'favorite') formId = item.marker.formId;
+        else if (item.type === 'workshop') formId = item.data.markerFormId;
+
+        if (formId !== undefined) {
+            const marker = mapState.lastPayload?.markers?.find(m => m.formId === formId);
+            if (marker && appSettings.focusMarkerOnSelection) {
+                if (!MapViewport.centerOnTarget(marker.worldspace, marker.x, marker.y, 0)) {
+                    MapViewport.clearSavedViewport(appSettings.focusMarkerOnSelection);
+                }
+            } else {
                 MapViewport.clearSavedViewport(appSettings.focusMarkerOnSelection);
             }
-        } else {
-            MapViewport.clearSavedViewport(appSettings.focusMarkerOnSelection);
         }
     },
 
-    openCardForWorkshop(workshop: SettlementDataWithRatings): void {
-        const marker = mapState.lastPayload?.markers?.find(m => m.formId === workshop.markerFormId);
-        const canFastTravel = marker ? marker.canFastTravel : workshop.owned;
-        const container = document.getElementById('workshop-list-panel') || undefined;
+    openCardForItem(item: LocationListItem): void {
+        if (item.type === 'divider') return;
 
+        const container = document.getElementById('locations-list-panel') || undefined;
         const returnFocusId = 'WORKSHOP_LIST';
         const onNavBack = () => this.collapse();
 
-        if (workshop.vassal) {
+        if (item.type === 'favorite') {
+            const marker = item.marker;
             SettlementCard.close();
-            MarkerCard.open(workshop.name, workshop.markerFormId, canFastTravel, undefined, container, workshopListState.dockCorner, false, returnFocusId, onNavBack);
-        } else {
-            MarkerCard.close();
-            SettlementCard.open(workshop, workshop.markerFormId, canFastTravel, undefined, container, workshopListState.dockCorner, false, returnFocusId, onNavBack);
+            MarkerCard.open(marker.name, marker.formId, marker.canFastTravel, undefined, container, locationsListState.dockCorner, false, returnFocusId, onNavBack);
+        } else if (item.type === 'workshop') {
+            const workshop = item.data;
+            const marker = mapState.lastPayload?.markers?.find(m => m.formId === workshop.markerFormId);
+            const canFastTravel = marker ? marker.canFastTravel : workshop.owned;
+
+            if (workshop.vassal) {
+                SettlementCard.close();
+                MarkerCard.open(workshop.name, workshop.markerFormId, canFastTravel, undefined, container, locationsListState.dockCorner, false, returnFocusId, onNavBack);
+            } else {
+                MarkerCard.close();
+                SettlementCard.open(workshop, workshop.markerFormId, canFastTravel, undefined, container, locationsListState.dockCorner, false, returnFocusId, onNavBack);
+            }
         }
     },
 
-    sortWorkshops(workshops: SettlementDataWithRatings[], sortMode: WorkshopSortMode): SettlementDataWithRatings[] {
+    sortWorkshops(workshops: SettlementDataWithRatings[], sortMode: LocationSortMode): SettlementDataWithRatings[] {
         let sorted = [...workshops];
         if (sortMode === 'ALPHABETICAL') {
             sorted.sort((a, b) => a.name.localeCompare(b.name));
@@ -366,10 +451,46 @@ export const WorkshopList = {
         return sorted;
     },
 
-    getVisibleWorkshops(): SettlementDataWithRatings[] {
-        const settlements = mapState.lastPayload?.settlements || [];
-        const filtered = settlements.filter(s => s.owned || s.vassal);
-        return this.sortWorkshops(filtered, workshopListState.sortMode);
+    getVisibleItems(): LocationListItem[] {
+        const items: LocationListItem[] = [];
+        const payload = mapState.lastPayload;
+        if (!payload) return items;
+
+        const favIds = payload.favoriteLocations || [];
+        const allMarkers = payload.markers || [];
+        const workshops = payload.settlements || [];
+
+        const favMarkers = allMarkers.filter(m => favIds.includes(m.formId));
+        favMarkers.sort((a, b) => a.name.localeCompare(b.name));
+
+        const activeWorkshops = workshops.filter(s => s.owned || s.vassal);
+        const sortedWorkshops = this.sortWorkshops(activeWorkshops, locationsListState.sortMode);
+        const azWorkshops = this.sortWorkshops(activeWorkshops, 'ALPHABETICAL');
+
+        const createFavItem = (m: POIMarker): LocationListItem => {
+            const workshop = activeWorkshops.find(s => s.markerFormId === m.formId);
+            if (workshop) {
+                return { type: 'workshop', data: workshop, key: `fav_set_${workshop.formId}`, isFavoriteGroup: true };
+            }
+            return { type: 'favorite', marker: m, key: `fav_${m.formId}`, isFavoriteGroup: true };
+        };
+        const createWorkshopItem = (s: SettlementDataWithRatings): LocationListItem => ({ type: 'workshop', data: s, key: `set_${s.formId}`, isFavoriteGroup: false });
+
+        if (locationsListState.currentTab === 'FAVORITES') {
+            return favMarkers.map(createFavItem);
+        } else if (locationsListState.currentTab === 'WORKSHOPS') {
+            return sortedWorkshops.map(createWorkshopItem);
+        } else {
+            const result: LocationListItem[] = [];
+            if (favMarkers.length > 0) {
+                result.push(...favMarkers.map(createFavItem));
+            }
+            const nonFavWorkshops = azWorkshops.filter(s => !favIds.includes(s.markerFormId));
+            if (nonFavWorkshops.length > 0) {
+                result.push(...nonFavWorkshops.map(createWorkshopItem));
+            }
+            return result;
+        }
     },
 
     mountLayout(container: HTMLElement): void {
@@ -378,11 +499,16 @@ export const WorkshopList = {
         container.classList.add('workshop-list');
         container.innerHTML = `
           <div class="cp-header">
-             <div class="cp-title">${t('workshops.title')}</div>
+             <div class="cp-title">${t('locations.title')}</div>
              <div class="cp-collapse-btn">
                <span class="cp-collapse-text">${t('controls.collapse')}</span>
                <span class="cp-btn-icon"></span>
             </div>
+          </div>
+          <div class="tb-sub-header">
+             <span class="tb-nav-icon"></span>
+             <div class="tb-tabs-bar"></div>
+             <span class="tb-nav-icon"></span>
           </div>
           <div class="sl-body">
              <div class="sl-items-list"></div>
@@ -392,11 +518,16 @@ export const WorkshopList = {
           </div>
         `;
 
+        const tabsBarContainer = container.querySelector('.tb-tabs-bar') as HTMLElement;
+        if (tabsBarContainer) {
+            tabBar.mount(tabsBarContainer);
+        }
+
         collapsiblePanel = new CollapsiblePanel({
             panelElement: container,
             collapseBtnElement: container.querySelector('.cp-collapse-btn') as HTMLElement,
-            dockCorner: workshopListState.dockCorner,
-            initiallyCollapsed: workshopListState.isCollapsed,
+            dockCorner: locationsListState.dockCorner,
+            initiallyCollapsed: locationsListState.isCollapsed,
             onToggle: (collapsed) => {
                 if (collapsed) this.collapse();
                 else this.expand();
@@ -407,21 +538,26 @@ export const WorkshopList = {
     },
 
     render(): void {
-        const container = document.getElementById('workshop-list-panel');
+        const container = document.getElementById('locations-list-panel');
         if (!container) return;
 
-        LayoutManager.anchorToCorner(container, workshopListState.dockCorner);
+        LayoutManager.anchorToCorner(container, locationsListState.dockCorner);
 
         if (!isLayoutMounted) {
             this.mountLayout(container);
         }
 
-        const isCollapsed = workshopListState.isCollapsed;
+        const isCollapsed = locationsListState.isCollapsed;
         container.setAttribute('data-collapsed', String(isCollapsed));
 
         const titleEl = container.querySelector('.cp-title');
         if (titleEl) {
-            titleEl.textContent = t('workshops.title');
+            if (isCollapsed && locationsListState.currentTab !== 'ALL') {
+                const tabLabel = t(`locations.tabs.${locationsListState.currentTab.toLowerCase()}`);
+                titleEl.textContent = `${t('locations.title')} - ${tabLabel}`;
+            } else {
+                titleEl.textContent = t('locations.title');
+            }
         }
 
         const collapseTextEl = container.querySelector('.cp-collapse-text');
@@ -437,13 +573,37 @@ export const WorkshopList = {
         if (!listEl) return;
 
         const savedScrollTop = listEl.scrollTop;
-        const itemsToRender = this.getVisibleWorkshops();
+        const itemsToRender = this.getVisibleItems();
         let itemsHtml = '';
 
         if (itemsToRender.length === 0) {
-            itemsHtml = `<div class="sl-empty">${t('workshops.empty')}</div>`;
+            const emptyKey = locationsListState.currentTab === 'FAVORITES' ? 'locations.empty.favorites'
+                : locationsListState.currentTab === 'WORKSHOPS' ? 'locations.empty.workshops'
+                : 'locations.empty.all';
+            itemsHtml = `<div class="sl-empty">${t(emptyKey)}</div>`;
         } else {
-            itemsHtml = itemsToRender.map((w, idx) => this.renderWorkshopItem(w, idx)).join('');
+            let currentItemIndex = 0;
+            const renderItem = (item: LocationListItem) => {
+                if (item.type === 'favorite') {
+                    return this.renderFavoriteItem(item.marker, currentItemIndex++, item.key);
+                } else if (item.type === 'workshop') {
+                    return this.renderWorkshopItem(item.data, currentItemIndex++, item.key);
+                }
+                return '';
+            };
+
+            if (locationsListState.currentTab === 'ALL') {
+                const topItems = itemsToRender.filter(i => i.isFavoriteGroup);
+                const bottomItems = itemsToRender.filter(i => !i.isFavoriteGroup);
+                
+                itemsHtml += topItems.map(renderItem).join('');
+                if (topItems.length > 0 && bottomItems.length > 0) {
+                    itemsHtml += `<div class="sl-separator"></div>`;
+                }
+                itemsHtml += bottomItems.map(renderItem).join('');
+            } else {
+                itemsHtml += itemsToRender.map(renderItem).join('');
+            }
         }
 
         listEl.innerHTML = itemsHtml;
@@ -469,13 +629,13 @@ export const WorkshopList = {
     },
 
     updateSelection(autoScroll: boolean = true): void {
-        const container = document.getElementById('workshop-list-panel');
+        const container = document.getElementById('locations-list-panel');
         if (!container) return;
 
-        if (workshopListState.isCollapsed) {
+        if (locationsListState.isCollapsed) {
             const items = container.querySelectorAll('.sl-item');
             items.forEach((item, idx) => {
-                if (idx === workshopListState.hoverIndex) {
+                if (idx === locationsListState.hoverIndex) {
                     item.classList.add('selected');
                 } else {
                     item.classList.remove('selected');
@@ -492,21 +652,48 @@ export const WorkshopList = {
         listController.setSelectedIndex(listController.getSelectedIndex(), true, autoScroll);
     },
 
-    renderWorkshopItem(workshop: SettlementDataWithRatings, index: number): string {
-        const isSelected = !workshopListState.isCollapsed && index === listController.getSelectedIndex();
-        const keyAttr = `data-marker-formid="${workshop.markerFormId}"`;
-        
-        const subtitle = getWorkshopSubtitle(workshop);
+    renderFavoriteItem(marker: POIMarker, index: number, keyAttr: string): string {
+        const isSelected = !locationsListState.isCollapsed && index === listController.getSelectedIndex();
+        const markerIconSvg = AssetManager.getLocationIconSvg(marker.type, (marker.discovered || marker.canFastTravel), marker.customIcon);
 
+        let worldspaceName = '';
+        if (marker.worldspace !== undefined) {
+            worldspaceName = WorldspaceUtils.getWorldspaceName(marker.worldspace) || 'Unknown';
+        }
+        const subtitle = worldspaceName ? `${t('search.resultType.location', { defaultValue: 'Location' })} - ${worldspaceName}` : t('search.resultType.location', { defaultValue: 'Location' });
+
+        return `
+          <div class="sl-item ${isSelected ? 'selected' : ''}" data-workshop-index="${index}" data-key="${keyAttr}" style="min-height: 44px; display: flex; align-items: center;">
+             <div class="sl-item-content wl-item-content" style="padding-left: 5px; display: flex; align-items: center; width: 100%;">
+                 <span class="wl-marker-icon icon-wrapper" style="width: 24px; height: 24px; display: inline-block; margin-right: 10px;">${markerIconSvg}</span>
+                 <div class="wl-text-container" style="display: flex; flex-direction: column; justify-content: center; flex: 1;">
+                     <div class="sl-item-title" style="display: flex; align-items: center; gap: 5px; line-height: 1.2;">
+                         ${StringUtils.escapeHtml(marker.name)}
+                     </div>
+                     <div class="wl-subtitle" style="font-size: 0.8em; opacity: 0.7; line-height: 1;">${StringUtils.escapeHtml(subtitle)}</div>
+                 </div>
+            </div>
+          </div>
+        `;
+    },
+
+    renderWorkshopItem(workshop: SettlementDataWithRatings, index: number, keyAttr: string): string {
+        const isSelected = !locationsListState.isCollapsed && index === listController.getSelectedIndex();
+        const baseSubtitle = getWorkshopSubtitle(workshop);
         const marker = mapState.lastPayload?.markers?.find(m => m.formId === workshop.markerFormId);
         const iconType = getWorkshopIconType(workshop, marker);
         const customIcon = marker ? marker.customIcon : undefined;
         const markerIconSvg = AssetManager.getLocationIconSvg(iconType, true, customIcon);
-
         const badgesHtml = getWorkshopBadgesHtml(workshop);
 
+        let worldspaceName = '';
+        if (marker && marker.worldspace !== undefined) {
+            worldspaceName = WorldspaceUtils.getWorldspaceName(marker.worldspace) || 'Unknown';
+        }
+        const fullSubtitle = worldspaceName ? `${baseSubtitle} - ${worldspaceName}` : baseSubtitle;
+
         return `
-          <div class="sl-item ${isSelected ? 'selected' : ''}" data-workshop-index="${index}" ${keyAttr} style="min-height: 44px; display: flex; align-items: center;">
+          <div class="sl-item ${isSelected ? 'selected' : ''}" data-workshop-index="${index}" data-key="${keyAttr}" style="min-height: 44px; display: flex; align-items: center;">
              <div class="sl-item-content wl-item-content" style="padding-left: 5px; display: flex; align-items: center; width: 100%;">
                  <span class="wl-marker-icon icon-wrapper" style="width: 24px; height: 24px; display: inline-block; margin-right: 10px;">${markerIconSvg}</span>
                  <div class="wl-text-container" style="display: flex; flex-direction: column; justify-content: center; flex: 1;">
@@ -514,7 +701,7 @@ export const WorkshopList = {
                          ${StringUtils.escapeHtml(workshop.name)}
                          ${badgesHtml}
                      </div>
-                     <div class="wl-subtitle" style="font-size: 0.75em; opacity: 0.7; line-height: 1;">${subtitle}</div>
+                     <div class="wl-subtitle" style="font-size: 0.8em; opacity: 0.7; line-height: 1;">${StringUtils.escapeHtml(fullSubtitle)}</div>
                  </div>
             </div>
           </div>

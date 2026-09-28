@@ -2,6 +2,7 @@
 #include "UI/Payload.h"
 #include "UI/PayloadDTO.h"
 #include "UI/IconOverrides.h"
+#include "Engine/FavoritesManager.h"
 #include "Engine/MapData.h"
 #include "Engine/MapMarkers.h"
 #include "Engine/QuestManager.h"
@@ -186,6 +187,7 @@ namespace MAP76::UI::Payload
                 }
             }
 
+            payload.favoriteLocations = Engine::FavoritesManager::GetFavorites();
             payload.custom_marker = std::nullopt;
             payload.power_armor = std::nullopt;
 

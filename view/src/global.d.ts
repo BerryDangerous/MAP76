@@ -22,6 +22,7 @@ declare global {
 
         toggleQuestActive?: (payloadString: string) => void;
         makeOnlyQuestActive?: (payloadString: string) => void;
+        toggleFavoriteLocation?: (payloadString: string) => void;
 
         onFastTravelFailed?: (jsonString: string) => void;
         onFastTravelCheckResult?: (jsonString: string) => void;

@@ -45,6 +45,7 @@ export interface F4SEMapPayload {
     power_armor?: PowerArmorMarker | null;
     player?: PlayerData;
     dlc04VassalDistance?: number;
+    favoriteLocations?: number[];
 }
 
 export interface FastTravelFailPayload {

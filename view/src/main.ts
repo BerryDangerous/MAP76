@@ -27,7 +27,7 @@ import { SearchPanel } from '@/components/SearchPanel.js';
 import { SettingsMenu } from '@/components/SettingsMenu.js';
 import { SettlementCard } from '@/components/SettlementCard.js';
 import { toggleSupplyLinesView, setSupplyLinesViewActive, hasSupplyLines } from '@/components/SupplyLines.js';
-import { WorkshopList } from '@/components/WorkshopsPanel.js';
+import { LocationsList } from '@/components/WorkshopsPanel.js';
 
 const globalConfig = window.DEFAULT_COMMONWEALTH_CONFIG;
 if (globalConfig) {
@@ -92,7 +92,7 @@ export function resetUIState(): void {
     SettlementCard.close();
     MarkerCard.close();
     QuestList.collapse();
-    WorkshopList.collapse();
+    LocationsList.collapse();
     SearchPanel.collapse();
     SettingsMenu.forceClose();
 }
@@ -104,7 +104,7 @@ initializeF4SEBindings(async (payload: F4SEMapPayload) => {
     loadMarkers(payload);
     InfoCard.init(payload.player);
     QuestList.init();
-    WorkshopList.init();
+    LocationsList.init();
     QuestCard.init();
     SettlementCard.init();
     MarkerCard.init();
@@ -129,7 +129,7 @@ window.addEventListener('settingsUpdated', () => {
         loadMarkers(mapState.lastPayload);
     }
     QuestList.render?.();
-    WorkshopList.render?.();
+    LocationsList.render?.();
     SearchPanel.render?.();
 });
 
@@ -306,7 +306,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 }
 
                 const questCorner = QuestList.getState().dockCorner;
-                const workshopCorner = WorkshopList.getState().dockCorner;
+                const workshopCorner = LocationsList.getState().dockCorner;
                 const searchCorner = SearchPanel.getState().dockCorner;
                 
                 const questConfig = LayoutManager.getCornerConfig(questCorner);
@@ -316,7 +316,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 if (KeybindsSystem.isPanelExpandKey(e, questConfig.expandKey)) {
                     QuestList.expand();
                 } else if (KeybindsSystem.isPanelExpandKey(e, workshopConfig.expandKey)) {
-                    WorkshopList.expand();
+                    LocationsList.expand();
                 } else if (KeybindsSystem.isPanelExpandKey(e, searchConfig.expandKey)) {
                     SearchPanel.expand();
                 } else if (KeybindsSystem.isAction(e, 'TOGGLE_SUPPLY_LINES')) {

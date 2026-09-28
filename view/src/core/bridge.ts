@@ -63,6 +63,14 @@ export const EngineBridge = {
             console.warn(`[Bridge] makeOnlyQuestActive not bound by engine for FormID: ${formId}`);
         }
     },
+    toggleFavoriteLocation(formId: number) {
+        if (typeof window.toggleFavoriteLocation === 'function') {
+            const payload = JSON.stringify({ formId });
+            window.toggleFavoriteLocation(payload);
+        } else {
+            console.warn(`[Bridge] toggleFavoriteLocation not bound by engine for FormID: ${formId}`);
+        }
+    },
     requestAssetCache(refresh: boolean = false) {
         if (typeof window.requestAssetCache === 'function') {
             window.requestAssetCache(refresh ? "refresh" : "");
@@ -82,6 +90,10 @@ export function removeCustomMarker(): void {
 
 export function toggleQuestActive(formId: number): void {
     EngineBridge.toggleQuestActive(formId);
+}
+
+export function toggleFavoriteLocation(formId: number): void {
+    EngineBridge.toggleFavoriteLocation(formId);
 }
 
 export function makeOnlyQuestActive(formId: number): void {

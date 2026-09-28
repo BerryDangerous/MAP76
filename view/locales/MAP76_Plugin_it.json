@@ -126,34 +126,33 @@
       "objectives": "OBIETTIVI"
     }
   },
-  "workshops": {
-    "title": "INSEDIAMENTI",
+  "locations": {
+    "title": "LUOGHI",
     "tabs": {
-      "all": "TUTTI",
-      "owned": "POSSEDUTI",
-      "unowned": "NON POSSEDUTI"
+      "all": "TUTTO",
+      "favorites": "PREFERITI",
+      "workshops": "OFFICINE"
     },
-    "empty": "NESSUN INSEDIAMENTO",
-    "stats": {
-      "happiness": "FELICITÀ",
-      "population": "POPOLAZIONE",
-      "food": "CIBO",
-      "water": "ACQUA",
-      "power": "ENERGIA",
-      "defense": "DIFESA",
-      "beds": "LETTI"
+    "controls": {
+      "favorite": "AGGIUNGI AI PREFERITI",
+      "unfavorite": "RIMUOVI DAI PREFERITI"
     },
-    "subtitle": {
-      "raider": "Avamposto predoni",
-      "vassal": "Insediamento vassallo",
-      "vr": "Officina VR",
-      "default": "Insediamento"
+    "empty": {
+      "all": "NESSUN LUOGO",
+      "favorites": "NESSUN PREFERITO",
+      "workshops": "NESSUN OFFICINA"
     },
     "sortMode": {
       "attention": "ATTENZIONE",
       "alphabetical": "A-Z",
       "happiness": "FELICITÀ",
       "population": "POPOLAZIONE"
+    },
+    "subtitle": {
+      "raider": "Avamposto predoni",
+      "vassal": "Insediamento vassallo",
+      "vr": "Officina VR",
+      "default": "Insediamento"
     }
   },
   "search": {
@@ -162,11 +161,6 @@
     "clear": "CANCELLA",
     "noResults": "NESSUN RISULTATO TROVATO",
     "empty": "NESSUNA CRONOLOGIA DI RICERCA",
-    "tabs": {
-      "markers": "MARCATORI",
-      "quests": "MISSIONI",
-      "workshops": "INSEDIAMENTI"
-    },
     "resultType": {
       "location": "Luogo",
       "powerArmor": "Armatura atomica",

@@ -7,6 +7,7 @@
 #include "UI/Interop.h"
 #include "UI/Payload.h"
 #include "UI/Settings.h"
+#include "Engine/FavoritesManager.h"
 #include "Engine/Player.h"
 #include <thread>
 #include <chrono>
@@ -374,6 +375,29 @@ namespace MAP76::UI
             }
         }
 
+        void HandleToggleFavoriteLocation(const char *arg)
+        {
+            try
+            {
+                if (!arg) return;
+                auto parsedJson = nlohmann::json::parse(arg);
+                if (parsedJson.contains("formId") && parsedJson["formId"].is_number())
+                {
+                    uint32_t formId = parsedJson["formId"].get<uint32_t>();
+                    if (auto *task = F4SE::GetTaskInterface())
+                    {
+                        task->AddTask([formId]() {
+                            MAP76::Engine::FavoritesManager::ToggleFavorite(formId);
+                        });
+                    }
+                }
+            }
+            catch (const std::exception &e)
+            {
+                REX::ERROR("Error processing toggleFavoriteLocation callback: {}", e.what());
+            }
+        }
+
         void HandleMakeOnlyQuestActive(const char *arg)
         {
             try
@@ -497,6 +521,7 @@ namespace MAP76::UI
         State::g_coreApi->BindUIEvent(view, "removeCustomMarker", HandleRemoveCustomMarker);
         State::g_coreApi->BindUIEvent(view, "toggleQuestActive", HandleToggleQuestActive);
         State::g_coreApi->BindUIEvent(view, "makeOnlyQuestActive", HandleMakeOnlyQuestActive);
+        State::g_coreApi->BindUIEvent(view, "toggleFavoriteLocation", HandleToggleFavoriteLocation);
         State::g_coreApi->BindUIEvent(view, "requestSettings", HandleRequestSettings);
         State::g_coreApi->BindUIEvent(view, "requestAssetCache", HandleRequestAssetCache);
         State::g_coreApi->BindUIEvent(view, "saveSettings", HandleSaveSettings);

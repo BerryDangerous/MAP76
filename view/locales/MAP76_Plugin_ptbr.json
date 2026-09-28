@@ -126,34 +126,33 @@
       "objectives": "OBJETIVOS"
     }
   },
-  "workshops": {
-    "title": "ASSENTAMENTOS",
+  "locations": {
+    "title": "LOCAIS",
     "tabs": {
-      "all": "TODOS",
-      "owned": "POSSUÍDOS",
-      "unowned": "NÃO POSSUÍDOS"
+      "all": "TUDO",
+      "favorites": "FAVORITOS",
+      "workshops": "OFICINAS"
     },
-    "empty": "NENHUM ASSENTAMENTO",
-    "stats": {
-      "happiness": "FELICIDADE",
-      "population": "POPULAÇÃO",
-      "food": "COMIDA",
-      "water": "ÁGUA",
-      "power": "ENERGIA",
-      "defense": "DEFESA",
-      "beds": "CAMAS"
+    "controls": {
+      "favorite": "FAVORITAR",
+      "unfavorite": "DESFAVORITAR"
     },
-    "subtitle": {
-      "raider": "Posto Avançado de Invasores",
-      "vassal": "Assentamento Vassalo",
-      "vr": "Oficina Virtual",
-      "default": "Assentamento"
+    "empty": {
+      "all": "SEM LOCAIS",
+      "favorites": "SEM FAVORITOS",
+      "workshops": "NENHUMA OFICINA"
     },
     "sortMode": {
       "attention": "ATENÇÃO",
       "alphabetical": "A-Z",
       "happiness": "FELICIDADE",
       "population": "POPULAÇÃO"
+    },
+    "subtitle": {
+      "raider": "Posto Avançado de Invasores",
+      "vassal": "Assentamento Vassalo",
+      "vr": "Oficina Virtual",
+      "default": "Assentamento"
     }
   },
   "search": {
@@ -162,11 +161,6 @@
     "clear": "LIMPAR",
     "noResults": "NENHUM RESULTADO ENCONTRADO",
     "empty": "NENHUM HISTÓRICO DE BUSCA",
-    "tabs": {
-      "markers": "MARCADORES",
-      "quests": "MISSÕES",
-      "workshops": "ASSENTAMENTOS"
-    },
     "resultType": {
       "location": "Localização",
       "powerArmor": "Armadura Potente",

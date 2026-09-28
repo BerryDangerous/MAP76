@@ -126,34 +126,33 @@
       "objectives": "目标"
     }
   },
-  "workshops": {
-    "title": "定居点",
+  "locations": {
+    "title": "地点",
     "tabs": {
       "all": "全部",
-      "owned": "已拥有",
-      "unowned": "未拥有"
+      "favorites": "收藏",
+      "workshops": "工坊"
     },
-    "empty": "无定居点",
-    "stats": {
-      "happiness": "幸福度",
-      "population": "人口",
-      "food": "食物",
-      "water": "水",
-      "power": "电力",
-      "defense": "防御",
-      "beds": "床位"
+    "controls": {
+      "favorite": "收藏",
+      "unfavorite": "取消收藏"
     },
-    "subtitle": {
-      "raider": "掠夺者前哨",
-      "vassal": "附庸定居点",
-      "vr": "VR 工坊",
-      "default": "定居点"
+    "empty": {
+      "all": "没有地点",
+      "favorites": "没有收藏",
+      "workshops": "无工坊"
     },
     "sortMode": {
       "attention": "需要注意",
       "alphabetical": "首字母",
       "happiness": "幸福度",
       "population": "人口"
+    },
+    "subtitle": {
+      "raider": "掠夺者前哨",
+      "vassal": "附庸定居点",
+      "vr": "VR 工坊",
+      "default": "定居点"
     }
   },
   "search": {
@@ -162,11 +161,6 @@
     "clear": "清除",
     "noResults": "未找到结果",
     "empty": "无搜索历史",
-    "tabs": {
-      "markers": "标记",
-      "quests": "任务",
-      "workshops": "定居点"
-    },
     "resultType": {
       "location": "地点",
       "powerArmor": "动力装甲",

@@ -126,34 +126,33 @@
       "objectives": "OBJECTIVES"
     }
   },
-  "workshops": {
-    "title": "SETTLEMENTS",
+  "locations": {
+    "title": "LOCATIONS",
     "tabs": {
       "all": "ALL",
-      "owned": "OWNED",
-      "unowned": "UNOWNED"
+      "favorites": "FAVORITES",
+      "workshops": "WORKSHOPS"
     },
-    "empty": "NO SETTLEMENTS",
-    "stats": {
-      "happiness": "HAPPINESS",
-      "population": "POPULATION",
-      "food": "FOOD",
-      "water": "WATER",
-      "power": "POWER",
-      "defense": "DEFENSE",
-      "beds": "BEDS"
+    "controls": {
+      "favorite": "FAVORITE",
+      "unfavorite": "UNFAVORITE"
     },
-    "subtitle": {
-      "raider": "Raider Outpost",
-      "vassal": "Vassal Settlement",
-      "vr": "VR Workshop",
-      "default": "Settlement"
+    "empty": {
+      "all": "NO LOCATIONS",
+      "favorites": "NO FAVORITES",
+      "workshops": "NO WORKSHOPS"
     },
     "sortMode": {
       "attention": "ATTENTION",
       "alphabetical": "A-Z",
       "happiness": "HAPPINESS",
       "population": "POPULATION"
+    },
+    "subtitle": {
+      "raider": "Raider Outpost",
+      "vassal": "Vassal Settlement",
+      "vr": "VR Workshop",
+      "default": "Settlement"
     }
   },
   "search": {
@@ -162,11 +161,6 @@
     "clear": "CLEAR",
     "noResults": "NO RESULTS FOUND",
     "empty": "NO SEARCH HISTORY",
-    "tabs": {
-      "markers": "MARKERS",
-      "quests": "QUESTS",
-      "workshops": "WORKSHOPS"
-    },
     "resultType": {
       "location": "Location",
       "powerArmor": "Power Armor",

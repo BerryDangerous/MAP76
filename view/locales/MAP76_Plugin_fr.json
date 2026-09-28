@@ -126,34 +126,33 @@
       "objectives": "OBJECTIFS"
     }
   },
-  "workshops": {
-    "title": "COLONIES",
+  "locations": {
+    "title": "LIEUX",
     "tabs": {
-      "all": "TOUTES",
-      "owned": "POSSÉDÉES",
-      "unowned": "NON POSSÉDÉES"
+      "all": "TOUT",
+      "favorites": "FAVORIS",
+      "workshops": "ATELIERS"
     },
-    "empty": "AUCUNE COLONIE",
-    "stats": {
-      "happiness": "BONHEUR",
-      "population": "POPULATION",
-      "food": "NOURRITURE",
-      "water": "EAU",
-      "power": "ÉNERGIE",
-      "defense": "DÉFENSE",
-      "beds": "LITS"
+    "controls": {
+      "favorite": "AJOUTER AUX FAVORIS",
+      "unfavorite": "RETIRER DES FAVORIS"
     },
-    "subtitle": {
-      "raider": "Avant-poste de pillards",
-      "vassal": "Colonie vassale",
-      "vr": "Atelier RV",
-      "default": "Colonie"
+    "empty": {
+      "all": "AUCUN LIEU",
+      "favorites": "AUCUN FAVORI",
+      "workshops": "AUCUN ATELIER"
     },
     "sortMode": {
       "attention": "ATTENTION REQUISE",
       "alphabetical": "A-Z",
       "happiness": "BONHEUR",
       "population": "POPULATION"
+    },
+    "subtitle": {
+      "raider": "Avant-poste de pillards",
+      "vassal": "Colonie vassale",
+      "vr": "Atelier RV",
+      "default": "Colonie"
     }
   },
   "search": {
@@ -162,11 +161,6 @@
     "clear": "EFFACER",
     "noResults": "AUCUN RÉSULTAT TROUVÉ",
     "empty": "AUCUN HISTORIQUE DE RECHERCHE",
-    "tabs": {
-      "markers": "MARQUEURS",
-      "quests": "QUÊTES",
-      "workshops": "COLONIES"
-    },
     "resultType": {
       "location": "Lieu",
       "powerArmor": "Armure assistée",

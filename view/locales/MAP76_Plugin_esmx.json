@@ -126,34 +126,33 @@
       "objectives": "OBJETIVOS"
     }
   },
-  "workshops": {
-    "title": "ASENTAMIENTOS",
+  "locations": {
+    "title": "UBICACIONES",
     "tabs": {
-      "all": "TODOS",
-      "owned": "PROPIOS",
-      "unowned": "NO ADQUIRIDOS"
+      "all": "TODO",
+      "favorites": "FAVORITOS",
+      "workshops": "TALLERES"
     },
-    "empty": "NO HAY ASENTAMIENTOS",
-    "stats": {
-      "happiness": "FELICIDAD",
-      "population": "POBLACIÓN",
-      "food": "COMIDA",
-      "water": "AGUA",
-      "power": "ENERGÍA",
-      "defense": "DEFENSA",
-      "beds": "CAMAS"
+    "controls": {
+      "favorite": "AGREGAR A FAVORITOS",
+      "unfavorite": "QUITAR DE FAVORITOS"
     },
-    "subtitle": {
-      "raider": "Puesto de saqueadores",
-      "vassal": "Asentamiento vasallo",
-      "vr": "Taller de RV",
-      "default": "Asentamiento"
+    "empty": {
+      "all": "SIN UBICACIONES",
+      "favorites": "SIN FAVORITOS",
+      "workshops": "SIN TALLERES"
     },
     "sortMode": {
       "attention": "ATENCIÓN",
       "alphabetical": "A-Z",
       "happiness": "FELICIDAD",
       "population": "POBLACIÓN"
+    },
+    "subtitle": {
+      "raider": "Puesto de saqueadores",
+      "vassal": "Asentamiento vasallo",
+      "vr": "Taller de RV",
+      "default": "Asentamiento"
     }
   },
   "search": {
@@ -162,11 +161,6 @@
     "clear": "BORRAR",
     "noResults": "NO SE ENCONTRARON RESULTADOS",
     "empty": "SIN HISTORIAL DE BÚSQUEDA",
-    "tabs": {
-      "markers": "MARCADORES",
-      "quests": "MISIONES",
-      "workshops": "ASENTAMIENTOS"
-    },
     "resultType": {
       "location": "Ubicación",
       "powerArmor": "Servoarmadura",

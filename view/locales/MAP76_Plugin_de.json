@@ -126,34 +126,33 @@
       "objectives": "ZIELE"
     }
   },
-  "workshops": {
-    "title": "SIEDLUNGEN",
+  "locations": {
+    "title": "ORTE",
     "tabs": {
       "all": "ALLE",
-      "owned": "EIGENE",
-      "unowned": "FREIE"
+      "favorites": "FAVORITEN",
+      "workshops": "WERKSTÄTTEN"
     },
-    "empty": "KEINE SIEDLUNGEN",
-    "stats": {
-      "happiness": "ZUFRIEDENHEIT",
-      "population": "BEVÖLKERUNG",
-      "food": "NAHRUNG",
-      "water": "WASSER",
-      "power": "ENERGIE",
-      "defense": "VERTEIDIGUNG",
-      "beds": "BETTEN"
+    "controls": {
+      "favorite": "FAVORISIEREN",
+      "unfavorite": "FAVORIT ENTFERNEN"
     },
-    "subtitle": {
-      "raider": "Raider-Außenposten",
-      "vassal": "Vasallensiedlung",
-      "vr": "VR-Werkstatt",
-      "default": "Siedlung"
+    "empty": {
+      "all": "KEINE ORTE",
+      "favorites": "KEINE FAVORITEN",
+      "workshops": "KEINE WERKSTÄTTEN"
     },
     "sortMode": {
       "attention": "AUFMERKSAMKEIT",
       "alphabetical": "A–Z",
       "happiness": "ZUFRIEDENHEIT",
       "population": "BEVÖLKERUNG"
+    },
+    "subtitle": {
+      "raider": "Raider-Außenposten",
+      "vassal": "Vasallensiedlung",
+      "vr": "VR-Werkstatt",
+      "default": "Siedlung"
     }
   },
   "search": {
@@ -162,11 +161,6 @@
     "clear": "LÖSCHEN",
     "noResults": "KEINE ERGEBNISSE GEFUNDEN",
     "empty": "KEIN SUCHVERLAUF",
-    "tabs": {
-      "markers": "MARKIERUNGEN",
-      "quests": "QUESTS",
-      "workshops": "SIEDLUNGEN"
-    },
     "resultType": {
       "location": "Ort",
       "powerArmor": "Powerrüstung",
