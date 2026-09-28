@@ -198,11 +198,13 @@ namespace MAP76::UI::DTO
         std::optional<PowerArmorMarker> power_armor;
         std::optional<PlayerDTO> player;
         std::optional<float> dlc04VassalDistance;
+        std::vector<uint32_t> favoriteLocations;
     };
 
     inline void to_json(nlohmann::json &j, const MapPayload &p)
     {
         j = nlohmann::json{
+            {"favoriteLocations", p.favoriteLocations},
             {"markers", p.markers},
             {"quests", p.quests},
             {"settlements", p.settlements}};

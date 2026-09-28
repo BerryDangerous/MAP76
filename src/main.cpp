@@ -5,6 +5,7 @@
 #include "UI/IconOverrides.h"
 #include "Hooks/WindowProc.h"
 #include "Hooks/MainUpdate.h"
+#include "Engine/FavoritesManager.h"
 #include "Engine/QuestManager.h"
 
 /**
@@ -91,6 +92,13 @@ extern "C" __declspec(dllexport) bool F4SEAPI F4SEPlugin_Load(const F4SE::LoadIn
     F4SE::Init(a_f4se, info);
 
     REX::INFO("{}: Log Engine Online.", MAP76_PLUGIN_NAME);
+
+    const auto serialization = F4SE::GetSerializationInterface();
+    serialization->SetUniqueID('MP76');
+    serialization->SetRevertCallback(MAP76::Engine::FavoritesManager::RevertCallback);
+    serialization->SetSaveCallback(MAP76::Engine::FavoritesManager::SaveCallback);
+    serialization->SetLoadCallback(MAP76::Engine::FavoritesManager::LoadCallback);
+
     F4SE::GetMessagingInterface()->RegisterListener(OnF4SEMessage);
     return true;
 }
