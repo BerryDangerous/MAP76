@@ -1,4 +1,4 @@
-import { EngineBridge } from '@/core/bridge.js';
+import { SoundService } from '@/services/soundService.js';
 
 export interface ButtonConfig {
     id?: string;
@@ -35,7 +35,7 @@ export class Button {
 
         this.container.addEventListener('click', (e) => {
             if (this.config.enabled !== false) {
-                EngineBridge.emitSound('UIMenuOK');
+                SoundService.playAccept();
                 this.config.action();
             }
         });
@@ -48,7 +48,7 @@ export class Button {
 
         this.container.addEventListener('focus', () => {
             if (this.config.enabled !== false) {
-                EngineBridge.emitSound('UIGeneralFocus');
+                SoundService.playFocus();
             }
         });
     }

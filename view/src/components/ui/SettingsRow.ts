@@ -1,4 +1,4 @@
-import { EngineBridge } from '@/core/bridge.js';
+import { SoundService } from '@/services/soundService.js';
 
 export interface SettingsControl {
     getElement(): HTMLElement;
@@ -24,7 +24,7 @@ export class SettingsRow {
         });
 
         this.container.addEventListener('focus', () => {
-            EngineBridge.emitSound('UIGeneralFocus');
+            SoundService.playFocus();
         });
     }
 

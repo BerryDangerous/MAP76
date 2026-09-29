@@ -7,6 +7,7 @@ import { mapState } from '@/core/state.js';
 
 import { FocusManager } from '@/systems/focusManager.js';
 import { getPotentialVassalMarkerFormIds } from '@/systems/markerRenderer.js';
+import { SoundService } from '@/services/soundService.js';
 
 import { MapUtils } from '@/utils/mapUtils.js';
 
@@ -169,7 +170,7 @@ export const MarkerInteractionManager = {
             
             if (target === activeHoveredMarker) return;
 
-            EngineBridge.emitSound('UIPipBoyMapRollover');
+            SoundService.playMarkerHover();
             activeHoveredMarker = target;
             target.classList.add('is-hovered');
 
@@ -249,14 +250,14 @@ export const MarkerInteractionManager = {
                     const matchingQuest = quests.find(q => (questFormId && q.formId === questFormId) || q.questName === target.dataset.displayName);
                     if (matchingQuest) {
                         QuestCard.open(matchingQuest, target);
-                        EngineBridge.emitSound('UIGeneralFocus');
+                        SoundService.playFocus();
                     }
                     return;
                 }
 
                 if (target.dataset.markerType === 'customMarker') {
                     CustomMarkerCard.open({ anchorMarker: target });
-                    EngineBridge.emitSound('UIGeneralFocus');
+                    SoundService.playFocus();
                     return;
                 }
 
@@ -272,11 +273,11 @@ export const MarkerInteractionManager = {
 
                 if (ownedSettlement) {
                     renderSettlementCardContent(document.body, ownedSettlement, selectedFormId!, canTravel, target);
-                    EngineBridge.emitSound('UIGeneralFocus');
+                    SoundService.playFocus();
                     return;
                 } else {
                     MarkerCard.open(target.dataset.displayName || '', selectedFormId!, canTravel, target);
-                    EngineBridge.emitSound('UIGeneralFocus');
+                    SoundService.playFocus();
                 }
             } else {
                 if (mapState.wasDragged) return;

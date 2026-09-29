@@ -1,8 +1,7 @@
-import { EngineBridge } from '@/core/bridge.js';
-
 import { t } from '@/core/i18n.js';
 import { SettingsControl } from '@/components/ui/SettingsRow.js';
 import { KeybindsSystem } from '@/systems/keybindManager.js';
+import { SoundService } from '@/services/soundService.js';
 
 export class Toggle implements SettingsControl {
     private container: HTMLElement;
@@ -66,7 +65,7 @@ export class Toggle implements SettingsControl {
     }
 
     private toggle() {
-        EngineBridge.emitSound('UIMenuOK');
+        SoundService.playAccept();
         this.value = !this.value;
         this.updateValueText();
         this.onChange(this.value);

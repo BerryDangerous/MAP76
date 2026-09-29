@@ -1,6 +1,5 @@
-import { EngineBridge } from '@/core/bridge.js';
-
 import { KeybindsSystem } from '@/systems/keybindManager.js';
+import { SoundService } from '@/services/soundService.js';
 
 import { Button, ButtonConfig } from '@/components/ui/Button.js';
 
@@ -82,7 +81,7 @@ export class ActionButtonGroup {
     public triggerSelected(): void {
         const current = this.configs[this.selectedIndex];
         if (current && current.enabled !== false) {
-            EngineBridge.emitSound('UIMenuOK');
+            SoundService.playAccept();
             current.action();
         }
     }

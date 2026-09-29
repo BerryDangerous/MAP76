@@ -1,7 +1,6 @@
-import { EngineBridge } from '@/core/bridge.js';
-
 import { SettingsControl } from '@/components/ui/SettingsRow.js';
 import { KeybindsSystem } from '@/systems/keybindManager.js';
+import { SoundService } from '@/services/soundService.js';
 
 export class Slider implements SettingsControl {
     private container: HTMLElement;
@@ -99,7 +98,7 @@ export class Slider implements SettingsControl {
             this.isDragging = true;
             const newVal = calculateValueFromEvent(e);
             if (newVal !== this.value) {
-                EngineBridge.emitSound('UIMenuQuantity');
+                SoundService.playValueChange();
             }
             this.setValue(newVal, false);
         });
@@ -108,7 +107,7 @@ export class Slider implements SettingsControl {
             if (!this.isDragging) return;
             const newVal = calculateValueFromEvent(e);
             if (newVal !== this.value) {
-                EngineBridge.emitSound('UIMenuQuantity');
+                SoundService.playValueChange();
                 this.setValue(newVal, false);
             }
         });
@@ -122,12 +121,12 @@ export class Slider implements SettingsControl {
     }
 
     private decrease() {
-        EngineBridge.emitSound('UIMenuQuantity');
+        SoundService.playValueChange();
         this.setValue(this.value - this.step, true);
     }
 
     private increase() {
-        EngineBridge.emitSound('UIMenuQuantity');
+        SoundService.playValueChange();
         this.setValue(this.value + this.step, true);
     }
 

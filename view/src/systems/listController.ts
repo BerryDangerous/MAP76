@@ -1,5 +1,5 @@
-import { EngineBridge } from '@/core/bridge.js';
 import { KeybindsSystem } from '@/systems/keybindManager.js';
+import { SoundService } from '@/services/soundService.js';
 
 export interface ListNavigationOptions<T> {
     getItems: () => T[];
@@ -50,7 +50,7 @@ export class SelectableListController<T> {
 
         const newIndex = Math.max(0, Math.min(items.length - 1, index));
         if (newIndex !== this.selectedIndex && newIndex !== -1) {
-            EngineBridge.emitSound('UIGeneralFocus');
+            SoundService.playFocus();
         }
         this.selectedIndex = newIndex;
         const selected = items[this.selectedIndex];

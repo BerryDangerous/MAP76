@@ -1,6 +1,6 @@
 import { QuestItem } from '@/types/quests.js';
 
-import { toggleQuestActive, makeOnlyQuestActive, EngineBridge } from '@/core/bridge.js';
+import { toggleQuestActive, makeOnlyQuestActive } from '@/core/bridge.js';
 import { t } from '@/core/i18n.js';
 
 import { FocusManager } from '@/systems/focusManager.js';
@@ -8,6 +8,7 @@ import { KeybindsSystem } from '@/systems/keybindManager.js';
 import { Corner } from '@/systems/layoutManager.js';
 import { MapViewport } from '@/systems/viewport.js';
 import { OverlayManager } from '@/managers/overlayManager.js';
+import { SoundService } from '@/services/soundService.js';
 
 import { QuestUtils } from '@/utils/questUtils.js';
 import { StringUtils } from '@/utils/stringUtils.js';
@@ -69,7 +70,7 @@ export const QuestCard = {
         if (KeybindsSystem.isAction(e, 'CENTER_ITEM')) {
             if (this.activeAnchorMarker === null && this.activeQuest && !QuestUtils.isQuestCompleted(this.activeQuest)) {
                 if (QuestUtils.hasActiveTargets(this.activeQuest)) {
-                    EngineBridge.emitSound('UIPipBoyMapZoom');
+                    SoundService.playShowOnMap();
                     const firstTarget = this.activeQuest.objectives?.find(o => o.targets && o.targets.length > 0)?.targets[0];
                     if (firstTarget) {
                         MapViewport.centerOnTarget(firstTarget.worldspace, firstTarget.x, firstTarget.y, firstTarget.z);

@@ -1,7 +1,7 @@
 import { QuestItem } from '@/types/quests.js';
 
 import { t } from '@/core/i18n.js';
-import { toggleQuestActive, EngineBridge } from '@/core/bridge.js';
+import { toggleQuestActive } from '@/core/bridge.js';
 import { appSettings } from '@/core/settings.js';
 import { mapState } from '@/core/state.js';
 
@@ -11,6 +11,7 @@ import { LayoutManager, Corner } from '@/systems/layoutManager.js';
 import { SelectableListController } from '@/systems/listController.js';
 import { MapViewport } from '@/systems/viewport.js';
 import { OverlayManager } from '@/managers/overlayManager.js';
+import { SoundService } from '@/services/soundService.js';
 
 import { QuestUtils } from '@/utils/questUtils.js';
 import { StringUtils } from '@/utils/stringUtils.js';
@@ -101,7 +102,7 @@ const listController = new SelectableListController<QuestItem>({
         if ((QuestList as any)._ignoreHover) return;
         if (questListState.isCollapsed) {
             if (questListState.hoverIndex !== index) {
-                if (index !== -1) EngineBridge.emitSound('UIGeneralFocus');
+                if (index !== -1) SoundService.playFocus();
                 questListState.hoverIndex = index;
                 QuestList.updateSelection();
             }
@@ -300,7 +301,7 @@ export const QuestList = {
         if (KeybindsSystem.isAction(e, 'SELECT') || (isRightDocked ? KeybindsSystem.isAction(e, 'NAV_LEFT') : KeybindsSystem.isAction(e, 'NAV_RIGHT'))) {
             if (QuestCard.isOpen()) {
                 FocusManager.setFocus('QUEST_CARD');
-                EngineBridge.emitSound('UIGeneralFocus');
+                SoundService.playFocus();
             }
             return true;
         }
@@ -335,7 +336,7 @@ export const QuestList = {
             const modes: QuestSortMode[] = ['RECENT', 'ALPHABETICAL', 'ACTIVE'];
             const nextIdx = (modes.indexOf(questListState.sortMode) + 1) % modes.length;
             questListState.sortMode = modes[nextIdx];
-            EngineBridge.emitSound('UIGeneralFocus');
+            SoundService.playFocus();
             this.render();
             FocusManager.triggerControlsUpdate();
             return true;
@@ -349,7 +350,7 @@ export const QuestList = {
         if (KeybindsSystem.isAction(e, 'CENTER_ITEM')) {
             const selected = listController.getSelectedItem();
             if (selected && !QuestUtils.isQuestCompleted(selected)) {
-                EngineBridge.emitSound('UIPipBoyMapZoom');
+                SoundService.playShowOnMap();
                 QuestCard.open(selected, undefined, undefined, questListState.dockCorner, false, 'QUEST_LIST', () => QuestList.collapse());
                 const firstTarget = selected.objectives?.find(o => o.targets && o.targets.length > 0)?.targets[0];
                 if (firstTarget) {
@@ -364,7 +365,7 @@ export const QuestList = {
 
     toggleQuestActive(quest: QuestItem): void {
         quest.isTracked = !quest.isTracked;
-        EngineBridge.emitSound(quest.isTracked ? 'UIPipBoyQuestActive' : 'UIPipBoyQuestInactive');
+        quest.isTracked ? SoundService.playQuestActive() : SoundService.playQuestInactive();
         if (quest.formId !== undefined) {
             toggleQuestActive(quest.formId);
         }

@@ -1,6 +1,5 @@
-import { EngineBridge } from '@/core/bridge.js';
-
 import { KeybindsSystem } from '@/systems/keybindManager.js';
+import { SoundService } from '@/services/soundService.js';
 
 export interface TabItem<T = string> {
     id: T;
@@ -53,9 +52,9 @@ export class TabBar<T = string> {
             const currentIndex = this.options.tabs.findIndex(t => t.id === this.options.activeTabId);
             const targetIndex = this.options.tabs.findIndex(t => t.id === tabId);
             if (targetIndex > currentIndex) {
-                EngineBridge.emitSound('UIPipBoyRotaryVerticalUp');
+                SoundService.playTabNext();
             } else if (targetIndex < currentIndex) {
-                EngineBridge.emitSound('UIPipBoyRotaryVerticalDown');
+                SoundService.playTabPrev();
             }
         }
 

@@ -1,9 +1,10 @@
-import { setCustomMarker, removeCustomMarker, EngineBridge } from '@/core/bridge.js';
+import { setCustomMarker, removeCustomMarker } from '@/core/bridge.js';
 
 import { FocusManager } from '@/systems/focusManager.js';
 import { KeybindsSystem } from '@/systems/keybindManager.js';
 import { MapViewport } from '@/systems/viewport.js';
 import { OverlayManager } from '@/managers/overlayManager.js';
+import { SoundService } from '@/services/soundService.js';
 import { t } from '@/core/i18n.js';
 
 import { ActionButtonConfig } from '@/components/ui/ButtonGroup.js';
@@ -50,7 +51,7 @@ export const CustomMarkerCard = {
     handleKeyDown(e: KeyboardEvent): boolean {
         if (KeybindsSystem.isAction(e, 'CENTER_ITEM')) {
             if (this.activeAnchorMarker === null && (this.activeGameCoords || this.activeCoords)) {
-                EngineBridge.emitSound('UIPipBoyMapZoom');
+                SoundService.playShowOnMap();
                 if (this.activeGameCoords) {
                     MapViewport.centerOnWorldCoords(this.activeGameCoords.x, this.activeGameCoords.y);
                 }

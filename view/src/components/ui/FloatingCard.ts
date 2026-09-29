@@ -1,8 +1,7 @@
-import { EngineBridge } from '@/core/bridge.js';
-
 import { FocusManager } from '@/systems/focusManager.js';
 import { KeybindsSystem } from '@/systems/keybindManager.js';
 import { LayoutManager, Corner } from '@/systems/layoutManager.js';
+import { SoundService } from '@/services/soundService.js';
 
 import { ActionButtonGroup, ActionButtonConfig } from '@/components/ui/ButtonGroup.js';
 
@@ -127,7 +126,7 @@ export class FloatingCard {
             (!isRightDocked && (KeybindsSystem.isAction(e, 'NAV_LEFT') || e.key === 'ArrowLeft'))) {
             if (returnFocusId) {
                 FocusManager.setFocus(returnFocusId);
-                EngineBridge.emitSound('UIGeneralFocus');
+                SoundService.playFocus();
                 return true;
             }
         }
@@ -135,7 +134,7 @@ export class FloatingCard {
         if (KeybindsSystem.isAction(e, 'NAV_BACK')) {
             if (returnFocusId && this.options.referencePanel) {
                 FocusManager.setFocus(returnFocusId);
-                EngineBridge.emitSound('UIGeneralFocus');
+                SoundService.playFocus();
             } else {
                 if (onNavBack) {
                     onNavBack();

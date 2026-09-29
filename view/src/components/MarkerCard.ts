@@ -1,5 +1,5 @@
 import { mapState } from '@/core/state.js';
-import { EngineBridge, toggleFavoriteLocation, setCustomMarker } from '@/core/bridge.js';
+import { toggleFavoriteLocation, setCustomMarker } from '@/core/bridge.js';
 
 import { FocusManager } from '@/systems/focusManager.js';
 import { LocationsList } from './WorkshopsPanel.js';
@@ -8,6 +8,7 @@ import { Corner } from '@/systems/layoutManager.js';
 import { MarkerInteractionManager } from '@/systems/markerController.js';
 import { MapViewport } from '@/systems/viewport.js';
 import { OverlayManager } from '@/managers/overlayManager.js';
+import { SoundService } from '@/services/soundService.js';
 
 import { t } from '@/core/i18n.js';
 
@@ -64,7 +65,7 @@ export const MarkerCard = {
     handleKeyDown(e: KeyboardEvent): boolean {
         if (KeybindsSystem.isAction(e, 'CENTER_ITEM')) {
             if (this.activeAnchorMarker === null && this.activeMarkerFormId !== null) {
-                EngineBridge.emitSound('UIPipBoyMapZoom');
+                SoundService.playShowOnMap();
                 const marker = mapState.lastPayload?.markers?.find(m => m.formId === this.activeMarkerFormId);
                 if (marker) {
                     MapViewport.centerOnTarget(marker.worldspace, marker.x, marker.y, 0);

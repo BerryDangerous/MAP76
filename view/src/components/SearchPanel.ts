@@ -1,7 +1,6 @@
 import { SearchResult } from '@/types/search.js';
 import { t } from '@/core/i18n.js';
 
-import { EngineBridge } from '@/core/bridge.js';
 import { ASSET_ICON_POWER_ARMOR, ASSET_ICON_CUSTOM_MARKER } from '@/core/constants.js';
 import { appSettings } from '@/core/settings.js';
 import { mapState } from '@/core/state.js';
@@ -14,6 +13,7 @@ import { SelectableListController } from '@/systems/listController.js';
 import { SearchEngine } from '@/systems/searchEngine.js';
 import { MapViewport } from '@/systems/viewport.js';
 import { OverlayManager } from '@/managers/overlayManager.js';
+import { SoundService } from '@/services/soundService.js';
 
 import { QuestUtils } from '@/utils/questUtils.js';
 import { SearchUtils } from '@/utils/searchUtils.js';
@@ -297,14 +297,14 @@ export const SearchPanel = {
                 if (KeybindsSystem.isAction(e, 'RESET_DEFAULTS')) {
                     e.preventDefault();
                     if (searchBox) searchBox.clear();
-                    EngineBridge.emitSound('UIMenuCancel');
+                    SoundService.playCancel();
                 }
                 return true;
             }
             if (KeybindsSystem.isAction(e, 'NAV_DOWN')) {
                 if (results.length > 0) {
                     searchBox?.blur();
-                    EngineBridge.emitSound('UIGeneralFocus');
+                    SoundService.playFocus();
                     listController.setSelectedIndex(0, true, true);
                 }
                 return true;
@@ -314,10 +314,10 @@ export const SearchPanel = {
                 searchBox?.blur();
                 
                 if (results.length > 0) {
-                    EngineBridge.emitSound('UIGeneralFocus');
+                    SoundService.playFocus();
                     listController.setSelectedIndex(0, true, true);
                 } else {
-                    EngineBridge.emitSound('UIMenuCancel');
+                    SoundService.playNavBack();
                 }
                 
                 return true;
@@ -339,7 +339,7 @@ export const SearchPanel = {
                 else if (selected.type === 'quest' && QuestCard.isOpen()) FocusManager.setFocus('QUEST_CARD');
                 else if (selected.type === 'workshop' && SettlementCard.isOpen()) FocusManager.setFocus('SETTLEMENT_CARD');
                 else if (selected.type === 'customMarker' && CustomMarkerCard.isOpen()) FocusManager.setFocus('CUSTOM_MARKER_CARD');
-                EngineBridge.emitSound('UIGeneralFocus');
+                SoundService.playFocus();
             }
             return true;
         }
@@ -356,7 +356,7 @@ export const SearchPanel = {
                 if (listController.getSelectedIndex() <= 0) {
                     if (searchBox) {
                         searchBox.focus();
-                        EngineBridge.emitSound('UIGeneralFocus');
+                        SoundService.playFocus();
                         const el = searchBox.getInputElement();
                         const len = el.value.length;
                         el.setSelectionRange(len, len);
@@ -367,7 +367,7 @@ export const SearchPanel = {
             } else {
                 if (searchBox) {
                     searchBox.focus();
-                    EngineBridge.emitSound('UIGeneralFocus');
+                    SoundService.playFocus();
                     const el = searchBox.getInputElement();
                     const len = el.value.length;
                     el.setSelectionRange(len, len);
@@ -394,7 +394,7 @@ export const SearchPanel = {
         if (KeybindsSystem.isAction(e, 'CENTER_ITEM')) {
             const selected = listController.getSelectedItem();
             if (selected) {
-                EngineBridge.emitSound('UIPipBoyMapZoom');
+                SoundService.playShowOnMap();
                 if (selected.markerCoords) {
                     MapViewport.centerOnTarget(
                         selected.markerCoords.worldspace ?? mapState.activeMapConfig?.worldspaceID ?? 0,

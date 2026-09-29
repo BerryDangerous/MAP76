@@ -1,6 +1,5 @@
 import { MapConfig } from '@/types/map.js';
 
-import { EngineBridge } from '@/core/bridge.js';
 import { appSettings, updateSettings, getDefaultSettings, AppSettings } from '@/core/settings.js';
 import { mapState } from '@/core/state.js';
 
@@ -8,6 +7,7 @@ import { AssetManager } from '@/systems/assetManager.js';
 import { FocusManager, FocusOwner } from '@/systems/focusManager.js';
 import { updateWorldspaceConfig } from '@/systems/markerRenderer.js';
 import { KeybindsSystem } from '@/systems/keybindManager.js';
+import { SoundService } from '@/services/soundService.js';
 
 import { showConfirmationModal } from '@/components/Modals.js';
 
@@ -238,7 +238,7 @@ export const SettingsMenu = {
             });
 
             tabEl.addEventListener('focus', () => {
-                EngineBridge.emitSound('UIGeneralFocus');
+                SoundService.playFocus();
                 this.switchTab(tabName);
             });
 

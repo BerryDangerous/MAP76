@@ -13,6 +13,7 @@ import { loadMarkers, applySupplyLinesVisibilityFilter, switchWorldspace, update
 import { ModalManager } from '@/systems/modalManager.js';
 import { MapViewport } from '@/systems/viewport.js';
 import { OverlayManager } from '@/managers/overlayManager.js';
+import { SoundService } from '@/services/soundService.js';
 
 import { MapUtils } from '@/utils/mapUtils.js';
 import { injectSVGFilters } from '@/utils/svgFilters.js';
@@ -47,7 +48,7 @@ let mapClosedFlag = true;
 export function onMapOpened(): void {
     if (!mapClosedFlag) return;
     mapClosedFlag = false;
-    EngineBridge.emitSound(appSettings.alternativeMapSound ? 'UIGeneralFocus' : 'UIPerkMenuEnter');
+    SoundService.playMapOpen();
     
     if (appSettings.centerOnPlayerWhenOpened) {
         if (mapState.player && mapState.player.active) {
@@ -61,7 +62,7 @@ export function onMapOpened(): void {
 export function onMapClosed(): void {
     if (mapClosedFlag) return;
     mapClosedFlag = true;
-    EngineBridge.emitSound(appSettings.alternativeMapSound ? 'UIGeneralFocus' : 'UIPerkMenuExit');
+    SoundService.playMapClose();
     
     if (appSettings.centerOnPlayerWhenOpened) {
         mapState.selectedWorldspaceID = null;
@@ -218,18 +219,18 @@ window.addEventListener('DOMContentLoaded', () => {
 
             if (FocusManager.getFocus() === 'MAP') {
                 if (KeybindsSystem.isAction(e, 'ZOOM_IN')) {
-                    EngineBridge.emitSound('UIPipBoyMapZoom');
+                    SoundService.playMapZoom();
                     MapViewport.performZoom('in', MapViewport.lastMouseX, MapViewport.lastMouseY);
                     return;
                 }
                 if (KeybindsSystem.isAction(e, 'ZOOM_OUT')) {
-                    EngineBridge.emitSound('UIPipBoyMapZoom');
+                    SoundService.playMapZoom();
                     MapViewport.performZoom('out', MapViewport.lastMouseX, MapViewport.lastMouseY);
                     return;
                 }
                 if (KeybindsSystem.isAction(e, 'CENTER_CAMERA')) {
                     e.preventDefault();
-                    EngineBridge.emitSound('UIPipBoyMapZoom');
+                    SoundService.playMapZoom();
                     if (mapState.player) {
                         if (mapState.activeMapConfig) {
                             mapState.worldViewports[mapState.activeMapConfig.worldspaceID] = {
@@ -302,7 +303,7 @@ window.addEventListener('DOMContentLoaded', () => {
                     } else {
                         nextIdx = currentIdx < wsKeys.length - 1 ? currentIdx + 1 : 0;
                     }
-                    EngineBridge.emitSound(appSettings.alternativeMapSound ? 'UIGeneralFocus' : 'UIPerkMenuEnter');
+                    SoundService.playMapOpen();
                     switchWorldspace(wsKeys[nextIdx]);
                     return;
                 }

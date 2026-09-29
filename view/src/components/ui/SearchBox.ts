@@ -1,7 +1,7 @@
-import { EngineBridge } from '@/core/bridge.js';
 import { t } from '@/core/i18n.js';
 import { KeybindsSystem } from '@/systems/keybindManager.js';
 import { LayoutManager } from '@/systems/layoutManager.js';
+import { SoundService } from '@/services/soundService.js';
 
 export interface SearchBoxOptions {
     container: HTMLElement;
@@ -74,7 +74,7 @@ export class SearchBox {
                 e.preventDefault();
                 e.stopPropagation();
             } else if (KeybindsSystem.isAction(e, 'SELECT')) {
-                EngineBridge.emitSound('UIMenuCancel');
+                SoundService.playCancel();
                 this.clear();
                 setTimeout(() => this.inputEl.focus(), 0);
                 e.preventDefault();
@@ -84,7 +84,7 @@ export class SearchBox {
 
         this.clearBtnEl.addEventListener('click', (e: MouseEvent) => {
             e.stopPropagation();
-            EngineBridge.emitSound('UIMenuCancel');
+            SoundService.playCancel();
             this.clear();
             this.inputEl.focus();
         });
@@ -94,7 +94,7 @@ export class SearchBox {
         });
 
         this.clearBtnEl.addEventListener('focus', () => {
-            EngineBridge.emitSound('UIGeneralFocus');
+            SoundService.playFocus();
         });
 
         this.wrapperEl.addEventListener('focusin', (e: FocusEvent) => {
@@ -154,7 +154,7 @@ export class SearchBox {
                 if (window.PrismaOSK && window.PrismaOSK.isOpen() && e.detail?.state === 'pressed') {
                     const btn = e.detail.button;
                     if (btn !== 'B' && !btn.startsWith('DPad') && btn !== 'LeftThumb' && btn !== 'RightThumb') {
-                        EngineBridge.emitSound('UIGeneralFocus');
+                        SoundService.playFocus();
                     }
                 }
             }, true);

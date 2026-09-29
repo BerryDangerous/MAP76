@@ -1,4 +1,3 @@
-import { EngineBridge } from '@/core/bridge.js';
 import { t } from '@/core/i18n.js';
 import { appSettings } from '@/core/settings.js';
 import { mapState } from '@/core/state.js';
@@ -10,6 +9,7 @@ import { LayoutManager, Corner } from '@/systems/layoutManager.js';
 import { SelectableListController } from '@/systems/listController.js';
 import { MapViewport } from '@/systems/viewport.js';
 import { OverlayManager } from '@/managers/overlayManager.js';
+import { SoundService } from '@/services/soundService.js';
 
 import { SettlementDataWithRatings, getWorkshopIconType, getWorkshopBadgesHtml, getWorkshopSubtitle, calculateSettlementRatings } from '@/utils/settlementUtils.js';
 import { StringUtils } from '@/utils/stringUtils.js';
@@ -120,7 +120,7 @@ const listController = new SelectableListController<LocationListItem>({
 
         if (locationsListState.isCollapsed) {
             if (locationsListState.hoverIndex !== index) {
-                if (index !== -1) EngineBridge.emitSound('UIGeneralFocus');
+                if (index !== -1) SoundService.playFocus();
                 locationsListState.hoverIndex = index;
                 LocationsList.updateSelection();
             }
@@ -298,10 +298,10 @@ export const LocationsList = {
         if (KeybindsSystem.isAction(e, 'SELECT') || (isRightDocked ? KeybindsSystem.isAction(e, 'NAV_LEFT') : KeybindsSystem.isAction(e, 'NAV_RIGHT'))) {
             if (SettlementCard.isOpen()) {
                 FocusManager.setFocus('SETTLEMENT_CARD');
-                EngineBridge.emitSound('UIGeneralFocus');
+                SoundService.playFocus();
             } else if (MarkerCard.isOpen()) {
                 FocusManager.setFocus('MARKER_CARD');
-                EngineBridge.emitSound('UIGeneralFocus');
+                SoundService.playFocus();
             }
             return true;
         }
@@ -336,7 +336,7 @@ export const LocationsList = {
             const modes: LocationSortMode[] = ['ATTENTION', 'ALPHABETICAL', 'HAPPINESS', 'POPULATION'];
             const nextIdx = (modes.indexOf(locationsListState.sortMode) + 1) % modes.length;
             locationsListState.sortMode = modes[nextIdx];
-            EngineBridge.emitSound('UIGeneralFocus');
+            SoundService.playFocus();
             this.render();
             FocusManager.triggerControlsUpdate();
             return true;
@@ -350,7 +350,7 @@ export const LocationsList = {
         if (KeybindsSystem.isAction(e, 'CENTER_ITEM')) {
             const selected = listController.getSelectedItem();
             if (selected && selected.type !== 'divider') {
-                EngineBridge.emitSound('UIPipBoyMapZoom');
+                SoundService.playShowOnMap();
                 let formId: number | undefined;
                 if (selected.type === 'favorite') formId = selected.marker.formId;
                 else if (selected.type === 'workshop') formId = selected.data.markerFormId;
