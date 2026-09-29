@@ -1,5 +1,5 @@
 import { mapState } from '@/core/state.js';
-import { EngineBridge, toggleFavoriteLocation } from '@/core/bridge.js';
+import { EngineBridge, toggleFavoriteLocation, setCustomMarker } from '@/core/bridge.js';
 
 import { FocusManager } from '@/systems/focusManager.js';
 import { LocationsList } from './WorkshopsPanel.js';
@@ -176,7 +176,7 @@ export const MarkerCard = {
 
     buildButtonConfigs(): ActionButtonConfig[] {
         const buttons: ActionButtonConfig[] = [];
-        
+
         if (this.canFastTravel) {
             buttons.push({
                 id: 'fastTravel',
@@ -230,6 +230,19 @@ export const MarkerCard = {
             });
         }
 
+        const hasExistingMarker = Boolean(document.querySelector('.custom-marker'));
+        buttons.push({
+            id: 'placeMarker',
+            label: hasExistingMarker ? t('markers.customMarker.moveMarker') : t('markers.customMarker.placeMarker'),
+            action: () => {
+                if (this.activeMarkerFormId !== null) {
+                    const marker = mapState.lastPayload?.markers?.find(m => m.formId === this.activeMarkerFormId);
+                    if (marker) {
+                        setCustomMarker(marker.x, marker.y, marker.worldspace);
+                    }
+                }
+            }
+        });
         return buttons;
     }
 };
