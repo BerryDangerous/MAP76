@@ -10,6 +10,7 @@ import { KeybindsSystem } from '@/systems/keybindManager.js';
 import { LayoutManager, Corner } from '@/systems/layoutManager.js';
 import { SelectableListController } from '@/systems/listController.js';
 import { MapViewport } from '@/systems/viewport.js';
+import { OverlayManager } from '@/managers/overlayManager.js';
 
 import { QuestUtils } from '@/utils/questUtils.js';
 import { StringUtils } from '@/utils/stringUtils.js';
@@ -56,7 +57,7 @@ const listController = new SelectableListController<QuestItem>({
             QuestCard.open(selectedQuest, undefined, container || undefined, questListState.dockCorner, false, 'QUEST_LIST', () => QuestList.collapse());
         } else {
             questListState.selectedQuestId = null;
-            QuestCard.close();
+            QuestList.closeCards();
         }
 
         if (customScrollbar) {
@@ -134,6 +135,11 @@ export const QuestList = {
         return questListState;
     },
 
+    closeCards(): void {
+        const container = document.getElementById('quest-list-panel');
+        if (container) OverlayManager.dismissCardIfAnchoredTo(container);
+    },
+
     isSelectedQuestCompleted(): boolean {
         if (questListState.isCollapsed) return false;
         const selected = listController.getSelectedItem();
@@ -185,7 +191,7 @@ export const QuestList = {
 
     collapse(): void {
         if (questListState.isCollapsed) {
-            QuestCard.close();
+            this.closeCards();
             MapViewport.clearSavedViewport(appSettings.resetViewportOnPanelCollapse);
             return;
         }
@@ -195,7 +201,7 @@ export const QuestList = {
             collapsiblePanel.setCollapsed(true);
         }
 
-        QuestCard.close();
+        this.closeCards();
         MapViewport.clearSavedViewport(appSettings.resetViewportOnPanelCollapse);
         if (FocusManager.getFocus() === 'QUEST_LIST') {
             FocusManager.setFocus('MAP');
@@ -245,23 +251,13 @@ export const QuestList = {
             onFocusLost: (newFocusId?: string) => {
                 const container = document.getElementById('quest-list-panel');
                 if (container) container.classList.remove('focused');
-                if (newFocusId !== 'QUEST_CARD' && !questListState.isCollapsed) {
-                    this.collapse();
-                }
             }
         });
 
-        window.addEventListener('click', (e: MouseEvent) => {
-            const container = document.getElementById('quest-list-panel');
-            const card = document.getElementById('quest-card-panel');
-            const targetNode = e.target as Node;
-            
-            if (container && !container.contains(targetNode) && (!card || !card.contains(targetNode))) {
-                if (!questListState.isCollapsed) {
-                    this.collapse();
-                }
-            }
-        });
+        const container = document.getElementById('quest-list-panel');
+        if (container) {
+            OverlayManager.registerPanel('QUEST_LIST', container, () => this.collapse());
+        }
 
         window.addEventListener('languageChanged', () => {
             this.reloadLocales();
@@ -574,7 +570,7 @@ export const QuestList = {
                     item.classList.remove('selected');
                 }
             });
-            QuestCard.close();
+            QuestList.closeCards();
             if (customScrollbar) {
                 customScrollbar.updateThumbPosition();
             }

@@ -241,24 +241,21 @@ export const MarkerInteractionManager = {
             const target = (e.target as HTMLElement).closest('.marker-container') as HTMLElement;
             if (target && target.classList.contains('marker-container')) {
                 mapState.savedViewport = null;
+                e.stopPropagation();
                 
                 if (target.dataset.markerType === 'quest') {
-                    e.stopPropagation();
                     const questFormId = target.dataset.formId ? parseInt(target.dataset.formId) : null;
                     const quests = mapState.lastPayload?.quests || [];
                     const matchingQuest = quests.find(q => (questFormId && q.formId === questFormId) || q.questName === target.dataset.displayName);
                     if (matchingQuest) {
                         QuestCard.open(matchingQuest, target);
-                        FocusManager.setFocus('QUEST_CARD');
                         EngineBridge.emitSound('UIGeneralFocus');
                     }
                     return;
                 }
 
                 if (target.dataset.markerType === 'customMarker') {
-                    e.stopPropagation();
                     CustomMarkerCard.open({ anchorMarker: target });
-                    FocusManager.setFocus('CUSTOM_MARKER_CARD');
                     EngineBridge.emitSound('UIGeneralFocus');
                     return;
                 }
@@ -266,8 +263,6 @@ export const MarkerInteractionManager = {
                 if (target.dataset.markerType !== 'location') {
                     return; 
                 }
-
-                e.stopPropagation();
 
                 const canTravel = target.dataset.canFastTravel === 'true';
                 const selectedFormId = target.dataset.formId ? parseInt(target.dataset.formId) : null;
@@ -277,12 +272,10 @@ export const MarkerInteractionManager = {
 
                 if (ownedSettlement) {
                     renderSettlementCardContent(document.body, ownedSettlement, selectedFormId!, canTravel, target);
-                    FocusManager.setFocus('SETTLEMENT_CARD');
                     EngineBridge.emitSound('UIGeneralFocus');
                     return;
                 } else {
                     MarkerCard.open(target.dataset.displayName || '', selectedFormId!, canTravel, target);
-                    FocusManager.setFocus('MARKER_CARD');
                     EngineBridge.emitSound('UIGeneralFocus');
                 }
             } else {
@@ -291,18 +284,13 @@ export const MarkerInteractionManager = {
                 const bounds = mapState.lastPayload?.worldspaces?.[config.worldspaceID]?.bounds;
                 if (!bounds) return;
 
-                if (FocusManager.getFocus() !== 'MAP') {
-                    FocusManager.setFocus('MAP');
-                    return;
-                }
-
                 if (isSupplyLinesViewActive()) {
                     return;
                 }
 
+                e.stopPropagation();
                 const worldCoords = MapUtils.screenToGameCoords(e.clientX, e.clientY, bounds, mapState.activeMapConfig!.gutters!, mapState.zoom, mapState.panX, mapState.panY);
                 CustomMarkerCard.open({ gameCoords: worldCoords, pageCoords: { x: e.clientX, y: e.clientY }, worldspaceId: config.worldspaceID });
-                FocusManager.setFocus('CUSTOM_MARKER_CARD');
             }
         });
 

@@ -9,6 +9,7 @@ import { KeybindsSystem } from '@/systems/keybindManager.js';
 import { LayoutManager, Corner } from '@/systems/layoutManager.js';
 import { SelectableListController } from '@/systems/listController.js';
 import { MapViewport } from '@/systems/viewport.js';
+import { OverlayManager } from '@/managers/overlayManager.js';
 
 import { SettlementDataWithRatings, getWorkshopIconType, getWorkshopBadgesHtml, getWorkshopSubtitle, calculateSettlementRatings } from '@/utils/settlementUtils.js';
 import { StringUtils } from '@/utils/stringUtils.js';
@@ -74,8 +75,7 @@ const listController = new SelectableListController<LocationListItem>({
             LocationsList.openCardForItem(selectedItem);
         } else {
             locationsListState.selectedItemKey = null;
-            SettlementCard.close();
-            MarkerCard.close();
+            LocationsList.closeCards();
         }
 
         FocusManager.triggerControlsUpdate();
@@ -141,6 +141,11 @@ export const LocationsList = {
         return locationsListState;
     },
 
+    closeCards(): void {
+        const container = document.getElementById('locations-list-panel');
+        if (container) OverlayManager.dismissCardIfAnchoredTo(container);
+    },
+
     setFilterTab(tab: LocationFilterTab): void {
         locationsListState.currentTab = tab;
         listController.setSelectedIndex(0, false);
@@ -189,8 +194,7 @@ export const LocationsList = {
 
     collapse(): void {
         if (locationsListState.isCollapsed) {
-            SettlementCard.close();
-            MarkerCard.close();
+            this.closeCards();
             MapViewport.clearSavedViewport(appSettings.resetViewportOnPanelCollapse);
             return;
         }
@@ -200,8 +204,7 @@ export const LocationsList = {
             collapsiblePanel.setCollapsed(true);
         }
 
-        SettlementCard.close();
-        MarkerCard.close();
+        this.closeCards();
         MapViewport.clearSavedViewport(appSettings.resetViewportOnPanelCollapse);
         
         if (FocusManager.getFocus() === 'WORKSHOP_LIST') {
@@ -247,26 +250,13 @@ export const LocationsList = {
             onFocusLost: (newFocusId?: string) => {
                 const container = document.getElementById('locations-list-panel');
                 if (container) container.classList.remove('focused');
-                if (newFocusId !== 'SETTLEMENT_CARD' && newFocusId !== 'MARKER_CARD' && !locationsListState.isCollapsed) {
-                    this.collapse();
-                }
             }
         });
 
-        window.addEventListener('click', (e: MouseEvent) => {
-            const container = document.getElementById('locations-list-panel');
-            const settlementCard = document.getElementById('settlement-card-panel');
-            const markerCard = document.getElementById('marker-card-panel');
-            const targetNode = e.target as Node;
-            
-            if (container && !container.contains(targetNode) && 
-                (!settlementCard || !settlementCard.contains(targetNode)) && 
-                (!markerCard || !markerCard.contains(targetNode))) {
-                if (!locationsListState.isCollapsed) {
-                    this.collapse();
-                }
-            }
-        });
+        const container = document.getElementById('locations-list-panel');
+        if (container) {
+            OverlayManager.registerPanel('WORKSHOP_LIST', container, () => this.collapse());
+        }
 
         window.addEventListener('languageChanged', () => {
             this.reloadLocales();
@@ -641,8 +631,7 @@ export const LocationsList = {
                     item.classList.remove('selected');
                 }
             });
-            SettlementCard.close();
-            MarkerCard.close();
+            LocationsList.closeCards();
             if (customScrollbar) {
                 customScrollbar.updateThumbPosition();
             }

@@ -7,6 +7,7 @@ import { FocusManager } from '@/systems/focusManager.js';
 import { KeybindsSystem } from '@/systems/keybindManager.js';
 import { Corner } from '@/systems/layoutManager.js';
 import { MapViewport } from '@/systems/viewport.js';
+import { OverlayManager } from '@/managers/overlayManager.js';
 
 import { QuestUtils } from '@/utils/questUtils.js';
 import { StringUtils } from '@/utils/stringUtils.js';
@@ -60,9 +61,6 @@ export const QuestCard = {
                     floatingCard.setReferencePanelDimmed(false);
                 }
                 this.updateButtonSelection();
-                if (newFocusId === 'MAP' || newFocusId === 'WORKSHOP_LIST' || newFocusId === 'SETTLEMENT_CARD' || newFocusId === 'MARKER_CARD') {
-                    this.close();
-                }
             }
         });
     },
@@ -128,9 +126,13 @@ export const QuestCard = {
 
         floatingCard.open(this.activeAnchorMarker, questListContainer, dockCornerToUse);
 
-        if (takeFocus) {
-            FocusManager.setFocus('QUEST_CARD');
-        }
+        OverlayManager.openCard('QUEST_CARD', {
+            cardElement: floatingCard.getElement(),
+            referencePanel: questListContainer,
+            onDismiss: () => this.close(),
+            takeFocus: takeFocus,
+            returnFocusId: returnFocusId
+        });
 
         const cardEl = floatingCard.getElement();
         if (cardEl) {
@@ -165,9 +167,7 @@ export const QuestCard = {
             floatingCard.close();
         }
 
-        if (FocusManager.getFocus() === 'QUEST_CARD') {
-            FocusManager.setFocus('MAP');
-        }
+        OverlayManager.notifyCardClosed('QUEST_CARD');
     },
 
     updateButtonSelection(): void {

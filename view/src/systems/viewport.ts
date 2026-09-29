@@ -5,6 +5,7 @@ import { mapState } from '@/core/state.js';
 
 import { FocusManager } from '@/systems/focusManager.js';
 import { activeHoveredMarker } from '@/systems/markerController.js';
+import { OverlayManager } from '@/managers/overlayManager.js';
 
 import { MapUtils } from '@/utils/mapUtils.js';
 import { WorldspaceUtils } from '@/utils/worldspaceUtils.js';
@@ -351,9 +352,9 @@ export const MapViewport = {
         window.addEventListener('mousemove', (e: MouseEvent) => {
             if (!mapState.isDragging) return;
             if (Math.abs(e.clientX - dragStartX) > 5 || Math.abs(e.clientY - dragStartY) > 5) {
-                mapState.wasDragged = true;
-                if (FocusManager.getFocus() !== 'MAP') {
-                    FocusManager.setFocus('MAP');
+                if (!mapState.wasDragged) {
+                    mapState.wasDragged = true;
+                    OverlayManager.dismissAll();
                 }
             }
             this.setPan(e.clientX - mapState.startX, e.clientY - mapState.startY);

@@ -7,6 +7,7 @@ import { KeybindsSystem } from '@/systems/keybindManager.js';
 import { Corner } from '@/systems/layoutManager.js';
 import { MarkerInteractionManager } from '@/systems/markerController.js';
 import { MapViewport } from '@/systems/viewport.js';
+import { OverlayManager } from '@/managers/overlayManager.js';
 
 import { t } from '@/core/i18n.js';
 
@@ -56,9 +57,6 @@ export const MarkerCard = {
                     markerCardInstance.setReferencePanelDimmed(false);
                 }
                 this.updateButtonSelection();
-                if (newFocusId === 'MAP' || newFocusId === 'QUEST_CARD' || newFocusId === 'QUEST_LIST' || newFocusId === 'SETTLEMENT_CARD') {
-                    this.close();
-                }
             }
         });
     },
@@ -121,9 +119,13 @@ export const MarkerCard = {
         }
 
         markerCardInstance.open(this.activeAnchorMarker || undefined, referencePanel, dockCorner);
-        if (takeFocus) {
-            FocusManager.setFocus('MARKER_CARD');
-        }
+        OverlayManager.openCard('MARKER_CARD', {
+            cardElement: markerCardInstance.getElement(),
+            referencePanel: referencePanel || null,
+            onDismiss: () => this.close(),
+            takeFocus: takeFocus,
+            returnFocusId: returnFocusId
+        });
         this.updateButtonSelection();
     },
 
@@ -140,9 +142,7 @@ export const MarkerCard = {
             markerCardInstance.close();
         }
 
-        if (FocusManager.getFocus() === 'MARKER_CARD') {
-            FocusManager.setFocus('MAP');
-        }
+        OverlayManager.notifyCardClosed('MARKER_CARD');
     },
 
     positionNearMarker(): void {

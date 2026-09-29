@@ -13,6 +13,7 @@ import { LayoutManager, Corner } from '@/systems/layoutManager.js';
 import { SelectableListController } from '@/systems/listController.js';
 import { SearchEngine } from '@/systems/searchEngine.js';
 import { MapViewport } from '@/systems/viewport.js';
+import { OverlayManager } from '@/managers/overlayManager.js';
 
 import { QuestUtils } from '@/utils/questUtils.js';
 import { SearchUtils } from '@/utils/searchUtils.js';
@@ -190,10 +191,10 @@ export const SearchPanel = {
     },
 
     closeCards(): void {
-        MarkerCard.close();
-        QuestCard.close();
-        SettlementCard.close();
-        CustomMarkerCard.close();
+        const container = document.getElementById('search-panel');
+        if (container) {
+            OverlayManager.dismissCardIfAnchoredTo(container);
+        }
     },
 
     openCardForResult(result: SearchResult): void {
@@ -256,30 +257,13 @@ export const SearchPanel = {
             onFocusLost: (newFocusId?: string) => {
                 const container = document.getElementById('search-panel');
                 if (container) container.classList.remove('focused');
-                
-                const cardFocuses = ['MARKER_CARD', 'QUEST_CARD', 'SETTLEMENT_CARD', 'CUSTOM_MARKER_CARD'];
-                if (newFocusId && !cardFocuses.includes(newFocusId) && !searchPanelState.isCollapsed) {
-                    this.collapse();
-                }
             }
         });
 
-        window.addEventListener('click', (e: MouseEvent) => {
-            const container = document.getElementById('search-panel');
-            const targetNode = e.target as Node;
-            
-            const clickedInCard = 
-                document.getElementById('marker-card-panel')?.contains(targetNode) ||
-                document.getElementById('quest-card-panel')?.contains(targetNode) ||
-                document.getElementById('settlement-card-panel')?.contains(targetNode) ||
-                document.getElementById('custom-marker-card-panel')?.contains(targetNode);
-            
-            if (container && !container.contains(targetNode) && !clickedInCard) {
-                if (!searchPanelState.isCollapsed) {
-                    this.collapse();
-                }
-            }
-        });
+        const container = document.getElementById('search-panel');
+        if (container) {
+            OverlayManager.registerPanel('SEARCH_PANEL', container, () => this.collapse());
+        }
 
         window.addEventListener('languageChanged', () => {
             this.reloadLocales();

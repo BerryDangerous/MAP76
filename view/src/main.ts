@@ -12,6 +12,7 @@ import { MarkerInteractionManager, activeHoveredMarker } from '@/systems/markerC
 import { loadMarkers, applySupplyLinesVisibilityFilter, switchWorldspace, updatePlayerMarker, updateWorldspaceConfig } from '@/systems/markerRenderer.js';
 import { ModalManager } from '@/systems/modalManager.js';
 import { MapViewport } from '@/systems/viewport.js';
+import { OverlayManager } from '@/managers/overlayManager.js';
 
 import { MapUtils } from '@/utils/mapUtils.js';
 import { injectSVGFilters } from '@/utils/svgFilters.js';
@@ -168,6 +169,7 @@ window.addEventListener('DOMContentLoaded', () => {
     MapViewport.initEvents();
     MarkerInteractionManager.initEvents();
     MapViewport.centerInitialViewport();
+    OverlayManager.init();
     SettingsMenu.init();
     ControlBar.init();
     InfoBar.init();

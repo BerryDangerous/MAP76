@@ -3,6 +3,7 @@ import { setCustomMarker, removeCustomMarker, EngineBridge } from '@/core/bridge
 import { FocusManager } from '@/systems/focusManager.js';
 import { KeybindsSystem } from '@/systems/keybindManager.js';
 import { MapViewport } from '@/systems/viewport.js';
+import { OverlayManager } from '@/managers/overlayManager.js';
 import { t } from '@/core/i18n.js';
 
 import { ActionButtonConfig } from '@/components/ui/ButtonGroup.js';
@@ -41,9 +42,6 @@ export const CustomMarkerCard = {
                 if (card) card.classList.remove('focused');
                 if (customMarkerCardInstance) {
                     customMarkerCardInstance.setReferencePanelDimmed(false);
-                }
-                if (customMarkerCardInstance && customMarkerCardInstance.isOpen()) {
-                    this.close();
                 }
             }
         });
@@ -109,6 +107,13 @@ export const CustomMarkerCard = {
         }
 
         customMarkerCardInstance.open(this.activeAnchorMarker || undefined);
+        OverlayManager.openCard('CUSTOM_MARKER_CARD', {
+            cardElement: customMarkerCardInstance.getElement(),
+            referencePanel: null,
+            onDismiss: () => this.close(),
+            takeFocus: true,
+            returnFocusId: options.returnFocusId
+        });
     },
 
     buildButtons(isClickingExisting: boolean, hasExistingMarker: boolean): ActionButtonConfig[] {
@@ -165,9 +170,7 @@ export const CustomMarkerCard = {
             customMarkerCardInstance.close();
         }
 
-        if (FocusManager.getFocus() === 'CUSTOM_MARKER_CARD') {
-            FocusManager.setFocus('MAP');
-        }
+        OverlayManager.notifyCardClosed('CUSTOM_MARKER_CARD');
     },
 
     isOpen(): boolean {

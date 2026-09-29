@@ -10,6 +10,7 @@ import { KeybindsSystem } from '@/systems/keybindManager.js';
 import { Corner } from '@/systems/layoutManager.js';
 import { MarkerInteractionManager } from '@/systems/markerController.js';
 import { MapViewport } from '@/systems/viewport.js';
+import { OverlayManager } from '@/managers/overlayManager.js';
 
 import { calculateSettlementRatings, SettlementDataWithRatings } from '@/utils/settlementUtils.js';
 import { WorldspaceUtils } from '@/utils/worldspaceUtils.js';
@@ -63,9 +64,6 @@ export const SettlementCard = {
                     settlementCardInstance.setReferencePanelDimmed(false);
                 }
                 this.updateButtonSelection();
-                if (newFocusId === 'MAP' || newFocusId === 'QUEST_CARD' || newFocusId === 'QUEST_LIST' || newFocusId === 'MARKER_CARD') {
-                    this.close();
-                }
             }
         });
     },
@@ -132,9 +130,13 @@ export const SettlementCard = {
         }
 
         settlementCardInstance.open(this.activeAnchorMarker || undefined, referencePanel, dockCorner);
-        if (takeFocus) {
-            FocusManager.setFocus('SETTLEMENT_CARD');
-        }
+        OverlayManager.openCard('SETTLEMENT_CARD', {
+            cardElement: settlementCardInstance.getElement(),
+            referencePanel: referencePanel || null,
+            onDismiss: () => this.close(),
+            takeFocus: takeFocus,
+            returnFocusId: returnFocusId
+        });
         this.updateButtonSelection();
     },
 
@@ -150,9 +152,7 @@ export const SettlementCard = {
             settlementCardInstance.close();
         }
 
-        if (FocusManager.getFocus() === 'SETTLEMENT_CARD') {
-            FocusManager.setFocus('MAP');
-        }
+        OverlayManager.notifyCardClosed('SETTLEMENT_CARD');
     },
 
     positionNearMarker(): void {
