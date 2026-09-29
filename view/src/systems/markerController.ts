@@ -280,7 +280,7 @@ export const MarkerInteractionManager = {
                     FocusManager.setFocus('SETTLEMENT_CARD');
                     EngineBridge.emitSound('UIGeneralFocus');
                     return;
-                } else if (canTravel) {
+                } else {
                     MarkerCard.open(target.dataset.displayName || '', selectedFormId!, canTravel, target);
                     FocusManager.setFocus('MARKER_CARD');
                     EngineBridge.emitSound('UIGeneralFocus');
