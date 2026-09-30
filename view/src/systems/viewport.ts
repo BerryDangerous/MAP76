@@ -268,33 +268,35 @@ export const MapViewport = {
     lastMouseX: window.innerWidth / 2,
     lastMouseY: window.innerHeight / 2,
 
+    _getActiveAnchorMarker(): HTMLElement | null {
+        if (QuestCard.isOpen()) {
+            if (QuestCard.activeAnchorMarker) return QuestCard.activeAnchorMarker;
+
+            const questFormId = QuestCard.activeQuest?.formId;
+            const questName = QuestCard.activeQuest?.questName;
+            const questMarkers = document.querySelectorAll('.quest-marker');
+            for (const el of questMarkers) {
+                const htmlEl = el as HTMLElement;
+                if ((questFormId && htmlEl.dataset.formId === questFormId.toString()) || htmlEl.dataset.displayName === questName) {
+                    return htmlEl;
+                }
+            }
+        } else if (MarkerCard.isOpen()) {
+            return MarkerCard.activeAnchorMarker;
+        } else if (SettlementCard.isOpen()) {
+            return SettlementCard.activeAnchorMarker;
+        } else if (CustomMarkerCard.isOpen()) {
+            return CustomMarkerCard.activeAnchorMarker;
+        }
+        return null;
+    },
+
     performZoom(direction: 'in' | 'out', clientX: number, clientY: number) {
         const zoomIntensity = 0.15;
         let zoomPointX = clientX;
         let zoomPointY = clientY;
-        
-        let markerEl: HTMLElement | null = null;
-        if (QuestCard.isOpen()) {
-            markerEl = QuestCard.activeAnchorMarker;
-            if (!markerEl) {
-                const questFormId = QuestCard.activeQuest?.formId;
-                const questName = QuestCard.activeQuest?.questName;
-                const questMarkers = document.querySelectorAll('.quest-marker');
-                for (const el of questMarkers) {
-                    const htmlEl = el as HTMLElement;
-                    if ((questFormId && htmlEl.dataset.formId === questFormId.toString()) || htmlEl.dataset.displayName === questName) {
-                        markerEl = htmlEl;
-                        break;
-                    }
-                }
-            }
-        } else if (MarkerCard.isOpen()) {
-            markerEl = MarkerCard.activeAnchorMarker;
-        } else if (SettlementCard.isOpen()) {
-            markerEl = SettlementCard.activeAnchorMarker;
-        } else if (CustomMarkerCard.isOpen()) {
-            markerEl = CustomMarkerCard.activeAnchorMarker;
-        }
+
+        const markerEl = this._getActiveAnchorMarker();
 
         if (markerEl) {
             const svgEl = markerEl.querySelector('svg');
