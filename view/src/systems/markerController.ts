@@ -46,6 +46,7 @@ export const MarkerInteractionManager = {
     },
 
     onMouseMove(e: MouseEvent) {
+        if (mapState.isDragging) return;
         this.lastEvent = e;
         if (!this.isTicking) {
             window.requestAnimationFrame(() => {
@@ -57,7 +58,7 @@ export const MarkerInteractionManager = {
     },
 
     processMouseMove() {
-        if (!this.lastEvent) return;
+        if (!this.lastEvent || mapState.isDragging) return;
         
         const markers = this.getHoveredMarkers(this.lastEvent.clientX, this.lastEvent.clientY);
 
@@ -165,6 +166,8 @@ export const MarkerInteractionManager = {
         window.addEventListener('mousemove', this.onMouseMove.bind(this), { passive: true });
 
         layerContainer.addEventListener('mouseover', (e: MouseEvent) => {
+            if (mapState.isDragging) return;
+
             const target = (e.target as HTMLElement).closest('.marker-container') as HTMLElement;
             if (!target || target.id === 'player-marker') return;
             
