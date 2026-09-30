@@ -23,6 +23,9 @@ const container = document.getElementById('screen-container') as HTMLElement;
 
 export const MapViewport = {
 
+    _inputFramePending: false,
+    _pendingDrag: null as { clientX: number; clientY: number } | null,
+
     /**
      * Calculates pan boundaries to ensure the map canvas completely spans the window bounds.
      */
@@ -101,6 +104,27 @@ export const MapViewport = {
         if (updateDOM) {
             this.updateViewportTransform();
         }
+    },
+
+    _processPendingDrag() {
+        if (!this._pendingDrag || !mapState.isDragging) return;
+
+        const { clientX, clientY } = this._pendingDrag;
+        this._pendingDrag = null;
+        mapState.panX = clientX - mapState.startX;
+        mapState.panY = clientY - mapState.startY;
+
+        this._syncSavedViewport();
+    },
+
+    _scheduleInputFrame() {
+        if (this._inputFramePending) return;
+        this._inputFramePending = true;
+        requestAnimationFrame(() => {
+            this._inputFramePending = false;
+            this._processPendingDrag();
+            this.updateViewportTransform();
+        });
     },
 
     centerInitialViewport() {
@@ -285,9 +309,23 @@ export const MapViewport = {
 
         window.addEventListener('resize', () => this.centerInitialViewport());
         
+        let dragStartX = 0;
+        let dragStartY = 0;
+
         window.addEventListener('mousemove', (e: MouseEvent) => {
             this.lastMouseX = e.clientX;
             this.lastMouseY = e.clientY;
+
+            if (mapState.isDragging) {
+                if (Math.abs(e.clientX - dragStartX) > 5 || Math.abs(e.clientY - dragStartY) > 5) {
+                    if (!mapState.wasDragged) {
+                        mapState.wasDragged = true;
+                        OverlayManager.dismissAll();
+                    }
+                }
+                this._pendingDrag = { clientX: e.clientX, clientY: e.clientY };
+                this._scheduleInputFrame();
+            }
         });
 
         let lastPanTime = performance.now();
@@ -360,9 +398,6 @@ export const MapViewport = {
             }
         }, { passive: false });
 
-        let dragStartX = 0;
-        let dragStartY = 0;
-
         viewport.addEventListener('mousedown', (e: MouseEvent) => {
             if (e.button !== 0) return;
             e.preventDefault();
@@ -375,19 +410,12 @@ export const MapViewport = {
             viewport.style.cursor = 'grabbing';
         });
 
-        window.addEventListener('mousemove', (e: MouseEvent) => {
-            if (!mapState.isDragging) return;
-            if (Math.abs(e.clientX - dragStartX) > 5 || Math.abs(e.clientY - dragStartY) > 5) {
-                if (!mapState.wasDragged) {
-                    mapState.wasDragged = true;
-                    OverlayManager.dismissAll();
-                }
-            }
-            this.setPan(e.clientX - mapState.startX, e.clientY - mapState.startY);
-        });
-
         window.addEventListener('mouseup', () => {
             if (!mapState.isDragging) return;
+            if (this._pendingDrag) {
+                this.setPan(this._pendingDrag.clientX - mapState.startX, this._pendingDrag.clientY - mapState.startY);
+                this._pendingDrag = null;
+            }
             mapState.isDragging = false;
             viewport.style.cursor = 'grab';
         });
