@@ -130,7 +130,7 @@ export function loadMarkers(payload: F4SEMapPayload, isSwitchingWorld: boolean =
 
     if (activeWsId !== null && activeWsId !== undefined) {
         const editorID = WorldspaceUtils.getWorldspaceEditorID(activeWsId);
-        updateWorldspaceConfig(activeWsId, editorID, isSwitchingWorld);
+        updateWorldspaceConfig(activeWsId, editorID);
         InfoBar.updateWorldspace(activeWsId);
     }
 
@@ -485,7 +485,7 @@ function calculateFinalGutters(config: MapConfig) {
     }
 }
 
-export function updateWorldspaceConfig(worldspaceID: number, worldspaceEditorID?: string, isSwitchingWorld: boolean = false) {
+export function updateWorldspaceConfig(worldspaceID: number, worldspaceEditorID?: string) {
     if (worldspaceEditorID) {
         const preferredConfigID = appSettings.preferredMapConfigs[worldspaceEditorID];
         

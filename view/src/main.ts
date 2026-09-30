@@ -78,7 +78,7 @@ export function setInitialWorldspace(worldspaceId: number, editorId: string): vo
         return;
     }
 
-    updateWorldspaceConfig(worldspaceId, editorId, false);
+    updateWorldspaceConfig(worldspaceId, editorId);
 }
 
 (window as any).onMapOpened = onMapOpened;
