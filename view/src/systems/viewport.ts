@@ -150,6 +150,7 @@ export const MapViewport = {
     },
 
     centerInitialViewport() {
+        this._activeZoomDir = null;
         mapState.zoom = 1.0;
         const baseSize = Math.max(window.innerWidth, window.innerHeight);
         mapState.panX = (window.innerWidth - baseSize) / 2;
@@ -193,6 +194,7 @@ export const MapViewport = {
 
     _centerOnUnzoomedCoords(unzoomedX: number, unzoomedY: number, targetZoom: number) {
         this.saveCurrentViewport();
+        this._activeZoomDir = null;
         mapState.zoom = targetZoom;
 
         const screenCenterX = window.innerWidth / 2;
@@ -291,10 +293,63 @@ export const MapViewport = {
         return null;
     },
 
-    performZoom(direction: 'in' | 'out', clientX: number, clientY: number) {
-        const zoomIntensity = 0.15;
-        let zoomPointX = clientX;
-        let zoomPointY = clientY;
+    _zoomLoopRunning: false,
+    _zoomAnchorX: 0,
+    _zoomAnchorY: 0,
+    _activeZoomDir: null as 'in' | 'out' | null,
+    _zoomLastTime: 0,
+
+    setZoomHold(direction: 'in' | 'out' | null, clientX: number, clientY: number) {
+        if (this._activeZoomDir === direction) return;
+        this._activeZoomDir = direction;
+
+        if (direction) {
+            this._zoomAnchorX = clientX;
+            this._zoomAnchorY = clientY;
+
+            const factor = direction === 'in' ? 1.15 : 0.85;
+            const newZoom = Math.max(mapState.maxZoomOut, Math.min(mapState.maxZoomIn, mapState.zoom * factor));
+            if (newZoom !== mapState.zoom) {
+                SoundService.playMapZoom();
+                this._applyZoomStep(newZoom, clientX, clientY);
+            }
+
+            if (!this._zoomLoopRunning) this._startZoomAnimation();
+        }
+    },
+
+    _startZoomAnimation() {
+        this._zoomLoopRunning = true;
+        this._zoomLastTime = performance.now();
+        requestAnimationFrame(this._zoomLoop.bind(this));
+    },
+
+    _zoomLoop(now: number) {
+        if (!this._activeZoomDir) {
+            this._zoomLoopRunning = false;
+            return;
+        }
+
+        let dt = (now - this._zoomLastTime) / 1000;
+        if (dt > 0.1) dt = 0.016;
+        this._zoomLastTime = now;
+
+        const continuousFactor = 4.0;
+        const factor = this._activeZoomDir === 'in' ? Math.pow(continuousFactor, dt) : Math.pow(1 / continuousFactor, dt);
+        const newZoom = Math.max(mapState.maxZoomOut, Math.min(mapState.maxZoomIn, mapState.zoom * factor));
+
+        if (newZoom !== mapState.zoom) {
+            SoundService.playMapZoom();
+            this._applyZoomStep(newZoom, this._zoomAnchorX, this._zoomAnchorY);
+            requestAnimationFrame(this._zoomLoop.bind(this));
+        } else {
+            requestAnimationFrame(this._zoomLoop.bind(this));
+        }
+    },
+
+    _applyZoomStep(newZoom: number, anchorX: number, anchorY: number) {
+        let zoomPointX = anchorX;
+        let zoomPointY = anchorY;
 
         const markerEl = this._getActiveAnchorMarker();
 
@@ -305,27 +360,7 @@ export const MapViewport = {
             zoomPointY = mRect.top + (mRect.height / 2);
         }
 
-        const mapTargetX = (zoomPointX - mapState.panX) / mapState.zoom;
-        const mapTargetY = (zoomPointY - mapState.panY) / mapState.zoom;
-        
-        if (direction === 'in') {
-            mapState.zoom = Math.min(mapState.maxZoomIn, mapState.zoom + zoomIntensity);
-        } else {
-            mapState.zoom = Math.max(mapState.maxZoomOut, mapState.zoom - zoomIntensity);
-        }
-        
-        mapState.panX = zoomPointX - (mapTargetX * mapState.zoom);
-        mapState.panY = zoomPointY - (mapTargetY * mapState.zoom);
-
-        if (mapState.savedViewport) {
-            mapState.savedViewport = {
-                zoom: mapState.zoom,
-                panX: mapState.panX,
-                panY: mapState.panY
-            };
-        }
-
-        this.updateViewportTransform();
+        this._applyZoom(newZoom, zoomPointX, zoomPointY, true);
     },
 
     initEvents() {

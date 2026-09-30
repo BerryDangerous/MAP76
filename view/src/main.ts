@@ -236,13 +236,13 @@ window.addEventListener('DOMContentLoaded', () => {
 
             if (FocusManager.getFocus() === 'MAP') {
                 if (KeybindsSystem.isAction(e, 'ZOOM_IN')) {
-                    SoundService.playMapZoom();
-                    MapViewport.performZoom('in', MapViewport.lastMouseX, MapViewport.lastMouseY);
+                    if (!e.repeat) SoundService.playMapZoom();
+                    MapViewport.setZoomHold('in', MapViewport.lastMouseX, MapViewport.lastMouseY);
                     return;
                 }
                 if (KeybindsSystem.isAction(e, 'ZOOM_OUT')) {
-                    SoundService.playMapZoom();
-                    MapViewport.performZoom('out', MapViewport.lastMouseX, MapViewport.lastMouseY);
+                    if (!e.repeat) SoundService.playMapZoom();
+                    MapViewport.setZoomHold('out', MapViewport.lastMouseX, MapViewport.lastMouseY);
                     return;
                 }
                 if (KeybindsSystem.isAction(e, 'CENTER_CAMERA')) {
@@ -352,6 +352,9 @@ window.addEventListener('DOMContentLoaded', () => {
                 }
             }
         } else if (e.type === 'keyup') {
+            if (KeybindsSystem.isAction(e, 'ZOOM_IN') || KeybindsSystem.isAction(e, 'ZOOM_OUT')) {
+                MapViewport.setZoomHold(null, MapViewport.lastMouseX, MapViewport.lastMouseY);
+            }
             if (e.key === 'Escape' || e.code === 'Escape' || e.keyCode === 27) {
                 e.preventDefault();
                 e.stopPropagation();
