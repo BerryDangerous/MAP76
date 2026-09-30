@@ -182,15 +182,19 @@ export const MarkerInteractionManager = {
             const svg = target.querySelector('svg');
             
             if (container && globalTag && target.dataset.displayName) {
-                const rect = svg ? svg.getBoundingClientRect() : target.getBoundingClientRect();
-                container.style.left = `${rect.left + rect.width / 2}px`;
-                container.style.top = `${rect.bottom}px`;
-                
                 globalTag.textContent = target.dataset.displayName.replace(/-/g, '\u2011');
 
                 if (!target.classList.contains('menu-active') && !target.classList.contains('hide-tooltip-override')) {
                     globalTag.classList.add('is-visible');
                 }
+
+                requestAnimationFrame(() => {
+                    if (activeHoveredMarker === target) {
+                        const rect = svg ? svg.getBoundingClientRect() : target.getBoundingClientRect();
+                        container.style.left = `${rect.left + rect.width / 2}px`;
+                        container.style.top = `${rect.bottom}px`;
+                    }
+                });
             }
 
             if (target.dataset.isRaiderOutpost === 'true') {
