@@ -25,6 +25,9 @@ export const MapViewport = {
 
     _inputFramePending: false,
     _pendingDrag: null as { clientX: number; clientY: number } | null,
+    _pendingWheelDelta: 0,
+    _pendingWheelX: 0,
+    _pendingWheelY: 0,
 
     /**
      * Calculates pan boundaries to ensure the map canvas completely spans the window bounds.
@@ -106,6 +109,24 @@ export const MapViewport = {
         }
     },
 
+    _processPendingWheel() {
+        if (this._pendingWheelDelta === 0) return;
+
+        const deltaY = this._pendingWheelDelta;
+        const cx = this._pendingWheelX;
+        const cy = this._pendingWheelY;
+        this._pendingWheelDelta = 0;
+
+        const normalizedDelta = deltaY / 100;
+        const factor = Math.pow(1.25, -normalizedDelta);
+        const newZoom = Math.max(mapState.maxZoomOut, Math.min(mapState.maxZoomIn, mapState.zoom * factor));
+
+        if (Math.abs(newZoom - mapState.zoom) > 0.001) {
+            SoundService.playMapZoom();
+            this._applyZoom(newZoom, cx, cy, false);
+        }
+    },
+
     _processPendingDrag() {
         if (!this._pendingDrag || !mapState.isDragging) return;
 
@@ -123,6 +144,7 @@ export const MapViewport = {
         requestAnimationFrame(() => {
             this._inputFramePending = false;
             this._processPendingDrag();
+            this._processPendingWheel();
             this.updateViewportTransform();
         });
     },
@@ -388,14 +410,10 @@ export const MapViewport = {
             if (e.deltaMode === 1) deltaY *= 33;
             else if (e.deltaMode === 2) deltaY *= window.innerHeight;
 
-            const normalizedDelta = deltaY / 100;
-            const factor = Math.pow(1.25, -normalizedDelta);
-            const newZoom = Math.max(mapState.maxZoomOut, Math.min(mapState.maxZoomIn, mapState.zoom * factor));
-
-            if (Math.abs(newZoom - mapState.zoom) > 0.001) {
-                SoundService.playMapZoom();
-                this._applyZoom(newZoom, e.clientX, e.clientY, true);
-            }
+            this._pendingWheelDelta += deltaY;
+            this._pendingWheelX = e.clientX;
+            this._pendingWheelY = e.clientY;
+            this._scheduleInputFrame();
         }, { passive: false });
 
         viewport.addEventListener('mousedown', (e: MouseEvent) => {
