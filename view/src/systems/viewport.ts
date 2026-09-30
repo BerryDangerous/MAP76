@@ -71,6 +71,12 @@ export const MapViewport = {
         FloatingCard.repositionAll();
     },
 
+    _syncSavedViewport() {
+        if (mapState.savedViewport) {
+            mapState.savedViewport = { zoom: mapState.zoom, panX: mapState.panX, panY: mapState.panY };
+        }
+    },
+
     centerInitialViewport() {
         mapState.zoom = 1.0;
         const baseSize = Math.max(window.innerWidth, window.innerHeight);
@@ -105,14 +111,7 @@ export const MapViewport = {
         mapState.panX = x;
         mapState.panY = y;
 
-        if (mapState.savedViewport) {
-            mapState.savedViewport = {
-                zoom: mapState.zoom,
-                panX: mapState.panX,
-                panY: mapState.panY
-            };
-        }
-
+        this._syncSavedViewport();
         this.updateViewportTransform();
     },
 
@@ -120,31 +119,29 @@ export const MapViewport = {
         this.setPan(mapState.panX + dx, mapState.panY + dy);
     },
 
-    centerOnMapCoords(gameX: number, gameY: number, bounds: GameBounds, targetZoom: number = 2.5) {
-        if (!viewport || !mapState.activeMapConfig) return;
-
+    _centerOnUnzoomedCoords(unzoomedX: number, unzoomedY: number, targetZoom: number) {
         this.saveCurrentViewport();
-
         mapState.zoom = targetZoom;
-
-        const baseSize = Math.max(window.innerWidth, window.innerHeight);
-        const currentViewportSize = baseSize * mapState.zoom;
-
-        const screenPos = MapUtils.gameToMapCoords(gameX, gameY, 0, bounds, mapState.activeMapConfig.gutters!);
-
-        const pixelOnBaseX = (screenPos.x / 100) * baseSize;
-        const pixelOnBaseY = (screenPos.y / 100) * baseSize;
-
-        const pixelOnZoomedX = pixelOnBaseX * mapState.zoom;
-        const pixelOnZoomedY = pixelOnBaseY * mapState.zoom;
 
         const screenCenterX = window.innerWidth / 2;
         const screenCenterY = window.innerHeight / 2;
 
-        mapState.panX = screenCenterX - pixelOnZoomedX;
-        mapState.panY = screenCenterY - pixelOnZoomedY;
+        mapState.panX = screenCenterX - (unzoomedX * mapState.zoom);
+        mapState.panY = screenCenterY - (unzoomedY * mapState.zoom);
 
         this.updateViewportTransform();
+    },
+
+    centerOnMapCoords(gameX: number, gameY: number, bounds: GameBounds, targetZoom: number = 2.5) {
+        if (!viewport || !mapState.activeMapConfig) return;
+
+        const baseSize = Math.max(window.innerWidth, window.innerHeight);
+        const screenPos = MapUtils.gameToMapCoords(gameX, gameY, 0, bounds, mapState.activeMapConfig.gutters!);
+
+        const unzoomedX = (screenPos.x / 100) * baseSize;
+        const unzoomedY = (screenPos.y / 100) * baseSize;
+
+        this._centerOnUnzoomedCoords(unzoomedX, unzoomedY, targetZoom);
     },
 
     centerOnTarget(worldspace: number, x: number, y: number, z: number = 0, targetZoom: number = 2.5): boolean {
@@ -181,28 +178,19 @@ export const MapViewport = {
     centerOnElement(el: HTMLElement, targetZoom: number = 2.5): void {
         if (!viewport) return;
 
-        this.saveCurrentViewport();
         const oldZoom = mapState.zoom;
         const oldPanX = mapState.panX;
         const oldPanY = mapState.panY;
-        
-        mapState.zoom = targetZoom;
 
         const svgEl = el.querySelector('svg');
         const mRect = svgEl ? svgEl.getBoundingClientRect() : el.getBoundingClientRect();
         const elementCenterX = mRect.left + (mRect.width / 2);
         const elementCenterY = mRect.top + (mRect.height / 2);
 
-        const mapTargetX = (elementCenterX - oldPanX) / oldZoom;
-        const mapTargetY = (elementCenterY - oldPanY) / oldZoom;
+        const unzoomedX = (elementCenterX - oldPanX) / oldZoom;
+        const unzoomedY = (elementCenterY - oldPanY) / oldZoom;
 
-        const screenCenterX = window.innerWidth / 2;
-        const screenCenterY = window.innerHeight / 2;
-
-        mapState.panX = screenCenterX - (mapTargetX * mapState.zoom);
-        mapState.panY = screenCenterY - (mapTargetY * mapState.zoom);
-
-        this.updateViewportTransform();
+        this._centerOnUnzoomedCoords(unzoomedX, unzoomedY, targetZoom);
     },
 
     lastMouseX: window.innerWidth / 2,
