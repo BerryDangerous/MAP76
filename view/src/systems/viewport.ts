@@ -77,6 +77,31 @@ export const MapViewport = {
         }
     },
 
+    _updateDragOrigin() {
+        if (mapState.isDragging) {
+            mapState.startX = this.lastMouseX - mapState.panX;
+            mapState.startY = this.lastMouseY - mapState.panY;
+        }
+    },
+
+    _applyZoom(newZoom: number, anchorX: number, anchorY: number, updateDOM: boolean) {
+        const oldZoom = mapState.zoom;
+        mapState.zoom = newZoom;
+
+        const unzoomedX = (anchorX - mapState.panX) / oldZoom;
+        const unzoomedY = (anchorY - mapState.panY) / oldZoom;
+
+        mapState.panX = anchorX - (unzoomedX * mapState.zoom);
+        mapState.panY = anchorY - (unzoomedY * mapState.zoom);
+
+        this._updateDragOrigin();
+        this._syncSavedViewport();
+
+        if (updateDOM) {
+            this.updateViewportTransform();
+        }
+    },
+
     centerInitialViewport() {
         mapState.zoom = 1.0;
         const baseSize = Math.max(window.innerWidth, window.innerHeight);
@@ -319,7 +344,18 @@ export const MapViewport = {
         container.addEventListener('wheel', (e: WheelEvent) => {
             if (FocusManager.getFocus() !== 'MAP') return;
             e.preventDefault();
-            this.performZoom(e.deltaY < 0 ? 'in' : 'out', e.clientX, e.clientY);
+
+            let deltaY = e.deltaY;
+            if (e.deltaMode === 1) deltaY *= 33;
+            else if (e.deltaMode === 2) deltaY *= window.innerHeight;
+
+            const normalizedDelta = deltaY / 100;
+            const factor = Math.pow(1.25, -normalizedDelta);
+            const newZoom = Math.max(mapState.maxZoomOut, Math.min(mapState.maxZoomIn, mapState.zoom * factor));
+
+            if (Math.abs(newZoom - mapState.zoom) > 0.001) {
+                this._applyZoom(newZoom, e.clientX, e.clientY, true);
+            }
         }, { passive: false });
 
         let dragStartX = 0;
