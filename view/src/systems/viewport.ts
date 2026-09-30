@@ -16,6 +16,7 @@ import { QuestCard } from '@/components/QuestCard.js';
 import { SettlementCard } from '@/components/SettlementCard.js';
 
 import { FloatingCard } from '@/components/ui/FloatingCard.js';
+import { SoundService } from '@/services/soundService.js';
 
 const viewport = document.getElementById('map-viewport') as HTMLElement;
 const container = document.getElementById('screen-container') as HTMLElement;
@@ -354,6 +355,7 @@ export const MapViewport = {
             const newZoom = Math.max(mapState.maxZoomOut, Math.min(mapState.maxZoomIn, mapState.zoom * factor));
 
             if (Math.abs(newZoom - mapState.zoom) > 0.001) {
+                SoundService.playMapZoom();
                 this._applyZoom(newZoom, e.clientX, e.clientY, true);
             }
         }, { passive: false });
