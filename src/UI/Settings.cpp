@@ -9,6 +9,7 @@ namespace MAP76::UI {
     bool Settings::writePayloadToFile = false;
     bool Settings::showWorkshopInfoLog = false;
     bool Settings::skipSurvivalFastTravelCheck = false;
+    bool Settings::centerOnPlayerWhenOpened = true;
     float Settings::gamepadCursorSpeed = 1200.0f;
     float Settings::gamepadPanSensitivity = 0.5f;
 
@@ -39,6 +40,12 @@ namespace MAP76::UI {
             skipSurvivalFastTravelCheck = data["skipSurvivalFastTravelCheck"].get<bool>();
         } else {
             data["skipSurvivalFastTravelCheck"] = skipSurvivalFastTravelCheck;
+        }
+
+        if (data.contains("centerOnPlayerWhenOpened") && data["centerOnPlayerWhenOpened"].is_boolean()) {
+            centerOnPlayerWhenOpened = data["centerOnPlayerWhenOpened"].get<bool>();
+        } else {
+            data["centerOnPlayerWhenOpened"] = centerOnPlayerWhenOpened;
         }
 
         if (data.contains("gamepadCursorSpeed") && data["gamepadCursorSpeed"].is_number()) {

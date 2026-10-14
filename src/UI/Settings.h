@@ -14,6 +14,7 @@ namespace MAP76::UI {
         static bool writePayloadToFile;
         static bool showWorkshopInfoLog;
         static bool skipSurvivalFastTravelCheck;
+        static bool centerOnPlayerWhenOpened;
         static float gamepadCursorSpeed;
         static float gamepadPanSensitivity;
         

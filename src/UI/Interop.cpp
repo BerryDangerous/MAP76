@@ -1,4 +1,5 @@
 #include <nlohmann/json.hpp>
+#include <cmath>
 #include "PCH.h"
 #include "Engine/QuestManager.h"
 #include "Hooks/ControllerInput.h"
@@ -681,27 +682,33 @@ namespace MAP76::UI
             {
                 mainLoop->freezeTime = Settings::freezeSimulation;
             }
+            auto enginePlayer = MAP76::Engine::Player::GetCurrentState();
+            uint32_t currentWorldspace = enginePlayer.worldspace;
+            std::string editorID = "";
+            if (auto* wspace = RE::TESForm::GetFormByID<RE::TESWorldSpace>(currentWorldspace)) {
+                editorID = wspace->GetFormEditorID() ? wspace->GetFormEditorID() : "";
+            }
+            
+            float px = std::isnan(enginePlayer.position.x) ? 0.0f : enginePlayer.position.x;
+            float py = std::isnan(enginePlayer.position.y) ? 0.0f : enginePlayer.position.y;
+            float pz = std::isnan(enginePlayer.position.z) ? 0.0f : enginePlayer.position.z;
+            float angle = std::isnan(enginePlayer.headingDegrees) ? 0.0f : enginePlayer.headingDegrees;
+
+            std::string jsCode = std::format(
+                "if (window.setInitialWorldspace) {{ window.setInitialWorldspace({}, '{}'); }} "
+                "if (window.onMapOpened) {{ window.onMapOpened({{ x: {}, y: {}, z: {}, angle: {}, worldspace: {} }}); }} "
+                "if (window.resetUIState) {{ window.resetUIState(); }} "
+                "if (window.requestFreshMapData) {{ window.requestFreshMapData(''); }}", 
+                currentWorldspace, editorID,
+                px, py, pz, angle, currentWorldspace);
+                
+            State::g_coreApi->Invoke(State::g_view, jsCode.c_str(), nullptr);
             State::g_coreApi->Show(State::g_view);
             State::g_coreApi->Focus(State::g_view, false, false);
             if (State::g_viewApi)
             {
                 State::g_viewApi->SetViewCursorPolicy(State::g_view, PRISMA_UI_FLAT_API::CursorPolicy::Hidden);
             }
-            
-            uint32_t currentWorldspace = MAP76::Engine::Player::GetCurrentState().worldspace;
-            std::string editorID = "";
-            if (auto* wspace = RE::TESForm::GetFormByID<RE::TESWorldSpace>(currentWorldspace)) {
-                editorID = wspace->GetFormEditorID() ? wspace->GetFormEditorID() : "";
-            }
-            
-            std::string jsCode = std::format(
-                "if (window.setInitialWorldspace) {{ window.setInitialWorldspace({}, '{}'); }} "
-                "if (window.onMapOpened) {{ window.onMapOpened(); }} "
-                "if (window.resetUIState) {{ window.resetUIState(); }} "
-                "if (window.requestFreshMapData) {{ window.requestFreshMapData(''); }}", 
-                currentWorldspace, editorID);
-                
-            State::g_coreApi->Invoke(State::g_view, jsCode.c_str(), nullptr);
         }
         else
         {
