@@ -3,13 +3,15 @@ import { FastTravelFailPayload, SettlementData } from '@/types/payloads.js';
 import { FastTravelCheckPayload } from '@/types/payloads.js';
 
 import { EngineBridge } from '@/core/bridge.js';
+import { appSettings } from '@/core/settings.js';
 import { mapState } from '@/core/state.js';
 
 import { FocusManager } from '@/systems/focusManager.js';
-import { getPotentialVassalMarkerFormIds } from '@/systems/markerRenderer.js';
+import { getPotentialVassalMarkerFormIds, updateWorldspaceConfig } from '@/systems/markerRenderer.js';
 import { SoundService } from '@/services/soundService.js';
 
 import { MapUtils } from '@/utils/mapUtils.js';
+import { WorldspaceUtils } from '@/utils/worldspaceUtils.js';
 
 import { CustomMarkerCard } from '@/components/CustomMarkerCard.js';
 import { MarkerCard } from '@/components/MarkerCard.js';
@@ -21,6 +23,37 @@ import { isSupplyLinesViewActive } from '@/components/SupplyLines.js';
 
 export let activeHoveredMarker: HTMLElement | null = null;
 let pendingFastTravel: { formId: number, name: string } | null = null;
+
+export function prepareForFastTravel(destFormId: number): void {
+    const destMarker = mapState.lastPayload?.markers?.find(m => m.formId === destFormId);
+    const destSettlement = !destMarker 
+        ? mapState.lastPayload?.settlements?.find(s => s.markerFormId === destFormId || s.formId === destFormId || s.locationFormId === destFormId) 
+        : null;
+    const target = destMarker || (destSettlement ? mapState.lastPayload?.markers?.find(m => m.formId === destSettlement.markerFormId) : null);
+
+    if (target) {
+        if (mapState.lastPayload?.player) {
+            mapState.lastPayload.player.x = target.x;
+            mapState.lastPayload.player.y = target.y;
+            mapState.lastPayload.player.worldspace = target.worldspace;
+        }
+        mapState.player.x = target.x;
+        mapState.player.y = target.y;
+        mapState.player.active = true;
+        mapState.selectedWorldspaceID = target.worldspace;
+        
+        if (appSettings.centerOnPlayerWhenOpened) {
+            delete mapState.worldViewports[target.worldspace];
+            mapState.savedViewport = null;
+            mapState.pendingCenterOnPlayer = true;
+        }
+        
+        if (target.worldspace !== mapState.activeMapConfig.worldspaceID) {
+            const editorID = WorldspaceUtils.getWorldspaceEditorID(target.worldspace);
+            updateWorldspaceConfig(target.worldspace, editorID);
+        }
+    }
+}
 
 export const MarkerInteractionManager = {
     lastX: 0,
@@ -309,6 +342,7 @@ export const MarkerInteractionManager = {
             if (detail.status === FastTravelStatus.SUCCESS) {
                 const { formId, name } = pendingFastTravel;
                 showFastTravelConfirmationModal(name, () => {
+                    prepareForFastTravel(formId);
                     EngineBridge.requestFastTravel(formId);
                     if (FocusManager.getFocus() === 'MARKER_CARD') {
                         MarkerCard.close();

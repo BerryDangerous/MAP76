@@ -2,6 +2,7 @@
 #include "Hooks/MainUpdate.h"
 #include "UI/Interop.h"
 #include "UI/Payload.h"
+#include "UI/Settings.h"
 #include <nlohmann/json.hpp>
 #include <chrono>
 #include <thread>
@@ -12,12 +13,17 @@ namespace MAP76::Hooks
     {
         void OnFrameTick()
         {
-            if (!MAP76::UI::State::g_mapIsOpen.load())
+            if (!MAP76::UI::State::g_mapIsOpen.load() && !MAP76::UI::Settings::centerOnPlayerWhenOpened)
             {
                 return;
             }
 
             if (!MAP76::UI::State::g_coreApi || !MAP76::UI::State::g_view)
+            {
+                return;
+            }
+
+            if (!MAP76::UI::State::g_isDomReady.load())
             {
                 return;
             }
@@ -38,7 +44,7 @@ namespace MAP76::Hooks
             std::thread([]() {
                 while (true) {
                     std::this_thread::sleep_for(std::chrono::milliseconds(500));
-                    if (MAP76::UI::State::g_mapIsOpen.load()) {
+                    if (MAP76::UI::State::g_mapIsOpen.load() || MAP76::UI::Settings::centerOnPlayerWhenOpened) {
                         if (auto *taskInt = F4SE::GetTaskInterface()) {
                             taskInt->AddTask(OnFrameTick);
                         }

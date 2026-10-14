@@ -168,18 +168,23 @@ export function loadMarkers(payload: F4SEMapPayload, isSwitchingWorld: boolean =
     if (mapState.pendingCenterOnPlayer && mapState.player.active) {
         MapViewport.centerOnWorldCoords(mapState.player.x, mapState.player.y);
         mapState.pendingCenterOnPlayer = false;
-    } else if (isSwitchingWorld) {
-        const saved = mapState.worldViewports[config.worldspaceID];
-        if (saved) {
-            mapState.zoom = saved.zoom;
-            mapState.panX = saved.panX;
-            mapState.panY = saved.panY;
-            MapViewport.updateViewportTransform();
-        } else {
-            MapViewport.centerInitialViewport();
-        }
     } else {
-        MapViewport.updateViewportTransform();
+        if (mapState.pendingCenterOnPlayer) {
+            mapState.pendingCenterOnPlayer = false;
+        }
+        if (isSwitchingWorld) {
+            const saved = mapState.worldViewports[config.worldspaceID];
+            if (saved) {
+                mapState.zoom = saved.zoom;
+                mapState.panX = saved.panX;
+                mapState.panY = saved.panY;
+                MapViewport.updateViewportTransform();
+            } else {
+                MapViewport.centerInitialViewport();
+            }
+        } else {
+            MapViewport.updateViewportTransform();
+        }
     }
 }
 

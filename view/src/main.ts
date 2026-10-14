@@ -1,4 +1,5 @@
 import { F4SEMapPayload } from '@/types/payloads.js';
+import { PlayerData } from '@/types/map.js';
 
 import { initializeF4SEBindings, EngineBridge } from '@/core/bridge.js';
 import { appSettings } from '@/core/settings.js';
@@ -45,14 +46,37 @@ if (navigator.userAgent.includes('Ultralight')) {
 
 let mapClosedFlag = true;
 
-export function onMapOpened(): void {
+export function onMapOpened(playerData?: PlayerData): void {
     if (!mapClosedFlag) return;
     mapClosedFlag = false;
     SoundService.playMapOpen();
     
+    if (playerData) {
+        const isWorldChange = mapState.lastPayload?.player?.worldspace !== undefined &&
+                              playerData.worldspace !== mapState.lastPayload.player.worldspace;
+        
+        if (isWorldChange && mapState.lastPayload && mapState.lastPayload.player) {
+            mapState.lastPayload.player.x = playerData.x;
+            mapState.lastPayload.player.y = playerData.y;
+            mapState.lastPayload.player.z = playerData.z;
+            mapState.lastPayload.player.angle = playerData.angle;
+            mapState.lastPayload.player.worldspace = playerData.worldspace;
+            mapState.selectedWorldspaceID = null;
+            if (appSettings.centerOnPlayerWhenOpened) {
+                mapState.pendingCenterOnPlayer = true;
+            }
+            loadMarkers(mapState.lastPayload, true);
+        } else {
+            updatePlayerMarker(playerData);
+        }
+    }
+
     if (appSettings.centerOnPlayerWhenOpened) {
-        if (mapState.player && mapState.player.active) {
+        const config = mapState.activeMapConfig;
+        const bounds = mapState.lastPayload?.worldspaces?.[config.worldspaceID]?.bounds;
+        if (mapState.player && mapState.player.active && bounds) {
             MapViewport.centerOnWorldCoords(mapState.player.x, mapState.player.y);
+            mapState.pendingCenterOnPlayer = false;
         } else {
             mapState.pendingCenterOnPlayer = true;
         }
@@ -65,9 +89,10 @@ export function onMapClosed(): void {
     SoundService.playMapClose();
     
     if (appSettings.centerOnPlayerWhenOpened) {
+        mapState.pendingCenterOnPlayer = true;
         mapState.selectedWorldspaceID = null;
+        mapState.savedViewport = null;
         if (mapState.lastPayload) {
-            mapState.pendingCenterOnPlayer = true;
             loadMarkers(mapState.lastPayload, true);
         }
     }
@@ -118,10 +143,34 @@ initializeF4SEBindings(async (payload: F4SEMapPayload) => {
 window.addEventListener('FrameTick', (e: Event) => {
     const customEvent = e as CustomEvent;
     if (customEvent.detail) {
-        InfoCard.update(customEvent.detail);
-        InfoBar.updateTime(customEvent.detail);
+        if (!mapClosedFlag) {
+            InfoCard.update(customEvent.detail);
+            InfoBar.updateTime(customEvent.detail);
+        }
         if (customEvent.detail.player) {
-            updatePlayerMarker(customEvent.detail.player);
+            const player = customEvent.detail.player;
+            if (mapClosedFlag) {
+                if (!appSettings.centerOnPlayerWhenOpened) {
+                    return;
+                }
+                const isWorldChange = mapState.lastPayload?.player?.worldspace !== undefined &&
+                                      player.worldspace !== mapState.lastPayload.player.worldspace;
+                if (isWorldChange && mapState.lastPayload && mapState.lastPayload.player) {
+                    mapState.lastPayload.player.x = player.x;
+                    mapState.lastPayload.player.y = player.y;
+                    mapState.lastPayload.player.z = player.z;
+                    mapState.lastPayload.player.angle = player.angle;
+                    mapState.lastPayload.player.worldspace = player.worldspace;
+                    mapState.selectedWorldspaceID = null;
+                    mapState.pendingCenterOnPlayer = true;
+                    loadMarkers(mapState.lastPayload, true);
+                } else {
+                    updatePlayerMarker(player);
+                    MapViewport.centerOnWorldCoords(player.x, player.y);
+                }
+            } else {
+                updatePlayerMarker(player);
+            }
         }
     }
 });
