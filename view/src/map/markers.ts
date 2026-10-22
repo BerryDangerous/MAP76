@@ -7,16 +7,15 @@ import { ASSET_ICON_CUSTOM_MARKER, ASSET_ICON_POWER_ARMOR, ASSET_ICON_PLAYER_LOC
 import { appSettings } from '@/core/settings.js';
 import { domainState } from '@/core/state/index.js';
 import { getWorldspaceEditorID, isSameWorldspace } from '@/core/state/worldspaces.js';
-import { viewportState } from '@/map/viewportState.js';
-
 import { AssetManager } from '@/systems/assetManager.js';
-import { MapViewport } from '@/systems/viewport.js';
 
-import { MapUtils } from '@/utils/mapUtils.js';
-import { WorldspaceUtils } from '@/utils/worldspaceUtils.js';
+import { viewportState } from '@/map/viewportState.js';
+import { MapViewport } from '@/map/viewport.js';
+import { MapUtils } from '@/map/coordinates.js';
+import { WorldspaceUtils } from '@/map/gateways.js';
+import { renderSupplyLines, isSupplyLinesViewActive, activeGatewayMarkerFormIds } from '@/map/supplyLines.js';
 
 import { InfoBar } from '@/components/InfoBar.js';
-import { renderSupplyLines, isSupplyLinesViewActive, activeGatewayMarkerFormIds } from '@/components/SupplyLines.js';
 
 function getPlayerLayer(): HTMLElement | null {
     return document.getElementById('player-layer');

@@ -6,13 +6,14 @@ import { EngineBridge } from '@/core/bridge.js';
 import { appSettings } from '@/core/settings.js';
 import { domainState } from '@/core/state/index.js';
 import { getWorldspaceEditorID } from '@/core/state/worldspaces.js';
-import { viewportState } from '@/map/viewportState.js';
 
 import { FocusManager } from '@/systems/focusManager.js';
-import { getPotentialVassalMarkerFormIds, updateWorldspaceConfig } from '@/systems/markerRenderer.js';
 import { SoundService } from '@/services/soundService.js';
 
-import { MapUtils } from '@/utils/mapUtils.js';
+import { getPotentialVassalMarkerFormIds, updateWorldspaceConfig } from '@/map/markers.js';
+import { viewportState } from '@/map/viewportState.js';
+import { MapUtils } from '@/map/coordinates.js';
+import { isSupplyLinesViewActive } from '@/map/supplyLines.js';
 
 import { CustomMarkerCard } from '@/components/CustomMarkerCard.js';
 import { MarkerCard } from '@/components/MarkerCard.js';
@@ -20,7 +21,6 @@ import { showFastTravelErrorModal } from '@/components/Modals.js';
 import { showFastTravelConfirmationModal } from '@/components/Modals.js';
 import { QuestCard } from '@/components/QuestCard.js';
 import { SettlementCard, renderSettlementCardContent } from '@/components/SettlementCard.js';
-import { isSupplyLinesViewActive } from '@/components/SupplyLines.js';
 
 export let activeHoveredMarker: HTMLElement | null = null;
 let pendingFastTravel: { formId: number, name: string } | null = null;

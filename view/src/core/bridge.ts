@@ -2,7 +2,6 @@ import { F4SEMapPayload, FastTravelCheckPayload, FastTravelFailPayload } from '@
 
 import { AssetManager } from '@/systems/assetManager.js';
 import { initI18n } from '@/core/i18n.js';
-import { MapViewport } from '@/systems/viewport.js';
 
 export const EngineBridge = {
     closeMap() {

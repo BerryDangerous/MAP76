@@ -9,10 +9,11 @@ import { FocusManager } from '@/systems/focusManager.js';
 import { LocationsList } from './WorkshopsPanel.js';
 import { KeybindsSystem } from '@/systems/keybindManager.js';
 import { Corner } from '@/systems/layoutManager.js';
-import { MarkerInteractionManager } from '@/systems/markerController.js';
-import { MapViewport } from '@/systems/viewport.js';
 import { OverlayManager } from '@/managers/overlayManager.js';
 import { SoundService } from '@/services/soundService.js';
+
+import { MarkerInteractionManager } from '@/map/interactions.js';
+import { MapViewport } from '@/map/viewport.js';
 
 import { calculateSettlementRatings, SettlementDataWithRatings } from '@/utils/settlementUtils.js';
 import { t } from '@/core/i18n.js';

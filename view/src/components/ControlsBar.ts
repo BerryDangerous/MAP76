@@ -4,9 +4,10 @@ import { domainState } from '@/core/state/index.js';
 import { FocusManager, FocusOwner } from '@/systems/focusManager.js';
 import { KeybindsSystem, KeyAction } from '@/systems/keybindManager.js';
 
+import { hasSupplyLines, isSupplyLinesViewActive } from '@/map/supplyLines.js';
+
 import { QuestList } from '@/components/QuestsPanel.js';
 import { SearchPanel } from '@/components/SearchPanel.js';
-import { hasSupplyLines, isSupplyLinesViewActive } from '@/components/SupplyLines.js';
 
 export class ControlBar {
     private static container: HTMLElement | null = null;

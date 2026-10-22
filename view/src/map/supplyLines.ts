@@ -2,8 +2,8 @@ import { F4SEMapPayload, SettlementData } from '@/types/payloads.js';
 
 import { domainState } from '@/core/state/index.js';
 
-import { MapUtils } from '@/utils/mapUtils.js';
-import { WorldspaceUtils } from '@/utils/worldspaceUtils.js';
+import { MapUtils } from '@/map/coordinates.js';
+import { WorldspaceUtils } from '@/map/gateways.js';
 
 let isSupplyLinesActiveState = false;
 let svgLayer: SVGSVGElement | null = null;

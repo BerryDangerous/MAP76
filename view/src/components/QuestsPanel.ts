@@ -9,9 +9,10 @@ import { FocusManager } from '@/systems/focusManager.js';
 import { KeybindsSystem } from '@/systems/keybindManager.js';
 import { LayoutManager, Corner } from '@/systems/layoutManager.js';
 import { SelectableListController } from '@/systems/listController.js';
-import { MapViewport } from '@/systems/viewport.js';
 import { OverlayManager } from '@/managers/overlayManager.js';
 import { SoundService } from '@/services/soundService.js';
+
+import { MapViewport } from '@/map/viewport.js';
 
 import { QuestUtils } from '@/utils/questUtils.js';
 import { StringUtils } from '@/utils/stringUtils.js';

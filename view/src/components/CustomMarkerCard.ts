@@ -2,10 +2,11 @@ import { setCustomMarker, removeCustomMarker } from '@/core/bridge.js';
 
 import { FocusManager } from '@/systems/focusManager.js';
 import { KeybindsSystem } from '@/systems/keybindManager.js';
-import { MapViewport } from '@/systems/viewport.js';
 import { OverlayManager } from '@/managers/overlayManager.js';
 import { SoundService } from '@/services/soundService.js';
 import { t } from '@/core/i18n.js';
+
+import { MapViewport } from '@/map/viewport.js';
 
 import { ActionButtonConfig } from '@/components/ui/ButtonGroup.js';
 import { FloatingCard } from '@/components/ui/FloatingCard.js';

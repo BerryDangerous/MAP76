@@ -5,9 +5,10 @@ import { domainState } from '@/core/state/index.js';
 
 import { AssetManager } from '@/systems/assetManager.js';
 import { FocusManager, FocusOwner } from '@/systems/focusManager.js';
-import { updateWorldspaceConfig } from '@/systems/markerRenderer.js';
 import { KeybindsSystem } from '@/systems/keybindManager.js';
 import { SoundService } from '@/services/soundService.js';
+
+import { updateWorldspaceConfig } from '@/map/markers.js';
 
 import { showConfirmationModal } from '@/components/Modals.js';
 

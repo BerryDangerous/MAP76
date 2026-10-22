@@ -12,9 +12,10 @@ import { KeybindsSystem } from '@/systems/keybindManager.js';
 import { LayoutManager, Corner } from '@/systems/layoutManager.js';
 import { SelectableListController } from '@/systems/listController.js';
 import { SearchEngine } from '@/systems/searchEngine.js';
-import { MapViewport } from '@/systems/viewport.js';
 import { OverlayManager } from '@/managers/overlayManager.js';
 import { SoundService } from '@/services/soundService.js';
+
+import { MapViewport } from '@/map/viewport.js';
 
 import { QuestUtils } from '@/utils/questUtils.js';
 import { SearchUtils } from '@/utils/searchUtils.js';

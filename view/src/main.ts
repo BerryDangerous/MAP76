@@ -10,14 +10,16 @@ import { viewportState } from '@/map/viewportState.js';
 import { FocusManager } from '@/systems/focusManager.js';
 import { KeybindsSystem } from '@/systems/keybindManager.js';
 import { LayoutManager } from '@/systems/layoutManager.js';
-import { MarkerInteractionManager, activeHoveredMarker } from '@/systems/markerController.js';
-import { loadMarkers, applySupplyLinesVisibilityFilter, switchWorldspace, updatePlayerMarker, updateWorldspaceConfig } from '@/systems/markerRenderer.js';
 import { ModalManager } from '@/systems/modalManager.js';
-import { MapViewport } from '@/systems/viewport.js';
 import { OverlayManager } from '@/managers/overlayManager.js';
 import { SoundService } from '@/services/soundService.js';
 
-import { MapUtils } from '@/utils/mapUtils.js';
+import { MapViewport } from '@/map/viewport.js';
+import { MarkerInteractionManager, activeHoveredMarker } from '@/map/interactions.js';
+import { loadMarkers, applySupplyLinesVisibilityFilter, switchWorldspace, updatePlayerMarker, updateWorldspaceConfig } from '@/map/markers.js';
+import { toggleSupplyLinesView, setSupplyLinesViewActive, hasSupplyLines } from '@/map/supplyLines.js';
+import { MapUtils } from '@/map/coordinates.js';
+
 import { injectSVGFilters } from '@/utils/svgFilters.js';
 
 import { ControlBar } from '@/components/ControlsBar.js';
@@ -30,7 +32,6 @@ import { QuestList } from '@/components/QuestsPanel.js';
 import { SearchPanel } from '@/components/SearchPanel.js';
 import { SettingsMenu } from '@/components/SettingsMenu.js';
 import { SettlementCard } from '@/components/SettlementCard.js';
-import { toggleSupplyLinesView, setSupplyLinesViewActive, hasSupplyLines } from '@/components/SupplyLines.js';
 import { LocationsList } from '@/components/WorkshopsPanel.js';
 
 const globalConfig = window.DEFAULT_COMMONWEALTH_CONFIG;

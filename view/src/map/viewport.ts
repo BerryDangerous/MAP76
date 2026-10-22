@@ -2,14 +2,14 @@ import { GameBounds, MapPosition } from '@/types/map.js';
 import { appSettings } from '@/core/settings.js';
 
 import { domainState } from '@/core/state/index.js';
-import { viewportState } from '@/map/viewportState.js';
 
 import { FocusManager } from '@/systems/focusManager.js';
-import { activeHoveredMarker } from '@/systems/markerController.js';
 import { OverlayManager } from '@/managers/overlayManager.js';
 
-import { MapUtils } from '@/utils/mapUtils.js';
-import { WorldspaceUtils } from '@/utils/worldspaceUtils.js';
+import { viewportState } from '@/map/viewportState.js';
+import { activeHoveredMarker } from '@/map/interactions.js';
+import { MapUtils } from '@/map/coordinates.js';
+import { WorldspaceUtils } from '@/map/gateways.js';
 
 import { CustomMarkerCard } from '@/components/CustomMarkerCard.js';
 import { MarkerCard } from '@/components/MarkerCard.js';
