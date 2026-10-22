@@ -6,7 +6,7 @@ import { OverlayManager } from '@/managers/overlayManager.js';
 import { SoundService } from '@/services/soundService.js';
 import { t } from '@/core/i18n.js';
 
-import { MapViewport } from '@/map/viewport.js';
+import { mapSurface } from '@/map/index.js';
 
 import { ActionButtonConfig } from '@/components/ui/ButtonGroup.js';
 import { FloatingCard } from '@/components/ui/FloatingCard.js';
@@ -54,7 +54,7 @@ export const CustomMarkerCard = {
             if (this.activeAnchorMarker === null && (this.activeGameCoords || this.activeCoords)) {
                 SoundService.playShowOnMap();
                 if (this.activeGameCoords) {
-                    MapViewport.centerOnWorldCoords(this.activeGameCoords.x, this.activeGameCoords.y);
+                    mapSurface.centerOnWorldCoords(this.activeGameCoords.x, this.activeGameCoords.y);
                 }
                 return true;
             }
@@ -162,7 +162,7 @@ export const CustomMarkerCard = {
             this.activeAnchorMarker.classList.remove('is-hovered');
             this.activeAnchorMarker.classList.remove('hide-tooltip-override');
             this.activeAnchorMarker = null;
-            MapViewport.updateViewportTransform();
+            mapSurface.updateViewportTransform();
         }
 
         this.activeCoords = null;

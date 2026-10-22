@@ -4,7 +4,7 @@ import { domainState } from '@/core/state/index.js';
 import { FocusManager, FocusOwner } from '@/systems/focusManager.js';
 import { KeybindsSystem, KeyAction } from '@/systems/keybindManager.js';
 
-import { hasSupplyLines, isSupplyLinesViewActive } from '@/map/supplyLines.js';
+import { mapSurface } from '@/map/index.js';
 
 import { QuestList } from '@/components/QuestsPanel.js';
 import { SearchPanel } from '@/components/SearchPanel.js';
@@ -45,7 +45,7 @@ export class ControlBar {
         } else if (focus === 'MAP') {
             actions = ['OPEN_SETTINGS', 'NAV_BACK', 'PLACE_MARKER', 'ZOOM_IN', 'ZOOM_OUT', 'PAN_MOUSE'];
             
-            if (hasSupplyLines()) {
+            if (mapSurface.hasSupplyLines()) {
                 actions.push('TOGGLE_SUPPLY_LINES');
             }
             if (domainState.lastPayload && domainState.lastPayload.worldspaces && Object.keys(domainState.lastPayload.worldspaces).length > 1) {
@@ -90,7 +90,7 @@ export class ControlBar {
             let html = KeybindsSystem.getControlHtml(
                 actionId, 
                 label, 
-                actionId === 'TOGGLE_SUPPLY_LINES' && isSupplyLinesViewActive()
+                actionId === 'TOGGLE_SUPPLY_LINES' && mapSurface.isSupplyLinesActive()
             );
 
             return `<span class="control-action" style="display: flex; align-items: center; gap: 4px;">${html}</span>`;

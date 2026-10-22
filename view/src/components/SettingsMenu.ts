@@ -8,7 +8,7 @@ import { FocusManager, FocusOwner } from '@/systems/focusManager.js';
 import { KeybindsSystem } from '@/systems/keybindManager.js';
 import { SoundService } from '@/services/soundService.js';
 
-import { updateWorldspaceConfig } from '@/map/markers.js';
+import { mapSurface } from '@/map/index.js';
 
 import { showConfirmationModal } from '@/components/Modals.js';
 
@@ -327,8 +327,9 @@ export const SettingsMenu = {
                 }
             });
 
-            if (domainState.selectedWorldspaceID === wsId) {
-                updateWorldspaceConfig(wsId, ws.editorID);
+            if (domainState.getActiveWorldspaceID() === wsId) {
+                mapSurface.updateWorldspaceConfig(wsId, ws.editorID);
+                mapSurface.render(true);
             }
         });
     },

@@ -15,7 +15,7 @@ import { SearchEngine } from '@/systems/searchEngine.js';
 import { OverlayManager } from '@/managers/overlayManager.js';
 import { SoundService } from '@/services/soundService.js';
 
-import { MapViewport } from '@/map/viewport.js';
+import { mapSurface } from '@/map/index.js';
 
 import { QuestUtils } from '@/utils/questUtils.js';
 import { SearchUtils } from '@/utils/searchUtils.js';
@@ -64,7 +64,7 @@ const listController = new SelectableListController<SearchResult>({
             SearchPanel.openCardForResult(selectedResult);
             if (selectedResult.markerCoords) {
                 if (appSettings.focusMarkerOnSelection) {
-                    MapViewport.centerOnTarget(
+                    mapSurface.centerOnTarget(
                         selectedResult.markerCoords.worldspace ?? domainState.getActiveWorldspaceID(),
                         selectedResult.markerCoords.x,
                         selectedResult.markerCoords.y,
@@ -72,10 +72,10 @@ const listController = new SelectableListController<SearchResult>({
                     );
                 }
             } else {
-                MapViewport.clearSavedViewport(appSettings.focusMarkerOnSelection);
+                mapSurface.clearSavedViewport(appSettings.focusMarkerOnSelection);
             }
         } else {
-            MapViewport.clearSavedViewport(appSettings.focusMarkerOnSelection);
+            mapSurface.clearSavedViewport(appSettings.focusMarkerOnSelection);
         }
 
         if (customScrollbar) {
@@ -165,7 +165,7 @@ export const SearchPanel = {
 
         if (searchPanelState.isCollapsed) {
             this.closeCards();
-            MapViewport.clearSavedViewport(appSettings.resetViewportOnPanelCollapse);
+            mapSurface.clearSavedViewport(appSettings.resetViewportOnPanelCollapse);
             return;
         }
         searchPanelState.isCollapsed = true;
@@ -175,7 +175,7 @@ export const SearchPanel = {
         }
 
         this.closeCards();
-        MapViewport.clearSavedViewport(appSettings.resetViewportOnPanelCollapse);
+        mapSurface.clearSavedViewport(appSettings.resetViewportOnPanelCollapse);
         
         if (FocusManager.getFocus() === 'SEARCH_PANEL') {
             FocusManager.setFocus('MAP');
@@ -397,7 +397,7 @@ export const SearchPanel = {
             if (selected) {
                 SoundService.playShowOnMap();
                 if (selected.markerCoords) {
-                    MapViewport.centerOnTarget(
+                    mapSurface.centerOnTarget(
                         selected.markerCoords.worldspace ?? domainState.getActiveWorldspaceID(),
                         selected.markerCoords.x,
                         selected.markerCoords.y,
@@ -408,7 +408,7 @@ export const SearchPanel = {
                     const markerContainer = document.querySelector(`.marker-container[data-form-id="${markerId}"]`) ||
                                             document.querySelector(`.marker-container[data-display-name="${markerId}"]`);
                     if (markerContainer) {
-                        MapViewport.centerOnElement(markerContainer as HTMLElement);
+                        mapSurface.centerOnElement(markerContainer as HTMLElement);
                     }
                 }
             }
@@ -488,7 +488,7 @@ export const SearchPanel = {
                         FocusManager.setFocus('SEARCH_PANEL');
                     }
                     this.closeCards();
-                    MapViewport.clearSavedViewport(appSettings.resetViewportOnPanelCollapse);
+                    mapSurface.clearSavedViewport(appSettings.resetViewportOnPanelCollapse);
                     this.updateSelection(false);
                     FocusManager.triggerControlsUpdate();
                 },

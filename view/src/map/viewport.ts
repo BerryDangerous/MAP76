@@ -1,28 +1,41 @@
-import { GameBounds, MapPosition } from '@/types/map.js';
+import { GameBounds } from '@/types/map.js';
 import { appSettings } from '@/core/settings.js';
-
 import { domainState } from '@/core/state/index.js';
 
 import { FocusManager } from '@/systems/focusManager.js';
 import { OverlayManager } from '@/managers/overlayManager.js';
+import { SoundService } from '@/services/soundService.js';
 
 import { viewportState } from '@/map/viewportState.js';
 import { activeHoveredMarker } from '@/map/interactions.js';
 import { gameToMapCoords } from '@/map/coordinates.js';
 import { resolveGatewayTarget } from '@/map/gateways.js';
-
-import { CustomMarkerCard } from '@/components/CustomMarkerCard.js';
-import { MarkerCard } from '@/components/MarkerCard.js';
-import { QuestCard } from '@/components/QuestCard.js';
-import { SettlementCard } from '@/components/SettlementCard.js';
-
-import { FloatingCard } from '@/components/ui/FloatingCard.js';
-import { SoundService } from '@/services/soundService.js';
-
-const viewport = document.getElementById('map-viewport') as HTMLElement;
-const container = document.getElementById('screen-container') as HTMLElement;
+import type { MapSurface } from '@/map/mapSurface.js';
 
 export const MapViewport = {
+    _surface: null as MapSurface | null,
+    _viewportEl: null as HTMLElement | null,
+    _containerEl: null as HTMLElement | null,
+
+    bindSurface(surface: MapSurface, viewportEl?: HTMLElement | null, containerEl?: HTMLElement | null) {
+        this._surface = surface;
+        this._viewportEl = viewportEl ?? null;
+        this._containerEl = containerEl ?? null;
+    },
+
+    getViewportElement(): HTMLElement | null {
+        if (!this._viewportEl) {
+            this._viewportEl = document.getElementById('map-viewport');
+        }
+        return this._viewportEl;
+    },
+
+    getContainerElement(): HTMLElement | null {
+        if (!this._containerEl) {
+            this._containerEl = document.getElementById('screen-container');
+        }
+        return this._containerEl;
+    },
 
     _inputFramePending: false,
     _pendingDrag: null as { clientX: number; clientY: number } | null,
@@ -34,6 +47,7 @@ export const MapViewport = {
      * Calculates pan boundaries to ensure the map canvas completely spans the window bounds.
      */
     updateViewportTransform() {
+        const viewport = this.getViewportElement();
         if (!viewport) return;
 
         const baseSize = Math.max(window.innerWidth, window.innerHeight);
@@ -76,7 +90,11 @@ export const MapViewport = {
             }
         }
 
-        FloatingCard.repositionAll();
+        this._surface?.events.emit('viewportChange', {
+            zoom: viewportState.zoom,
+            panX: viewportState.panX,
+            panY: viewportState.panY
+        });
     },
 
     _syncSavedViewport() {
@@ -208,10 +226,13 @@ export const MapViewport = {
     },
 
     centerOnMapCoords(gameX: number, gameY: number, bounds: GameBounds, targetZoom: number = 2.5) {
-        if (!viewport || !domainState.activeMapConfig) return;
+        const viewport = this.getViewportElement();
+        const config = this._surface?.getActiveConfig();
+        if (!viewport || !config) return;
 
         const baseSize = Math.max(window.innerWidth, window.innerHeight);
-        const screenPos = gameToMapCoords(gameX, gameY, 0, bounds, domainState.activeMapConfig.gutters!);
+        const gutters = config.gutters ?? { left: 0, right: 0, top: 0, bottom: 0 };
+        const screenPos = gameToMapCoords(gameX, gameY, 0, bounds, gutters, config.cellBounds);
 
         const unzoomedX = (screenPos.x / 100) * baseSize;
         const unzoomedY = (screenPos.y / 100) * baseSize;
@@ -220,7 +241,7 @@ export const MapViewport = {
     },
 
     centerOnTarget(worldspace: number, x: number, y: number, z: number = 0, targetZoom: number = 2.5): boolean {
-        const config = domainState.activeMapConfig;
+        const config = this._surface?.getActiveConfig();
         if (!config) return false;
         
         const resolved = resolveGatewayTarget(
@@ -243,7 +264,8 @@ export const MapViewport = {
     },
 
     centerOnWorldCoords(gameX: number, gameY: number, targetZoom: number = 2.5): void {
-        const config = domainState.activeMapConfig;
+        const config = this._surface?.getActiveConfig();
+        if (!config) return;
         const bounds = domainState.worldspaces.get(config.worldspaceID)?.bounds;
         if (bounds) {
             this.centerOnMapCoords(gameX, gameY, bounds, targetZoom);
@@ -251,6 +273,7 @@ export const MapViewport = {
     },
 
     centerOnElement(el: HTMLElement, targetZoom: number = 2.5): void {
+        const viewport = this.getViewportElement();
         if (!viewport) return;
 
         const oldZoom = viewportState.zoom;
@@ -272,26 +295,7 @@ export const MapViewport = {
     lastMouseY: window.innerHeight / 2,
 
     _getActiveAnchorMarker(): HTMLElement | null {
-        if (QuestCard.isOpen()) {
-            if (QuestCard.activeAnchorMarker) return QuestCard.activeAnchorMarker;
-
-            const questFormId = QuestCard.activeQuest?.formId;
-            const questName = QuestCard.activeQuest?.questName;
-            const questMarkers = document.querySelectorAll('.quest-marker');
-            for (const el of questMarkers) {
-                const htmlEl = el as HTMLElement;
-                if ((questFormId && htmlEl.dataset.formId === questFormId.toString()) || htmlEl.dataset.displayName === questName) {
-                    return htmlEl;
-                }
-            }
-        } else if (MarkerCard.isOpen()) {
-            return MarkerCard.activeAnchorMarker;
-        } else if (SettlementCard.isOpen()) {
-            return SettlementCard.activeAnchorMarker;
-        } else if (CustomMarkerCard.isOpen()) {
-            return CustomMarkerCard.activeAnchorMarker;
-        }
-        return null;
+        return document.querySelector('.menu-active') as HTMLElement | null;
     },
 
     _zoomLoopRunning: false,
@@ -365,6 +369,8 @@ export const MapViewport = {
     },
 
     initEvents() {
+        const container = this.getContainerElement();
+        const viewport = this.getViewportElement();
         if (!container || !viewport) return;
 
         window.addEventListener('resize', () => this.centerInitialViewport());

@@ -11,7 +11,7 @@ import { SelectableListController } from '@/systems/listController.js';
 import { OverlayManager } from '@/managers/overlayManager.js';
 import { SoundService } from '@/services/soundService.js';
 
-import { MapViewport } from '@/map/viewport.js';
+import { mapSurface } from '@/map/index.js';
 
 import { SettlementDataWithRatings, getWorkshopIconType, getWorkshopBadgesHtml, getWorkshopSubtitle, calculateSettlementRatings } from '@/utils/settlementUtils.js';
 import { StringUtils } from '@/utils/stringUtils.js';
@@ -196,7 +196,7 @@ export const LocationsList = {
     collapse(): void {
         if (locationsListState.isCollapsed) {
             this.closeCards();
-            MapViewport.clearSavedViewport(appSettings.resetViewportOnPanelCollapse);
+            mapSurface.clearSavedViewport(appSettings.resetViewportOnPanelCollapse);
             return;
         }
         locationsListState.isCollapsed = true;
@@ -206,7 +206,7 @@ export const LocationsList = {
         }
 
         this.closeCards();
-        MapViewport.clearSavedViewport(appSettings.resetViewportOnPanelCollapse);
+        mapSurface.clearSavedViewport(appSettings.resetViewportOnPanelCollapse);
         
         if (FocusManager.getFocus() === 'WORKSHOP_LIST') {
             FocusManager.setFocus('MAP');
@@ -359,7 +359,7 @@ export const LocationsList = {
                 if (formId !== undefined) {
                     const marker = domainState.lastPayload?.markers?.find(m => m.formId === formId);
                     if (marker) {
-                        MapViewport.centerOnTarget(marker.worldspace, marker.x, marker.y, 0);
+                        mapSurface.centerOnTarget(marker.worldspace, marker.x, marker.y, 0);
                     }
                 }
             }
@@ -371,7 +371,7 @@ export const LocationsList = {
 
     notifyItemFocused(item: LocationListItem | null): void {
         if (!item || item.type === 'divider') {
-            MapViewport.clearSavedViewport(appSettings.focusMarkerOnSelection);
+            mapSurface.clearSavedViewport(appSettings.focusMarkerOnSelection);
             return;
         }
         
@@ -382,11 +382,11 @@ export const LocationsList = {
         if (formId !== undefined) {
             const marker = domainState.lastPayload?.markers?.find(m => m.formId === formId);
             if (marker && appSettings.focusMarkerOnSelection) {
-                if (!MapViewport.centerOnTarget(marker.worldspace, marker.x, marker.y, 0)) {
-                    MapViewport.clearSavedViewport(appSettings.focusMarkerOnSelection);
+                if (!mapSurface.centerOnTarget(marker.worldspace, marker.x, marker.y, 0)) {
+                    mapSurface.clearSavedViewport(appSettings.focusMarkerOnSelection);
                 }
             } else {
-                MapViewport.clearSavedViewport(appSettings.focusMarkerOnSelection);
+                mapSurface.clearSavedViewport(appSettings.focusMarkerOnSelection);
             }
         }
     },

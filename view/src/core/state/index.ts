@@ -1,4 +1,4 @@
-import { MapConfig, PlayerData } from '@/types/map.js';
+import { PlayerData } from '@/types/map.js';
 import { POIMarker } from '@/types/markers.js';
 import { F4SEMapPayload, SettlementData, WorldspaceDTO } from '@/types/payloads.js';
 import { QuestItem } from '@/types/quests.js';
@@ -17,7 +17,6 @@ export interface PlayerState {
 export interface DomainState {
     player: PlayerState;
     selectedWorldspaceID: number | null;
-    activeMapConfig: MapConfig;
     lastPayload: F4SEMapPayload | null;
 
     markers: Map<number, POIMarker>;
@@ -31,7 +30,6 @@ export interface DomainState {
     updatePlayer(player: Partial<PlayerData> & { active?: boolean }): void;
     toggleFavoriteLocation(formId: number): boolean;
     setSelectedWorldspace(worldspaceId: number | null): void;
-    setActiveMapConfig(config: MapConfig): void;
 }
 
 class DomainStore implements DomainState {
@@ -51,18 +49,6 @@ class DomainStore implements DomainState {
     getActiveWorldspaceID(): number {
         return this.selectedWorldspaceID ?? this.player.worldspace ?? COMMONWEALTH_WORLDSPACE_ID;
     }
-
-    activeMapConfig: MapConfig = {
-        mapName: "Commonwealth",
-        worldspaceID: 60,
-        texturePath: "assets/maps/commonwealth/default.png",
-        gutters: {
-            left: 0.02685546875,
-            right: 0.0283203125,
-            top: 0.02685546875,
-            bottom: 0.0283203125
-        }
-    };
 
     private _lastPayload: F4SEMapPayload | null = null;
 
@@ -179,10 +165,6 @@ class DomainStore implements DomainState {
 
     setSelectedWorldspace(worldspaceId: number | null): void {
         this.selectedWorldspaceID = worldspaceId;
-    }
-
-    setActiveMapConfig(config: MapConfig): void {
-        this.activeMapConfig = config;
     }
 }
 

@@ -12,7 +12,7 @@ import { SelectableListController } from '@/systems/listController.js';
 import { OverlayManager } from '@/managers/overlayManager.js';
 import { SoundService } from '@/services/soundService.js';
 
-import { MapViewport } from '@/map/viewport.js';
+import { mapSurface } from '@/map/index.js';
 
 import { QuestUtils } from '@/utils/questUtils.js';
 import { StringUtils } from '@/utils/stringUtils.js';
@@ -194,7 +194,7 @@ export const QuestList = {
     collapse(): void {
         if (questListState.isCollapsed) {
             this.closeCards();
-            MapViewport.clearSavedViewport(appSettings.resetViewportOnPanelCollapse);
+            mapSurface.clearSavedViewport(appSettings.resetViewportOnPanelCollapse);
             return;
         }
         questListState.isCollapsed = true;
@@ -204,7 +204,7 @@ export const QuestList = {
         }
 
         this.closeCards();
-        MapViewport.clearSavedViewport(appSettings.resetViewportOnPanelCollapse);
+        mapSurface.clearSavedViewport(appSettings.resetViewportOnPanelCollapse);
         if (FocusManager.getFocus() === 'QUEST_LIST') {
             FocusManager.setFocus('MAP');
         }
@@ -355,7 +355,7 @@ export const QuestList = {
                 QuestCard.open(selected, undefined, undefined, questListState.dockCorner, false, 'QUEST_LIST', () => QuestList.collapse());
                 const firstTarget = selected.objectives?.find(o => o.targets && o.targets.length > 0)?.targets[0];
                 if (firstTarget) {
-                    MapViewport.centerOnTarget(firstTarget.worldspace, firstTarget.x, firstTarget.y, firstTarget.z);
+                    mapSurface.centerOnTarget(firstTarget.worldspace, firstTarget.x, firstTarget.y, firstTarget.z);
                 }
             }
             return true;
@@ -378,18 +378,18 @@ export const QuestList = {
 
     notifyQuestFocused(quest: QuestItem | null): void {
         if (!quest || !quest.isTracked || !quest.objectives || quest.objectives.length === 0) {
-            MapViewport.clearSavedViewport(appSettings.focusMarkerOnSelection);
+            mapSurface.clearSavedViewport(appSettings.focusMarkerOnSelection);
             return;
         }
         const activeObj = quest.objectives.find(o => o.state === 1) || quest.objectives[0];
         if (!activeObj || !activeObj.targets || activeObj.targets.length === 0) {
-            MapViewport.clearSavedViewport(appSettings.focusMarkerOnSelection);
+            mapSurface.clearSavedViewport(appSettings.focusMarkerOnSelection);
             return;
         }
 
         const target = activeObj.targets[0];
         if (appSettings.focusMarkerOnSelection) {
-            MapViewport.centerOnTarget(target.worldspace, target.x, target.y, target.z);
+            mapSurface.centerOnTarget(target.worldspace, target.x, target.y, target.z);
         }
     },
 

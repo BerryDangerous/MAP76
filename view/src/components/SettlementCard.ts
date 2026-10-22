@@ -12,8 +12,7 @@ import { Corner } from '@/systems/layoutManager.js';
 import { OverlayManager } from '@/managers/overlayManager.js';
 import { SoundService } from '@/services/soundService.js';
 
-import { MarkerInteractionManager } from '@/map/interactions.js';
-import { MapViewport } from '@/map/viewport.js';
+import { mapSurface } from '@/map/index.js';
 
 import { calculateSettlementRatings, SettlementDataWithRatings } from '@/utils/settlementUtils.js';
 import { t } from '@/core/i18n.js';
@@ -77,7 +76,7 @@ export const SettlementCard = {
                     SoundService.playShowOnMap();
                     const marker = this.activeMarkerFormId !== null ? domainState.markers.get(this.activeMarkerFormId) : undefined;
                     if (marker) {
-                        MapViewport.centerOnTarget(marker.worldspace, marker.x, marker.y, 0);
+                        mapSurface.centerOnTarget(marker.worldspace, marker.x, marker.y, 0);
                     }
                     return true;
                 }
@@ -147,7 +146,7 @@ export const SettlementCard = {
             this.activeAnchorMarker.classList.remove('menu-active');
             this.activeAnchorMarker.classList.remove('hide-tooltip-override');
             this.activeAnchorMarker = null;
-            MapViewport.updateViewportTransform();
+            mapSurface.updateViewportTransform();
         }
 
         if (settlementCardInstance) {
@@ -257,7 +256,7 @@ export const SettlementCard = {
                 label: t('markers.controls.fastTravel'),
                 action: () => {
                     if (this.activeMarkerFormId !== null) {
-                        MarkerInteractionManager.initiateFastTravel(this.activeMarkerFormId, settlement.name);
+                        mapSurface.requestFastTravel(this.activeMarkerFormId, settlement.name);
                     }
                 }
             });

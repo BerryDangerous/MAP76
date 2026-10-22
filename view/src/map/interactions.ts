@@ -1,66 +1,21 @@
-import { FastTravelStatus } from '@/types/map.js';
-import { FastTravelFailPayload, SettlementData } from '@/types/payloads.js';
-import { FastTravelCheckPayload } from '@/types/payloads.js';
+import { MarkerKind, ScreenAnchor } from '@/types/seams.js';
 
-import { EngineBridge } from '@/core/bridge.js';
-import { appSettings } from '@/core/settings.js';
 import { domainState } from '@/core/state/index.js';
-import { getWorldspaceEditorID } from '@/core/state/worldspaces.js';
 
-import { FocusManager } from '@/systems/focusManager.js';
 import { SoundService } from '@/services/soundService.js';
 
-import { getPotentialVassalMarkerFormIds, updateWorldspaceConfig } from '@/map/markers.js';
 import { viewportState } from '@/map/viewportState.js';
 import { screenToGameCoords } from '@/map/coordinates.js';
 import { isSupplyLinesViewActive } from '@/map/supplyLines.js';
-
-import { CustomMarkerCard } from '@/components/CustomMarkerCard.js';
-import { MarkerCard } from '@/components/MarkerCard.js';
-import { showFastTravelErrorModal } from '@/components/Modals.js';
-import { showFastTravelConfirmationModal } from '@/components/Modals.js';
-import { QuestCard } from '@/components/QuestCard.js';
-import { SettlementCard, renderSettlementCardContent } from '@/components/SettlementCard.js';
+import { getPotentialVassalMarkerFormIds } from '@/map/markers.js';
+import type { MapSurface } from '@/map/mapSurface.js';
 
 export let activeHoveredMarker: HTMLElement | null = null;
-let pendingFastTravel: { formId: number, name: string } | null = null;
-
-export function prepareForFastTravel(destFormId: number): void {
-    const destMarker = domainState.markers.get(destFormId);
-    let destSettlement: SettlementData | undefined;
-    if (!destMarker) {
-        for (const s of domainState.settlements.values()) {
-            if (s.markerFormId === destFormId || s.formId === destFormId || s.locationFormId === destFormId) {
-                destSettlement = s;
-                break;
-            }
-        }
-    }
-    const target = destMarker || (destSettlement ? (domainState.markers.get(destSettlement.markerFormId) ?? null) : null);
-
-    if (target) {
-        domainState.updatePlayer({
-            x: target.x,
-            y: target.y,
-            worldspace: target.worldspace,
-            active: true
-        });
-        domainState.setSelectedWorldspace(target.worldspace);
-        
-        if (appSettings.centerOnPlayerWhenOpened) {
-            delete viewportState.worldViewports[target.worldspace];
-            viewportState.savedViewport = null;
-            viewportState.pendingCenterOnPlayer = true;
-        }
-        
-        if (target.worldspace !== domainState.activeMapConfig.worldspaceID) {
-            const editorID = getWorldspaceEditorID(target.worldspace);
-            updateWorldspaceConfig(target.worldspace, editorID);
-        }
-    }
-}
 
 export const MarkerInteractionManager = {
+    _surface: null as MapSurface | null,
+    _containerEl: null as HTMLElement | null,
+
     lastX: 0,
     lastY: 0,
     accumulatedDistance: 0,
@@ -71,9 +26,18 @@ export const MarkerInteractionManager = {
     clusterArray: [] as HTMLElement[],
     cycleIndex: 0,
 
+    bindSurface(surface: MapSurface, containerEl?: HTMLElement | null) {
+        this._surface = surface;
+        this._containerEl = containerEl ?? null;
+    },
+
     initiateFastTravel(formId: number, name: string) {
-        pendingFastTravel = { formId, name };
-        EngineBridge.checkFastTravelConditions(formId);
+        const activeWsId = this._surface ? this._surface.getActiveConfig().worldspaceID : domainState.getActiveWorldspaceID();
+        this._surface?.events.emit('fastTravelRequest', {
+            formId,
+            name,
+            worldspaceId: activeWsId
+        });
     },
 
     clearForceTop() {
@@ -197,8 +161,19 @@ export const MarkerInteractionManager = {
         }
     },
 
+    _getScreenAnchor(element: HTMLElement): ScreenAnchor {
+        const svg = element.querySelector('svg');
+        const rect = svg ? svg.getBoundingClientRect() : element.getBoundingClientRect();
+        return {
+            x: rect.left,
+            y: rect.top,
+            width: rect.width,
+            height: rect.height
+        };
+    },
+
     initEvents() {
-        const layerContainer = document.getElementById('screen-container');
+        const layerContainer = this._containerEl ?? document.getElementById('screen-container');
         if (!layerContainer) return;
 
         window.addEventListener('mousemove', this.onMouseMove.bind(this), { passive: true });
@@ -257,6 +232,16 @@ export const MarkerInteractionManager = {
                     });
                 }
             }
+
+            const kind = target.dataset.markerType === 'quest' ? MarkerKind.QUEST :
+                         target.dataset.markerType === 'customMarker' ? MarkerKind.CUSTOM :
+                         target.dataset.markerType === 'powerArmor' ? MarkerKind.POWER_ARMOR : MarkerKind.POI;
+            this._surface?.events.emit('markerHover', {
+                kind,
+                name: target.dataset.displayName || '',
+                formId: target.dataset.formId ? parseInt(target.dataset.formId) : undefined,
+                anchor: this._getScreenAnchor(target)
+            });
         });
 
         layerContainer.addEventListener('mouseout', (e: MouseEvent) => {
@@ -286,6 +271,8 @@ export const MarkerInteractionManager = {
             if (activeHoveredMarker === target) {
                 activeHoveredMarker = null;
             }
+
+            this._surface?.events.emit('markerHover', null);
         });
 
         layerContainer.addEventListener('click', (e: MouseEvent) => {
@@ -293,7 +280,10 @@ export const MarkerInteractionManager = {
             if (target && target.classList.contains('marker-container')) {
                 viewportState.savedViewport = null;
                 e.stopPropagation();
-                
+
+                const anchor = this._getScreenAnchor(target);
+                const activeWsId = this._surface ? this._surface.getActiveConfig().worldspaceID : domainState.getActiveWorldspaceID();
+
                 if (target.dataset.markerType === 'quest') {
                     const questFormId = target.dataset.formId ? parseInt(target.dataset.formId) : null;
                     let matchingQuest = questFormId ? domainState.quests.get(questFormId) : undefined;
@@ -305,47 +295,50 @@ export const MarkerInteractionManager = {
                             }
                         }
                     }
-                    if (matchingQuest) {
-                        QuestCard.open(matchingQuest, target);
-                        SoundService.playFocus();
-                    }
+                    const qId = matchingQuest ? matchingQuest.formId : (questFormId ?? 0);
+                    this._surface?.events.emit('markerSelect', {
+                        kind: MarkerKind.QUEST,
+                        questFormId: qId,
+                        worldspaceId: activeWsId,
+                        anchor
+                    });
                     return;
                 }
 
                 if (target.dataset.markerType === 'customMarker') {
-                    CustomMarkerCard.open({ anchorMarker: target });
-                    SoundService.playFocus();
+                    this._surface?.events.emit('markerSelect', {
+                        kind: MarkerKind.CUSTOM,
+                        worldspaceId: activeWsId,
+                        coordinates: { x: 0, y: 0 },
+                        anchor
+                    });
                     return;
                 }
 
-                if (target.dataset.markerType !== 'location') {
-                    return; 
-                }
-
-                const canTravel = target.dataset.canFastTravel === 'true';
-                const selectedFormId = target.dataset.formId ? parseInt(target.dataset.formId) : null;
-
-                let ownedSettlement: SettlementData | undefined;
-                if (selectedFormId) {
-                    for (const w of domainState.settlements.values()) {
-                        if (w.owned && (w.markerFormId === selectedFormId || w.formId === selectedFormId || w.locationFormId === selectedFormId)) {
-                            ownedSettlement = w;
-                            break;
-                        }
-                    }
-                }
-
-                if (ownedSettlement) {
-                    renderSettlementCardContent(document.body, ownedSettlement, selectedFormId!, canTravel, target);
-                    SoundService.playFocus();
+                if (target.dataset.markerType === 'powerArmor') {
+                    this._surface?.events.emit('markerSelect', {
+                        kind: MarkerKind.POWER_ARMOR,
+                        worldspaceId: activeWsId,
+                        coordinates: { x: 0, y: 0, z: 0 },
+                        anchor
+                    });
                     return;
-                } else {
-                    MarkerCard.open(target.dataset.displayName || '', selectedFormId!, canTravel, target);
-                    SoundService.playFocus();
+                }
+
+                if (target.dataset.markerType === 'location') {
+                    const selectedFormId = target.dataset.formId ? parseInt(target.dataset.formId) : 0;
+                    this._surface?.events.emit('markerSelect', {
+                        kind: MarkerKind.POI,
+                        formId: selectedFormId,
+                        worldspaceId: activeWsId,
+                        anchor
+                    });
+                    return;
                 }
             } else {
                 if (viewportState.wasDragged) return;
-                const config = domainState.activeMapConfig;
+                const config = this._surface?.getActiveConfig();
+                if (!config) return;
                 const bounds = domainState.worldspaces.get(config.worldspaceID)?.bounds;
                 if (!bounds) return;
 
@@ -354,35 +347,14 @@ export const MarkerInteractionManager = {
                 }
 
                 e.stopPropagation();
-                const worldCoords = screenToGameCoords(e.clientX, e.clientY, bounds, domainState.activeMapConfig!.gutters!, viewportState.zoom, viewportState.panX, viewportState.panY);
-                CustomMarkerCard.open({ gameCoords: worldCoords, pageCoords: { x: e.clientX, y: e.clientY }, worldspaceId: config.worldspaceID });
-            }
-        });
-
-        window.addEventListener('FastTravelCheckResult', (e: Event) => {
-            if (!pendingFastTravel) return;
-            const detail = (e as CustomEvent<FastTravelCheckPayload>).detail;
-            
-            if (detail.status === FastTravelStatus.SUCCESS) {
-                const { formId, name } = pendingFastTravel;
-                showFastTravelConfirmationModal(name, () => {
-                    prepareForFastTravel(formId);
-                    EngineBridge.requestFastTravel(formId);
-                    if (FocusManager.getFocus() === 'MARKER_CARD') {
-                        MarkerCard.close();
-                    } else if (FocusManager.getFocus() === 'SETTLEMENT_CARD') {
-                        SettlementCard.close();
-                    }
+                const gutters = config.gutters ?? { left: 0, right: 0, top: 0, bottom: 0 };
+                const worldCoords = screenToGameCoords(e.clientX, e.clientY, bounds, gutters, viewportState.zoom, viewportState.panX, viewportState.panY, config.cellBounds);
+                this._surface?.events.emit('emptyMapClick', {
+                    worldCoordinates: worldCoords,
+                    screenCoordinates: { x: e.clientX, y: e.clientY },
+                    worldspaceId: config.worldspaceID
                 });
-            } else {
-                showFastTravelErrorModal(detail.status);
             }
-            pendingFastTravel = null;
-        });
-
-        window.addEventListener('FastTravelFailed', (e: Event) => {
-            const detail = (e as CustomEvent<FastTravelFailPayload>).detail;
-            showFastTravelErrorModal(detail.status);
         });
     }
 };

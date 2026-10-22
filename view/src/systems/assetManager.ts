@@ -14,6 +14,13 @@ export const AssetManager = {
             config.configID = key;
         }
 
+        if (this.mapConfigs['FarHarbor_Default'] && !this.mapConfigs['DLC03FarHarbor_Default']) {
+            this.mapConfigs['DLC03FarHarbor_Default'] = this.mapConfigs['FarHarbor_Default'];
+        }
+        if (this.mapConfigs['DLC03FarHarbor_Default'] && !this.mapConfigs['FarHarbor_Default']) {
+            this.mapConfigs['FarHarbor_Default'] = this.mapConfigs['DLC03FarHarbor_Default'];
+        }
+
         this.assetCache = payload.assetCache || {};
         console.log(`[AssetManager] Loaded ${Object.keys(this.mapConfigs).length} map configs and ${Object.keys(this.assetCache).length} cached assets.`);
         
@@ -89,17 +96,60 @@ export const AssetManager = {
     },
 
     getMapConfig(configID: string): MapConfig {
-        return this.mapConfigs[configID] || DEFAULT_BLANK_CONFIG;
+        if (!configID) return DEFAULT_BLANK_CONFIG;
+        if (this.mapConfigs[configID]) return this.mapConfigs[configID];
+
+        const lower = configID.toLowerCase();
+
+        // 1. Case-insensitive key lookup
+        for (const [key, config] of Object.entries(this.mapConfigs)) {
+            if (key.toLowerCase() === lower) {
+                return config;
+            }
+        }
+
+        // 2. Normalized DLC prefix key lookup (e.g. DLC03FarHarbor_Default <-> FarHarbor_Default)
+        const cleanLower = lower.replace(/^dlc\d+/, '');
+        for (const [key, config] of Object.entries(this.mapConfigs)) {
+            if (key.toLowerCase().replace(/^dlc\d+/, '') === cleanLower) {
+                return config;
+            }
+        }
+
+        // 3. Fallback to default config for worldspace editor ID if configID matches worldspace
+        const byWorldspace = this.getDefaultMapConfigForWorldspace(configID);
+        if (byWorldspace !== DEFAULT_BLANK_CONFIG) {
+            return byWorldspace;
+        }
+
+        return DEFAULT_BLANK_CONFIG;
     },
 
     getDefaultMapConfigForWorldspace(worldspaceEditorID: string): MapConfig {
+        if (!worldspaceEditorID) return DEFAULT_BLANK_CONFIG;
         const allConfigs = Object.values(this.mapConfigs);
         
         const searchID = worldspaceEditorID.toLowerCase();
-        const defaultFallback = allConfigs.find(c => c.worldspaceEditorID?.toLowerCase() === searchID && c.configID?.toLowerCase().includes('default'));
+        const cleanSearchID = searchID.replace(/^dlc\d+/, '');
+
+        const matchesEditorID = (c: MapConfig) => {
+            if (!c.worldspaceEditorID) return false;
+            const cId = c.worldspaceEditorID.toLowerCase();
+            const cleanCId = cId.replace(/^dlc\d+/, '');
+            return cId === searchID || cleanCId === cleanSearchID || cId.includes(searchID) || searchID.includes(cId);
+        };
+
+        const isDefaultConfig = (c: MapConfig) => {
+            return Boolean(
+                c.configID?.toLowerCase().includes('default') || 
+                c.mapName?.toLowerCase() === 'default'
+            );
+        };
+
+        const defaultFallback = allConfigs.find(c => matchesEditorID(c) && isDefaultConfig(c));
         if (defaultFallback) return defaultFallback;
         
-        const anyFallback = allConfigs.find(c => c.worldspaceEditorID?.toLowerCase() === searchID);
+        const anyFallback = allConfigs.find(c => matchesEditorID(c));
         if (anyFallback) return anyFallback;
         
         return DEFAULT_BLANK_CONFIG;

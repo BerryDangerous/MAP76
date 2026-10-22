@@ -1,3 +1,4 @@
+import { MapConfig, MapGutters, CellBoundsOverride } from '@/types/map.js';
 import { F4SEMapPayload, GatewayMarker } from '@/types/payloads.js';
 
 import { domainState } from '@/core/state/index.js';
@@ -61,7 +62,9 @@ function resolveCrossWorldspaceGateway(
     currentWorldspace: number,
     refX: number,
     refY: number,
-    gateways?: Record<number, Record<number, GatewayMarker[]>>
+    gutters: MapGutters,
+    gateways?: Record<number, Record<number, GatewayMarker[]>>,
+    cellBounds?: CellBoundsOverride
 ): { x: number; y: number } {
     const bounds = domainState.worldspaces.get(currentWorldspace)?.bounds;
     if (!bounds) return { x: 0, y: 0 };
@@ -84,19 +87,19 @@ function resolveCrossWorldspaceGateway(
         let gx = resolved.x;
         let gy = resolved.y;
 
-        const { minX: bMinX, maxX: bMaxX, minY: bMinY, maxY: bMaxY } = getEffectiveWorldspaceBounds(bounds, domainState.activeMapConfig?.cellBounds);
+        const { minX: bMinX, maxX: bMaxX, minY: bMinY, maxY: bMaxY } = getEffectiveWorldspaceBounds(bounds, cellBounds);
         gx = Math.max(bMinX, Math.min(bMaxX, gx));
         gy = Math.max(bMinY, Math.min(bMaxY, gy));
 
-        const gwPos = gameToMapCoords(gx, gy, 0, bounds, domainState.activeMapConfig!.gutters!);
+        const gwPos = gameToMapCoords(gx, gy, 0, bounds, gutters, cellBounds);
         return { x: gwPos.x, y: gwPos.y };
     }
     
-    const gwPos = gameToMapCoords(0, 0, 0, bounds, domainState.activeMapConfig!.gutters!);
+    const gwPos = gameToMapCoords(0, 0, 0, bounds, gutters, cellBounds);
     return { x: gwPos.x, y: gwPos.y };
 }
 
-export function renderSupplyLines(payload?: F4SEMapPayload | null): void {
+export function renderSupplyLines(payload?: F4SEMapPayload | null, config?: MapConfig): void {
     if (!svgLayer) {
         initSupplyLinesLayer();
     }
@@ -105,9 +108,12 @@ export function renderSupplyLines(payload?: F4SEMapPayload | null): void {
 
     svgLayer.innerHTML = '';
 
-    const currentWorldspace = domainState.activeMapConfig?.worldspaceID ?? 0;
+    const currentWorldspace = config?.worldspaceID ?? domainState.getActiveWorldspaceID();
     const bounds = domainState.worldspaces.get(currentWorldspace)?.bounds;
     if (!bounds) return;
+
+    const gutters = config?.gutters ?? { left: 0, right: 0, top: 0, bottom: 0 };
+    const cellBounds = config?.cellBounds;
 
     const settlements = domainState.settlements;
     const markers = domainState.markers;
@@ -126,7 +132,7 @@ export function renderSupplyLines(payload?: F4SEMapPayload | null): void {
         if (ws.worldspace !== currentWorldspace) continue;
         const marker = ws.markerFormId ? markers.get(ws.markerFormId) : (markers.get(ws.formId) || null);
         if (marker) {
-            const pos = gameToMapCoords(marker.x, marker.y, 0, bounds, domainState.activeMapConfig!.gutters!);
+            const pos = gameToMapCoords(marker.x, marker.y, 0, bounds, gutters, cellBounds);
             coordsMap.set(ws.locationFormId, { x: pos.x, y: pos.y });
             coordsMap.set(ws.formId, { x: pos.x, y: pos.y });
             rawCoordsMap.set(ws.locationFormId, { x: marker.x, y: marker.y });
@@ -170,7 +176,9 @@ export function renderSupplyLines(payload?: F4SEMapPayload | null): void {
                         currentWorldspace,
                         rawSrcPos.x,
                         rawSrcPos.y,
-                        gateways
+                        gutters,
+                        gateways,
+                        cellBounds
                     );
                 }
             } else if (!srcPos && !destPos) {
@@ -182,8 +190,8 @@ export function renderSupplyLines(payload?: F4SEMapPayload | null): void {
                     }
                 }
                 if (ws.worldspace && targetWs && targetWs.worldspace && ws.worldspace !== currentWorldspace && targetWs.worldspace !== currentWorldspace && ws.worldspace !== targetWs.worldspace) {
-                    srcPos = resolveCrossWorldspaceGateway(ws.worldspace, currentWorldspace, 0, 0, gateways);
-                    destPos = resolveCrossWorldspaceGateway(targetWs.worldspace, currentWorldspace, 0, 0, gateways);
+                    srcPos = resolveCrossWorldspaceGateway(ws.worldspace, currentWorldspace, 0, 0, gutters, gateways, cellBounds);
+                    destPos = resolveCrossWorldspaceGateway(targetWs.worldspace, currentWorldspace, 0, 0, gutters, gateways, cellBounds);
                 }
             }
 

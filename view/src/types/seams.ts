@@ -140,6 +140,23 @@ export interface FastTravelRequestPayload {
 }
 
 /**
+ * Viewport camera transformation metrics emitted on camera pan and zoom changes.
+ */
+export interface ViewportTransformPayload {
+    readonly zoom: number;
+    readonly panX: number;
+    readonly panY: number;
+}
+
+/**
+ * Worldspace transition metrics emitted when the active worldspace changes.
+ */
+export interface WorldspaceChangePayload {
+    readonly worldspaceId: number;
+    readonly editorId?: string;
+}
+
+/**
  * Seam event contract defining all events emitted by the MapSurface facade.
  * Used as the generic constraint for TypedEventEmitter<MapEvents>.
  */
@@ -148,6 +165,8 @@ export interface MapEvents {
     readonly markerHover: MarkerHoverPayload | null;
     readonly emptyMapClick: EmptyMapClickPayload;
     readonly fastTravelRequest: FastTravelRequestPayload;
+    readonly viewportChange: ViewportTransformPayload;
+    readonly worldspaceChange: WorldspaceChangePayload;
 }
 
 /**

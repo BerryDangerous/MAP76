@@ -1,21 +1,31 @@
-import { GameBounds, PlayerData, MapPosition, MapConfig } from '@/types/map.js';
+import { GameBounds, PlayerData, MapPosition, MapConfig, MapGutters, CellBoundsOverride } from '@/types/map.js';
 import { CustomMarker, POIMarker, PowerArmorMarker, MarkerType } from '@/types/markers.js';
-import { F4SEMapPayload, SettlementData } from '@/types/payloads.js';
+import { SettlementData, GatewayMarker } from '@/types/payloads.js';
 import { QuestItem } from '@/types/quests.js';
 
-import { ASSET_ICON_CUSTOM_MARKER, ASSET_ICON_POWER_ARMOR, ASSET_ICON_PLAYER_LOCATION, MARKER_ICON_RAIDER_OUTPOST, MARKER_ICON_VASSAL_SETTLEMENT, MARKER_ICON_POTENTIAL_VASSAL_SETTLEMENT, NAKANO_RESIDENCE_REAL_MARKER, NAKANO_RESIDENCE_FAKE_MARKER, ENGINE_MARKER_TYPES, DEFAULT_BLANK_CONFIG, NUKA_WORLD_MAP_GUTTERS, FAR_HARBOR_MAP_GUTTERS, DEFAULT_MAP_GUTTERS } from '@/core/constants.js';
+import { 
+    ASSET_ICON_CUSTOM_MARKER, 
+    ASSET_ICON_POWER_ARMOR, 
+    ASSET_ICON_PLAYER_LOCATION, 
+    MARKER_ICON_RAIDER_OUTPOST, 
+    MARKER_ICON_VASSAL_SETTLEMENT, 
+    MARKER_ICON_POTENTIAL_VASSAL_SETTLEMENT, 
+    NAKANO_RESIDENCE_REAL_MARKER, 
+    NAKANO_RESIDENCE_FAKE_MARKER, 
+    NUKA_WORLD_MAP_GUTTERS, 
+    FAR_HARBOR_MAP_GUTTERS, 
+    DEFAULT_MAP_GUTTERS 
+} from '@/core/constants.js';
 import { appSettings } from '@/core/settings.js';
-import { domainState } from '@/core/state/index.js';
-import { getWorldspaceEditorID, isSameWorldspace, getEffectiveWorldspaceBounds } from '@/core/state/worldspaces.js';
+import { domainState, PlayerState } from '@/core/state/index.js';
+import { isSameWorldspace, getEffectiveWorldspaceBounds } from '@/core/state/worldspaces.js';
+
 import { AssetManager } from '@/systems/assetManager.js';
 
 import { viewportState } from '@/map/viewportState.js';
-import { MapViewport } from '@/map/viewport.js';
 import { gameToMapCoords } from '@/map/coordinates.js';
 import { resolveGatewayTarget } from '@/map/gateways.js';
-import { renderSupplyLines, isSupplyLinesViewActive, activeGatewayMarkerFormIds } from '@/map/supplyLines.js';
-
-import { InfoBar } from '@/components/InfoBar.js';
+import { isSupplyLinesViewActive, activeGatewayMarkerFormIds } from '@/map/supplyLines.js';
 
 function getPlayerLayer(): HTMLElement | null {
     return document.getElementById('player-layer');
@@ -108,97 +118,17 @@ export function getPotentialVassalMarkerFormIds(
     return potentialFormIds;
 }
 
-export function switchWorldspace(wsId: number) {
-    if (domainState.activeMapConfig) {
-        viewportState.worldViewports[domainState.activeMapConfig.worldspaceID] = {
-            zoom: viewportState.zoom,
-            panX: viewportState.panX,
-            panY: viewportState.panY
-        };
-    }
-
-    domainState.setSelectedWorldspace(wsId);
-    
-    if (domainState.lastPayload) {
-        loadMarkers(domainState.lastPayload, true);
-    }
-}
-
-export function loadMarkers(payload: F4SEMapPayload, isSwitchingWorld: boolean = false) {
-    if (!payload) return;
-
-    domainState.setPayload(payload);
-
-    let activeWsId = domainState.selectedWorldspaceID;
-    if (activeWsId === null && payload.player && payload.player.worldspace !== undefined) {
-        activeWsId = payload.player.worldspace;
-    }
-
-    if (activeWsId !== null && activeWsId !== undefined) {
-        const editorID = getWorldspaceEditorID(activeWsId);
-        updateWorldspaceConfig(activeWsId, editorID);
-        InfoBar.updateWorldspace(activeWsId);
-    }
-
-    const config = domainState.activeMapConfig;
-    if (!config) return;
-
-    const playerLayer = getPlayerLayer();
-    const markerLayer = getMarkerLayer();
-    if (!playerLayer || !markerLayer) return;
-
-    const worldspaceData = payload.worldspaces?.[config.worldspaceID];
-    const bounds = worldspaceData?.bounds;
-    if (!bounds) {
-        console.error(`[Markers] No bounds data found for worldspace ${config.worldspaceID}`);
-        return;
-    }
-    
-    viewportState.animatedElements = [];
-
-    playerLayer.innerHTML = '';
-    markerLayer.innerHTML = '';
-    const questLayer = getQuestLayer();
-    if (questLayer) questLayer.innerHTML = '';
-
-    renderPlayer(payload.player, config.worldspaceID, bounds);
-    renderSupplyLines(payload);
-    renderLocationMarkers(payload.markers, config.worldspaceID, bounds, payload);
-    if (questLayer) {
-        renderQuestMarkers(payload.quests, config.worldspaceID, bounds, questLayer, payload);
-        renderCustomMarker(payload.custom_marker, config.worldspaceID, bounds, questLayer, payload);
-        renderPowerArmor(payload.power_armor, config.worldspaceID, bounds, questLayer, payload);
-    }
-
-    applySupplyLinesVisibilityFilter();
-    if (viewportState.pendingCenterOnPlayer && domainState.player.active) {
-        MapViewport.centerOnWorldCoords(domainState.player.x, domainState.player.y);
-        viewportState.pendingCenterOnPlayer = false;
-    } else {
-        if (viewportState.pendingCenterOnPlayer) {
-            viewportState.pendingCenterOnPlayer = false;
-        }
-        if (isSwitchingWorld) {
-            const saved = viewportState.worldViewports[config.worldspaceID];
-            if (saved) {
-                viewportState.zoom = saved.zoom;
-                viewportState.panX = saved.panX;
-                viewportState.panY = saved.panY;
-                MapViewport.updateViewportTransform();
-            } else {
-                MapViewport.centerInitialViewport();
-            }
-        } else {
-            MapViewport.updateViewportTransform();
-        }
-    }
-}
-
-function renderPlayer(player: PlayerData | undefined, worldspaceID: number, bounds: GameBounds) {
+export function renderPlayer(
+    player: PlayerData | PlayerState | undefined, 
+    worldspaceID: number, 
+    bounds: GameBounds,
+    gutters: MapGutters,
+    cellBounds?: CellBoundsOverride
+): void {
     domainState.updatePlayer({ active: false });
-    if (!player || !isSameWorldspace(player.worldspace, worldspaceID)) return;
+    if (!player || player.worldspace === undefined || !isSameWorldspace(player.worldspace, worldspaceID)) return;
 
-    const pos = gameToMapCoords(player.x, player.y, player.z, bounds, domainState.activeMapConfig!.gutters!);
+    const pos = gameToMapCoords(player.x, player.y, player.z, bounds, gutters, cellBounds);
     const pImg = document.createElement('div');
     pImg.id = 'player-marker';
     pImg.className = 'player-marker-vector';
@@ -218,7 +148,13 @@ function renderPlayer(player: PlayerData | undefined, worldspaceID: number, boun
     viewportState.animatedElements.push(pImg);
 }
 
-function renderLocationMarkers(markers: POIMarker[], worldspaceID: number, bounds: GameBounds, _payload?: F4SEMapPayload) {
+export function renderLocationMarkers(
+    markers: POIMarker[], 
+    worldspaceID: number, 
+    bounds: GameBounds,
+    gutters: MapGutters,
+    cellBounds?: CellBoundsOverride
+): void {
     const markerLayer = getMarkerLayer();
     if (!markerLayer) return;
 
@@ -241,7 +177,7 @@ function renderLocationMarkers(markers: POIMarker[], worldspaceID: number, bound
             y = realNakano.y;
         }
 
-        const effectiveBounds = getEffectiveWorldspaceBounds(bounds, domainState.activeMapConfig?.cellBounds);
+        const effectiveBounds = getEffectiveWorldspaceBounds(bounds, cellBounds);
         const isClamped = (x < effectiveBounds.minX || x > effectiveBounds.maxX || y < effectiveBounds.minY || y > effectiveBounds.maxY);
 
         if (isClamped) {
@@ -249,7 +185,7 @@ function renderLocationMarkers(markers: POIMarker[], worldspaceID: number, bound
             y = Math.max(effectiveBounds.minY, Math.min(effectiveBounds.maxY, y));
         }
 
-        const pos = gameToMapCoords(x, y, 0, bounds, domainState.activeMapConfig!.gutters!);
+        const pos = gameToMapCoords(x, y, 0, bounds, gutters, cellBounds);
         const container = createMarkerContainer('location', m.name, pos);
         if (isClamped) {
             container.classList.add('clamped-marker');
@@ -270,7 +206,6 @@ function renderLocationMarkers(markers: POIMarker[], worldspaceID: number, bound
 
         container.dataset.isOwnedWorkshop = isOwnedWorkshop ? 'true' : 'false';
 
-        // The engine returns the default icon, not the runtime icon
         const iconType = isRaiderOutpost ? MARKER_ICON_RAIDER_OUTPOST :
                          isVassal ? MARKER_ICON_VASSAL_SETTLEMENT :
                          m.type;
@@ -291,7 +226,15 @@ function renderLocationMarkers(markers: POIMarker[], worldspaceID: number, bound
     });
 }
 
-function renderQuestMarkers(quests: QuestItem[], worldspaceID: number, bounds: GameBounds, questLayer: HTMLElement, payload?: F4SEMapPayload) {
+export function renderQuestMarkers(
+    quests: QuestItem[], 
+    worldspaceID: number, 
+    bounds: GameBounds, 
+    questLayer: HTMLElement,
+    gutters: MapGutters,
+    gateways?: Record<number, Record<number, GatewayMarker[]>>,
+    cellBounds?: CellBoundsOverride
+): void {
     if (!quests) return;
 
     quests.forEach(quest => {
@@ -316,7 +259,7 @@ function renderQuestMarkers(quests: QuestItem[], worldspaceID: number, bounds: G
                     target.z,
                     refX,
                     refY,
-                    payload?.gateways,
+                    gateways,
                     domainState.markers
                 );
 
@@ -325,7 +268,7 @@ function renderQuestMarkers(quests: QuestItem[], worldspaceID: number, bounds: G
                 let gx = resolved.x;
                 let gy = resolved.y;
 
-                const effectiveBounds = getEffectiveWorldspaceBounds(bounds, domainState.activeMapConfig?.cellBounds);
+                const effectiveBounds = getEffectiveWorldspaceBounds(bounds, cellBounds);
                 const isClamped = (gx < effectiveBounds.minX || gx > effectiveBounds.maxX || gy < effectiveBounds.minY || gy > effectiveBounds.maxY);
 
                 if (resolved.isGateway || isClamped) {
@@ -333,7 +276,7 @@ function renderQuestMarkers(quests: QuestItem[], worldspaceID: number, bounds: G
                     gy = Math.max(effectiveBounds.minY, Math.min(effectiveBounds.maxY, gy));
                 }
 
-                const pos = gameToMapCoords(gx, gy, resolved.z, bounds, domainState.activeMapConfig!.gutters!);
+                const pos = gameToMapCoords(gx, gy, resolved.z, bounds, gutters, cellBounds);
 
                 const container = createMarkerContainer('quest', markerTooltipText, pos);
                 if (resolved.isGateway || isClamped) {
@@ -348,15 +291,25 @@ function renderQuestMarkers(quests: QuestItem[], worldspaceID: number, bounds: G
                 container.innerHTML = AssetManager.getQuestMarkerIconSvg(target.isDoor, quest.isTracked);
 
                 questLayer.appendChild(container);
-
                 viewportState.animatedElements.push(container);
             });
         });
     });
 }
 
-function renderCustomMarker(marker: CustomMarker | null | undefined, worldspaceID: number, bounds: GameBounds, questLayer: HTMLElement, payload?: F4SEMapPayload) {
+export function renderCustomMarker(
+    marker: CustomMarker | null | undefined, 
+    worldspaceID: number, 
+    bounds: GameBounds, 
+    questLayer: HTMLElement,
+    gutters: MapGutters,
+    gateways?: Record<number, Record<number, GatewayMarker[]>>,
+    cellBounds?: CellBoundsOverride
+): void {
     if (!marker) return;
+
+    const refX = domainState.player.active ? domainState.player.x : 0;
+    const refY = domainState.player.active ? domainState.player.y : 0;
 
     const resolved = resolveGatewayTarget(
         marker.worldspace,
@@ -364,9 +317,9 @@ function renderCustomMarker(marker: CustomMarker | null | undefined, worldspaceI
         marker.x,
         marker.y,
         0,
-        domainState.player.active ? domainState.player.x : 0,
-        domainState.player.active ? domainState.player.y : 0,
-        payload?.gateways,
+        refX,
+        refY,
+        gateways,
         domainState.markers
     );
 
@@ -375,7 +328,7 @@ function renderCustomMarker(marker: CustomMarker | null | undefined, worldspaceI
     let gx = resolved.x;
     let gy = resolved.y;
 
-    const effectiveBounds = getEffectiveWorldspaceBounds(bounds, domainState.activeMapConfig?.cellBounds);
+    const effectiveBounds = getEffectiveWorldspaceBounds(bounds, cellBounds);
     const isClamped = (gx < effectiveBounds.minX || gx > effectiveBounds.maxX || gy < effectiveBounds.minY || gy > effectiveBounds.maxY);
 
     if (resolved.isGateway || isClamped) {
@@ -383,7 +336,8 @@ function renderCustomMarker(marker: CustomMarker | null | undefined, worldspaceI
         gy = Math.max(effectiveBounds.minY, Math.min(effectiveBounds.maxY, gy));
     }
 
-    const pos = gameToMapCoords(gx, gy, 0, bounds, domainState.activeMapConfig!.gutters!);
+    const pos = gameToMapCoords(gx, gy, 0, bounds, gutters, cellBounds);
+
     const container = createMarkerContainer('customMarker', 'Custom Marker', pos);
     if (resolved.isGateway || isClamped) {
         container.classList.add('clamped-marker');
@@ -398,21 +352,29 @@ function renderCustomMarker(marker: CustomMarker | null | undefined, worldspaceI
     viewportState.animatedElements.push(container);
 }
 
-function renderPowerArmor(pa: PowerArmorMarker | null | undefined, worldspaceID: number, bounds: GameBounds, questLayer: HTMLElement, payload?: F4SEMapPayload) {
-    if (!pa) return;
+export function renderPowerArmor(
+    armor: PowerArmorMarker | null | undefined, 
+    worldspaceID: number, 
+    bounds: GameBounds, 
+    questLayer: HTMLElement,
+    gutters: MapGutters,
+    gateways?: Record<number, Record<number, GatewayMarker[]>>,
+    cellBounds?: CellBoundsOverride
+): void {
+    if (!armor) return;
 
     const refX = domainState.player.active ? domainState.player.x : 0;
     const refY = domainState.player.active ? domainState.player.y : 0;
 
     const resolved = resolveGatewayTarget(
-        pa.worldspace,
+        armor.worldspace,
         worldspaceID,
-        pa.x,
-        pa.y,
-        pa.z ?? 0,
+        armor.x,
+        armor.y,
+        armor.z ?? 0,
         refX,
         refY,
-        payload?.gateways,
+        gateways,
         domainState.markers
     );
 
@@ -421,7 +383,7 @@ function renderPowerArmor(pa: PowerArmorMarker | null | undefined, worldspaceID:
     let gx = resolved.x;
     let gy = resolved.y;
 
-    const effectiveBounds = getEffectiveWorldspaceBounds(bounds, domainState.activeMapConfig?.cellBounds);
+    const effectiveBounds = getEffectiveWorldspaceBounds(bounds, cellBounds);
     const isClamped = (gx < effectiveBounds.minX || gx > effectiveBounds.maxX || gy < effectiveBounds.minY || gy > effectiveBounds.maxY);
 
     if (resolved.isGateway || isClamped) {
@@ -429,7 +391,8 @@ function renderPowerArmor(pa: PowerArmorMarker | null | undefined, worldspaceID:
         gy = Math.max(effectiveBounds.minY, Math.min(effectiveBounds.maxY, gy));
     }
 
-    const pos = gameToMapCoords(gx, gy, resolved.z, bounds, domainState.activeMapConfig!.gutters!);
+    const pos = gameToMapCoords(gx, gy, resolved.z, bounds, gutters, cellBounds);
+
     const container = createMarkerContainer('powerarmor', 'Power Armor', pos);
     if (resolved.isGateway || isClamped) {
         container.classList.add('clamped-marker');
@@ -456,43 +419,7 @@ function createMarkerContainer(type: MarkerType, displayName: string, pos: MapPo
     return container;
 }
 
-export function updatePlayerMarker(player: PlayerData | undefined) {
-    if (!player) return;
-
-    domainState.updatePlayer({
-        x: player.x,
-        y: player.y,
-        z: player.z,
-        angle: player.angle,
-        active: true
-    });
-
-    const config = domainState.activeMapConfig;
-    if (!config) return;
-
-    const pImg = document.getElementById('player-marker') as HTMLDivElement;
-    if (!isSameWorldspace(player.worldspace, config.worldspaceID)) {
-        if (pImg) pImg.style.display = 'none';
-        domainState.updatePlayer({ active: false });
-        return;
-    }
-
-    const worldspaceData = domainState.worldspaces.get(config.worldspaceID);
-    const bounds = worldspaceData?.bounds;
-    if (!bounds) return;
-
-    if (!pImg) {
-        renderPlayer(player, config.worldspaceID, bounds);
-    } else {
-        pImg.style.display = '';
-        const pos = gameToMapCoords(player.x, player.y, player.z, bounds, domainState.activeMapConfig!.gutters!);
-        pImg.style.left = `${pos.x}%`;
-        pImg.style.top = `${pos.y}%`;
-        pImg.style.setProperty('--player-angle', `${player.angle}deg`);
-    }
-}
-
-function calculateFinalGutters(config: MapConfig) {
+export function calculateFinalGutters(config: MapConfig): MapGutters {
     if (config.imageGuttersPixels && config.imageDimensions && config.imageDimensions.width > 0 && config.imageDimensions.height > 0) {
         return {
             left: config.imageGuttersPixels.left / config.imageDimensions.width,
@@ -508,59 +435,5 @@ function calculateFinalGutters(config: MapConfig) {
         case "NukaWorld": return NUKA_WORLD_MAP_GUTTERS;
         case "DLC03FarHarbor": return FAR_HARBOR_MAP_GUTTERS;
         default: return DEFAULT_MAP_GUTTERS;
-    }
-}
-
-export function updateWorldspaceConfig(worldspaceID: number, worldspaceEditorID?: string) {
-    if (worldspaceEditorID) {
-        const preferredConfigID = appSettings.preferredMapConfigs[worldspaceEditorID];
-        
-        let config = preferredConfigID 
-            ? AssetManager.getMapConfig(preferredConfigID) 
-            : AssetManager.getDefaultMapConfigForWorldspace(worldspaceEditorID);
-
-        if (config === DEFAULT_BLANK_CONFIG) {
-            config = AssetManager.getDefaultMapConfigForWorldspace(worldspaceEditorID);
-        }
-        
-        const finalGutters = calculateFinalGutters(config);
-
-
-        domainState.activeMapConfig = {
-            ...DEFAULT_BLANK_CONFIG,
-            ...config,
-            worldspaceID: worldspaceID,
-            mapName: config.mapName || worldspaceEditorID,
-            gutters: finalGutters,
-            imageDimensions: config.imageDimensions,
-            imageGuttersPixels: config.imageGuttersPixels
-        };
-    } else {
-        domainState.setActiveMapConfig({
-            ...DEFAULT_BLANK_CONFIG,
-            mapName: "Custom Worldspace",
-            worldspaceID: worldspaceID
-        });
-    }
-
-    const container = document.getElementById('map-bg-container');
-    if (container) {
-        const texturePath = domainState.activeMapConfig.texturePath;
-        const textureData = AssetManager.getMapTextureData(texturePath);
-        
-        Array.from(container.children).forEach((child: Element) => {
-            child.classList.remove('active');
-        });
-
-        const layerId = `map-layer-${texturePath.replace(/[^a-zA-Z0-9]/g, '_')}`;
-        let activeLayer = document.getElementById(layerId);
-
-        if (activeLayer) {
-            activeLayer.classList.add('active');
-        } else {
-            console.warn(`[Map] Expected layer ${layerId} was not preloaded into DOM. Fallback triggered.`);
-            const layer = AssetManager.createMapLayer(layerId, textureData, domainState.activeMapConfig, true);
-            container.appendChild(layer);
-        }
     }
 }

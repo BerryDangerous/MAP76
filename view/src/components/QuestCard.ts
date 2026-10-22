@@ -9,7 +9,7 @@ import { Corner } from '@/systems/layoutManager.js';
 import { OverlayManager } from '@/managers/overlayManager.js';
 import { SoundService } from '@/services/soundService.js';
 
-import { MapViewport } from '@/map/viewport.js';
+import { mapSurface } from '@/map/index.js';
 
 import { QuestUtils } from '@/utils/questUtils.js';
 import { StringUtils } from '@/utils/stringUtils.js';
@@ -74,7 +74,7 @@ export const QuestCard = {
                     SoundService.playShowOnMap();
                     const firstTarget = this.activeQuest.objectives?.find(o => o.targets && o.targets.length > 0)?.targets[0];
                     if (firstTarget) {
-                        MapViewport.centerOnTarget(firstTarget.worldspace, firstTarget.x, firstTarget.y, firstTarget.z);
+                        mapSurface.centerOnTarget(firstTarget.worldspace, firstTarget.x, firstTarget.y, firstTarget.z);
                     }
                     return true;
                 }
@@ -162,7 +162,7 @@ export const QuestCard = {
             this.activeAnchorMarker.classList.remove('menu-active');
             this.activeAnchorMarker.classList.remove('hide-tooltip-override');
             this.activeAnchorMarker = null;
-            MapViewport.updateViewportTransform();
+            mapSurface.updateViewportTransform();
         }
 
         if (floatingCard) {

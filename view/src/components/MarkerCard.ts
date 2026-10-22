@@ -10,8 +10,7 @@ import { SoundService } from '@/services/soundService.js';
 
 import { t } from '@/core/i18n.js';
 
-import { MarkerInteractionManager } from '@/map/interactions.js';
-import { MapViewport } from '@/map/viewport.js';
+import { mapSurface } from '@/map/index.js';
 
 import { ActionButtonConfig } from '@/components/ui/ButtonGroup.js';
 import { FloatingCard } from '@/components/ui/FloatingCard.js';
@@ -69,7 +68,7 @@ export const MarkerCard = {
                 SoundService.playShowOnMap();
                 const marker = domainState.markers.get(this.activeMarkerFormId);
                 if (marker) {
-                    MapViewport.centerOnTarget(marker.worldspace, marker.x, marker.y, 0);
+                    mapSurface.centerOnTarget(marker.worldspace, marker.x, marker.y, 0);
                 }
                 return true;
             }
@@ -137,7 +136,7 @@ export const MarkerCard = {
             this.activeAnchorMarker.classList.remove('is-hovered');
             this.activeAnchorMarker.classList.remove('hide-tooltip-override');
             this.activeAnchorMarker = null;
-            MapViewport.updateViewportTransform();
+            mapSurface.updateViewportTransform();
         }
 
         if (markerCardInstance) {
@@ -185,7 +184,7 @@ export const MarkerCard = {
                 label: t('markers.controls.fastTravel'),
                 action: () => {
                     if (this.activeMarkerFormId !== null) {
-                        MarkerInteractionManager.initiateFastTravel(this.activeMarkerFormId, this.activeMarkerName);
+                        mapSurface.requestFastTravel(this.activeMarkerFormId, this.activeMarkerName);
                     }
                 }
             });
