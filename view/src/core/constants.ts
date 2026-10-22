@@ -96,6 +96,7 @@ export const ASSET_ICON_CUSTOM_MARKER = 'custom-marker';
 export const ASSET_ICON_POWER_ARMOR = 'power-armor';
 export const ASSET_ICON_PLAYER_LOCATION = 'player-location';
 
+export const COMMONWEALTH_WORLDSPACE_ID = 60;
 export const CELL_SIZE_UNITS = 4096.0;
 
 export const NUKA_WORLD_MAP_GUTTERS = {

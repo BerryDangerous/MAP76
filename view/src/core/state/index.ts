@@ -3,6 +3,8 @@ import { POIMarker } from '@/types/markers.js';
 import { F4SEMapPayload, SettlementData, WorldspaceDTO } from '@/types/payloads.js';
 import { QuestItem } from '@/types/quests.js';
 
+import { COMMONWEALTH_WORLDSPACE_ID } from '@/core/constants.js';
+
 export interface PlayerState {
     x: number;
     y: number;
@@ -24,6 +26,7 @@ export interface DomainState {
     worldspaces: Map<number, WorldspaceDTO>;
     favoriteLocations: Set<number>;
 
+    getActiveWorldspaceID(): number;
     setPayload(payload: F4SEMapPayload | null): void;
     updatePlayer(player: Partial<PlayerData> & { active?: boolean }): void;
     toggleFavoriteLocation(formId: number): boolean;
@@ -41,6 +44,13 @@ class DomainStore implements DomainState {
     };
 
     selectedWorldspaceID: number | null = null;
+
+    /**
+     * Authoritative source of truth for the currently active/viewed worldspace ID.
+     */
+    getActiveWorldspaceID(): number {
+        return this.selectedWorldspaceID ?? this.player.worldspace ?? COMMONWEALTH_WORLDSPACE_ID;
+    }
 
     activeMapConfig: MapConfig = {
         mapName: "Commonwealth",

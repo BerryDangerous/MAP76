@@ -105,6 +105,7 @@ export function setInitialWorldspace(worldspaceId: number, editorId: string): vo
         return;
     }
 
+    domainState.updatePlayer({ worldspace: worldspaceId });
     updateWorldspaceConfig(worldspaceId, editorId);
 }
 
@@ -296,13 +297,11 @@ window.addEventListener('DOMContentLoaded', () => {
                     e.preventDefault();
                     SoundService.playMapZoom();
                     if (domainState.player) {
-                        if (domainState.activeMapConfig) {
-                            viewportState.worldViewports[domainState.activeMapConfig.worldspaceID] = {
-                                zoom: viewportState.zoom,
-                                panX: viewportState.panX,
-                                panY: viewportState.panY
-                            };
-                        }
+                        viewportState.worldViewports[domainState.getActiveWorldspaceID()] = {
+                            zoom: viewportState.zoom,
+                            panX: viewportState.panX,
+                            panY: viewportState.panY
+                        };
                         domainState.setSelectedWorldspace(null);
                         if (domainState.lastPayload) {
                             loadMarkers(domainState.lastPayload, true);
@@ -359,7 +358,7 @@ window.addEventListener('DOMContentLoaded', () => {
                         return nameA.localeCompare(nameB);
                     });
 
-                    const currentIdx = wsKeys.indexOf(domainState.activeMapConfig.worldspaceID);
+                    const currentIdx = wsKeys.indexOf(domainState.getActiveWorldspaceID());
                     let nextIdx = 0;
                     if (KeybindsSystem.isAction(e, 'PREV_WORLD')) {
                         nextIdx = currentIdx > 0 ? currentIdx - 1 : wsKeys.length - 1;

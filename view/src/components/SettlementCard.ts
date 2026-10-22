@@ -40,7 +40,7 @@ export const SettlementCard = {
                 }
                 controls.push('PAN_MOUSE');
                 if (SettlementCard.activeAnchorMarker === null && SettlementCard.activeSettlement) {
-                    if (SettlementCard.activeSettlement.worldspace !== undefined && isSameWorldspace(SettlementCard.activeSettlement.worldspace, domainState.activeMapConfig.worldspaceID)) {
+                    if (SettlementCard.activeSettlement.worldspace !== undefined && isSameWorldspace(SettlementCard.activeSettlement.worldspace, domainState.getActiveWorldspaceID())) {
                         controls.push({ action: 'CENTER_ITEM', label: t('markers.controls.centerMarker') });
                     }
                 }
@@ -73,7 +73,7 @@ export const SettlementCard = {
     handleKeyDown(e: KeyboardEvent): boolean {
         if (KeybindsSystem.isAction(e, 'CENTER_ITEM')) {
             if (this.activeAnchorMarker === null && this.activeSettlement) {
-                if (this.activeSettlement.worldspace !== undefined && isSameWorldspace(this.activeSettlement.worldspace, domainState.activeMapConfig.worldspaceID)) {
+                if (this.activeSettlement.worldspace !== undefined && isSameWorldspace(this.activeSettlement.worldspace, domainState.getActiveWorldspaceID())) {
                     SoundService.playShowOnMap();
                     const marker = this.activeMarkerFormId !== null ? domainState.markers.get(this.activeMarkerFormId) : undefined;
                     if (marker) {

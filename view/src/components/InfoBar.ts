@@ -85,7 +85,7 @@ export class InfoBar {
 
         let wsText = this.worldspace ? this.worldspace.toUpperCase() : '';
         
-        const currentWsId = domainState.activeMapConfig?.worldspaceID;
+        const currentWsId = domainState.getActiveWorldspaceID();
         const playerWsId = domainState.lastPayload?.player?.worldspace;
         const isRemote = playerWsId !== undefined && 
                          currentWsId !== undefined && 

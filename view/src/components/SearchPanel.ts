@@ -65,7 +65,7 @@ const listController = new SelectableListController<SearchResult>({
             if (selectedResult.markerCoords) {
                 if (appSettings.focusMarkerOnSelection) {
                     MapViewport.centerOnTarget(
-                        selectedResult.markerCoords.worldspace ?? domainState.activeMapConfig?.worldspaceID ?? 0,
+                        selectedResult.markerCoords.worldspace ?? domainState.getActiveWorldspaceID(),
                         selectedResult.markerCoords.x,
                         selectedResult.markerCoords.y,
                         0
@@ -398,7 +398,7 @@ export const SearchPanel = {
                 SoundService.playShowOnMap();
                 if (selected.markerCoords) {
                     MapViewport.centerOnTarget(
-                        selected.markerCoords.worldspace ?? domainState.activeMapConfig?.worldspaceID ?? 0,
+                        selected.markerCoords.worldspace ?? domainState.getActiveWorldspaceID(),
                         selected.markerCoords.x,
                         selected.markerCoords.y,
                         0
