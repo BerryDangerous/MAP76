@@ -2,6 +2,7 @@ import { GameBounds, MapPosition } from '@/types/map.js';
 import { appSettings } from '@/core/settings.js';
 
 import { mapState } from '@/core/state.js';
+import { viewportState } from '@/map/viewportState.js';
 
 import { FocusManager } from '@/systems/focusManager.js';
 import { activeHoveredMarker } from '@/systems/markerController.js';
@@ -36,27 +37,27 @@ export const MapViewport = {
         if (!viewport) return;
 
         const baseSize = Math.max(window.innerWidth, window.innerHeight);
-        const viewportWidth = baseSize * mapState.zoom;
-        const viewportHeight = baseSize * mapState.zoom;
+        const viewportWidth = baseSize * viewportState.zoom;
+        const viewportHeight = baseSize * viewportState.zoom;
         
         const minPanX = window.innerWidth - viewportWidth;
         const minPanY = window.innerHeight - viewportHeight;
         
         if (viewportWidth > window.innerWidth) {
-            mapState.panX = Math.min(0, Math.max(minPanX, mapState.panX));
+            viewportState.panX = Math.min(0, Math.max(minPanX, viewportState.panX));
         } else {
-            mapState.panX = (window.innerWidth - viewportWidth) / 2;
+            viewportState.panX = (window.innerWidth - viewportWidth) / 2;
         }
         
         if (viewportHeight > window.innerHeight) {
-            mapState.panY = Math.min(0, Math.max(minPanY, mapState.panY));
+            viewportState.panY = Math.min(0, Math.max(minPanY, viewportState.panY));
         } else {
-            mapState.panY = (window.innerHeight - viewportHeight) / 2;
+            viewportState.panY = (window.innerHeight - viewportHeight) / 2;
         }
         
-        viewport.style.transform = `translate(${mapState.panX}px, ${mapState.panY}px) scale(${mapState.zoom})`;
+        viewport.style.transform = `translate(${viewportState.panX}px, ${viewportState.panY}px) scale(${viewportState.zoom})`;
         
-        const markerScale = Math.sqrt(mapState.zoom) / mapState.zoom;
+        const markerScale = Math.sqrt(viewportState.zoom) / viewportState.zoom;
         viewport.style.setProperty('--marker-scale', markerScale.toString());
         
         const playerImg = document.getElementById('player-marker') as HTMLElement;
@@ -79,27 +80,27 @@ export const MapViewport = {
     },
 
     _syncSavedViewport() {
-        if (mapState.savedViewport) {
-            mapState.savedViewport = { zoom: mapState.zoom, panX: mapState.panX, panY: mapState.panY };
+        if (viewportState.savedViewport) {
+            viewportState.savedViewport = { zoom: viewportState.zoom, panX: viewportState.panX, panY: viewportState.panY };
         }
     },
 
     _updateDragOrigin() {
-        if (mapState.isDragging) {
-            mapState.startX = this.lastMouseX - mapState.panX;
-            mapState.startY = this.lastMouseY - mapState.panY;
+        if (viewportState.isDragging) {
+            viewportState.startX = this.lastMouseX - viewportState.panX;
+            viewportState.startY = this.lastMouseY - viewportState.panY;
         }
     },
 
     _applyZoom(newZoom: number, anchorX: number, anchorY: number, updateDOM: boolean) {
-        const oldZoom = mapState.zoom;
-        mapState.zoom = newZoom;
+        const oldZoom = viewportState.zoom;
+        viewportState.zoom = newZoom;
 
-        const unzoomedX = (anchorX - mapState.panX) / oldZoom;
-        const unzoomedY = (anchorY - mapState.panY) / oldZoom;
+        const unzoomedX = (anchorX - viewportState.panX) / oldZoom;
+        const unzoomedY = (anchorY - viewportState.panY) / oldZoom;
 
-        mapState.panX = anchorX - (unzoomedX * mapState.zoom);
-        mapState.panY = anchorY - (unzoomedY * mapState.zoom);
+        viewportState.panX = anchorX - (unzoomedX * viewportState.zoom);
+        viewportState.panY = anchorY - (unzoomedY * viewportState.zoom);
 
         this._updateDragOrigin();
         this._syncSavedViewport();
@@ -119,21 +120,21 @@ export const MapViewport = {
 
         const normalizedDelta = deltaY / 100;
         const factor = Math.pow(1.25, -normalizedDelta);
-        const newZoom = Math.max(mapState.maxZoomOut, Math.min(mapState.maxZoomIn, mapState.zoom * factor));
+        const newZoom = Math.max(viewportState.maxZoomOut, Math.min(viewportState.maxZoomIn, viewportState.zoom * factor));
 
-        if (Math.abs(newZoom - mapState.zoom) > 0.001) {
+        if (Math.abs(newZoom - viewportState.zoom) > 0.001) {
             SoundService.playMapZoom();
             this._applyZoom(newZoom, cx, cy, false);
         }
     },
 
     _processPendingDrag() {
-        if (!this._pendingDrag || !mapState.isDragging) return;
+        if (!this._pendingDrag || !viewportState.isDragging) return;
 
         const { clientX, clientY } = this._pendingDrag;
         this._pendingDrag = null;
-        mapState.panX = clientX - mapState.startX;
-        mapState.panY = clientY - mapState.startY;
+        viewportState.panX = clientX - viewportState.startX;
+        viewportState.panY = clientY - viewportState.startY;
 
         this._syncSavedViewport();
     },
@@ -151,57 +152,57 @@ export const MapViewport = {
 
     centerInitialViewport() {
         this._activeZoomDir = null;
-        mapState.zoom = 1.0;
+        viewportState.zoom = 1.0;
         const baseSize = Math.max(window.innerWidth, window.innerHeight);
-        mapState.panX = (window.innerWidth - baseSize) / 2;
-        mapState.panY = (window.innerHeight - baseSize) / 2;
+        viewportState.panX = (window.innerWidth - baseSize) / 2;
+        viewportState.panY = (window.innerHeight - baseSize) / 2;
         this.updateViewportTransform();
     },
 
     saveCurrentViewport() {
-        if (!mapState.savedViewport) {
-            mapState.savedViewport = {
-                zoom: mapState.zoom,
-                panX: mapState.panX,
-                panY: mapState.panY
+        if (!viewportState.savedViewport) {
+            viewportState.savedViewport = {
+                zoom: viewportState.zoom,
+                panX: viewportState.panX,
+                panY: viewportState.panY
             };
         }
     },
 
     clearSavedViewport(restore: boolean = true) {
-        if (mapState.savedViewport) {
+        if (viewportState.savedViewport) {
             if (restore) {
-                mapState.zoom = mapState.savedViewport.zoom;
-                mapState.panX = mapState.savedViewport.panX;
-                mapState.panY = mapState.savedViewport.panY;
+                viewportState.zoom = viewportState.savedViewport.zoom;
+                viewportState.panX = viewportState.savedViewport.panX;
+                viewportState.panY = viewportState.savedViewport.panY;
                 this.updateViewportTransform();
             }
-            mapState.savedViewport = null;
+            viewportState.savedViewport = null;
         }
     },
 
     setPan(x: number, y: number) {
-        mapState.panX = x;
-        mapState.panY = y;
+        viewportState.panX = x;
+        viewportState.panY = y;
 
         this._syncSavedViewport();
         this.updateViewportTransform();
     },
 
     panBy(dx: number, dy: number) {
-        this.setPan(mapState.panX + dx, mapState.panY + dy);
+        this.setPan(viewportState.panX + dx, viewportState.panY + dy);
     },
 
     _centerOnUnzoomedCoords(unzoomedX: number, unzoomedY: number, targetZoom: number) {
         this.saveCurrentViewport();
         this._activeZoomDir = null;
-        mapState.zoom = targetZoom;
+        viewportState.zoom = targetZoom;
 
         const screenCenterX = window.innerWidth / 2;
         const screenCenterY = window.innerHeight / 2;
 
-        mapState.panX = screenCenterX - (unzoomedX * mapState.zoom);
-        mapState.panY = screenCenterY - (unzoomedY * mapState.zoom);
+        viewportState.panX = screenCenterX - (unzoomedX * viewportState.zoom);
+        viewportState.panY = screenCenterY - (unzoomedY * viewportState.zoom);
 
         this.updateViewportTransform();
     },
@@ -252,9 +253,9 @@ export const MapViewport = {
     centerOnElement(el: HTMLElement, targetZoom: number = 2.5): void {
         if (!viewport) return;
 
-        const oldZoom = mapState.zoom;
-        const oldPanX = mapState.panX;
-        const oldPanY = mapState.panY;
+        const oldZoom = viewportState.zoom;
+        const oldPanX = viewportState.panX;
+        const oldPanY = viewportState.panY;
 
         const svgEl = el.querySelector('svg');
         const mRect = svgEl ? svgEl.getBoundingClientRect() : el.getBoundingClientRect();
@@ -308,8 +309,8 @@ export const MapViewport = {
             this._zoomAnchorY = clientY;
 
             const factor = direction === 'in' ? 1.15 : 0.85;
-            const newZoom = Math.max(mapState.maxZoomOut, Math.min(mapState.maxZoomIn, mapState.zoom * factor));
-            if (newZoom !== mapState.zoom) {
+            const newZoom = Math.max(viewportState.maxZoomOut, Math.min(viewportState.maxZoomIn, viewportState.zoom * factor));
+            if (newZoom !== viewportState.zoom) {
                 SoundService.playMapZoom();
                 this._applyZoomStep(newZoom, clientX, clientY);
             }
@@ -336,9 +337,9 @@ export const MapViewport = {
 
         const continuousFactor = 4.0;
         const factor = this._activeZoomDir === 'in' ? Math.pow(continuousFactor, dt) : Math.pow(1 / continuousFactor, dt);
-        const newZoom = Math.max(mapState.maxZoomOut, Math.min(mapState.maxZoomIn, mapState.zoom * factor));
+        const newZoom = Math.max(viewportState.maxZoomOut, Math.min(viewportState.maxZoomIn, viewportState.zoom * factor));
 
-        if (newZoom !== mapState.zoom) {
+        if (newZoom !== viewportState.zoom) {
             SoundService.playMapZoom();
             this._applyZoomStep(newZoom, this._zoomAnchorX, this._zoomAnchorY);
             requestAnimationFrame(this._zoomLoop.bind(this));
@@ -375,10 +376,10 @@ export const MapViewport = {
             this.lastMouseX = e.clientX;
             this.lastMouseY = e.clientY;
 
-            if (mapState.isDragging) {
+            if (viewportState.isDragging) {
                 if (Math.abs(e.clientX - dragStartX) > 5 || Math.abs(e.clientY - dragStartY) > 5) {
-                    if (!mapState.wasDragged) {
-                        mapState.wasDragged = true;
+                    if (!viewportState.wasDragged) {
+                        viewportState.wasDragged = true;
                         OverlayManager.dismissAll();
                     }
                 }
@@ -456,22 +457,22 @@ export const MapViewport = {
         viewport.addEventListener('mousedown', (e: MouseEvent) => {
             if (e.button !== 0) return;
             e.preventDefault();
-            mapState.isDragging = true;
-            mapState.wasDragged = false;
+            viewportState.isDragging = true;
+            viewportState.wasDragged = false;
             dragStartX = e.clientX;
             dragStartY = e.clientY;
-            mapState.startX = e.clientX - mapState.panX;
-            mapState.startY = e.clientY - mapState.panY;
+            viewportState.startX = e.clientX - viewportState.panX;
+            viewportState.startY = e.clientY - viewportState.panY;
             viewport.style.cursor = 'grabbing';
         });
 
         window.addEventListener('mouseup', () => {
-            if (!mapState.isDragging) return;
+            if (!viewportState.isDragging) return;
             if (this._pendingDrag) {
-                this.setPan(this._pendingDrag.clientX - mapState.startX, this._pendingDrag.clientY - mapState.startY);
+                this.setPan(this._pendingDrag.clientX - viewportState.startX, this._pendingDrag.clientY - viewportState.startY);
                 this._pendingDrag = null;
             }
-            mapState.isDragging = false;
+            viewportState.isDragging = false;
             viewport.style.cursor = 'grab';
         });
 

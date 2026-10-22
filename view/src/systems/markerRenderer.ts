@@ -6,6 +6,7 @@ import { QuestItem } from '@/types/quests.js';
 import { ASSET_ICON_CUSTOM_MARKER, ASSET_ICON_POWER_ARMOR, ASSET_ICON_PLAYER_LOCATION, MARKER_ICON_RAIDER_OUTPOST, MARKER_ICON_VASSAL_SETTLEMENT, MARKER_ICON_POTENTIAL_VASSAL_SETTLEMENT, NAKANO_RESIDENCE_REAL_MARKER, NAKANO_RESIDENCE_FAKE_MARKER, ENGINE_MARKER_TYPES, DEFAULT_BLANK_CONFIG, NUKA_WORLD_MAP_GUTTERS, FAR_HARBOR_MAP_GUTTERS, DEFAULT_MAP_GUTTERS } from '@/core/constants.js';
 import { appSettings } from '@/core/settings.js';
 import { mapState } from '@/core/state.js';
+import { viewportState } from '@/map/viewportState.js';
 
 import { AssetManager } from '@/systems/assetManager.js';
 import { MapViewport } from '@/systems/viewport.js';
@@ -104,10 +105,10 @@ export function getPotentialVassalMarkerFormIds(
 
 export function switchWorldspace(wsId: number) {
     if (mapState.activeMapConfig) {
-        mapState.worldViewports[mapState.activeMapConfig.worldspaceID] = {
-            zoom: mapState.zoom,
-            panX: mapState.panX,
-            panY: mapState.panY
+        viewportState.worldViewports[mapState.activeMapConfig.worldspaceID] = {
+            zoom: viewportState.zoom,
+            panX: viewportState.panX,
+            panY: viewportState.panY
         };
     }
 
@@ -148,7 +149,7 @@ export function loadMarkers(payload: F4SEMapPayload, isSwitchingWorld: boolean =
         return;
     }
     
-    mapState.animatedElements = [];
+    viewportState.animatedElements = [];
 
     playerLayer.innerHTML = '';
     markerLayer.innerHTML = '';
@@ -165,19 +166,19 @@ export function loadMarkers(payload: F4SEMapPayload, isSwitchingWorld: boolean =
     }
 
     applySupplyLinesVisibilityFilter();
-    if (mapState.pendingCenterOnPlayer && mapState.player.active) {
+    if (viewportState.pendingCenterOnPlayer && mapState.player.active) {
         MapViewport.centerOnWorldCoords(mapState.player.x, mapState.player.y);
-        mapState.pendingCenterOnPlayer = false;
+        viewportState.pendingCenterOnPlayer = false;
     } else {
-        if (mapState.pendingCenterOnPlayer) {
-            mapState.pendingCenterOnPlayer = false;
+        if (viewportState.pendingCenterOnPlayer) {
+            viewportState.pendingCenterOnPlayer = false;
         }
         if (isSwitchingWorld) {
-            const saved = mapState.worldViewports[config.worldspaceID];
+            const saved = viewportState.worldViewports[config.worldspaceID];
             if (saved) {
-                mapState.zoom = saved.zoom;
-                mapState.panX = saved.panX;
-                mapState.panY = saved.panY;
+                viewportState.zoom = saved.zoom;
+                viewportState.panX = saved.panX;
+                viewportState.panY = saved.panY;
                 MapViewport.updateViewportTransform();
             } else {
                 MapViewport.centerInitialViewport();
@@ -207,7 +208,7 @@ function renderPlayer(player: PlayerData | undefined, worldspaceID: number, boun
     mapState.player.active = true;
 
     getPlayerLayer()?.appendChild(pImg);
-    mapState.animatedElements.push(pImg);
+    viewportState.animatedElements.push(pImg);
 }
 
 function renderLocationMarkers(markers: POIMarker[], worldspaceID: number, bounds: GameBounds, payload?: F4SEMapPayload) {
@@ -332,7 +333,7 @@ function renderQuestMarkers(quests: QuestItem[], worldspaceID: number, bounds: G
 
                 questLayer.appendChild(container);
 
-                mapState.animatedElements.push(container);
+                viewportState.animatedElements.push(container);
             });
         });
     });
@@ -377,7 +378,7 @@ function renderCustomMarker(marker: CustomMarker | null | undefined, worldspaceI
     container.innerHTML = shadowSvg + iconSvg;
 
     questLayer.appendChild(container);
-    mapState.animatedElements.push(container);
+    viewportState.animatedElements.push(container);
 }
 
 function renderPowerArmor(pa: PowerArmorMarker | null | undefined, worldspaceID: number, bounds: GameBounds, questLayer: HTMLElement, payload: F4SEMapPayload) {
@@ -422,7 +423,7 @@ function renderPowerArmor(pa: PowerArmorMarker | null | undefined, worldspaceID:
     container.innerHTML = shadowSvg + iconSvg;
 
     questLayer.appendChild(container);
-    mapState.animatedElements.push(container);
+    viewportState.animatedElements.push(container);
 }
 
 function createMarkerContainer(type: MarkerType, displayName: string, pos: MapPosition): HTMLDivElement {

@@ -1,20 +1,7 @@
-import { MapConfig, GameBounds } from '@/types/map.js';
+import { MapConfig } from '@/types/map.js';
 import { F4SEMapPayload } from '@/types/payloads.js';
 
 export const mapState = {
-    zoom: 1.0,
-    maxZoomOut: 1.0,
-    maxZoomIn: 5.0,
-    panX: 0,
-    panY: 0,
-    isDragging: false,
-    wasDragged: false,
-    startX: 0,
-    startY: 0,
-
-    savedViewport: null as { zoom: number; panX: number; panY: number } | null,
-    worldViewports: {} as Record<number, { zoom: number; panX: number; panY: number }>,
-
     activeMapConfig: {
         mapName: "Commonwealth",
         worldspaceID: 60,
@@ -37,7 +24,4 @@ export const mapState = {
 
     selectedWorldspaceID: null as number | null,
     lastPayload: null as F4SEMapPayload | null,
-
-    animatedElements: [] as HTMLElement[],
-    pendingCenterOnPlayer: true
 };

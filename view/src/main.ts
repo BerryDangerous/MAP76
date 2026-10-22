@@ -5,6 +5,7 @@ import { initializeF4SEBindings, EngineBridge } from '@/core/bridge.js';
 import { appSettings } from '@/core/settings.js';
 import { requestSettings } from '@/core/settings.js';
 import { mapState } from '@/core/state.js';
+import { viewportState } from '@/map/viewportState.js';
 
 import { FocusManager } from '@/systems/focusManager.js';
 import { KeybindsSystem } from '@/systems/keybindManager.js';
@@ -63,7 +64,7 @@ export function onMapOpened(playerData?: PlayerData): void {
             mapState.lastPayload.player.worldspace = playerData.worldspace;
             mapState.selectedWorldspaceID = null;
             if (appSettings.centerOnPlayerWhenOpened) {
-                mapState.pendingCenterOnPlayer = true;
+                viewportState.pendingCenterOnPlayer = true;
             }
             loadMarkers(mapState.lastPayload, true);
         } else {
@@ -76,9 +77,9 @@ export function onMapOpened(playerData?: PlayerData): void {
         const bounds = mapState.lastPayload?.worldspaces?.[config.worldspaceID]?.bounds;
         if (mapState.player && mapState.player.active && bounds) {
             MapViewport.centerOnWorldCoords(mapState.player.x, mapState.player.y);
-            mapState.pendingCenterOnPlayer = false;
+            viewportState.pendingCenterOnPlayer = false;
         } else {
-            mapState.pendingCenterOnPlayer = true;
+            viewportState.pendingCenterOnPlayer = true;
         }
     }
 }
@@ -89,9 +90,9 @@ export function onMapClosed(): void {
     SoundService.playMapClose();
     
     if (appSettings.centerOnPlayerWhenOpened) {
-        mapState.pendingCenterOnPlayer = true;
+        viewportState.pendingCenterOnPlayer = true;
         mapState.selectedWorldspaceID = null;
-        mapState.savedViewport = null;
+        viewportState.savedViewport = null;
         if (mapState.lastPayload) {
             loadMarkers(mapState.lastPayload, true);
         }
@@ -162,7 +163,7 @@ window.addEventListener('FrameTick', (e: Event) => {
                     mapState.lastPayload.player.angle = player.angle;
                     mapState.lastPayload.player.worldspace = player.worldspace;
                     mapState.selectedWorldspaceID = null;
-                    mapState.pendingCenterOnPlayer = true;
+                    viewportState.pendingCenterOnPlayer = true;
                     loadMarkers(mapState.lastPayload, true);
                 } else {
                     updatePlayerMarker(player);
@@ -299,10 +300,10 @@ window.addEventListener('DOMContentLoaded', () => {
                     SoundService.playMapZoom();
                     if (mapState.player) {
                         if (mapState.activeMapConfig) {
-                            mapState.worldViewports[mapState.activeMapConfig.worldspaceID] = {
-                                zoom: mapState.zoom,
-                                panX: mapState.panX,
-                                panY: mapState.panY
+                            viewportState.worldViewports[mapState.activeMapConfig.worldspaceID] = {
+                                zoom: viewportState.zoom,
+                                panX: viewportState.panX,
+                                panY: viewportState.panY
                             };
                         }
                         mapState.selectedWorldspaceID = null;
@@ -331,9 +332,9 @@ window.addEventListener('DOMContentLoaded', () => {
                             MapViewport.lastMouseY, 
                             bounds,
                             mapState.activeMapConfig!.gutters!,
-                            mapState.zoom,
-                            mapState.panX,
-                            mapState.panY
+                            viewportState.zoom,
+                            viewportState.panX,
+                            viewportState.panY
                         );
                         CustomMarkerCard.open({ gameCoords: worldCoords, pageCoords: { x: MapViewport.lastMouseX, y: MapViewport.lastMouseY }, worldspaceId: config.worldspaceID });
                         FocusManager.setFocus('CUSTOM_MARKER_CARD');

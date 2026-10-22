@@ -5,6 +5,7 @@ import { FastTravelCheckPayload } from '@/types/payloads.js';
 import { EngineBridge } from '@/core/bridge.js';
 import { appSettings } from '@/core/settings.js';
 import { mapState } from '@/core/state.js';
+import { viewportState } from '@/map/viewportState.js';
 
 import { FocusManager } from '@/systems/focusManager.js';
 import { getPotentialVassalMarkerFormIds, updateWorldspaceConfig } from '@/systems/markerRenderer.js';
@@ -43,9 +44,9 @@ export function prepareForFastTravel(destFormId: number): void {
         mapState.selectedWorldspaceID = target.worldspace;
         
         if (appSettings.centerOnPlayerWhenOpened) {
-            delete mapState.worldViewports[target.worldspace];
-            mapState.savedViewport = null;
-            mapState.pendingCenterOnPlayer = true;
+            delete viewportState.worldViewports[target.worldspace];
+            viewportState.savedViewport = null;
+            viewportState.pendingCenterOnPlayer = true;
         }
         
         if (target.worldspace !== mapState.activeMapConfig.worldspaceID) {
@@ -79,7 +80,7 @@ export const MarkerInteractionManager = {
     },
 
     onMouseMove(e: MouseEvent) {
-        if (mapState.isDragging) return;
+        if (viewportState.isDragging) return;
         this.lastEvent = e;
         if (!this.isTicking) {
             window.requestAnimationFrame(() => {
@@ -91,7 +92,7 @@ export const MarkerInteractionManager = {
     },
 
     processMouseMove() {
-        if (!this.lastEvent || mapState.isDragging) return;
+        if (!this.lastEvent || viewportState.isDragging) return;
         
         const markers = this.getHoveredMarkers(this.lastEvent.clientX, this.lastEvent.clientY);
 
@@ -199,7 +200,7 @@ export const MarkerInteractionManager = {
         window.addEventListener('mousemove', this.onMouseMove.bind(this), { passive: true });
 
         layerContainer.addEventListener('mouseover', (e: MouseEvent) => {
-            if (mapState.isDragging) return;
+            if (viewportState.isDragging) return;
 
             const target = (e.target as HTMLElement).closest('.marker-container') as HTMLElement;
             if (!target || target.id === 'player-marker') return;
@@ -281,7 +282,7 @@ export const MarkerInteractionManager = {
         layerContainer.addEventListener('click', (e: MouseEvent) => {
             const target = (e.target as HTMLElement).closest('.marker-container') as HTMLElement;
             if (target && target.classList.contains('marker-container')) {
-                mapState.savedViewport = null;
+                viewportState.savedViewport = null;
                 e.stopPropagation();
                 
                 if (target.dataset.markerType === 'quest') {
@@ -320,7 +321,7 @@ export const MarkerInteractionManager = {
                     SoundService.playFocus();
                 }
             } else {
-                if (mapState.wasDragged) return;
+                if (viewportState.wasDragged) return;
                 const config = mapState.activeMapConfig;
                 const bounds = mapState.lastPayload?.worldspaces?.[config.worldspaceID]?.bounds;
                 if (!bounds) return;
@@ -330,7 +331,7 @@ export const MarkerInteractionManager = {
                 }
 
                 e.stopPropagation();
-                const worldCoords = MapUtils.screenToGameCoords(e.clientX, e.clientY, bounds, mapState.activeMapConfig!.gutters!, mapState.zoom, mapState.panX, mapState.panY);
+                const worldCoords = MapUtils.screenToGameCoords(e.clientX, e.clientY, bounds, mapState.activeMapConfig!.gutters!, viewportState.zoom, viewportState.panX, viewportState.panY);
                 CustomMarkerCard.open({ gameCoords: worldCoords, pageCoords: { x: e.clientX, y: e.clientY }, worldspaceId: config.worldspaceID });
             }
         });
