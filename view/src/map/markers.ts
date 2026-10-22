@@ -2,6 +2,7 @@ import { GameBounds, PlayerData, MapPosition, MapConfig, MapGutters, CellBoundsO
 import { CustomMarker, POIMarker, PowerArmorMarker, MarkerType } from '@/types/markers.js';
 import { SettlementData, GatewayMarker } from '@/types/payloads.js';
 import { QuestItem } from '@/types/quests.js';
+import { Point2D } from '@/types/seams.js';
 
 import { 
     ASSET_ICON_CUSTOM_MARKER, 
@@ -226,6 +227,35 @@ export function renderLocationMarkers(
     });
 }
 
+interface ProjectedMarkerPosition {
+    pos: MapPosition;
+    isClamped: boolean;
+}
+
+function projectAndClampMarkerPosition(
+    resolved: { x: number; y: number; z: number; isGateway: boolean },
+    bounds: GameBounds,
+    gutters: MapGutters,
+    cellBounds?: CellBoundsOverride
+): ProjectedMarkerPosition {
+    let gx = resolved.x;
+    let gy = resolved.y;
+
+    const effectiveBounds = getEffectiveWorldspaceBounds(bounds, cellBounds);
+    const isClamped = gx < effectiveBounds.minX || gx > effectiveBounds.maxX || gy < effectiveBounds.minY || gy > effectiveBounds.maxY;
+
+    if (resolved.isGateway || isClamped) {
+        gx = Math.max(effectiveBounds.minX, Math.min(effectiveBounds.maxX, gx));
+        gy = Math.max(effectiveBounds.minY, Math.min(effectiveBounds.maxY, gy));
+    }
+
+    const pos = gameToMapCoords(gx, gy, resolved.z, bounds, gutters, cellBounds);
+    return {
+        pos,
+        isClamped: resolved.isGateway || isClamped,
+    };
+}
+
 export function renderQuestMarkers(
     quests: QuestItem[], 
     worldspaceID: number, 
@@ -248,38 +278,26 @@ export function renderQuestMarkers(
             const markerTooltipText = objective.text ? objective.text : quest.questName;
 
             objective.targets.forEach(target => {
-                const refX = domainState.player.active ? domainState.player.x : 0;
-                const refY = domainState.player.active ? domainState.player.y : 0;
-                
+                const refCoords: Point2D = {
+                    x: domainState.player.active ? domainState.player.x : 0,
+                    y: domainState.player.active ? domainState.player.y : 0,
+                };
+
                 const resolved = resolveGatewayTarget(
                     target.worldspace,
                     worldspaceID,
-                    target.x,
-                    target.y,
-                    target.z,
-                    refX,
-                    refY,
+                    { x: target.x, y: target.y, z: target.z },
+                    refCoords,
                     gateways,
                     domainState.markers
                 );
 
                 if (!resolved) return;
 
-                let gx = resolved.x;
-                let gy = resolved.y;
-
-                const effectiveBounds = getEffectiveWorldspaceBounds(bounds, cellBounds);
-                const isClamped = (gx < effectiveBounds.minX || gx > effectiveBounds.maxX || gy < effectiveBounds.minY || gy > effectiveBounds.maxY);
-
-                if (resolved.isGateway || isClamped) {
-                    gx = Math.max(effectiveBounds.minX, Math.min(effectiveBounds.maxX, gx));
-                    gy = Math.max(effectiveBounds.minY, Math.min(effectiveBounds.maxY, gy));
-                }
-
-                const pos = gameToMapCoords(gx, gy, resolved.z, bounds, gutters, cellBounds);
+                const { pos, isClamped } = projectAndClampMarkerPosition(resolved, bounds, gutters, cellBounds);
 
                 const container = createMarkerContainer('quest', markerTooltipText, pos);
-                if (resolved.isGateway || isClamped) {
+                if (isClamped) {
                     container.classList.add('clamped-marker');
                 }
                 container.classList.add('quest-marker');
@@ -308,38 +326,25 @@ export function renderCustomMarker(
 ): void {
     if (!marker) return;
 
-    const refX = domainState.player.active ? domainState.player.x : 0;
-    const refY = domainState.player.active ? domainState.player.y : 0;
+    const refCoords: Point2D = {
+        x: domainState.player.active ? domainState.player.x : 0,
+        y: domainState.player.active ? domainState.player.y : 0,
+    };
 
     const resolved = resolveGatewayTarget(
         marker.worldspace,
         worldspaceID,
-        marker.x,
-        marker.y,
-        0,
-        refX,
-        refY,
+        { x: marker.x, y: marker.y, z: 0 },
+        refCoords,
         gateways,
         domainState.markers
     );
 
     if (!resolved) return;
 
-    let gx = resolved.x;
-    let gy = resolved.y;
-
-    const effectiveBounds = getEffectiveWorldspaceBounds(bounds, cellBounds);
-    const isClamped = (gx < effectiveBounds.minX || gx > effectiveBounds.maxX || gy < effectiveBounds.minY || gy > effectiveBounds.maxY);
-
-    if (resolved.isGateway || isClamped) {
-        gx = Math.max(effectiveBounds.minX, Math.min(effectiveBounds.maxX, gx));
-        gy = Math.max(effectiveBounds.minY, Math.min(effectiveBounds.maxY, gy));
-    }
-
-    const pos = gameToMapCoords(gx, gy, 0, bounds, gutters, cellBounds);
-
+    const { pos, isClamped } = projectAndClampMarkerPosition(resolved, bounds, gutters, cellBounds);
     const container = createMarkerContainer('customMarker', 'Custom Marker', pos);
-    if (resolved.isGateway || isClamped) {
+    if (isClamped) {
         container.classList.add('clamped-marker');
     }
     container.classList.add('custom-marker');
@@ -363,38 +368,25 @@ export function renderPowerArmor(
 ): void {
     if (!armor) return;
 
-    const refX = domainState.player.active ? domainState.player.x : 0;
-    const refY = domainState.player.active ? domainState.player.y : 0;
+    const refCoords: Point2D = {
+        x: domainState.player.active ? domainState.player.x : 0,
+        y: domainState.player.active ? domainState.player.y : 0,
+    };
 
     const resolved = resolveGatewayTarget(
         armor.worldspace,
         worldspaceID,
-        armor.x,
-        armor.y,
-        armor.z ?? 0,
-        refX,
-        refY,
+        { x: armor.x, y: armor.y, z: armor.z ?? 0 },
+        refCoords,
         gateways,
         domainState.markers
     );
 
     if (!resolved) return;
 
-    let gx = resolved.x;
-    let gy = resolved.y;
-
-    const effectiveBounds = getEffectiveWorldspaceBounds(bounds, cellBounds);
-    const isClamped = (gx < effectiveBounds.minX || gx > effectiveBounds.maxX || gy < effectiveBounds.minY || gy > effectiveBounds.maxY);
-
-    if (resolved.isGateway || isClamped) {
-        gx = Math.max(effectiveBounds.minX, Math.min(effectiveBounds.maxX, gx));
-        gy = Math.max(effectiveBounds.minY, Math.min(effectiveBounds.maxY, gy));
-    }
-
-    const pos = gameToMapCoords(gx, gy, resolved.z, bounds, gutters, cellBounds);
-
+    const { pos, isClamped } = projectAndClampMarkerPosition(resolved, bounds, gutters, cellBounds);
     const container = createMarkerContainer('powerarmor', 'Power Armor', pos);
-    if (resolved.isGateway || isClamped) {
+    if (isClamped) {
         container.classList.add('clamped-marker');
     }
     container.classList.add('power-armor-marker');

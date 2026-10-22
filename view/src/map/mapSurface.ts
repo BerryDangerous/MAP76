@@ -344,11 +344,8 @@ export class MapSurface {
         const resolved = resolveGatewayTarget(
             worldspace,
             config.worldspaceID,
-            x,
-            y,
-            z,
-            domainState.player.x,
-            domainState.player.y,
+            { x, y, z },
+            { x: domainState.player.x, y: domainState.player.y },
             domainState.lastPayload?.gateways,
             domainState.markers
         );

@@ -1,3 +1,4 @@
+import { Point2D, Point3D } from '@/types/seams.js';
 import { GatewayMarker } from '@/types/payloads.js';
 import { POIMarker } from '@/types/markers.js';
 
@@ -7,17 +8,14 @@ import { getWorldspaceEditorID } from '@/core/state/worldspaces.js';
 export function resolveGatewayTarget(
     targetWorldspace: number,
     currentWorldspace: number,
-    targetX: number,
-    targetY: number,
-    targetZ: number,
-    refX: number,
-    refY: number,
+    targetCoords: Point3D,
+    refCoords: Point2D,
     gateways?: Record<number, Record<number, GatewayMarker[]>>,
     markers?: Map<number, POIMarker> | POIMarker[],
     options?: { gatewayType?: 'door' | 'mapMarker' }
 ): { x: number; y: number; z: number; isGateway: boolean; formId?: number } | null {
     if (targetWorldspace === currentWorldspace) {
-        return { x: targetX, y: targetY, z: targetZ, isGateway: false };
+        return { x: targetCoords.x, y: targetCoords.y, z: targetCoords.z, isGateway: false };
     }
 
     const gatewayType = options?.gatewayType || 'door';
@@ -85,8 +83,8 @@ export function resolveGatewayTarget(
     let minDistanceSq = Infinity;
 
     for (const gw of gatewaysToTarget) {
-        const dx = gw.x - refX;
-        const dy = gw.y - refY;
+        const dx = gw.x - refCoords.x;
+        const dy = gw.y - refCoords.y;
         const distSq = dx * dx + dy * dy;
         if (distSq < minDistanceSq) {
             minDistanceSq = distSq;

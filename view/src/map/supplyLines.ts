@@ -72,8 +72,8 @@ function resolveCrossWorldspaceGateway(
     const resolved = resolveGatewayTarget(
         targetWorldspace,
         currentWorldspace,
-        0, 0, 0,
-        refX, refY,
+        { x: 0, y: 0, z: 0 },
+        { x: refX, y: refY },
         gateways,
         domainState.markers,
         { gatewayType: 'mapMarker' }
@@ -162,14 +162,15 @@ export function renderSupplyLines(payload?: F4SEMapPayload | null, config?: MapC
             let destPos = coordsMap.get(targetId);
             let rawDestPos = rawCoordsMap.get(targetId);
 
-            if (!destPos && srcPos && rawSrcPos) {
-                let targetWs: typeof ws | undefined;
-                for (const s of settlements.values()) {
-                    if (s.locationFormId === targetId || s.formId === targetId || s.markerFormId === targetId) {
-                        targetWs = s;
-                        break;
-                    }
+            let targetWs: typeof ws | undefined;
+            for (const s of settlements.values()) {
+                if (s.locationFormId === targetId || s.formId === targetId || s.markerFormId === targetId) {
+                    targetWs = s;
+                    break;
                 }
+            }
+
+            if (!destPos && srcPos && rawSrcPos) {
                 if (targetWs && targetWs.worldspace && targetWs.worldspace !== currentWorldspace) {
                     destPos = resolveCrossWorldspaceGateway(
                         targetWs.worldspace,
@@ -182,13 +183,6 @@ export function renderSupplyLines(payload?: F4SEMapPayload | null, config?: MapC
                     );
                 }
             } else if (!srcPos && !destPos) {
-                let targetWs: typeof ws | undefined;
-                for (const s of settlements.values()) {
-                    if (s.locationFormId === targetId || s.formId === targetId || s.markerFormId === targetId) {
-                        targetWs = s;
-                        break;
-                    }
-                }
                 if (ws.worldspace && targetWs && targetWs.worldspace && ws.worldspace !== currentWorldspace && targetWs.worldspace !== currentWorldspace && ws.worldspace !== targetWs.worldspace) {
                     srcPos = resolveCrossWorldspaceGateway(ws.worldspace, currentWorldspace, 0, 0, gutters, gateways, cellBounds);
                     destPos = resolveCrossWorldspaceGateway(targetWs.worldspace, currentWorldspace, 0, 0, gutters, gateways, cellBounds);
