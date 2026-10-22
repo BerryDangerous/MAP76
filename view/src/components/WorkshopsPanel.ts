@@ -1,7 +1,7 @@
 import { t } from '@/core/i18n.js';
 import { appSettings } from '@/core/settings.js';
 import { domainState } from '@/core/state/index.js';
-import { WorldspaceUtils } from '@/utils/worldspaceUtils.js';
+import { getWorldspaceName } from '@/core/state/worldspaces.js';
 
 import { AssetManager } from '@/systems/assetManager.js';
 import { FocusManager } from '@/systems/focusManager.js';
@@ -647,7 +647,7 @@ export const LocationsList = {
 
         let worldspaceName = '';
         if (marker.worldspace !== undefined) {
-            worldspaceName = WorldspaceUtils.getWorldspaceName(marker.worldspace) || 'Unknown';
+            worldspaceName = getWorldspaceName(marker.worldspace) || 'Unknown';
         }
         const subtitle = worldspaceName ? `${t('search.resultType.location', { defaultValue: 'Location' })} - ${worldspaceName}` : t('search.resultType.location', { defaultValue: 'Location' });
 
@@ -677,7 +677,7 @@ export const LocationsList = {
 
         let worldspaceName = '';
         if (marker && marker.worldspace !== undefined) {
-            worldspaceName = WorldspaceUtils.getWorldspaceName(marker.worldspace) || 'Unknown';
+            worldspaceName = getWorldspaceName(marker.worldspace) || 'Unknown';
         }
         const fullSubtitle = worldspaceName ? `${baseSubtitle} - ${worldspaceName}` : baseSubtitle;
 

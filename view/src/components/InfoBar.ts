@@ -3,7 +3,7 @@ import { FrameTickPayload } from '@/types/payloads.js';
 import { t } from '@/core/i18n.js';
 
 import { domainState } from '@/core/state/index.js';
-import { WorldspaceUtils } from '@/utils/worldspaceUtils.js';
+import { getWorldspaceName } from '@/core/state/worldspaces.js';
 
 import { FocusManager } from '@/systems/focusManager.js';
 import { KeybindsSystem } from '@/systems/keybindManager.js';
@@ -51,7 +51,7 @@ export class InfoBar {
     }
 
     public static updateWorldspace(wsId: number) {
-        this.worldspace = WorldspaceUtils.getWorldspaceName(wsId) || t('info.unknownWorldspace');
+        this.worldspace = getWorldspaceName(wsId) || t('info.unknownWorldspace');
         this.renderInfo();
     }
 

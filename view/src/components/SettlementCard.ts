@@ -1,7 +1,7 @@
 import { SettlementData } from '@/types/payloads.js';
 
 import { domainState } from '@/core/state/index.js';
-import { WorldspaceUtils } from '@/utils/worldspaceUtils.js';
+import { getWorldspaceName, isSameWorldspace } from '@/core/state/worldspaces.js';
 import { toggleFavoriteLocation, setCustomMarker } from '@/core/bridge.js';
 
 import { AssetManager } from '@/systems/assetManager.js';
@@ -39,7 +39,7 @@ export const SettlementCard = {
                 }
                 controls.push('PAN_MOUSE');
                 if (SettlementCard.activeAnchorMarker === null && SettlementCard.activeSettlement) {
-                    if (SettlementCard.activeSettlement.worldspace !== undefined && WorldspaceUtils.isSameWorldspace(SettlementCard.activeSettlement.worldspace, domainState.activeMapConfig.worldspaceID)) {
+                    if (SettlementCard.activeSettlement.worldspace !== undefined && isSameWorldspace(SettlementCard.activeSettlement.worldspace, domainState.activeMapConfig.worldspaceID)) {
                         controls.push({ action: 'CENTER_ITEM', label: t('markers.controls.centerMarker') });
                     }
                 }
@@ -72,7 +72,7 @@ export const SettlementCard = {
     handleKeyDown(e: KeyboardEvent): boolean {
         if (KeybindsSystem.isAction(e, 'CENTER_ITEM')) {
             if (this.activeAnchorMarker === null && this.activeSettlement) {
-                if (this.activeSettlement.worldspace !== undefined && WorldspaceUtils.isSameWorldspace(this.activeSettlement.worldspace, domainState.activeMapConfig.worldspaceID)) {
+                if (this.activeSettlement.worldspace !== undefined && isSameWorldspace(this.activeSettlement.worldspace, domainState.activeMapConfig.worldspaceID)) {
                     SoundService.playShowOnMap();
                     const marker = this.activeMarkerFormId !== null ? domainState.markers.get(this.activeMarkerFormId) : undefined;
                     if (marker) {
@@ -217,7 +217,7 @@ export const SettlementCard = {
         };
 
         let locationSectionHtml = '';
-        const wsFullName = WorldspaceUtils.getWorldspaceName(settlement.worldspace);
+        const wsFullName = getWorldspaceName(settlement.worldspace);
         if (wsFullName) {
             locationSectionHtml = `
             <div class="fc-section">

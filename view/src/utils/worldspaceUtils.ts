@@ -1,27 +1,9 @@
 import { F4SEMapPayload, GatewayMarker } from '@/types/payloads.js';
 
 import { DLC_GATEWAYS } from '@/core/constants.js';
-import { domainState } from '@/core/state/index.js';
+import { getWorldspaceEditorID } from '@/core/state/worldspaces.js';
 
 export const WorldspaceUtils = {
-    isSameWorldspace(ws1: number, ws2: number): boolean {
-        return ws1 === ws2;
-    },
-
-    getWorldspaceName(worldspaceId?: number): string | undefined {
-        if (worldspaceId === undefined) return undefined;
-        const ws = domainState.worldspaces.get(worldspaceId);
-        if (ws) return ws.fullName;
-        return domainState.lastPayload?.worldspaces?.[worldspaceId]?.fullName;
-    },
-
-    getWorldspaceEditorID(worldspaceId?: number): string | undefined {
-        if (worldspaceId === undefined) return undefined;
-        const ws = domainState.worldspaces.get(worldspaceId);
-        if (ws) return ws.editorID;
-        return domainState.lastPayload?.worldspaces?.[worldspaceId]?.editorID;
-    },
-
     resolveGatewayTarget(
         targetWorldspace: number,
         currentWorldspace: number,
@@ -50,8 +32,8 @@ export const WorldspaceUtils = {
             }
         }
 
-        const currentWsEditorID = WorldspaceUtils.getWorldspaceEditorID(currentWorldspace)?.toLowerCase();
-        const targetWsEditorID = WorldspaceUtils.getWorldspaceEditorID(effectiveTargetWs)?.toLowerCase();
+        const currentWsEditorID = getWorldspaceEditorID(currentWorldspace)?.toLowerCase();
+        const targetWsEditorID = getWorldspaceEditorID(effectiveTargetWs)?.toLowerCase();
 
         const getDLCGateway = (gw: { x: number, y: number, z: number, isGateway: boolean, plugin?: string, localFormId?: number }) => {
             if (gw.plugin && gw.localFormId && payload && payload.markers) {

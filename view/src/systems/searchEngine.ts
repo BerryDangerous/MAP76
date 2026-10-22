@@ -4,7 +4,7 @@ import { QuestItem } from '@/types/quests.js';
 import { SearchResult, SearchResultType } from '@/types/search.js';
 
 import { domainState } from '@/core/state/index.js';
-import { WorldspaceUtils } from '@/utils/worldspaceUtils.js';
+import { getWorldspaceName } from '@/core/state/worldspaces.js';
 
 import { QuestUtils } from '@/utils/questUtils.js';
 import { SearchUtils } from '@/utils/searchUtils.js';
@@ -44,7 +44,7 @@ export const SearchEngine = {
                 
                 const titleMatch = SearchUtils.fuzzyMatch(query, m.name);
                 
-                const wsName = WorldspaceUtils.getWorldspaceName(m.worldspace);
+                const wsName = getWorldspaceName(m.worldspace);
                 const subtitle = wsName ? `${t('search.resultType.location')} - ${wsName}` : t('search.resultType.location');
                 
                 const subtitleMatch = SearchUtils.fuzzyMatch(query, subtitle);
@@ -85,7 +85,7 @@ export const SearchEngine = {
                 
                 const subtitleType = getWorkshopSubtitle(w);
                 
-                const wsName = WorldspaceUtils.getWorldspaceName(w.worldspace);
+                const wsName = getWorldspaceName(w.worldspace);
                 const subtitle = wsName ? `${subtitleType} - ${wsName}` : subtitleType;
                 
                 const subtitleMatch = SearchUtils.fuzzyMatch(query, subtitle);
@@ -186,7 +186,7 @@ export const SearchEngine = {
 
         if (payload.power_armor) {
             const p = payload.power_armor;
-            const wsName = WorldspaceUtils.getWorldspaceName(p.worldspace);
+            const wsName = getWorldspaceName(p.worldspace);
             const subtitle = wsName ? `${t('search.resultType.powerArmor')} - ${wsName}` : t('search.resultType.powerArmor');
             
             const titleMatch = SearchUtils.fuzzyMatch(query, t('search.resultType.powerArmor'));
@@ -210,7 +210,7 @@ export const SearchEngine = {
 
         if (payload.custom_marker) {
             const m = payload.custom_marker;
-            const wsName = WorldspaceUtils.getWorldspaceName(m.worldspace);
+            const wsName = getWorldspaceName(m.worldspace);
             const subtitle = wsName ? `${t('search.resultType.customMarker')} - ${wsName}` : t('search.resultType.customMarker');
             
             const titleMatch = SearchUtils.fuzzyMatch(query, t('search.resultType.customMarker'));

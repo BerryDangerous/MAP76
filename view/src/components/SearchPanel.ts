@@ -4,7 +4,7 @@ import { t } from '@/core/i18n.js';
 import { ASSET_ICON_POWER_ARMOR, ASSET_ICON_CUSTOM_MARKER } from '@/core/constants.js';
 import { appSettings } from '@/core/settings.js';
 import { domainState } from '@/core/state/index.js';
-import { WorldspaceUtils } from '@/utils/worldspaceUtils.js';
+import { getWorldspaceName } from '@/core/state/worldspaces.js';
 
 import { AssetManager } from '@/systems/assetManager.js';
 import { FocusManager } from '@/systems/focusManager.js';
@@ -634,7 +634,7 @@ export const SearchPanel = {
         if (result.subtitle) {
             subtitleHtml = `<div class="sl-item-subtitle" style="font-size: 0.8em; opacity: 0.8;">${SearchUtils.highlightText(result.subtitle, result.subtitleMatchIndices || [])}</div>`;
         } else if (result.markerCoords && result.markerCoords.worldspace !== undefined) {
-            let wsString = WorldspaceUtils.getWorldspaceName(result.markerCoords.worldspace) || 'Unknown';
+            let wsString = getWorldspaceName(result.markerCoords.worldspace) || 'Unknown';
             subtitleHtml = `<div class="sl-item-subtitle" style="font-size: 0.8em; opacity: 0.8;">${StringUtils.escapeHtml(wsString)}</div>`;
         }
 

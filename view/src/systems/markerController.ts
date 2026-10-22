@@ -5,7 +5,7 @@ import { FastTravelCheckPayload } from '@/types/payloads.js';
 import { EngineBridge } from '@/core/bridge.js';
 import { appSettings } from '@/core/settings.js';
 import { domainState } from '@/core/state/index.js';
-import { WorldspaceUtils } from '@/utils/worldspaceUtils.js';
+import { getWorldspaceEditorID } from '@/core/state/worldspaces.js';
 import { viewportState } from '@/map/viewportState.js';
 
 import { FocusManager } from '@/systems/focusManager.js';
@@ -48,7 +48,7 @@ export function prepareForFastTravel(destFormId: number): void {
         }
         
         if (target.worldspace !== domainState.activeMapConfig.worldspaceID) {
-            const editorID = WorldspaceUtils.getWorldspaceEditorID(target.worldspace);
+            const editorID = getWorldspaceEditorID(target.worldspace);
             updateWorldspaceConfig(target.worldspace, editorID);
         }
     }

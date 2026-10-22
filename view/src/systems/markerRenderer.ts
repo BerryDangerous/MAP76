@@ -6,7 +6,7 @@ import { QuestItem } from '@/types/quests.js';
 import { ASSET_ICON_CUSTOM_MARKER, ASSET_ICON_POWER_ARMOR, ASSET_ICON_PLAYER_LOCATION, MARKER_ICON_RAIDER_OUTPOST, MARKER_ICON_VASSAL_SETTLEMENT, MARKER_ICON_POTENTIAL_VASSAL_SETTLEMENT, NAKANO_RESIDENCE_REAL_MARKER, NAKANO_RESIDENCE_FAKE_MARKER, ENGINE_MARKER_TYPES, DEFAULT_BLANK_CONFIG, NUKA_WORLD_MAP_GUTTERS, FAR_HARBOR_MAP_GUTTERS, DEFAULT_MAP_GUTTERS } from '@/core/constants.js';
 import { appSettings } from '@/core/settings.js';
 import { domainState } from '@/core/state/index.js';
-
+import { getWorldspaceEditorID, isSameWorldspace } from '@/core/state/worldspaces.js';
 import { viewportState } from '@/map/viewportState.js';
 
 import { AssetManager } from '@/systems/assetManager.js';
@@ -90,7 +90,7 @@ export function getPotentialVassalMarkerFormIds(
         const sMarker = payload.markers.find(m => m.formId === s.markerFormId);
         if (!sMarker) return;
 
-        if (!WorldspaceUtils.isSameWorldspace(sMarker.worldspace, outpostMarker.worldspace)) return;
+        if (!isSameWorldspace(sMarker.worldspace, outpostMarker.worldspace)) return;
 
         const dx = sMarker.x - outpostMarker.x;
         const dy = sMarker.y - outpostMarker.y;
@@ -131,7 +131,7 @@ export function loadMarkers(payload: F4SEMapPayload, isSwitchingWorld: boolean =
     }
 
     if (activeWsId !== null && activeWsId !== undefined) {
-        const editorID = WorldspaceUtils.getWorldspaceEditorID(activeWsId);
+        const editorID = getWorldspaceEditorID(activeWsId);
         updateWorldspaceConfig(activeWsId, editorID);
         InfoBar.updateWorldspace(activeWsId);
     }
@@ -192,7 +192,7 @@ export function loadMarkers(payload: F4SEMapPayload, isSwitchingWorld: boolean =
 
 function renderPlayer(player: PlayerData | undefined, worldspaceID: number, bounds: GameBounds) {
     domainState.updatePlayer({ active: false });
-    if (!player || !WorldspaceUtils.isSameWorldspace(player.worldspace, worldspaceID)) return;
+    if (!player || !isSameWorldspace(player.worldspace, worldspaceID)) return;
 
     const pos = MapUtils.gameToMapCoords(player.x, player.y, player.z, bounds, domainState.activeMapConfig!.gutters!);
     const pImg = document.createElement('div');
@@ -221,7 +221,7 @@ function renderLocationMarkers(markers: POIMarker[], worldspaceID: number, bound
     const realNakano = markers.find(m => m.pluginName === NAKANO_RESIDENCE_REAL_MARKER.plugin && m.localFormId === NAKANO_RESIDENCE_REAL_MARKER.localFormId);
 
     markers.forEach(m => {
-        if (!WorldspaceUtils.isSameWorldspace(m.worldspace, worldspaceID)) return;
+        if (!isSameWorldspace(m.worldspace, worldspaceID)) return;
 
         if (m.pluginName === NAKANO_RESIDENCE_REAL_MARKER.plugin && m.localFormId === NAKANO_RESIDENCE_REAL_MARKER.localFormId) return;
 
@@ -456,7 +456,7 @@ export function updatePlayerMarker(player: PlayerData | undefined) {
     if (!config) return;
 
     const pImg = document.getElementById('player-marker') as HTMLDivElement;
-    if (!WorldspaceUtils.isSameWorldspace(player.worldspace, config.worldspaceID)) {
+    if (!isSameWorldspace(player.worldspace, config.worldspaceID)) {
         if (pImg) pImg.style.display = 'none';
         domainState.updatePlayer({ active: false });
         return;
