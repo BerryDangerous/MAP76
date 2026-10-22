@@ -2,12 +2,12 @@ import { PlayerData } from '@/types/map.js';
 import { FrameTickPayload } from '@/types/payloads.js';
 import { t } from '@/core/i18n.js';
 
-import { mapState } from '@/core/state.js';
+import { domainState } from '@/core/state/index.js';
+import { WorldspaceUtils } from '@/utils/worldspaceUtils.js';
 
 import { FocusManager } from '@/systems/focusManager.js';
 import { KeybindsSystem } from '@/systems/keybindManager.js';
 
-import { WorldspaceUtils } from '@/utils/worldspaceUtils.js';
 
 export class InfoBar {
     private static infoContainer: HTMLElement | null = null;
@@ -85,8 +85,8 @@ export class InfoBar {
 
         let wsText = this.worldspace ? this.worldspace.toUpperCase() : '';
         
-        const currentWsId = mapState.activeMapConfig?.worldspaceID;
-        const playerWsId = mapState.lastPayload?.player?.worldspace;
+        const currentWsId = domainState.activeMapConfig?.worldspaceID;
+        const playerWsId = domainState.lastPayload?.player?.worldspace;
         const isRemote = playerWsId !== undefined && 
                          currentWsId !== undefined && 
                          playerWsId !== currentWsId;

@@ -1,13 +1,19 @@
-import { GameBounds } from '@/types/map.js';
+import { GameBounds, CellBoundsOverride } from '@/types/map.js';
 import { CELL_SIZE_UNITS } from '@/core/constants.js';
-import { mapState } from '@/core/state.js';
+import { domainState } from '@/core/state/index.js';
 
 export const MapUtils = {
     /**
      * Computes the effective world space coordinate bounding box for a given worldspace payload.
+     * Prevents cross-worldspace override contamination by checking if the bounds match the active worldspace.
      */
-    getEffectiveBounds(bounds: GameBounds) {
-        const overrides = mapState.activeMapConfig?.cellBounds;
+    getEffectiveBounds(bounds: GameBounds, cellBounds?: CellBoundsOverride) {
+        const activeWsId = domainState.activeMapConfig?.worldspaceID;
+        const activeBounds = activeWsId !== undefined ? domainState.lastPayload?.worldspaces?.[activeWsId]?.bounds : undefined;
+        const overrides = cellBounds !== undefined
+            ? cellBounds
+            : (activeBounds && bounds === activeBounds ? domainState.activeMapConfig?.cellBounds : undefined);
+
         const nwCellX = overrides ? overrides.nwCellX : bounds.nwCellX;
         const seCellX = overrides ? overrides.seCellX : bounds.seCellX;
         const nwCellY = overrides ? overrides.nwCellY : bounds.nwCellY;
@@ -22,66 +28,63 @@ export const MapUtils = {
     },
 
     /**
-     * Normalizes game grid units into screen percentage numbers 
-     * using active worldspace boundaries and precise gutter metrics.
+     * Maps an absolute game coordinate (X, Y) to percentage-based screen space (0-100%).
      */
-    gameToMapCoords(gameX: number, gameY: number, gameZ: number, bounds: GameBounds, gutters: { left: number; right: number; top: number; bottom: number }) {
-        let effectiveX = gameX;
-        let effectiveY = gameY;
-        if (bounds.mapScale !== undefined && bounds.mapScale !== 0 && bounds.mapScale !== 1.0) {
-            effectiveX = (gameX + (bounds.mapOffsetX ?? 0)) * bounds.mapScale;
-            effectiveY = (gameY + (bounds.mapOffsetY ?? 0)) * bounds.mapScale;
-        } else if (bounds.mapOffsetX || bounds.mapOffsetY) {
-            effectiveX = gameX + (bounds.mapOffsetX ?? 0);
-            effectiveY = gameY + (bounds.mapOffsetY ?? 0);
-        }
+    gameToMapCoords(gameX: number, gameY: number, gameZ: number, bounds: GameBounds, gutters: { left: number, right: number, top: number, bottom: number }) {
+        const effectiveBounds = this.getEffectiveBounds(bounds);
+        const { minX, maxX, minY, maxY } = effectiveBounds;
 
-        const { minX, maxX, minY, maxY } = this.getEffectiveBounds(bounds);
-        const totalWidth = maxX - minX;
-        const totalHeight = maxY - minY;
-        
-        const rawPctX = (effectiveX - minX) / totalWidth;
-        const rawPctY = (effectiveY - minY) / totalHeight;
-        
-        const usableWidthPct = 1.0 - gutters.left - gutters.right;
-        const usableHeightPct = 1.0 - gutters.top - gutters.bottom;
-        
-        const pctX = (gutters.left + (rawPctX * usableWidthPct)) * 100;
-        const pctY = (gutters.top + ((1.0 - rawPctY) * usableHeightPct)) * 100;
-        
-        return { x: pctX, y: pctY, z: gameZ };
+        const rangeX = maxX - minX;
+        const rangeY = maxY - minY;
+
+        const normX = rangeX === 0 ? 0.5 : (gameX - minX) / rangeX;
+        const normY = rangeY === 0 ? 0.5 : 1 - ((gameY - minY) / rangeY);
+
+        const mapWidthFactor = 1 - gutters.left - gutters.right;
+        const mapHeightFactor = 1 - gutters.top - gutters.bottom;
+
+        const mapX = gutters.left + (normX * mapWidthFactor);
+        const mapY = gutters.top + (normY * mapHeightFactor);
+
+        return {
+            x: mapX * 100,
+            y: mapY * 100
+        };
     },
 
     /**
-     * Converts screen pixel coordinates (e.g. mouse event clientX, clientY) back to world space coordinates (gameX, gameY).
+     * Converts raw viewport screen pixel coordinates back into Fallout 4 game coordinates.
      */
-    screenToGameCoords(screenX: number, screenY: number, bounds: GameBounds, gutters: { left: number; right: number; top: number; bottom: number }, zoom: number, panX: number, panY: number) {
+    screenToGameCoords(
+        screenX: number, 
+        screenY: number, 
+        bounds: GameBounds, 
+        gutters: { left: number, right: number, top: number, bottom: number },
+        zoom: number,
+        panX: number,
+        panY: number
+    ): { x: number, y: number } {
         const baseSize = Math.max(window.innerWidth, window.innerHeight);
-        const mapCurrentSize = baseSize * zoom;
+        const unzoomedX = (screenX - panX) / zoom;
+        const unzoomedY = (screenY - panY) / zoom;
 
-        const pctX = (screenX - panX) / mapCurrentSize;
-        const pctY = (screenY - panY) / mapCurrentSize;
+        const pctX = unzoomedX / baseSize;
+        const pctY = unzoomedY / baseSize;
 
-        const usableWidthPct = 1.0 - gutters.left - gutters.right;
-        const usableHeightPct = 1.0 - gutters.top - gutters.bottom;
+        const mapWidthFactor = 1 - gutters.left - gutters.right;
+        const mapHeightFactor = 1 - gutters.top - gutters.bottom;
 
-        const rawPctX = (pctX - gutters.left) / usableWidthPct;
-        const rawPctY = 1.0 - ((pctY - gutters.top) / usableHeightPct);
+        const normX = (pctX - gutters.left) / mapWidthFactor;
+        const normY = (pctY - gutters.top) / mapHeightFactor;
 
-        const { minX, maxX, minY, maxY } = this.getEffectiveBounds(bounds);
-        const totalWidth = maxX - minX;
-        const totalHeight = maxY - minY;
+        const effectiveBounds = this.getEffectiveBounds(bounds);
+        const { minX, maxX, minY, maxY } = effectiveBounds;
 
-        let gameX = minX + (rawPctX * totalWidth);
-        let gameY = minY + (rawPctY * totalHeight);
+        const rangeX = maxX - minX;
+        const rangeY = maxY - minY;
 
-        if (bounds.mapScale !== undefined && bounds.mapScale !== 0 && bounds.mapScale !== 1.0) {
-            gameX = (gameX / bounds.mapScale) - (bounds.mapOffsetX ?? 0);
-            gameY = (gameY / bounds.mapScale) - (bounds.mapOffsetY ?? 0);
-        } else if (bounds.mapOffsetX || bounds.mapOffsetY) {
-            gameX = gameX - (bounds.mapOffsetX ?? 0);
-            gameY = gameY - (bounds.mapOffsetY ?? 0);
-        }
+        const gameX = minX + (normX * rangeX);
+        const gameY = maxY - (normY * rangeY);
 
         return { x: gameX, y: gameY };
     }

@@ -1,7 +1,7 @@
 import { F4SEMapPayload, GatewayMarker } from '@/types/payloads.js';
 
 import { DLC_GATEWAYS } from '@/core/constants.js';
-import { mapState } from '@/core/state.js';
+import { domainState } from '@/core/state/index.js';
 
 export const WorldspaceUtils = {
     isSameWorldspace(ws1: number, ws2: number): boolean {
@@ -10,20 +10,16 @@ export const WorldspaceUtils = {
 
     getWorldspaceName(worldspaceId?: number): string | undefined {
         if (worldspaceId === undefined) return undefined;
-        const payload = mapState.lastPayload;
-        if (payload && payload.worldspaces && payload.worldspaces[worldspaceId]) {
-            return payload.worldspaces[worldspaceId].fullName;
-        }
-        return undefined;
+        const ws = domainState.worldspaces.get(worldspaceId);
+        if (ws) return ws.fullName;
+        return domainState.lastPayload?.worldspaces?.[worldspaceId]?.fullName;
     },
 
     getWorldspaceEditorID(worldspaceId?: number): string | undefined {
         if (worldspaceId === undefined) return undefined;
-        const payload = mapState.lastPayload;
-        if (payload && payload.worldspaces && payload.worldspaces[worldspaceId]) {
-            return payload.worldspaces[worldspaceId].editorID;
-        }
-        return undefined;
+        const ws = domainState.worldspaces.get(worldspaceId);
+        if (ws) return ws.editorID;
+        return domainState.lastPayload?.worldspaces?.[worldspaceId]?.editorID;
     },
 
     resolveGatewayTarget(

@@ -5,7 +5,8 @@ import { QuestItem } from '@/types/quests.js';
 
 import { ASSET_ICON_CUSTOM_MARKER, ASSET_ICON_POWER_ARMOR, ASSET_ICON_PLAYER_LOCATION, MARKER_ICON_RAIDER_OUTPOST, MARKER_ICON_VASSAL_SETTLEMENT, MARKER_ICON_POTENTIAL_VASSAL_SETTLEMENT, NAKANO_RESIDENCE_REAL_MARKER, NAKANO_RESIDENCE_FAKE_MARKER, ENGINE_MARKER_TYPES, DEFAULT_BLANK_CONFIG, NUKA_WORLD_MAP_GUTTERS, FAR_HARBOR_MAP_GUTTERS, DEFAULT_MAP_GUTTERS } from '@/core/constants.js';
 import { appSettings } from '@/core/settings.js';
-import { mapState } from '@/core/state.js';
+import { domainState } from '@/core/state/index.js';
+
 import { viewportState } from '@/map/viewportState.js';
 
 import { AssetManager } from '@/systems/assetManager.js';
@@ -104,27 +105,27 @@ export function getPotentialVassalMarkerFormIds(
 }
 
 export function switchWorldspace(wsId: number) {
-    if (mapState.activeMapConfig) {
-        viewportState.worldViewports[mapState.activeMapConfig.worldspaceID] = {
+    if (domainState.activeMapConfig) {
+        viewportState.worldViewports[domainState.activeMapConfig.worldspaceID] = {
             zoom: viewportState.zoom,
             panX: viewportState.panX,
             panY: viewportState.panY
         };
     }
 
-    mapState.selectedWorldspaceID = wsId;
+    domainState.setSelectedWorldspace(wsId);
     
-    if (mapState.lastPayload) {
-        loadMarkers(mapState.lastPayload, true);
+    if (domainState.lastPayload) {
+        loadMarkers(domainState.lastPayload, true);
     }
 }
 
 export function loadMarkers(payload: F4SEMapPayload, isSwitchingWorld: boolean = false) {
     if (!payload) return;
 
-    mapState.lastPayload = payload;
+    domainState.setPayload(payload);
 
-    let activeWsId = mapState.selectedWorldspaceID;
+    let activeWsId = domainState.selectedWorldspaceID;
     if (activeWsId === null && payload.player && payload.player.worldspace !== undefined) {
         activeWsId = payload.player.worldspace;
     }
@@ -135,7 +136,7 @@ export function loadMarkers(payload: F4SEMapPayload, isSwitchingWorld: boolean =
         InfoBar.updateWorldspace(activeWsId);
     }
 
-    const config = mapState.activeMapConfig;
+    const config = domainState.activeMapConfig;
     if (!config) return;
 
     const playerLayer = getPlayerLayer();
@@ -166,8 +167,8 @@ export function loadMarkers(payload: F4SEMapPayload, isSwitchingWorld: boolean =
     }
 
     applySupplyLinesVisibilityFilter();
-    if (viewportState.pendingCenterOnPlayer && mapState.player.active) {
-        MapViewport.centerOnWorldCoords(mapState.player.x, mapState.player.y);
+    if (viewportState.pendingCenterOnPlayer && domainState.player.active) {
+        MapViewport.centerOnWorldCoords(domainState.player.x, domainState.player.y);
         viewportState.pendingCenterOnPlayer = false;
     } else {
         if (viewportState.pendingCenterOnPlayer) {
@@ -190,10 +191,10 @@ export function loadMarkers(payload: F4SEMapPayload, isSwitchingWorld: boolean =
 }
 
 function renderPlayer(player: PlayerData | undefined, worldspaceID: number, bounds: GameBounds) {
-    mapState.player.active = false;
+    domainState.updatePlayer({ active: false });
     if (!player || !WorldspaceUtils.isSameWorldspace(player.worldspace, worldspaceID)) return;
 
-    const pos = MapUtils.gameToMapCoords(player.x, player.y, player.z, bounds, mapState.activeMapConfig!.gutters!);
+    const pos = MapUtils.gameToMapCoords(player.x, player.y, player.z, bounds, domainState.activeMapConfig!.gutters!);
     const pImg = document.createElement('div');
     pImg.id = 'player-marker';
     pImg.className = 'player-marker-vector';
@@ -201,11 +202,13 @@ function renderPlayer(player: PlayerData | undefined, worldspaceID: number, boun
     pImg.style.left = `${pos.x}%`;
     pImg.style.top = `${pos.y}%`;
 
-    mapState.player.x = player.x;
-    mapState.player.y = player.y;
-    mapState.player.z = player.z;
-    mapState.player.angle = player.angle;
-    mapState.player.active = true;
+    domainState.updatePlayer({
+        x: player.x,
+        y: player.y,
+        z: player.z,
+        angle: player.angle,
+        active: true
+    });
 
     getPlayerLayer()?.appendChild(pImg);
     viewportState.animatedElements.push(pImg);
@@ -242,7 +245,7 @@ function renderLocationMarkers(markers: POIMarker[], worldspaceID: number, bound
             y = Math.max(effectiveBounds.minY, Math.min(effectiveBounds.maxY, y));
         }
 
-        const pos = MapUtils.gameToMapCoords(x, y, 0, bounds, mapState.activeMapConfig!.gutters!);
+        const pos = MapUtils.gameToMapCoords(x, y, 0, bounds, domainState.activeMapConfig!.gutters!);
         const container = createMarkerContainer('location', m.name, pos);
         if (isClamped) {
             container.classList.add('clamped-marker');
@@ -290,8 +293,8 @@ function renderQuestMarkers(quests: QuestItem[], worldspaceID: number, bounds: G
             const markerTooltipText = objective.text ? objective.text : quest.questName;
 
             objective.targets.forEach(target => {
-                const refX = mapState.player.active ? mapState.player.x : 0;
-                const refY = mapState.player.active ? mapState.player.y : 0;
+                const refX = domainState.player.active ? domainState.player.x : 0;
+                const refY = domainState.player.active ? domainState.player.y : 0;
                 
                 const resolved = WorldspaceUtils.resolveGatewayTarget(
                     target.worldspace,
@@ -317,7 +320,7 @@ function renderQuestMarkers(quests: QuestItem[], worldspaceID: number, bounds: G
                     gy = Math.max(effectiveBounds.minY, Math.min(effectiveBounds.maxY, gy));
                 }
 
-                const pos = MapUtils.gameToMapCoords(gx, gy, resolved.z, bounds, mapState.activeMapConfig!.gutters!);
+                const pos = MapUtils.gameToMapCoords(gx, gy, resolved.z, bounds, domainState.activeMapConfig!.gutters!);
 
                 const container = createMarkerContainer('quest', markerTooltipText, pos);
                 if (resolved.isGateway || isClamped) {
@@ -348,8 +351,8 @@ function renderCustomMarker(marker: CustomMarker | null | undefined, worldspaceI
         marker.x,
         marker.y,
         0,
-        mapState.player.active ? mapState.player.x : 0,
-        mapState.player.active ? mapState.player.y : 0,
+        domainState.player.active ? domainState.player.x : 0,
+        domainState.player.active ? domainState.player.y : 0,
         payload
     );
 
@@ -366,7 +369,7 @@ function renderCustomMarker(marker: CustomMarker | null | undefined, worldspaceI
         gy = Math.max(effectiveBounds.minY, Math.min(effectiveBounds.maxY, gy));
     }
 
-    const pos = MapUtils.gameToMapCoords(gx, gy, 0, bounds, mapState.activeMapConfig!.gutters!);
+    const pos = MapUtils.gameToMapCoords(gx, gy, 0, bounds, domainState.activeMapConfig!.gutters!);
     const container = createMarkerContainer('customMarker', 'Custom Marker', pos);
     if (resolved.isGateway || isClamped) {
         container.classList.add('clamped-marker');
@@ -384,8 +387,8 @@ function renderCustomMarker(marker: CustomMarker | null | undefined, worldspaceI
 function renderPowerArmor(pa: PowerArmorMarker | null | undefined, worldspaceID: number, bounds: GameBounds, questLayer: HTMLElement, payload: F4SEMapPayload) {
     if (!pa) return;
 
-    const refX = mapState.player.active ? mapState.player.x : 0;
-    const refY = mapState.player.active ? mapState.player.y : 0;
+    const refX = domainState.player.active ? domainState.player.x : 0;
+    const refY = domainState.player.active ? domainState.player.y : 0;
 
     const resolved = WorldspaceUtils.resolveGatewayTarget(
         pa.worldspace,
@@ -411,7 +414,7 @@ function renderPowerArmor(pa: PowerArmorMarker | null | undefined, worldspaceID:
         gy = Math.max(effectiveBounds.minY, Math.min(effectiveBounds.maxY, gy));
     }
 
-    const pos = MapUtils.gameToMapCoords(gx, gy, resolved.z, bounds, mapState.activeMapConfig!.gutters!);
+    const pos = MapUtils.gameToMapCoords(gx, gy, resolved.z, bounds, domainState.activeMapConfig!.gutters!);
     const container = createMarkerContainer('powerarmor', 'Power Armor', pos);
     if (resolved.isGateway || isClamped) {
         container.classList.add('clamped-marker');
@@ -441,23 +444,25 @@ function createMarkerContainer(type: MarkerType, displayName: string, pos: MapPo
 export function updatePlayerMarker(player: PlayerData | undefined) {
     if (!player) return;
 
-    mapState.player.x = player.x;
-    mapState.player.y = player.y;
-    mapState.player.z = player.z;
-    mapState.player.angle = player.angle;
-    mapState.player.active = true;
+    domainState.updatePlayer({
+        x: player.x,
+        y: player.y,
+        z: player.z,
+        angle: player.angle,
+        active: true
+    });
 
-    const config = mapState.activeMapConfig;
+    const config = domainState.activeMapConfig;
     if (!config) return;
 
     const pImg = document.getElementById('player-marker') as HTMLDivElement;
     if (!WorldspaceUtils.isSameWorldspace(player.worldspace, config.worldspaceID)) {
         if (pImg) pImg.style.display = 'none';
-        mapState.player.active = false;
+        domainState.updatePlayer({ active: false });
         return;
     }
 
-    const worldspaceData = mapState.lastPayload?.worldspaces?.[config.worldspaceID];
+    const worldspaceData = domainState.lastPayload?.worldspaces?.[config.worldspaceID];
     const bounds = worldspaceData?.bounds;
     if (!bounds) return;
 
@@ -465,7 +470,7 @@ export function updatePlayerMarker(player: PlayerData | undefined) {
         renderPlayer(player, config.worldspaceID, bounds);
     } else {
         pImg.style.display = '';
-        const pos = MapUtils.gameToMapCoords(player.x, player.y, player.z, bounds, mapState.activeMapConfig!.gutters!);
+        const pos = MapUtils.gameToMapCoords(player.x, player.y, player.z, bounds, domainState.activeMapConfig!.gutters!);
         pImg.style.left = `${pos.x}%`;
         pImg.style.top = `${pos.y}%`;
         pImg.style.setProperty('--player-angle', `${player.angle}deg`);
@@ -506,7 +511,7 @@ export function updateWorldspaceConfig(worldspaceID: number, worldspaceEditorID?
         const finalGutters = calculateFinalGutters(config);
 
 
-        mapState.activeMapConfig = {
+        domainState.activeMapConfig = {
             ...DEFAULT_BLANK_CONFIG,
             ...config,
             worldspaceID: worldspaceID,
@@ -516,16 +521,16 @@ export function updateWorldspaceConfig(worldspaceID: number, worldspaceEditorID?
             imageGuttersPixels: config.imageGuttersPixels
         };
     } else {
-        mapState.activeMapConfig = {
+        domainState.setActiveMapConfig({
             ...DEFAULT_BLANK_CONFIG,
             mapName: "Custom Worldspace",
             worldspaceID: worldspaceID
-        };
+        });
     }
 
     const container = document.getElementById('map-bg-container');
     if (container) {
-        const texturePath = mapState.activeMapConfig.texturePath;
+        const texturePath = domainState.activeMapConfig.texturePath;
         const textureData = AssetManager.getMapTextureData(texturePath);
         
         Array.from(container.children).forEach((child: Element) => {
@@ -539,7 +544,7 @@ export function updateWorldspaceConfig(worldspaceID: number, worldspaceEditorID?
             activeLayer.classList.add('active');
         } else {
             console.warn(`[Map] Expected layer ${layerId} was not preloaded into DOM. Fallback triggered.`);
-            const layer = AssetManager.createMapLayer(layerId, textureData, mapState.activeMapConfig, true);
+            const layer = AssetManager.createMapLayer(layerId, textureData, domainState.activeMapConfig, true);
             container.appendChild(layer);
         }
     }

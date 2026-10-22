@@ -3,7 +3,8 @@ import { t } from '@/core/i18n.js';
 
 import { ASSET_ICON_POWER_ARMOR, ASSET_ICON_CUSTOM_MARKER } from '@/core/constants.js';
 import { appSettings } from '@/core/settings.js';
-import { mapState } from '@/core/state.js';
+import { domainState } from '@/core/state/index.js';
+import { WorldspaceUtils } from '@/utils/worldspaceUtils.js';
 
 import { AssetManager } from '@/systems/assetManager.js';
 import { FocusManager } from '@/systems/focusManager.js';
@@ -18,7 +19,6 @@ import { SoundService } from '@/services/soundService.js';
 import { QuestUtils } from '@/utils/questUtils.js';
 import { SearchUtils } from '@/utils/searchUtils.js';
 import { StringUtils } from '@/utils/stringUtils.js';
-import { WorldspaceUtils } from '@/utils/worldspaceUtils.js';
 
 import { CustomMarkerCard } from '@/components/CustomMarkerCard.js';
 import { MarkerCard } from '@/components/MarkerCard.js';
@@ -64,7 +64,7 @@ const listController = new SelectableListController<SearchResult>({
             if (selectedResult.markerCoords) {
                 if (appSettings.focusMarkerOnSelection) {
                     MapViewport.centerOnTarget(
-                        selectedResult.markerCoords.worldspace ?? mapState.activeMapConfig?.worldspaceID ?? 0,
+                        selectedResult.markerCoords.worldspace ?? domainState.activeMapConfig?.worldspaceID ?? 0,
                         selectedResult.markerCoords.x,
                         selectedResult.markerCoords.y,
                         0
@@ -212,7 +212,7 @@ export const SearchPanel = {
             QuestCard.open(q, undefined, container, searchPanelState.dockCorner, false, returnFocusId, onNavBack);
         } else if (result.type === 'workshop') {
             const w = result.originalRef;
-            const marker = mapState.lastPayload?.markers.find(m => m.formId === w.markerFormId || m.formId === w.formId || m.formId === w.locationFormId);
+            const marker = domainState.lastPayload?.markers.find(m => m.formId === w.markerFormId || m.formId === w.formId || m.formId === w.locationFormId);
             const canFastTravel = marker ? marker.canFastTravel : w.owned;
             const markerFormId = marker ? marker.formId : w.markerFormId;
             SettlementCard.open(w, markerFormId, canFastTravel, undefined, container, searchPanelState.dockCorner, false, returnFocusId, onNavBack);
@@ -397,7 +397,7 @@ export const SearchPanel = {
                 SoundService.playShowOnMap();
                 if (selected.markerCoords) {
                     MapViewport.centerOnTarget(
-                        selected.markerCoords.worldspace ?? mapState.activeMapConfig?.worldspaceID ?? 0,
+                        selected.markerCoords.worldspace ?? domainState.activeMapConfig?.worldspaceID ?? 0,
                         selected.markerCoords.x,
                         selected.markerCoords.y,
                         0

@@ -3,12 +3,12 @@ import { SettlementData } from '@/types/payloads.js';
 import { QuestItem } from '@/types/quests.js';
 import { SearchResult, SearchResultType } from '@/types/search.js';
 
-import { mapState } from '@/core/state.js';
+import { domainState } from '@/core/state/index.js';
+import { WorldspaceUtils } from '@/utils/worldspaceUtils.js';
 
 import { QuestUtils } from '@/utils/questUtils.js';
 import { SearchUtils } from '@/utils/searchUtils.js';
 import { getWorkshopIconType, getWorkshopBadgesHtml, getWorkshopSubtitle } from '@/utils/settlementUtils.js';
-import { WorldspaceUtils } from '@/utils/worldspaceUtils.js';
 import { t } from '@/core/i18n.js';
 
 export const SearchEngine = {
@@ -18,7 +18,7 @@ export const SearchEngine = {
             return results;
         }
 
-        const payload = mapState.lastPayload;
+        const payload = domainState.lastPayload;
         if (!payload) return results;
 
         const addResult = (res: SearchResult) => {

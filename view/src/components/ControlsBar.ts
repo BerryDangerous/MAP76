@@ -1,5 +1,5 @@
 import { appSettings } from '@/core/settings.js';
-import { mapState } from '@/core/state.js';
+import { domainState } from '@/core/state/index.js';
 
 import { FocusManager, FocusOwner } from '@/systems/focusManager.js';
 import { KeybindsSystem, KeyAction } from '@/systems/keybindManager.js';
@@ -47,7 +47,7 @@ export class ControlBar {
             if (hasSupplyLines()) {
                 actions.push('TOGGLE_SUPPLY_LINES');
             }
-            if (mapState.lastPayload && mapState.lastPayload.worldspaces && Object.keys(mapState.lastPayload.worldspaces).length > 1) {
+            if (domainState.lastPayload && domainState.lastPayload.worldspaces && Object.keys(domainState.lastPayload.worldspaces).length > 1) {
                 actions.push('PREV_WORLD');
                 actions.push('NEXT_WORLD');
             }

@@ -1,6 +1,7 @@
 import { t } from '@/core/i18n.js';
 import { appSettings } from '@/core/settings.js';
-import { mapState } from '@/core/state.js';
+import { domainState } from '@/core/state/index.js';
+import { WorldspaceUtils } from '@/utils/worldspaceUtils.js';
 
 import { AssetManager } from '@/systems/assetManager.js';
 import { FocusManager } from '@/systems/focusManager.js';
@@ -13,7 +14,6 @@ import { SoundService } from '@/services/soundService.js';
 
 import { SettlementDataWithRatings, getWorkshopIconType, getWorkshopBadgesHtml, getWorkshopSubtitle, calculateSettlementRatings } from '@/utils/settlementUtils.js';
 import { StringUtils } from '@/utils/stringUtils.js';
-import { WorldspaceUtils } from '@/utils/worldspaceUtils.js';
 import { POIMarker } from '@/types/markers.js';
 
 import { MarkerCard } from '@/components/MarkerCard.js';
@@ -356,7 +356,7 @@ export const LocationsList = {
                 else if (selected.type === 'workshop') formId = selected.data.markerFormId;
 
                 if (formId !== undefined) {
-                    const marker = mapState.lastPayload?.markers?.find(m => m.formId === formId);
+                    const marker = domainState.lastPayload?.markers?.find(m => m.formId === formId);
                     if (marker) {
                         MapViewport.centerOnTarget(marker.worldspace, marker.x, marker.y, 0);
                     }
@@ -379,7 +379,7 @@ export const LocationsList = {
         else if (item.type === 'workshop') formId = item.data.markerFormId;
 
         if (formId !== undefined) {
-            const marker = mapState.lastPayload?.markers?.find(m => m.formId === formId);
+            const marker = domainState.lastPayload?.markers?.find(m => m.formId === formId);
             if (marker && appSettings.focusMarkerOnSelection) {
                 if (!MapViewport.centerOnTarget(marker.worldspace, marker.x, marker.y, 0)) {
                     MapViewport.clearSavedViewport(appSettings.focusMarkerOnSelection);
@@ -403,7 +403,7 @@ export const LocationsList = {
             MarkerCard.open(marker.name, marker.formId, marker.canFastTravel, undefined, container, locationsListState.dockCorner, false, returnFocusId, onNavBack);
         } else if (item.type === 'workshop') {
             const workshop = item.data;
-            const marker = mapState.lastPayload?.markers?.find(m => m.formId === workshop.markerFormId);
+            const marker = domainState.lastPayload?.markers?.find(m => m.formId === workshop.markerFormId);
             const canFastTravel = marker ? marker.canFastTravel : workshop.owned;
 
             if (workshop.vassal) {
@@ -443,7 +443,7 @@ export const LocationsList = {
 
     getVisibleItems(): LocationListItem[] {
         const items: LocationListItem[] = [];
-        const payload = mapState.lastPayload;
+        const payload = domainState.lastPayload;
         if (!payload) return items;
 
         const favIds = payload.favoriteLocations || [];
@@ -669,7 +669,7 @@ export const LocationsList = {
     renderWorkshopItem(workshop: SettlementDataWithRatings, index: number, keyAttr: string): string {
         const isSelected = !locationsListState.isCollapsed && index === listController.getSelectedIndex();
         const baseSubtitle = getWorkshopSubtitle(workshop);
-        const marker = mapState.lastPayload?.markers?.find(m => m.formId === workshop.markerFormId);
+        const marker = domainState.lastPayload?.markers?.find(m => m.formId === workshop.markerFormId);
         const iconType = getWorkshopIconType(workshop, marker);
         const customIcon = marker ? marker.customIcon : undefined;
         const markerIconSvg = AssetManager.getLocationIconSvg(iconType, true, customIcon);

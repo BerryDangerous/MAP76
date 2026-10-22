@@ -1,4 +1,4 @@
-import { mapState } from '@/core/state.js';
+import { domainState } from '@/core/state/index.js';
 import { toggleFavoriteLocation, setCustomMarker } from '@/core/bridge.js';
 
 import { FocusManager } from '@/systems/focusManager.js';
@@ -66,7 +66,7 @@ export const MarkerCard = {
         if (KeybindsSystem.isAction(e, 'CENTER_ITEM')) {
             if (this.activeAnchorMarker === null && this.activeMarkerFormId !== null) {
                 SoundService.playShowOnMap();
-                const marker = mapState.lastPayload?.markers?.find(m => m.formId === this.activeMarkerFormId);
+                const marker = domainState.markers.get(this.activeMarkerFormId);
                 if (marker) {
                     MapViewport.centerOnTarget(marker.worldspace, marker.x, marker.y, 0);
                 }
@@ -198,24 +198,14 @@ export const MarkerCard = {
         }
 
         if (this.activeMarkerFormId !== null) {
-            const isFav = mapState.lastPayload?.favoriteLocations?.includes(this.activeMarkerFormId);
+            const isFav = domainState.favoriteLocations.has(this.activeMarkerFormId);
             buttons.push({
                 id: 'favorite',
                 label: isFav ? t('locations.controls.unfavorite') : t('locations.controls.favorite'),
                 action: () => {
                     if (this.activeMarkerFormId !== null) {
                         toggleFavoriteLocation(this.activeMarkerFormId);
-                        
-                        if (mapState.lastPayload) {
-                            if (!mapState.lastPayload.favoriteLocations) {
-                                mapState.lastPayload.favoriteLocations = [];
-                            }
-                            if (isFav) {
-                                mapState.lastPayload.favoriteLocations = mapState.lastPayload.favoriteLocations.filter(id => id !== this.activeMarkerFormId);
-                            } else {
-                                mapState.lastPayload.favoriteLocations.push(this.activeMarkerFormId);
-                            }
-                        }
+                        domainState.toggleFavoriteLocation(this.activeMarkerFormId);
                         
                         MarkerCard.open(
                             MarkerCard.activeMarkerName,
@@ -237,7 +227,7 @@ export const MarkerCard = {
             label: hasExistingMarker ? t('markers.customMarker.moveMarker') : t('markers.customMarker.placeMarker'),
             action: () => {
                 if (this.activeMarkerFormId !== null) {
-                    const marker = mapState.lastPayload?.markers?.find(m => m.formId === this.activeMarkerFormId);
+                    const marker = domainState.markers.get(this.activeMarkerFormId);
                     if (marker) {
                         setCustomMarker(marker.x, marker.y, marker.worldspace);
                     }

@@ -3,7 +3,7 @@ import { QuestItem } from '@/types/quests.js';
 import { t } from '@/core/i18n.js';
 import { toggleQuestActive } from '@/core/bridge.js';
 import { appSettings } from '@/core/settings.js';
-import { mapState } from '@/core/state.js';
+import { domainState } from '@/core/state/index.js';
 
 import { FocusManager } from '@/systems/focusManager.js';
 import { KeybindsSystem } from '@/systems/keybindManager.js';
@@ -403,7 +403,7 @@ export const QuestList = {
     },
 
     getVisibleQuests(): QuestItem[] {
-        const quests = [...(mapState.lastPayload?.quests || [])].reverse();
+        const quests = [...(domainState.lastPayload?.quests || [])].reverse();
         const filtered = this.filterQuests(quests, questListState.currentTab);
         const sorted = this.sortQuests(filtered, questListState.sortMode);
 

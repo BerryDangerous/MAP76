@@ -1,7 +1,7 @@
 import { GameBounds, MapPosition } from '@/types/map.js';
 import { appSettings } from '@/core/settings.js';
 
-import { mapState } from '@/core/state.js';
+import { domainState } from '@/core/state/index.js';
 import { viewportState } from '@/map/viewportState.js';
 
 import { FocusManager } from '@/systems/focusManager.js';
@@ -61,9 +61,9 @@ export const MapViewport = {
         viewport.style.setProperty('--marker-scale', markerScale.toString());
         
         const playerImg = document.getElementById('player-marker') as HTMLElement;
-        if (playerImg && mapState.player.active) {
+        if (playerImg && domainState.player.active) {
             playerImg.style.setProperty('--marker-scale', markerScale.toString());
-            playerImg.style.setProperty('--player-angle', `${mapState.player.angle}deg`);
+            playerImg.style.setProperty('--player-angle', `${domainState.player.angle}deg`);
         }
 
         if (activeHoveredMarker) {
@@ -208,10 +208,10 @@ export const MapViewport = {
     },
 
     centerOnMapCoords(gameX: number, gameY: number, bounds: GameBounds, targetZoom: number = 2.5) {
-        if (!viewport || !mapState.activeMapConfig) return;
+        if (!viewport || !domainState.activeMapConfig) return;
 
         const baseSize = Math.max(window.innerWidth, window.innerHeight);
-        const screenPos = MapUtils.gameToMapCoords(gameX, gameY, 0, bounds, mapState.activeMapConfig.gutters!);
+        const screenPos = MapUtils.gameToMapCoords(gameX, gameY, 0, bounds, domainState.activeMapConfig.gutters!);
 
         const unzoomedX = (screenPos.x / 100) * baseSize;
         const unzoomedY = (screenPos.y / 100) * baseSize;
@@ -220,8 +220,8 @@ export const MapViewport = {
     },
 
     centerOnTarget(worldspace: number, x: number, y: number, z: number = 0, targetZoom: number = 2.5): boolean {
-        const config = mapState.activeMapConfig;
-        if (!config || !mapState.lastPayload) return false;
+        const config = domainState.activeMapConfig;
+        if (!config || !domainState.lastPayload) return false;
         
         const resolved = WorldspaceUtils.resolveGatewayTarget(
             worldspace,
@@ -229,9 +229,9 @@ export const MapViewport = {
             x,
             y,
             z,
-            mapState.player.x,
-            mapState.player.y,
-            mapState.lastPayload
+            domainState.player.x,
+            domainState.player.y,
+            domainState.lastPayload
         );
         
         if (resolved) {
@@ -242,8 +242,8 @@ export const MapViewport = {
     },
 
     centerOnWorldCoords(gameX: number, gameY: number, targetZoom: number = 2.5): void {
-        const config = mapState.activeMapConfig;
-        const worldspaceData = mapState.lastPayload?.worldspaces?.[config.worldspaceID];
+        const config = domainState.activeMapConfig;
+        const worldspaceData = domainState.lastPayload?.worldspaces?.[config.worldspaceID];
         const bounds = worldspaceData?.bounds;
         if (bounds) {
             this.centerOnMapCoords(gameX, gameY, bounds, targetZoom);

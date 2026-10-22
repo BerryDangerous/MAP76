@@ -4,7 +4,8 @@ import { FastTravelCheckPayload } from '@/types/payloads.js';
 
 import { EngineBridge } from '@/core/bridge.js';
 import { appSettings } from '@/core/settings.js';
-import { mapState } from '@/core/state.js';
+import { domainState } from '@/core/state/index.js';
+import { WorldspaceUtils } from '@/utils/worldspaceUtils.js';
 import { viewportState } from '@/map/viewportState.js';
 
 import { FocusManager } from '@/systems/focusManager.js';
@@ -12,7 +13,6 @@ import { getPotentialVassalMarkerFormIds, updateWorldspaceConfig } from '@/syste
 import { SoundService } from '@/services/soundService.js';
 
 import { MapUtils } from '@/utils/mapUtils.js';
-import { WorldspaceUtils } from '@/utils/worldspaceUtils.js';
 
 import { CustomMarkerCard } from '@/components/CustomMarkerCard.js';
 import { MarkerCard } from '@/components/MarkerCard.js';
@@ -26,22 +26,20 @@ export let activeHoveredMarker: HTMLElement | null = null;
 let pendingFastTravel: { formId: number, name: string } | null = null;
 
 export function prepareForFastTravel(destFormId: number): void {
-    const destMarker = mapState.lastPayload?.markers?.find(m => m.formId === destFormId);
+    const destMarker = domainState.markers.get(destFormId);
     const destSettlement = !destMarker 
-        ? mapState.lastPayload?.settlements?.find(s => s.markerFormId === destFormId || s.formId === destFormId || s.locationFormId === destFormId) 
+        ? domainState.lastPayload?.settlements?.find(s => s.markerFormId === destFormId || s.formId === destFormId || s.locationFormId === destFormId) 
         : null;
-    const target = destMarker || (destSettlement ? mapState.lastPayload?.markers?.find(m => m.formId === destSettlement.markerFormId) : null);
+    const target = destMarker || (destSettlement ? (domainState.markers.get(destSettlement.markerFormId) ?? null) : null);
 
     if (target) {
-        if (mapState.lastPayload?.player) {
-            mapState.lastPayload.player.x = target.x;
-            mapState.lastPayload.player.y = target.y;
-            mapState.lastPayload.player.worldspace = target.worldspace;
-        }
-        mapState.player.x = target.x;
-        mapState.player.y = target.y;
-        mapState.player.active = true;
-        mapState.selectedWorldspaceID = target.worldspace;
+        domainState.updatePlayer({
+            x: target.x,
+            y: target.y,
+            worldspace: target.worldspace,
+            active: true
+        });
+        domainState.setSelectedWorldspace(target.worldspace);
         
         if (appSettings.centerOnPlayerWhenOpened) {
             delete viewportState.worldViewports[target.worldspace];
@@ -49,7 +47,7 @@ export function prepareForFastTravel(destFormId: number): void {
             viewportState.pendingCenterOnPlayer = true;
         }
         
-        if (target.worldspace !== mapState.activeMapConfig.worldspaceID) {
+        if (target.worldspace !== domainState.activeMapConfig.worldspaceID) {
             const editorID = WorldspaceUtils.getWorldspaceEditorID(target.worldspace);
             updateWorldspaceConfig(target.worldspace, editorID);
         }
@@ -233,8 +231,8 @@ export const MarkerInteractionManager = {
 
             if (target.dataset.isRaiderOutpost === 'true') {
                 const formId = target.dataset.formId ? parseInt(target.dataset.formId) : null;
-                if (formId && mapState.lastPayload) {
-                    const potentialVassalIds = getPotentialVassalMarkerFormIds(formId, mapState.lastPayload);
+                if (formId && domainState.lastPayload) {
+                    const potentialVassalIds = getPotentialVassalMarkerFormIds(formId, domainState.lastPayload);
                     
                     document.querySelectorAll('.marker-container').forEach(el => {
                         const markerEl = el as HTMLElement;
@@ -287,7 +285,7 @@ export const MarkerInteractionManager = {
                 
                 if (target.dataset.markerType === 'quest') {
                     const questFormId = target.dataset.formId ? parseInt(target.dataset.formId) : null;
-                    const quests = mapState.lastPayload?.quests || [];
+                    const quests = domainState.lastPayload?.quests || [];
                     const matchingQuest = quests.find(q => (questFormId && q.formId === questFormId) || q.questName === target.dataset.displayName);
                     if (matchingQuest) {
                         QuestCard.open(matchingQuest, target);
@@ -309,7 +307,7 @@ export const MarkerInteractionManager = {
                 const canTravel = target.dataset.canFastTravel === 'true';
                 const selectedFormId = target.dataset.formId ? parseInt(target.dataset.formId) : null;
 
-                const settlements = mapState.lastPayload?.settlements;
+                const settlements = domainState.lastPayload?.settlements;
                 const ownedSettlement = settlements?.find((w: SettlementData) => w.owned && (w.markerFormId === selectedFormId || w.formId === selectedFormId || w.locationFormId === selectedFormId));
 
                 if (ownedSettlement) {
@@ -322,8 +320,8 @@ export const MarkerInteractionManager = {
                 }
             } else {
                 if (viewportState.wasDragged) return;
-                const config = mapState.activeMapConfig;
-                const bounds = mapState.lastPayload?.worldspaces?.[config.worldspaceID]?.bounds;
+                const config = domainState.activeMapConfig;
+                const bounds = domainState.lastPayload?.worldspaces?.[config.worldspaceID]?.bounds;
                 if (!bounds) return;
 
                 if (isSupplyLinesViewActive()) {
@@ -331,7 +329,7 @@ export const MarkerInteractionManager = {
                 }
 
                 e.stopPropagation();
-                const worldCoords = MapUtils.screenToGameCoords(e.clientX, e.clientY, bounds, mapState.activeMapConfig!.gutters!, viewportState.zoom, viewportState.panX, viewportState.panY);
+                const worldCoords = MapUtils.screenToGameCoords(e.clientX, e.clientY, bounds, domainState.activeMapConfig!.gutters!, viewportState.zoom, viewportState.panX, viewportState.panY);
                 CustomMarkerCard.open({ gameCoords: worldCoords, pageCoords: { x: e.clientX, y: e.clientY }, worldspaceId: config.worldspaceID });
             }
         });

@@ -4,7 +4,7 @@ import { PlayerData } from '@/types/map.js';
 import { initializeF4SEBindings, EngineBridge } from '@/core/bridge.js';
 import { appSettings } from '@/core/settings.js';
 import { requestSettings } from '@/core/settings.js';
-import { mapState } from '@/core/state.js';
+import { domainState } from '@/core/state/index.js';
 import { viewportState } from '@/map/viewportState.js';
 
 import { FocusManager } from '@/systems/focusManager.js';
@@ -35,7 +35,7 @@ import { LocationsList } from '@/components/WorkshopsPanel.js';
 
 const globalConfig = window.DEFAULT_COMMONWEALTH_CONFIG;
 if (globalConfig) {
-    mapState.activeMapConfig = globalConfig;
+    domainState.setActiveMapConfig(globalConfig);
     console.log(`[Init] Overrode layout using global config: ${globalConfig.mapName}`);
 } else {
     console.log('[Init] Using built-in hardcoded map configuration fallback.');
@@ -53,30 +53,30 @@ export function onMapOpened(playerData?: PlayerData): void {
     SoundService.playMapOpen();
     
     if (playerData) {
-        const isWorldChange = mapState.lastPayload?.player?.worldspace !== undefined &&
-                              playerData.worldspace !== mapState.lastPayload.player.worldspace;
+        const isWorldChange = domainState.lastPayload?.player?.worldspace !== undefined &&
+                              playerData.worldspace !== domainState.lastPayload.player.worldspace;
         
-        if (isWorldChange && mapState.lastPayload && mapState.lastPayload.player) {
-            mapState.lastPayload.player.x = playerData.x;
-            mapState.lastPayload.player.y = playerData.y;
-            mapState.lastPayload.player.z = playerData.z;
-            mapState.lastPayload.player.angle = playerData.angle;
-            mapState.lastPayload.player.worldspace = playerData.worldspace;
-            mapState.selectedWorldspaceID = null;
+        if (isWorldChange && domainState.lastPayload && domainState.lastPayload.player) {
+            domainState.lastPayload.player.x = playerData.x;
+            domainState.lastPayload.player.y = playerData.y;
+            domainState.lastPayload.player.z = playerData.z;
+            domainState.lastPayload.player.angle = playerData.angle;
+            domainState.lastPayload.player.worldspace = playerData.worldspace;
+            domainState.setSelectedWorldspace(null);
             if (appSettings.centerOnPlayerWhenOpened) {
                 viewportState.pendingCenterOnPlayer = true;
             }
-            loadMarkers(mapState.lastPayload, true);
+            loadMarkers(domainState.lastPayload, true);
         } else {
             updatePlayerMarker(playerData);
         }
     }
 
     if (appSettings.centerOnPlayerWhenOpened) {
-        const config = mapState.activeMapConfig;
-        const bounds = mapState.lastPayload?.worldspaces?.[config.worldspaceID]?.bounds;
-        if (mapState.player && mapState.player.active && bounds) {
-            MapViewport.centerOnWorldCoords(mapState.player.x, mapState.player.y);
+        const config = domainState.activeMapConfig;
+        const bounds = domainState.lastPayload?.worldspaces?.[config.worldspaceID]?.bounds;
+        if (domainState.player && domainState.player.active && bounds) {
+            MapViewport.centerOnWorldCoords(domainState.player.x, domainState.player.y);
             viewportState.pendingCenterOnPlayer = false;
         } else {
             viewportState.pendingCenterOnPlayer = true;
@@ -91,16 +91,16 @@ export function onMapClosed(): void {
     
     if (appSettings.centerOnPlayerWhenOpened) {
         viewportState.pendingCenterOnPlayer = true;
-        mapState.selectedWorldspaceID = null;
+        domainState.setSelectedWorldspace(null);
         viewportState.savedViewport = null;
-        if (mapState.lastPayload) {
-            loadMarkers(mapState.lastPayload, true);
+        if (domainState.lastPayload) {
+            loadMarkers(domainState.lastPayload, true);
         }
     }
 }
 
 export function setInitialWorldspace(worldspaceId: number, editorId: string): void {
-    if (mapState.selectedWorldspaceID !== null && mapState.selectedWorldspaceID !== undefined) {
+    if (domainState.selectedWorldspaceID !== null && domainState.selectedWorldspaceID !== undefined) {
         return;
     }
 
@@ -154,17 +154,13 @@ window.addEventListener('FrameTick', (e: Event) => {
                 if (!appSettings.centerOnPlayerWhenOpened) {
                     return;
                 }
-                const isWorldChange = mapState.lastPayload?.player?.worldspace !== undefined &&
-                                      player.worldspace !== mapState.lastPayload.player.worldspace;
-                if (isWorldChange && mapState.lastPayload && mapState.lastPayload.player) {
-                    mapState.lastPayload.player.x = player.x;
-                    mapState.lastPayload.player.y = player.y;
-                    mapState.lastPayload.player.z = player.z;
-                    mapState.lastPayload.player.angle = player.angle;
-                    mapState.lastPayload.player.worldspace = player.worldspace;
-                    mapState.selectedWorldspaceID = null;
+                const isWorldChange = domainState.lastPayload?.player?.worldspace !== undefined &&
+                                      player.worldspace !== domainState.lastPayload.player.worldspace;
+                if (isWorldChange && domainState.lastPayload && domainState.lastPayload.player) {
+                    domainState.updatePlayer(player);
+                    domainState.setSelectedWorldspace(null);
                     viewportState.pendingCenterOnPlayer = true;
-                    loadMarkers(mapState.lastPayload, true);
+                    loadMarkers(domainState.lastPayload, true);
                 } else {
                     updatePlayerMarker(player);
                     MapViewport.centerOnWorldCoords(player.x, player.y);
@@ -177,8 +173,8 @@ window.addEventListener('FrameTick', (e: Event) => {
 });
 
 window.addEventListener('settingsUpdated', () => {
-    if (mapState.lastPayload) {
-        loadMarkers(mapState.lastPayload);
+    if (domainState.lastPayload) {
+        loadMarkers(domainState.lastPayload);
     }
     QuestList.render?.();
     LocationsList.render?.();
@@ -298,20 +294,20 @@ window.addEventListener('DOMContentLoaded', () => {
                 if (KeybindsSystem.isAction(e, 'CENTER_CAMERA')) {
                     e.preventDefault();
                     SoundService.playMapZoom();
-                    if (mapState.player) {
-                        if (mapState.activeMapConfig) {
-                            viewportState.worldViewports[mapState.activeMapConfig.worldspaceID] = {
+                    if (domainState.player) {
+                        if (domainState.activeMapConfig) {
+                            viewportState.worldViewports[domainState.activeMapConfig.worldspaceID] = {
                                 zoom: viewportState.zoom,
                                 panX: viewportState.panX,
                                 panY: viewportState.panY
                             };
                         }
-                        mapState.selectedWorldspaceID = null;
-                        if (mapState.lastPayload) {
-                            loadMarkers(mapState.lastPayload, true);
+                        domainState.setSelectedWorldspace(null);
+                        if (domainState.lastPayload) {
+                            loadMarkers(domainState.lastPayload, true);
                         }
-                        if (mapState.player.active) {
-                            MapViewport.centerOnWorldCoords(mapState.player.x, mapState.player.y);
+                        if (domainState.player.active) {
+                            MapViewport.centerOnWorldCoords(domainState.player.x, domainState.player.y);
                         }
                     }
                     return;
@@ -323,15 +319,15 @@ window.addEventListener('DOMContentLoaded', () => {
                     }
                 }
                 if (KeybindsSystem.isAction(e, 'PLACE_MARKER')) {
-                    const config = mapState.activeMapConfig;
-                    const worldspaceData = mapState.lastPayload?.worldspaces?.[config.worldspaceID];
+                    const config = domainState.activeMapConfig;
+                    const worldspaceData = domainState.lastPayload?.worldspaces?.[config.worldspaceID];
                     const bounds = worldspaceData?.bounds;
                     if (bounds) {
                         const worldCoords = MapUtils.screenToGameCoords(
                             MapViewport.lastMouseX, 
                             MapViewport.lastMouseY, 
                             bounds,
-                            mapState.activeMapConfig!.gutters!,
+                            domainState.activeMapConfig!.gutters!,
                             viewportState.zoom,
                             viewportState.panX,
                             viewportState.panY
@@ -342,9 +338,9 @@ window.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
                 if (KeybindsSystem.isAction(e, 'PREV_WORLD') || KeybindsSystem.isAction(e, 'NEXT_WORLD')) {
-                    if (!mapState.lastPayload || !mapState.lastPayload.worldspaces) return;
+                    if (!domainState.lastPayload || !domainState.lastPayload.worldspaces) return;
                     
-                    const wsKeys = Object.keys(mapState.lastPayload.worldspaces).map(k => parseInt(k, 10));
+                    const wsKeys = Object.keys(domainState.lastPayload.worldspaces).map(k => parseInt(k, 10));
                     if (wsKeys.length <= 1) return;
 
                     wsKeys.sort((a, b) => {
@@ -358,12 +354,12 @@ window.addEventListener('DOMContentLoaded', () => {
                         const pB = getPriority(b);
                         if (pA !== pB) return pA - pB;
 
-                        const nameA = mapState.lastPayload!.worldspaces![a].fullName.toLowerCase();
-                        const nameB = mapState.lastPayload!.worldspaces![b].fullName.toLowerCase();
+                        const nameA = domainState.lastPayload!.worldspaces![a].fullName.toLowerCase();
+                        const nameB = domainState.lastPayload!.worldspaces![b].fullName.toLowerCase();
                         return nameA.localeCompare(nameB);
                     });
 
-                    const currentIdx = wsKeys.indexOf(mapState.activeMapConfig.worldspaceID);
+                    const currentIdx = wsKeys.indexOf(domainState.activeMapConfig.worldspaceID);
                     let nextIdx = 0;
                     if (KeybindsSystem.isAction(e, 'PREV_WORLD')) {
                         nextIdx = currentIdx > 0 ? currentIdx - 1 : wsKeys.length - 1;
@@ -392,8 +388,8 @@ window.addEventListener('DOMContentLoaded', () => {
                 } else if (KeybindsSystem.isAction(e, 'TOGGLE_SUPPLY_LINES')) {
                     if (hasSupplyLines()) {
                         toggleSupplyLinesView();
-                        if (mapState.lastPayload) {
-                            loadMarkers(mapState.lastPayload);
+                        if (domainState.lastPayload) {
+                            loadMarkers(domainState.lastPayload);
                         } else {
                             applySupplyLinesVisibilityFilter();
                         }

@@ -1,7 +1,7 @@
 import { MapConfig } from '@/types/map.js';
 
 import { appSettings, updateSettings, getDefaultSettings, AppSettings } from '@/core/settings.js';
-import { mapState } from '@/core/state.js';
+import { domainState } from '@/core/state/index.js';
 
 import { AssetManager } from '@/systems/assetManager.js';
 import { FocusManager, FocusOwner } from '@/systems/focusManager.js';
@@ -326,7 +326,7 @@ export const SettingsMenu = {
                 }
             });
 
-            if (mapState.selectedWorldspaceID === wsId) {
+            if (domainState.selectedWorldspaceID === wsId) {
                 updateWorldspaceConfig(wsId, ws.editorID);
             }
         });
@@ -350,7 +350,7 @@ export const SettingsMenu = {
     refreshMapSettings() {
         this.controls = this.controls.filter(control => control.tab !== 'MAPS');
 
-        const worldspaces = mapState.lastPayload?.worldspaces;
+        const worldspaces = domainState.lastPayload?.worldspaces;
         if (!worldspaces) return;
 
         const allConfigs = Object.values(AssetManager.mapConfigs) as MapConfig[];

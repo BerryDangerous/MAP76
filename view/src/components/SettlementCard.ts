@@ -1,6 +1,7 @@
 import { SettlementData } from '@/types/payloads.js';
 
-import { mapState } from '@/core/state.js';
+import { domainState } from '@/core/state/index.js';
+import { WorldspaceUtils } from '@/utils/worldspaceUtils.js';
 import { toggleFavoriteLocation, setCustomMarker } from '@/core/bridge.js';
 
 import { AssetManager } from '@/systems/assetManager.js';
@@ -14,7 +15,6 @@ import { OverlayManager } from '@/managers/overlayManager.js';
 import { SoundService } from '@/services/soundService.js';
 
 import { calculateSettlementRatings, SettlementDataWithRatings } from '@/utils/settlementUtils.js';
-import { WorldspaceUtils } from '@/utils/worldspaceUtils.js';
 import { t } from '@/core/i18n.js';
 
 import { ActionButtonConfig } from '@/components/ui/ButtonGroup.js';
@@ -39,7 +39,7 @@ export const SettlementCard = {
                 }
                 controls.push('PAN_MOUSE');
                 if (SettlementCard.activeAnchorMarker === null && SettlementCard.activeSettlement) {
-                    if (SettlementCard.activeSettlement.worldspace !== undefined && WorldspaceUtils.isSameWorldspace(SettlementCard.activeSettlement.worldspace, mapState.activeMapConfig.worldspaceID)) {
+                    if (SettlementCard.activeSettlement.worldspace !== undefined && WorldspaceUtils.isSameWorldspace(SettlementCard.activeSettlement.worldspace, domainState.activeMapConfig.worldspaceID)) {
                         controls.push({ action: 'CENTER_ITEM', label: t('markers.controls.centerMarker') });
                     }
                 }
@@ -72,9 +72,9 @@ export const SettlementCard = {
     handleKeyDown(e: KeyboardEvent): boolean {
         if (KeybindsSystem.isAction(e, 'CENTER_ITEM')) {
             if (this.activeAnchorMarker === null && this.activeSettlement) {
-                if (this.activeSettlement.worldspace !== undefined && WorldspaceUtils.isSameWorldspace(this.activeSettlement.worldspace, mapState.activeMapConfig.worldspaceID)) {
+                if (this.activeSettlement.worldspace !== undefined && WorldspaceUtils.isSameWorldspace(this.activeSettlement.worldspace, domainState.activeMapConfig.worldspaceID)) {
                     SoundService.playShowOnMap();
-                    const marker = mapState.lastPayload?.markers?.find(m => m.formId === this.activeMarkerFormId);
+                    const marker = this.activeMarkerFormId !== null ? domainState.markers.get(this.activeMarkerFormId) : undefined;
                     if (marker) {
                         MapViewport.centerOnTarget(marker.worldspace, marker.x, marker.y, 0);
                     }
@@ -270,24 +270,14 @@ export const SettlementCard = {
         }
 
         if (this.activeMarkerFormId !== null) {
-            const isFav = mapState.lastPayload?.favoriteLocations?.includes(this.activeMarkerFormId);
+            const isFav = domainState.favoriteLocations.has(this.activeMarkerFormId);
             buttons.push({
                 id: 'favorite',
                 label: isFav ? t('locations.controls.unfavorite') : t('locations.controls.favorite'),
                 action: () => {
                     if (this.activeMarkerFormId !== null) {
                         toggleFavoriteLocation(this.activeMarkerFormId);
-                        
-                        if (mapState.lastPayload) {
-                            if (!mapState.lastPayload.favoriteLocations) {
-                                mapState.lastPayload.favoriteLocations = [];
-                            }
-                            if (isFav) {
-                                mapState.lastPayload.favoriteLocations = mapState.lastPayload.favoriteLocations.filter(id => id !== this.activeMarkerFormId);
-                            } else {
-                                mapState.lastPayload.favoriteLocations.push(this.activeMarkerFormId);
-                            }
-                        }
+                        domainState.toggleFavoriteLocation(this.activeMarkerFormId);
                         
                         if (this.activeSettlement) {
                             SettlementCard.open(
@@ -311,7 +301,7 @@ export const SettlementCard = {
             label: hasExistingMarker ? t('markers.customMarker.moveMarker') : t('markers.customMarker.placeMarker'),
             action: () => {
                 if (this.activeMarkerFormId !== null) {
-                    const marker = mapState.lastPayload?.markers?.find(m => m.formId === this.activeMarkerFormId);
+                    const marker = domainState.markers.get(this.activeMarkerFormId);
                     if (marker) {
                         setCustomMarker(marker.x, marker.y, marker.worldspace);
                     }
