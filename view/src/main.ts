@@ -18,7 +18,7 @@ import { MapViewport } from '@/map/viewport.js';
 import { MarkerInteractionManager, activeHoveredMarker } from '@/map/interactions.js';
 import { loadMarkers, applySupplyLinesVisibilityFilter, switchWorldspace, updatePlayerMarker, updateWorldspaceConfig } from '@/map/markers.js';
 import { toggleSupplyLinesView, setSupplyLinesViewActive, hasSupplyLines } from '@/map/supplyLines.js';
-import { MapUtils } from '@/map/coordinates.js';
+import { screenToGameCoords } from '@/map/coordinates.js';
 
 import { injectSVGFilters } from '@/utils/svgFilters.js';
 
@@ -321,10 +321,9 @@ window.addEventListener('DOMContentLoaded', () => {
                 }
                 if (KeybindsSystem.isAction(e, 'PLACE_MARKER')) {
                     const config = domainState.activeMapConfig;
-                    const worldspaceData = domainState.lastPayload?.worldspaces?.[config.worldspaceID];
-                    const bounds = worldspaceData?.bounds;
+                    const bounds = domainState.worldspaces.get(config.worldspaceID)?.bounds;
                     if (bounds) {
-                        const worldCoords = MapUtils.screenToGameCoords(
+                        const worldCoords = screenToGameCoords(
                             MapViewport.lastMouseX, 
                             MapViewport.lastMouseY, 
                             bounds,

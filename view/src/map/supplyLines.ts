@@ -1,9 +1,10 @@
-import { F4SEMapPayload, SettlementData } from '@/types/payloads.js';
+import { F4SEMapPayload, GatewayMarker } from '@/types/payloads.js';
 
 import { domainState } from '@/core/state/index.js';
+import { getEffectiveWorldspaceBounds } from '@/core/state/worldspaces.js';
 
-import { MapUtils } from '@/map/coordinates.js';
-import { WorldspaceUtils } from '@/map/gateways.js';
+import { gameToMapCoords } from '@/map/coordinates.js';
+import { resolveGatewayTarget } from '@/map/gateways.js';
 
 let isSupplyLinesActiveState = false;
 let svgLayer: SVGSVGElement | null = null;
@@ -47,9 +48,12 @@ export function initSupplyLinesLayer(): SVGSVGElement | null {
 }
 
 export function hasSupplyLines(): boolean {
-    const payload = domainState.lastPayload;
-    if (!payload || !payload.settlements) return false;
-    return payload.settlements.some(ws => ws.owned && ws.linkedLocationFormIds && ws.linkedLocationFormIds.length > 0);
+    for (const ws of domainState.settlements.values()) {
+        if (ws.owned && ws.linkedLocationFormIds && ws.linkedLocationFormIds.length > 0) {
+            return true;
+        }
+    }
+    return false;
 }
 
 function resolveCrossWorldspaceGateway(
@@ -57,18 +61,18 @@ function resolveCrossWorldspaceGateway(
     currentWorldspace: number,
     refX: number,
     refY: number,
-    payload: F4SEMapPayload
+    gateways?: Record<number, Record<number, GatewayMarker[]>>
 ): { x: number; y: number } {
-    const bounds = payload.worldspaces?.[currentWorldspace]?.bounds;
+    const bounds = domainState.worldspaces.get(currentWorldspace)?.bounds;
     if (!bounds) return { x: 0, y: 0 };
-    const markers = payload.markers;
     
-    const resolved = WorldspaceUtils.resolveGatewayTarget(
+    const resolved = resolveGatewayTarget(
         targetWorldspace,
         currentWorldspace,
         0, 0, 0,
         refX, refY,
-        payload,
+        gateways,
+        domainState.markers,
         { gatewayType: 'mapMarker' }
     );
     
@@ -80,19 +84,19 @@ function resolveCrossWorldspaceGateway(
         let gx = resolved.x;
         let gy = resolved.y;
 
-        const { minX: bMinX, maxX: bMaxX, minY: bMinY, maxY: bMaxY } = MapUtils.getEffectiveBounds(bounds);
+        const { minX: bMinX, maxX: bMaxX, minY: bMinY, maxY: bMaxY } = getEffectiveWorldspaceBounds(bounds, domainState.activeMapConfig?.cellBounds);
         gx = Math.max(bMinX, Math.min(bMaxX, gx));
         gy = Math.max(bMinY, Math.min(bMaxY, gy));
 
-        const gwPos = MapUtils.gameToMapCoords(gx, gy, 0, bounds, domainState.activeMapConfig!.gutters!);
+        const gwPos = gameToMapCoords(gx, gy, 0, bounds, domainState.activeMapConfig!.gutters!);
         return { x: gwPos.x, y: gwPos.y };
     }
     
-    const gwPos = MapUtils.gameToMapCoords(0, 0, 0, bounds, domainState.activeMapConfig!.gutters!);
+    const gwPos = gameToMapCoords(0, 0, 0, bounds, domainState.activeMapConfig!.gutters!);
     return { x: gwPos.x, y: gwPos.y };
 }
 
-export function renderSupplyLines(payload: F4SEMapPayload): void {
+export function renderSupplyLines(payload?: F4SEMapPayload | null): void {
     if (!svgLayer) {
         initSupplyLinesLayer();
     }
@@ -101,27 +105,28 @@ export function renderSupplyLines(payload: F4SEMapPayload): void {
 
     svgLayer.innerHTML = '';
 
-    if (!payload || !payload.settlements || !payload.markers) {
-        return;
-    }
-
     const currentWorldspace = domainState.activeMapConfig?.worldspaceID ?? 0;
-    const bounds = payload.worldspaces?.[currentWorldspace]?.bounds;
+    const bounds = domainState.worldspaces.get(currentWorldspace)?.bounds;
     if (!bounds) return;
 
-    const settlements = payload.settlements;
-    const markers = payload.markers;
+    const settlements = domainState.settlements;
+    const markers = domainState.markers;
+    const gateways = payload?.gateways;
+
+    if (settlements.size === 0 || markers.size === 0) {
+        return;
+    }
 
     activeGatewayMarkerFormIds.clear();
 
     const coordsMap = new Map<number, { x: number; y: number }>();
     const rawCoordsMap = new Map<number, { x: number; y: number }>();
 
-    settlements.forEach(ws => {
-        if (ws.worldspace !== currentWorldspace) return;
-        let marker = markers.find(m => m.formId === ws.markerFormId || m.formId === ws.formId);
+    for (const ws of settlements.values()) {
+        if (ws.worldspace !== currentWorldspace) continue;
+        const marker = ws.markerFormId ? markers.get(ws.markerFormId) : (markers.get(ws.formId) || null);
         if (marker) {
-            const pos = MapUtils.gameToMapCoords(marker.x, marker.y, 0, bounds, domainState.activeMapConfig!.gutters!);
+            const pos = gameToMapCoords(marker.x, marker.y, 0, bounds, domainState.activeMapConfig!.gutters!);
             coordsMap.set(ws.locationFormId, { x: pos.x, y: pos.y });
             coordsMap.set(ws.formId, { x: pos.x, y: pos.y });
             rawCoordsMap.set(ws.locationFormId, { x: marker.x, y: marker.y });
@@ -131,13 +136,13 @@ export function renderSupplyLines(payload: F4SEMapPayload): void {
                 rawCoordsMap.set(ws.markerFormId, { x: marker.x, y: marker.y });
             }
         }
-    });
+    }
 
     const drawnPairs = new Set<string>();
 
-    settlements.forEach(ws => {
+    for (const ws of settlements.values()) {
         if (!ws.owned || !ws.linkedLocationFormIds || ws.linkedLocationFormIds.length === 0) {
-            return;
+            continue;
         }
 
         let srcPos = coordsMap.get(ws.locationFormId) || coordsMap.get(ws.formId);
@@ -152,21 +157,33 @@ export function renderSupplyLines(payload: F4SEMapPayload): void {
             let rawDestPos = rawCoordsMap.get(targetId);
 
             if (!destPos && srcPos && rawSrcPos) {
-                const targetWs = settlements.find(w => w.locationFormId === targetId || w.formId === targetId || w.markerFormId === targetId);
+                let targetWs: typeof ws | undefined;
+                for (const s of settlements.values()) {
+                    if (s.locationFormId === targetId || s.formId === targetId || s.markerFormId === targetId) {
+                        targetWs = s;
+                        break;
+                    }
+                }
                 if (targetWs && targetWs.worldspace && targetWs.worldspace !== currentWorldspace) {
                     destPos = resolveCrossWorldspaceGateway(
                         targetWs.worldspace,
                         currentWorldspace,
                         rawSrcPos.x,
                         rawSrcPos.y,
-                        payload
+                        gateways
                     );
                 }
             } else if (!srcPos && !destPos) {
-                const targetWs = settlements.find(w => w.locationFormId === targetId || w.formId === targetId || w.markerFormId === targetId);
+                let targetWs: typeof ws | undefined;
+                for (const s of settlements.values()) {
+                    if (s.locationFormId === targetId || s.formId === targetId || s.markerFormId === targetId) {
+                        targetWs = s;
+                        break;
+                    }
+                }
                 if (ws.worldspace && targetWs && targetWs.worldspace && ws.worldspace !== currentWorldspace && targetWs.worldspace !== currentWorldspace && ws.worldspace !== targetWs.worldspace) {
-                    srcPos = resolveCrossWorldspaceGateway(ws.worldspace, currentWorldspace, 0, 0, payload);
-                    destPos = resolveCrossWorldspaceGateway(targetWs.worldspace, currentWorldspace, 0, 0, payload);
+                    srcPos = resolveCrossWorldspaceGateway(ws.worldspace, currentWorldspace, 0, 0, gateways);
+                    destPos = resolveCrossWorldspaceGateway(targetWs.worldspace, currentWorldspace, 0, 0, gateways);
                 }
             }
 
@@ -190,5 +207,5 @@ export function renderSupplyLines(payload: F4SEMapPayload): void {
 
             svgLayer!.appendChild(line);
         });
-    });
+    }
 }

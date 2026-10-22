@@ -8,8 +8,8 @@ import { OverlayManager } from '@/managers/overlayManager.js';
 
 import { viewportState } from '@/map/viewportState.js';
 import { activeHoveredMarker } from '@/map/interactions.js';
-import { MapUtils } from '@/map/coordinates.js';
-import { WorldspaceUtils } from '@/map/gateways.js';
+import { gameToMapCoords } from '@/map/coordinates.js';
+import { resolveGatewayTarget } from '@/map/gateways.js';
 
 import { CustomMarkerCard } from '@/components/CustomMarkerCard.js';
 import { MarkerCard } from '@/components/MarkerCard.js';
@@ -211,7 +211,7 @@ export const MapViewport = {
         if (!viewport || !domainState.activeMapConfig) return;
 
         const baseSize = Math.max(window.innerWidth, window.innerHeight);
-        const screenPos = MapUtils.gameToMapCoords(gameX, gameY, 0, bounds, domainState.activeMapConfig.gutters!);
+        const screenPos = gameToMapCoords(gameX, gameY, 0, bounds, domainState.activeMapConfig.gutters!);
 
         const unzoomedX = (screenPos.x / 100) * baseSize;
         const unzoomedY = (screenPos.y / 100) * baseSize;
@@ -221,9 +221,9 @@ export const MapViewport = {
 
     centerOnTarget(worldspace: number, x: number, y: number, z: number = 0, targetZoom: number = 2.5): boolean {
         const config = domainState.activeMapConfig;
-        if (!config || !domainState.lastPayload) return false;
+        if (!config) return false;
         
-        const resolved = WorldspaceUtils.resolveGatewayTarget(
+        const resolved = resolveGatewayTarget(
             worldspace,
             config.worldspaceID,
             x,
@@ -231,7 +231,8 @@ export const MapViewport = {
             z,
             domainState.player.x,
             domainState.player.y,
-            domainState.lastPayload
+            domainState.lastPayload?.gateways,
+            domainState.markers
         );
         
         if (resolved) {
@@ -243,8 +244,7 @@ export const MapViewport = {
 
     centerOnWorldCoords(gameX: number, gameY: number, targetZoom: number = 2.5): void {
         const config = domainState.activeMapConfig;
-        const worldspaceData = domainState.lastPayload?.worldspaces?.[config.worldspaceID];
-        const bounds = worldspaceData?.bounds;
+        const bounds = domainState.worldspaces.get(config.worldspaceID)?.bounds;
         if (bounds) {
             this.centerOnMapCoords(gameX, gameY, bounds, targetZoom);
         }

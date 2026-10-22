@@ -12,7 +12,7 @@ import { SoundService } from '@/services/soundService.js';
 
 import { getPotentialVassalMarkerFormIds, updateWorldspaceConfig } from '@/map/markers.js';
 import { viewportState } from '@/map/viewportState.js';
-import { MapUtils } from '@/map/coordinates.js';
+import { screenToGameCoords } from '@/map/coordinates.js';
 import { isSupplyLinesViewActive } from '@/map/supplyLines.js';
 
 import { CustomMarkerCard } from '@/components/CustomMarkerCard.js';
@@ -27,9 +27,15 @@ let pendingFastTravel: { formId: number, name: string } | null = null;
 
 export function prepareForFastTravel(destFormId: number): void {
     const destMarker = domainState.markers.get(destFormId);
-    const destSettlement = !destMarker 
-        ? domainState.lastPayload?.settlements?.find(s => s.markerFormId === destFormId || s.formId === destFormId || s.locationFormId === destFormId) 
-        : null;
+    let destSettlement: SettlementData | undefined;
+    if (!destMarker) {
+        for (const s of domainState.settlements.values()) {
+            if (s.markerFormId === destFormId || s.formId === destFormId || s.locationFormId === destFormId) {
+                destSettlement = s;
+                break;
+            }
+        }
+    }
     const target = destMarker || (destSettlement ? (domainState.markers.get(destSettlement.markerFormId) ?? null) : null);
 
     if (target) {
@@ -231,8 +237,13 @@ export const MarkerInteractionManager = {
 
             if (target.dataset.isRaiderOutpost === 'true') {
                 const formId = target.dataset.formId ? parseInt(target.dataset.formId) : null;
-                if (formId && domainState.lastPayload) {
-                    const potentialVassalIds = getPotentialVassalMarkerFormIds(formId, domainState.lastPayload);
+                if (formId) {
+                    const potentialVassalIds = getPotentialVassalMarkerFormIds(
+                        formId,
+                        domainState.settlements,
+                        domainState.markers,
+                        domainState.lastPayload?.dlc04VassalDistance
+                    );
                     
                     document.querySelectorAll('.marker-container').forEach(el => {
                         const markerEl = el as HTMLElement;
@@ -285,8 +296,15 @@ export const MarkerInteractionManager = {
                 
                 if (target.dataset.markerType === 'quest') {
                     const questFormId = target.dataset.formId ? parseInt(target.dataset.formId) : null;
-                    const quests = domainState.lastPayload?.quests || [];
-                    const matchingQuest = quests.find(q => (questFormId && q.formId === questFormId) || q.questName === target.dataset.displayName);
+                    let matchingQuest = questFormId ? domainState.quests.get(questFormId) : undefined;
+                    if (!matchingQuest) {
+                        for (const q of domainState.quests.values()) {
+                            if (q.questName === target.dataset.displayName) {
+                                matchingQuest = q;
+                                break;
+                            }
+                        }
+                    }
                     if (matchingQuest) {
                         QuestCard.open(matchingQuest, target);
                         SoundService.playFocus();
@@ -307,8 +325,15 @@ export const MarkerInteractionManager = {
                 const canTravel = target.dataset.canFastTravel === 'true';
                 const selectedFormId = target.dataset.formId ? parseInt(target.dataset.formId) : null;
 
-                const settlements = domainState.lastPayload?.settlements;
-                const ownedSettlement = settlements?.find((w: SettlementData) => w.owned && (w.markerFormId === selectedFormId || w.formId === selectedFormId || w.locationFormId === selectedFormId));
+                let ownedSettlement: SettlementData | undefined;
+                if (selectedFormId) {
+                    for (const w of domainState.settlements.values()) {
+                        if (w.owned && (w.markerFormId === selectedFormId || w.formId === selectedFormId || w.locationFormId === selectedFormId)) {
+                            ownedSettlement = w;
+                            break;
+                        }
+                    }
+                }
 
                 if (ownedSettlement) {
                     renderSettlementCardContent(document.body, ownedSettlement, selectedFormId!, canTravel, target);
@@ -321,7 +346,7 @@ export const MarkerInteractionManager = {
             } else {
                 if (viewportState.wasDragged) return;
                 const config = domainState.activeMapConfig;
-                const bounds = domainState.lastPayload?.worldspaces?.[config.worldspaceID]?.bounds;
+                const bounds = domainState.worldspaces.get(config.worldspaceID)?.bounds;
                 if (!bounds) return;
 
                 if (isSupplyLinesViewActive()) {
@@ -329,7 +354,7 @@ export const MarkerInteractionManager = {
                 }
 
                 e.stopPropagation();
-                const worldCoords = MapUtils.screenToGameCoords(e.clientX, e.clientY, bounds, domainState.activeMapConfig!.gutters!, viewportState.zoom, viewportState.panX, viewportState.panY);
+                const worldCoords = screenToGameCoords(e.clientX, e.clientY, bounds, domainState.activeMapConfig!.gutters!, viewportState.zoom, viewportState.panX, viewportState.panY);
                 CustomMarkerCard.open({ gameCoords: worldCoords, pageCoords: { x: e.clientX, y: e.clientY }, worldspaceId: config.worldspaceID });
             }
         });
