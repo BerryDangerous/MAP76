@@ -91,7 +91,29 @@ export class FloatingCard {
         if (!this.cardElement || this.cardElement.style.display === 'none') return;
 
         if (this.options.anchorMarker) {
-            LayoutManager.anchorToElement(this.cardElement, this.options.anchorMarker, { gap: 20, padding: 10 });
+            let anchor = this.options.anchorMarker;
+            if (!anchor.isConnected) {
+                const formId = anchor.dataset.formId;
+                const isCustom = anchor.classList.contains('custom-marker') || anchor.dataset.markerType === 'customMarker';
+                let reconnected: HTMLElement | null = null;
+
+                if (formId) {
+                    reconnected = (document.querySelector(`.marker-container[data-form-id="${formId}"]`) ||
+                                   document.querySelector(`.quest-marker[data-form-id="${formId}"]`) ||
+                                   document.querySelector(`[data-form-id="${formId}"]`)) as HTMLElement | null;
+                } else if (isCustom) {
+                    reconnected = document.querySelector('.custom-marker') as HTMLElement | null;
+                }
+
+                if (reconnected) {
+                    this.options.anchorMarker = reconnected;
+                    reconnected.classList.add('menu-active', 'hide-tooltip-override');
+                    anchor = reconnected;
+                } else {
+                    return;
+                }
+            }
+            LayoutManager.anchorToElement(this.cardElement, anchor, { gap: 20, padding: 10 });
         } else if (this.options.coords) {
             LayoutManager.anchorToCoords(this.cardElement, this.options.coords.x, this.options.coords.y, undefined, { gap: 20, padding: 10 });
         } else if (this.options.referencePanel && this.options.dockCorner) {
@@ -101,6 +123,19 @@ export class FloatingCard {
 
     public close(): void {
         FloatingCard.activeCards.delete(this);
+        if (this.options.anchorMarker) {
+            if (this.options.anchorMarker.isConnected) {
+                this.options.anchorMarker.classList.remove('menu-active');
+                this.options.anchorMarker.classList.remove('hide-tooltip-override');
+            } else if (this.options.anchorMarker.dataset.formId) {
+                const formId = this.options.anchorMarker.dataset.formId;
+                const reconnected = document.querySelector(`[data-form-id="${formId}"]`);
+                if (reconnected) {
+                    reconnected.classList.remove('menu-active');
+                    reconnected.classList.remove('hide-tooltip-override');
+                }
+            }
+        }
         if (this.cardElement) {
             this.cardElement.style.display = 'none';
             this.cardElement.removeAttribute('data-anchored');

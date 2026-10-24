@@ -132,9 +132,14 @@ export const MarkerCard = {
 
     close(): void {
         if (this.activeAnchorMarker) {
-            this.activeAnchorMarker.classList.remove('menu-active');
-            this.activeAnchorMarker.classList.remove('is-hovered');
-            this.activeAnchorMarker.classList.remove('hide-tooltip-override');
+            let el = this.activeAnchorMarker;
+            if (!el.isConnected && this.activeMarkerFormId !== null) {
+                const reconnected = document.querySelector(`.marker-container[data-form-id="${this.activeMarkerFormId}"]`) as HTMLElement | null;
+                if (reconnected) el = reconnected;
+            }
+            el.classList.remove('menu-active');
+            el.classList.remove('is-hovered');
+            el.classList.remove('hide-tooltip-override');
             this.activeAnchorMarker = null;
             mapSurface.updateViewportTransform();
         }

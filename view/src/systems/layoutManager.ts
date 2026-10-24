@@ -126,7 +126,7 @@ export class LayoutManager {
         targetMarker: HTMLElement,
         options: AnchorPositionOptions = {}
     ): void {
-        if (!panel || !targetMarker) return;
+        if (!panel || !targetMarker || !targetMarker.isConnected) return;
 
         const svgEl = targetMarker.querySelector('svg');
         const mRect = svgEl ? svgEl.getBoundingClientRect() : targetMarker.getBoundingClientRect();
