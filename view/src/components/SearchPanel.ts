@@ -57,11 +57,11 @@ const listController = new SelectableListController<SearchResult>({
     itemSelector: '.sl-item',
     onSelectionChange: (selectedResult) => {
         if (searchPanelState.isCollapsed) return;
-        
-        SearchPanel.closeCards();
 
         if (selectedResult) {
-            SearchPanel.openCardForResult(selectedResult);
+            OverlayManager.scheduleDockedCard(() => {
+                SearchPanel.openCardForResult(selectedResult);
+            });
             if (selectedResult.markerCoords) {
                 if (appSettings.focusMarkerOnSelection) {
                     mapSurface.centerOnTarget(
@@ -75,6 +75,8 @@ const listController = new SelectableListController<SearchResult>({
                 mapSurface.clearSavedViewport(appSettings.focusMarkerOnSelection);
             }
         } else {
+            OverlayManager.cancelScheduledCard();
+            SearchPanel.closeCards();
             mapSurface.clearSavedViewport(appSettings.focusMarkerOnSelection);
         }
 
@@ -101,6 +103,7 @@ const listController = new SelectableListController<SearchResult>({
         }
 
         listController.setSelectedIndex(index, true, true);
+        OverlayManager.flushScheduledCard();
     },
     onItemHover: (result, index) => {
         if ((SearchPanel as any)._ignoreHover) return;
@@ -334,6 +337,7 @@ export const SearchPanel = {
 
         const isRightDocked = searchPanelState.dockCorner.includes('right');
         if (KeybindsSystem.isAction(e, 'SELECT') || (isRightDocked ? KeybindsSystem.isAction(e, 'NAV_LEFT') : KeybindsSystem.isAction(e, 'NAV_RIGHT'))) {
+            OverlayManager.flushScheduledCard();
             const selected = listController.getSelectedItem();
             if (selected) {
                 if (selected.type === 'marker' && MarkerCard.isOpen()) FocusManager.setFocus('MARKER_CARD');

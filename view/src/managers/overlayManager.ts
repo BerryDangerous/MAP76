@@ -17,6 +17,8 @@ interface RegisteredPanel {
 class OverlayManagerSystem {
     private activeCard: ActiveCard | null = null;
     private expandedPanels: Map<string, RegisteredPanel> = new Map();
+    private dockedCardRafId: number | null = null;
+    private pendingCardAction: (() => void) | null = null;
 
     init() {
         window.addEventListener('click', (e: MouseEvent) => {
@@ -42,6 +44,51 @@ class OverlayManagerSystem {
         this.expandedPanels.set(id, { id, element, collapse });
     }
 
+    /**
+     * Schedules opening a docked card via animation frame.
+     * Coalesces rapid updates during list navigation so at most
+     * one update runs per frame, preventing input lag.
+     */
+    scheduleDockedCard(openAction: () => void): void {
+        this.pendingCardAction = openAction;
+        if (this.dockedCardRafId !== null) return;
+
+        this.dockedCardRafId = requestAnimationFrame(() => {
+            this.dockedCardRafId = null;
+            const action = this.pendingCardAction;
+            this.pendingCardAction = null;
+            if (action) {
+                action();
+            }
+        });
+    }
+
+    /**
+     * Executes any pending scheduled card immediately.
+     */
+    flushScheduledCard(): void {
+        if (this.dockedCardRafId !== null) {
+            cancelAnimationFrame(this.dockedCardRafId);
+            this.dockedCardRafId = null;
+        }
+        if (this.pendingCardAction) {
+            const action = this.pendingCardAction;
+            this.pendingCardAction = null;
+            action();
+        }
+    }
+
+    /**
+     * Cancels any pending scheduled card without opening it.
+     */
+    cancelScheduledCard(): void {
+        if (this.dockedCardRafId !== null) {
+            cancelAnimationFrame(this.dockedCardRafId);
+            this.dockedCardRafId = null;
+        }
+        this.pendingCardAction = null;
+    }
+
     openCard(id: string, options: { 
         cardElement: HTMLElement | null, 
         referencePanel?: HTMLElement | null, 
@@ -49,6 +96,7 @@ class OverlayManagerSystem {
         takeFocus?: boolean,
         returnFocusId?: string
     }) {
+        this.cancelScheduledCard();
         const previousCard = this.activeCard;
         this.activeCard = null;
 
@@ -87,6 +135,7 @@ class OverlayManagerSystem {
     }
 
     dismissCard(id?: string) {
+        this.cancelScheduledCard();
         if (!this.activeCard) return;
         if (id && this.activeCard.id !== id) return;
 
@@ -101,12 +150,14 @@ class OverlayManagerSystem {
     }
 
     dismissCardIfAnchoredTo(panelElement: HTMLElement) {
+        this.cancelScheduledCard();
         if (this.activeCard && this.activeCard.referencePanel === panelElement) {
             this.dismissCard();
         }
     }
 
     dismissAll() {
+        this.cancelScheduledCard();
         this.dismissCard();
         for (const panel of this.expandedPanels.values()) {
             panel.collapse();

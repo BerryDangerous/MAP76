@@ -73,9 +73,12 @@ const listController = new SelectableListController<LocationListItem>({
         if (selectedItem && selectedItem.type !== 'divider') {
             locationsListState.selectedItemKey = selectedItem.key;
             LocationsList.notifyItemFocused(selectedItem);
-            LocationsList.openCardForItem(selectedItem);
+            OverlayManager.scheduleDockedCard(() => {
+                LocationsList.openCardForItem(selectedItem);
+            });
         } else {
             locationsListState.selectedItemKey = null;
+            OverlayManager.cancelScheduledCard();
             LocationsList.closeCards();
         }
 
@@ -112,6 +115,7 @@ const listController = new SelectableListController<LocationListItem>({
 
         if (item && item.type !== 'divider') {
             listController.setSelectedIndex(index, false);
+            OverlayManager.flushScheduledCard();
             LocationsList.notifyItemFocused(item);
         }
     },
@@ -297,6 +301,7 @@ export const LocationsList = {
 
         const isRightDocked = locationsListState.dockCorner.includes('right');
         if (KeybindsSystem.isAction(e, 'SELECT') || (isRightDocked ? KeybindsSystem.isAction(e, 'NAV_LEFT') : KeybindsSystem.isAction(e, 'NAV_RIGHT'))) {
+            OverlayManager.flushScheduledCard();
             if (SettlementCard.isOpen()) {
                 FocusManager.setFocus('SETTLEMENT_CARD');
                 SoundService.playFocus();

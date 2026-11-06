@@ -55,10 +55,14 @@ const listController = new SelectableListController<QuestItem>({
         if (selectedQuest) {
             questListState.selectedQuestId = selectedQuest.formId ?? selectedQuest.questName;
             QuestList.notifyQuestFocused(selectedQuest);
-            const container = document.getElementById('quest-list-panel');
-            QuestCard.open(selectedQuest, undefined, container || undefined, questListState.dockCorner, false, 'QUEST_LIST', () => QuestList.collapse());
+
+            OverlayManager.scheduleDockedCard(() => {
+                const container = document.getElementById('quest-list-panel');
+                QuestCard.open(selectedQuest, undefined, container || undefined, questListState.dockCorner, false, 'QUEST_LIST', () => QuestList.collapse());
+            });
         } else {
             questListState.selectedQuestId = null;
+            OverlayManager.cancelScheduledCard();
             QuestList.closeCards();
         }
 
@@ -95,6 +99,7 @@ const listController = new SelectableListController<QuestItem>({
         }
 
         listController.setSelectedIndex(index, false);
+        OverlayManager.flushScheduledCard();
         if (quest) {
             QuestList.toggleQuestActive(quest);
         }
@@ -300,6 +305,7 @@ export const QuestList = {
 
         const isRightDocked = questListState.dockCorner.includes('right');
         if (KeybindsSystem.isAction(e, 'SELECT') || (isRightDocked ? KeybindsSystem.isAction(e, 'NAV_LEFT') : KeybindsSystem.isAction(e, 'NAV_RIGHT'))) {
+            OverlayManager.flushScheduledCard();
             if (QuestCard.isOpen()) {
                 FocusManager.setFocus('QUEST_CARD');
                 SoundService.playFocus();
