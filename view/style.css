@@ -926,6 +926,7 @@ body.compact-panels .collapsible-panel[data-collapsed="true"] > *:not(.cp-header
     border: 1px solid var(--color-border-card);
     box-shadow: -4px 4px 16px var(--color-shadow-card);
     width: min-content;
+    max-height: 85vh;
 }
 
 .floating-card[data-anchored]::before,
@@ -962,7 +963,8 @@ body.compact-panels .collapsible-panel[data-collapsed="true"] > *:not(.cp-header
     padding: 10px;
     gap: 12px;
     overflow-y: auto;
-    max-height: 440px;
+    flex: 1 1 auto;
+    min-height: 0;
 }
 
 .fc-section {
@@ -1618,7 +1620,6 @@ body.settings-open #player-layer {
 #quest-card-panel {
     min-width: 380px;
     max-width: 500px;
-    max-height: 520px;
 }
 
 #settlement-card-panel {
