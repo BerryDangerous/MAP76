@@ -21,6 +21,7 @@ import { FloatingCard } from '@/components/ui/FloatingCard.js';
 import { StatusItemList } from '@/components/ui/StatusItemList.js';
 
 let floatingCard: FloatingCard | null = null;
+let scrollRafId: number | null = null;
 
 export const QuestCard = {
     activeQuest: null as QuestItem | null,
@@ -138,10 +139,17 @@ export const QuestCard = {
 
         const cardEl = floatingCard.getElement();
         if (cardEl) {
-            const objListEl = cardEl.querySelector('.status-item-list') as HTMLElement;
-            if (objListEl) {
-                objListEl.scrollTop = objListEl.scrollHeight;
+            if (scrollRafId !== null) {
+                cancelAnimationFrame(scrollRafId);
+                scrollRafId = null;
             }
+            scrollRafId = requestAnimationFrame(() => {
+                scrollRafId = null;
+                const objListEl = cardEl.querySelector('.status-item-list') as HTMLElement | null;
+                if (objListEl && objListEl.isConnected) {
+                    objListEl.scrollTop = objListEl.scrollHeight;
+                }
+            });
         }
 
         this.updateButtonSelection();
@@ -158,6 +166,11 @@ export const QuestCard = {
     },
 
     close(): void {
+        if (scrollRafId !== null) {
+            cancelAnimationFrame(scrollRafId);
+            scrollRafId = null;
+        }
+
         if (this.activeAnchorMarker) {
             this.activeAnchorMarker.classList.remove('menu-active');
             this.activeAnchorMarker.classList.remove('hide-tooltip-override');
