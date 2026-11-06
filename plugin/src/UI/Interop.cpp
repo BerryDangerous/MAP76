@@ -2,6 +2,7 @@
 #include <cmath>
 #include "PCH.h"
 #include "Engine/QuestManager.h"
+#include "Engine/VaultBoy.h"
 #include "Hooks/ControllerInput.h"
 #include "Hooks/WindowProc.h"
 #include "UI/Actions.h"
@@ -444,6 +445,43 @@ namespace MAP76::UI
                 REX::ERROR("Error processing triggerEngineSound callback: {}", e.what());
             }
         }
+
+        void HandleRequestVaultBoyAnimation(const char *arg)
+        {
+            try
+            {
+                if (!arg) return;
+                auto parsedJson = nlohmann::json::parse(arg);
+                if (parsedJson.contains("key") && parsedJson["key"].is_string())
+                {
+                    std::string key = parsedJson["key"].get<std::string>();
+                    if (auto *task = F4SE::GetTaskInterface())
+                    {
+                        task->AddTask([key]() {
+                            try
+                            {
+                                std::string animJson = MAP76::Engine::VaultBoy::GetAnimationJSON(key);
+                                if (!animJson.empty() && MAP76::UI::State::g_coreApi && MAP76::UI::State::g_view &&
+                                    MAP76::UI::State::g_coreApi->IsValid(MAP76::UI::State::g_view))
+                                {
+                                    std::string escapedKey = nlohmann::json(key).dump();
+                                    std::string response = std::format("{{\"key\":{},\"data\":{}}}", escapedKey, animJson);
+                                    MAP76::UI::State::g_coreApi->InteropCall(MAP76::UI::State::g_view, "onVaultBoyLoaded", response.c_str());
+                                }
+                            }
+                            catch (const std::exception &e)
+                            {
+                                REX::ERROR("Error in TaskInterface execution for VaultBoy animation '{}': {}", key, e.what());
+                            }
+                        });
+                    }
+                }
+            }
+            catch (const std::exception &e)
+            {
+                REX::ERROR("Error processing requestVaultBoyAnimation callback: {}", e.what());
+            }
+        }
     }
 }
 
@@ -527,6 +565,7 @@ namespace MAP76::UI
         State::g_coreApi->BindUIEvent(view, "requestAssetCache", HandleRequestAssetCache);
         State::g_coreApi->BindUIEvent(view, "saveSettings", HandleSaveSettings);
         State::g_coreApi->BindUIEvent(view, "triggerEngineSound", HandleTriggerEngineSound);
+        State::g_coreApi->BindUIEvent(view, "requestVaultBoyAnimation", HandleRequestVaultBoyAnimation);
 
         if (State::g_controllerApi) {
             State::g_controllerApi->BindControllerAction(view, "A", "A");

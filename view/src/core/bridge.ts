@@ -1,7 +1,8 @@
 import { F4SEMapPayload, FastTravelCheckPayload, FastTravelFailPayload } from '@/types/payloads.js';
 
-import { AssetManager } from '@/systems/assetManager.js';
 import { initI18n } from '@/core/i18n.js';
+import { AssetManager } from '@/systems/assetManager.js';
+import { preloadVaultBoyAnimation, registerVaultBoyAnimation } from '@/core/vaultBoy.js';
 
 export const EngineBridge = {
     closeMap() {
@@ -103,6 +104,22 @@ export function initializeF4SEBindings(onDataReceived: (payload: F4SEMapPayload)
     let isAssetsLoaded = false;
     let isLocalesLoaded = false;
     let pendingPayload: F4SEMapPayload | null = null;
+    let hasPreloadedVaultBoys = false;
+
+    const preloadAllVaultBoysOnce = (payload: F4SEMapPayload) => {
+        if (hasPreloadedVaultBoys || !payload.quests) return;
+        hasPreloadedVaultBoys = true;
+        for (const quest of payload.quests) {
+            if (quest.vaultBoyKey) {
+                preloadVaultBoyAnimation(quest.vaultBoyKey);
+            }
+        }
+    };
+
+    const dispatchPayload = (payload: F4SEMapPayload) => {
+        preloadAllVaultBoysOnce(payload);
+        onDataReceived(payload);
+    };
 
     const processPayload = (jsonString: string) => {
         if (!jsonString || jsonString === "[]") return;
@@ -114,7 +131,7 @@ export function initializeF4SEBindings(onDataReceived: (payload: F4SEMapPayload)
                 pendingPayload = payload;
                 return;
             }
-            onDataReceived(payload);
+            dispatchPayload(payload);
         } catch (err) {
             console.error(`[Bridge] JSON Processing Failure: ${err}`);
         }
@@ -132,7 +149,7 @@ export function initializeF4SEBindings(onDataReceived: (payload: F4SEMapPayload)
             isAssetsLoaded = true;
             if (pendingPayload && isLocalesLoaded) {
                 console.log(`[Bridge] Assets loaded. Processing buffered payload.`);
-                onDataReceived(pendingPayload);
+                dispatchPayload(pendingPayload);
                 pendingPayload = null;
             }
         } catch (err) {
@@ -144,7 +161,7 @@ export function initializeF4SEBindings(onDataReceived: (payload: F4SEMapPayload)
         isLocalesLoaded = true;
         if (pendingPayload && isAssetsLoaded) {
             console.log(`[Bridge] Locales loaded. Processing buffered payload.`);
-            onDataReceived(pendingPayload);
+            dispatchPayload(pendingPayload);
             pendingPayload = null;
         }
     });
@@ -173,6 +190,17 @@ export function initializeF4SEBindings(onDataReceived: (payload: F4SEMapPayload)
             window.dispatchEvent(new CustomEvent('FrameTick', { detail: data }));
         } catch (err) {
             console.error("[Bridge] Failed to parse onFrameTick payload", err);
+        }
+    };
+
+    window.onVaultBoyLoaded = (jsonString: string) => {
+        try {
+            const payload = JSON.parse(jsonString);
+            if (payload.key && payload.data) {
+                registerVaultBoyAnimation(payload.key, payload.data);
+            }
+        } catch (err) {
+            console.error("[Bridge] Failed to parse onVaultBoyLoaded payload", err);
         }
     };
 

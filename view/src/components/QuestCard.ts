@@ -19,6 +19,7 @@ import { QuestList } from '@/components/QuestsPanel.js';
 import { ActionButtonConfig } from '@/components/ui/ButtonGroup.js';
 import { FloatingCard } from '@/components/ui/FloatingCard.js';
 import { StatusItemList } from '@/components/ui/StatusItemList.js';
+import { startVaultBoyAnimation, stopVaultBoyAnimation } from '@/components/ui/VaultBoy.js';
 
 let floatingCard: FloatingCard | null = null;
 let scrollRafId: number | null = null;
@@ -139,6 +140,12 @@ export const QuestCard = {
 
         const cardEl = floatingCard.getElement();
         if (cardEl) {
+            const vbCanvas = cardEl.querySelector('#quest-card-vaultboy-canvas') as HTMLCanvasElement | null;
+            if (vbCanvas && quest.vaultBoyKey) {
+                startVaultBoyAnimation(vbCanvas, quest.vaultBoyKey);
+            } else {
+                stopVaultBoyAnimation();
+            }
             if (scrollRafId !== null) {
                 cancelAnimationFrame(scrollRafId);
                 scrollRafId = null;
@@ -166,6 +173,8 @@ export const QuestCard = {
     },
 
     close(): void {
+        stopVaultBoyAnimation();
+
         if (scrollRafId !== null) {
             cancelAnimationFrame(scrollRafId);
             scrollRafId = null;
@@ -231,10 +240,19 @@ export const QuestCard = {
             </div>
         ` : '';
 
-        return (hasJournal || hasObjectives) ? `
+        // 386x349 canvas matches Bethesda Pip-Boy quest animation bounding aspect ratio (7729x6980 twips)
+        const hasVaultBoy = Boolean(quest.vaultBoyKey && quest.vaultBoyKey.trim().length > 0);
+        const vaultBoyHtml = hasVaultBoy ? `
+            <div class="fc-section fc-vaultboy-container">
+                <canvas id="quest-card-vaultboy-canvas" class="fc-vaultboy-canvas" width="386" height="349"></canvas>
+            </div>
+        ` : '';
+
+        return `
+            ${vaultBoyHtml}
             ${journalSectionHtml}
             ${objectivesSectionHtml}
-        ` : '';
+        `;
     },
 
     buildButtonConfigs(quest: QuestItem): ActionButtonConfig[] {

@@ -103,6 +103,7 @@ namespace MAP76::UI::Payload
                     questDto.isTracked = quest.isTracked;
                     questDto.isMisc = quest.isMisc;
                     questDto.type = quest.type;
+                    questDto.vaultBoyKey = quest.vaultBoyKey;
 
                     questDto.objectives.reserve(quest.objectives.size());
                     for (const auto& objective : quest.objectives)

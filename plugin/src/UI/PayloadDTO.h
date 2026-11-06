@@ -101,9 +101,10 @@ namespace MAP76::UI::DTO
         bool isTracked;
         bool isMisc;
         std::string type;
+        std::string vaultBoyKey;
         std::vector<QuestObjective> objectives;
     };
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(QuestItem, formId, questName, journal, isTracked, isMisc, type, objectives)
+    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(QuestItem, formId, questName, journal, isTracked, isMisc, type, vaultBoyKey, objectives)
 
     struct CustomMarker
     {

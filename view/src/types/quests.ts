@@ -31,5 +31,6 @@ export interface QuestItem {
     "FarHarbor";          // 10
     isMisc: boolean;
     isTracked: boolean;
+    vaultBoyKey?: string;
     objectives: QuestObjective[];
 }

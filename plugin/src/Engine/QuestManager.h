@@ -45,6 +45,7 @@ namespace MAP76::Engine::QuestManager
         bool isTracked;
         bool isMisc;
         std::string type;
+        std::string vaultBoyKey;
         std::vector<ObjectiveData> objectives;
     };
 

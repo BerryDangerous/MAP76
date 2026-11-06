@@ -75,3 +75,4 @@ Testing/
 
 .xmake/
 src/PrismaUI_F4_Modern_API.h
+src/SWF/miniz.*

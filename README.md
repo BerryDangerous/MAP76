@@ -10,6 +10,7 @@ The mod pairs a F4SE plugin with an in-game UI overlay rendered by Prisma UI.
 
 - **Cross-Worldspace Navigation & Fast Travel**: View and switch between worldspaces from anywhere, enabling cross-worldspace fast travel.
 - **Quest Log & Objective Tracking**: View active and inactive quests with journal entries and objectives. Toggle active quests or isolate a single quest marker, and center the camera on quest objectives.
+- **Animated Quest Vault Boys**: Seamlessly extracts and renders iconic Pip-Boy animated Vault Boy illustrations directly from game archives in real-time.
 - **Locations & Workshop Management**: A unified Locations panel displaying settlements, raider outposts, vassals, VR workshops, and favorited locations, with settlement stats and visible supply lines drawn on the map.
 - **Search**: Quickly search for specific landmarks, settlements, or quests.
 - **Player Set Marker**: Place and manage the player set marker.

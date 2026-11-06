@@ -1017,6 +1017,24 @@ body.compact-panels .collapsible-panel[data-collapsed="true"] > *:not(.cp-header
     gap: 6px;
 }
 
+.fc-vaultboy-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: 4px 0 2px 0;
+    box-sizing: border-box;
+}
+
+.fc-vaultboy-canvas {
+    width: 90%;
+    max-width: 90%;
+    height: auto;
+    aspect-ratio: 386 / 349; /* Standard Bethesda Pip-Boy quest animation stage ratio (7729x6980 twips) */
+    will-change: transform;
+    transform: translateZ(0);
+}
+
 
 /* ==========================================================================
    BUTTON

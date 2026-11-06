@@ -3,6 +3,7 @@
 #include "Engine/PipboyUtils.h"
 #include "Engine/Memory.h"
 #include "Engine/MapData.h"
+#include "Engine/VaultBoy.h"
 #include "UI/Interop.h"
 #include "Constants.h"
 #include <RE/B/BGSDynamicPersistenceManager.h>
@@ -270,6 +271,10 @@ namespace MAP76::Engine::QuestManager
             questNode.isTracked = a_target.liveTrackingState;
             questNode.isMisc = a_target.isMiscSub;
             questNode.type = questTypeString;
+            std::string vbKey = !realQuest->swfFile.empty() ?
+                Engine::VaultBoy::GetVaultBoyKey(realQuest->swfFile.c_str()) : "";
+            questNode.vaultBoyKey = vbKey.empty() ?
+                std::string(Engine::VaultBoy::DEFAULT_BOY_KEY) : vbKey;
 
             if (a_target.isMiscSub)
             {

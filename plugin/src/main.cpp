@@ -7,6 +7,7 @@
 #include "Hooks/MainUpdate.h"
 #include "Engine/FavoritesManager.h"
 #include "Engine/QuestManager.h"
+#include "Engine/VaultBoy.h"
 
 /**
  * @brief F4SE messaging listener callback.
@@ -60,6 +61,7 @@ void OnF4SEMessage(F4SE::MessagingInterface::Message *a_msg)
         }
         MAP76::UI::IconOverrides::Load();
         MAP76::Hooks::InstallMainUpdateHook();
+        MAP76::Engine::VaultBoy::ScanAndCacheVaultBoys();
         break;
     }
     case F4SE::MessagingInterface::kPostLoadGame:

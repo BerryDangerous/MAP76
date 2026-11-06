@@ -17,6 +17,9 @@ This guide covers the prerequisites and build procedures for both the C++ native
 - **Prisma UI Flat API Header**:
   - The header file `PrismaUI_F4_Modern_API.h` is required for compilation and is excluded from git tracking.
   - Obtain `PrismaUI_F4_Modern_API.h` from the [NomadsReach/framework-F4-Conversion](https://github.com/NomadsReach/framework-F4-Conversion/) repository and place it directly into `plugin/src/` before building.
+- **miniz (Zlib Decompression)**:
+  - The single-source compression library files `miniz.c` and `miniz.h` are required by the SWF vector decompression engine and are excluded from git tracking.
+  - Download `miniz.c` and `miniz.h` from the [richgel999/miniz](https://github.com/richgel999/miniz) repository and place them into `plugin/src/SWF/` before building.
 
 ### 3. Map View (`view/`)
 - **[Node.js](https://nodejs.org/)** (v18 or newer) and **npm**.

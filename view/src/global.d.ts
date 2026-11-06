@@ -23,10 +23,12 @@ declare global {
         toggleQuestActive?: (payloadString: string) => void;
         makeOnlyQuestActive?: (payloadString: string) => void;
         toggleFavoriteLocation?: (payloadString: string) => void;
+        requestVaultBoyAnimation?: (payloadString: string) => void;
 
         onFastTravelFailed?: (jsonString: string) => void;
         onFastTravelCheckResult?: (jsonString: string) => void;
         onFrameTick?: (jsonString: string) => void;
+        onVaultBoyLoaded?: (jsonString: string) => void;
 
         loadMarkers?: (jsonString: string) => void;
         __loadMarkersRegister?: (jsonString: string) => void;
