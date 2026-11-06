@@ -81,14 +81,16 @@ export class SelectableListController<T> {
     public navigateNext(): void {
         const items = this.options.getItems();
         if (items.length === 0) return;
-        const nextIndex = Math.min(items.length - 1, this.selectedIndex + 1);
+        if (this.selectedIndex >= items.length - 1) return;
+        const nextIndex = this.selectedIndex < 0 ? 0 : this.selectedIndex + 1;
         this.setSelectedIndex(nextIndex);
     }
 
     public navigatePrev(): void {
         const items = this.options.getItems();
         if (items.length === 0) return;
-        const prevIndex = Math.max(0, this.selectedIndex - 1);
+        if (this.selectedIndex === 0) return;
+        const prevIndex = this.selectedIndex < 0 ? 0 : this.selectedIndex - 1;
         this.setSelectedIndex(prevIndex);
     }
 
