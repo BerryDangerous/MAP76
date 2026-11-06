@@ -25,6 +25,7 @@ export class FloatingCard {
     private options: FloatingCardOptions;
     private buttonGroup: ActionButtonGroup;
     private cardElement: HTMLElement | null = null;
+    private isRendered = false;
 
     constructor(options: FloatingCardOptions) {
         this.options = options;
@@ -55,12 +56,18 @@ export class FloatingCard {
             parent.appendChild(card);
         }
         card.classList.add('floating-card');
+        if (this.cardElement !== card) {
+            this.isRendered = false;
+        }
         this.cardElement = card;
         return card;
     }
 
     public update(options: Partial<FloatingCardOptions>): void {
         this.options = { ...this.options, ...options };
+        if (!this.cardElement) {
+            this.mount();
+        }
         this.render();
     }
 
@@ -82,7 +89,10 @@ export class FloatingCard {
 
         this.cardElement.style.display = 'flex';
         FloatingCard.activeCards.add(this);
-        this.render();
+
+        if (!this.isRendered) {
+            this.render();
+        }
 
         this.updatePosition();
     }
@@ -220,44 +230,57 @@ export class FloatingCard {
 
         const { title, bodyHtml, buttons } = this.options;
 
-        if (buttons && buttons.length > 0) {
-            this.buttonGroup.setButtons(buttons);
-        }
-
         const hasBody = Boolean(bodyHtml && bodyHtml.trim().length > 0);
+        const hasButtons = Boolean(buttons && buttons.length > 0);
 
-        this.cardElement.innerHTML = `
-            <div class="fc-header">
-                <div class="fc-title">${this.escapeHtml(title)}</div>
-            </div>
-            ${hasBody ? `<div class="fc-body">${bodyHtml}</div>` : ''}
-            ${(buttons && buttons.length > 0) ? `
-            <div class="fc-bottom-bar-container">
-                <div class="fc-bottom-bar"></div>
-            </div>
-            ` : ''}
-        `;
-
-        const bottomBar = this.cardElement.querySelector('.fc-bottom-bar') as HTMLElement;
-        if (bottomBar && buttons && buttons.length > 0) {
-            this.buttonGroup.mount(bottomBar, (idx) => {
-                if (this.options.onButtonSelectionChange) {
-                    this.options.onButtonSelectionChange(idx);
-                }
-            });
+        if (!this.cardElement.querySelector('.fc-header')) {
+            this.cardElement.innerHTML = `
+                <div class="fc-header">
+                    <div class="fc-title"></div>
+                </div>
+                <div class="fc-body"></div>
+                <div class="fc-bottom-bar-container" style="display: none;">
+                    <div class="fc-bottom-bar"></div>
+                </div>
+            `;
         }
-    }
 
-    private escapeHtml(str: string): string {
-        return str.replace(/[&<>"']/g, (m) => {
-            switch (m) {
-                case '&': return '&amp;';
-                case '<': return '&lt;';
-                case '>': return '&gt;';
-                case '"': return '&quot;';
-                case "'": return '&#039;';
-                default: return m;
+        const titleEl = this.cardElement.querySelector('.fc-title') as HTMLElement | null;
+        const bodyEl = this.cardElement.querySelector('.fc-body') as HTMLElement | null;
+        const bottomBarContainer = this.cardElement.querySelector('.fc-bottom-bar-container') as HTMLElement | null;
+        const bottomBar = this.cardElement.querySelector('.fc-bottom-bar') as HTMLElement | null;
+
+        if (titleEl) {
+            titleEl.textContent = title;
+        }
+
+        if (bodyEl) {
+            if (hasBody) {
+                bodyEl.innerHTML = bodyHtml || '';
+                bodyEl.style.display = 'flex';
+            } else {
+                bodyEl.innerHTML = '';
+                bodyEl.style.display = 'none';
             }
-        });
+        }
+
+        if (bottomBarContainer && bottomBar) {
+            if (hasButtons && buttons) {
+                bottomBarContainer.style.display = 'flex';
+                if (bottomBar.children.length === 0) {
+                    this.buttonGroup.mount(bottomBar, (idx) => {
+                        if (this.options.onButtonSelectionChange) {
+                            this.options.onButtonSelectionChange(idx);
+                        }
+                    });
+                }
+                this.buttonGroup.setButtons(buttons);
+            } else {
+                bottomBarContainer.style.display = 'none';
+                bottomBar.innerHTML = '';
+            }
+        }
+
+        this.isRendered = true;
     }
 }
