@@ -3,7 +3,8 @@ import { KeybindsSystem } from '@/systems/keybindManager.js';
 import { LayoutManager, Corner } from '@/systems/layoutManager.js';
 import { SoundService } from '@/services/soundService.js';
 
-import { ActionButtonGroup, ActionButtonConfig } from '@/ui/ButtonGroup.js';
+import { Card } from './Card.js';
+import { ActionButtonGroup, ActionButtonConfig } from './ButtonGroup.js';
 
 export interface FloatingCardOptions {
     id: string;
@@ -23,13 +24,19 @@ export class FloatingCard {
     private static activeCards: Set<FloatingCard> = new Set();
 
     private options: FloatingCardOptions;
-    private buttonGroup: ActionButtonGroup;
+    private card: Card;
     private cardElement: HTMLElement | null = null;
     private isRendered = false;
 
     constructor(options: FloatingCardOptions) {
         this.options = options;
-        this.buttonGroup = new ActionButtonGroup();
+        this.card = new Card({
+            id: options.id,
+            title: options.title,
+            bodyHtml: options.bodyHtml,
+            buttons: options.buttons,
+            onButtonSelectionChange: options.onButtonSelectionChange,
+        });
     }
 
     public static repositionAll(): void {
@@ -41,7 +48,7 @@ export class FloatingCard {
     }
 
     public getButtonGroup(): ActionButtonGroup {
-        return this.buttonGroup;
+        return this.card.getButtonGroup();
     }
 
     public getElement(): HTMLElement | null {
@@ -49,18 +56,10 @@ export class FloatingCard {
     }
 
     public mount(parent: HTMLElement = document.body): HTMLElement {
-        let card = document.getElementById(this.options.id);
-        if (!card) {
-            card = document.createElement('div');
-            card.id = this.options.id;
-            parent.appendChild(card);
-        }
-        card.classList.add('floating-card');
-        if (this.cardElement !== card) {
-            this.isRendered = false;
-        }
-        this.cardElement = card;
-        return card;
+        this.card.mount(parent);
+        this.cardElement = this.card.element;
+        this.isRendered = true;
+        return this.cardElement;
     }
 
     public update(options: Partial<FloatingCardOptions>): void {
@@ -196,19 +195,19 @@ export class FloatingCard {
         }
 
         if (e.key === 'ArrowDown' || KeybindsSystem.isAction(e, 'NAV_DOWN')) {
-            this.buttonGroup.navigateNext();
+            this.card.navigateNext();
             this.notifyButtonSelectionChange();
             return true;
         }
 
         if (e.key === 'ArrowUp' || KeybindsSystem.isAction(e, 'NAV_UP')) {
-            this.buttonGroup.navigatePrev();
+            this.card.navigatePrev();
             this.notifyButtonSelectionChange();
             return true;
         }
 
         if (e.key === 'Enter' || e.key === ' ' || KeybindsSystem.isAction(e, 'SELECT')) {
-            this.buttonGroup.triggerSelected();
+            this.card.triggerSelected();
             return true;
         }
 
@@ -217,7 +216,7 @@ export class FloatingCard {
 
     private notifyButtonSelectionChange(): void {
         if (this.options.onButtonSelectionChange) {
-            this.options.onButtonSelectionChange(this.buttonGroup.getSelectedIndex());
+            this.options.onButtonSelectionChange(this.card.getButtonGroup().getSelectedIndex());
         }
     }
 
@@ -228,58 +227,12 @@ export class FloatingCard {
     public render(): void {
         if (!this.cardElement) return;
 
-        const { title, bodyHtml, buttons } = this.options;
-
-        const hasBody = Boolean(bodyHtml && bodyHtml.trim().length > 0);
-        const hasButtons = Boolean(buttons && buttons.length > 0);
-
-        if (!this.cardElement.querySelector('.fc-header')) {
-            this.cardElement.innerHTML = `
-                <div class="fc-header">
-                    <div class="fc-title"></div>
-                </div>
-                <div class="fc-body"></div>
-                <div class="fc-bottom-bar-container" style="display: none;">
-                    <div class="fc-bottom-bar"></div>
-                </div>
-            `;
-        }
-
-        const titleEl = this.cardElement.querySelector('.fc-title') as HTMLElement | null;
-        const bodyEl = this.cardElement.querySelector('.fc-body') as HTMLElement | null;
-        const bottomBarContainer = this.cardElement.querySelector('.fc-bottom-bar-container') as HTMLElement | null;
-        const bottomBar = this.cardElement.querySelector('.fc-bottom-bar') as HTMLElement | null;
-
-        if (titleEl) {
-            titleEl.textContent = title;
-        }
-
-        if (bodyEl) {
-            if (hasBody) {
-                bodyEl.innerHTML = bodyHtml || '';
-                bodyEl.style.display = 'flex';
-            } else {
-                bodyEl.innerHTML = '';
-                bodyEl.style.display = 'none';
-            }
-        }
-
-        if (bottomBarContainer && bottomBar) {
-            if (hasButtons && buttons) {
-                bottomBarContainer.style.display = 'flex';
-                if (bottomBar.children.length === 0) {
-                    this.buttonGroup.mount(bottomBar, (idx) => {
-                        if (this.options.onButtonSelectionChange) {
-                            this.options.onButtonSelectionChange(idx);
-                        }
-                    });
-                }
-                this.buttonGroup.setButtons(buttons);
-            } else {
-                bottomBarContainer.style.display = 'none';
-                bottomBar.innerHTML = '';
-            }
-        }
+        this.card.update({
+            title: this.options.title,
+            bodyHtml: this.options.bodyHtml,
+            buttons: this.options.buttons,
+            onButtonSelectionChange: this.options.onButtonSelectionChange,
+        });
 
         this.isRendered = true;
     }

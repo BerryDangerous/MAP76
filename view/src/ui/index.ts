@@ -4,6 +4,7 @@ export {
     type ActionButtonGroupConfig,
     type ActionButtonConfig
 } from './ButtonGroup.js';
+export { Card, type CardConfig } from './Card.js';
 export { CollapsiblePanel, type CollapsiblePanelOptions } from './CollapsiblePanel.js';
 export { FloatingCard, type FloatingCardOptions } from './FloatingCard.js';
 export { CustomScrollbar, type CustomScrollbarOptions } from './Scrollbar.js';
