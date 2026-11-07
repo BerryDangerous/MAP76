@@ -20,9 +20,7 @@ import { POIMarker } from '@/types/markers.js';
 import { MarkerCard } from '@/components/MarkerCard.js';
 import { SettlementCard } from '@/components/SettlementCard.js';
 
-import { CollapsiblePanel } from '@/components/ui/CollapsiblePanel.js';
-import { CustomScrollbar } from '@/components/ui/Scrollbar.js';
-import { TabBar } from '@/components/ui/TabBar.js';
+import { CollapsiblePanel, CustomScrollbar, TabBar } from '@/ui/index.js';
 
 export type LocationSortMode = 'ATTENTION' | 'ALPHABETICAL' | 'HAPPINESS' | 'POPULATION';
 export type LocationFilterTab = 'ALL' | 'FAVORITES' | 'WORKSHOPS';

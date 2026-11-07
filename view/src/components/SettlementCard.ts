@@ -17,8 +17,7 @@ import { mapSurface } from '@/map/index.js';
 import { calculateSettlementRatings, SettlementDataWithRatings } from '@/utils/settlementUtils.js';
 import { t } from '@/core/i18n.js';
 
-import { ActionButtonConfig } from '@/components/ui/ButtonGroup.js';
-import { FloatingCard } from '@/components/ui/FloatingCard.js';
+import { FloatingCard, type ActionButtonConfig } from '@/ui/index.js';
 
 let settlementCardInstance: FloatingCard | null = null;
 

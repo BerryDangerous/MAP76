@@ -1,5 +1,4 @@
-import { ButtonConfig } from '@/components/ui/Button.js';
-import { ActionButtonGroup } from '@/components/ui/ButtonGroup.js';
+import { ActionButtonGroup, type ButtonConfig } from '@/ui/index.js';
 import { KeybindsSystem } from '@/systems/keybindManager.js';
 
 export interface ModalConfig {

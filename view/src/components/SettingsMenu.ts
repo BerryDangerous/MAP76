@@ -12,10 +12,13 @@ import { mapSurface } from '@/map/index.js';
 
 import { showConfirmationModal } from '@/components/Modals.js';
 
-import { MultiChoice } from '@/components/ui/SettingsMultiChoice.js';
-import { SettingsRow, SettingsControl } from '@/components/ui/SettingsRow.js';
-import { Slider } from '@/components/ui/SettingsSlider.js';
-import { Toggle } from '@/components/ui/SettingsToggle.js';
+import {
+    MultiChoice,
+    SettingsRow,
+    Slider,
+    Toggle,
+    type SettingsControl
+} from '@/ui/index.js';
 import { t } from '@/core/i18n.js';
 
 export const SETTINGS_TABS = ['DISPLAY', 'GAMEPLAY', 'MAPS', 'DEBUG'] as const;

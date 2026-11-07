@@ -12,8 +12,7 @@ import { t } from '@/core/i18n.js';
 
 import { mapSurface } from '@/map/index.js';
 
-import { ActionButtonConfig } from '@/components/ui/ButtonGroup.js';
-import { FloatingCard } from '@/components/ui/FloatingCard.js';
+import { FloatingCard, type ActionButtonConfig } from '@/ui/index.js';
 
 let markerCardInstance: FloatingCard | null = null;
 

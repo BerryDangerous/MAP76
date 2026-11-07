@@ -27,7 +27,7 @@ import { SettingsMenu } from '@/components/SettingsMenu.js';
 import { SettlementCard, renderSettlementCardContent } from '@/components/SettlementCard.js';
 import { LocationsList } from '@/components/WorkshopsPanel.js';
 import { showFastTravelConfirmationModal, showFastTravelErrorModal } from '@/components/Modals.js';
-import { FloatingCard } from '@/components/ui/FloatingCard.js';
+import { FloatingCard } from '@/ui/index.js';
 
 import { injectSVGFilters } from '@/utils/svgFilters.js';
 

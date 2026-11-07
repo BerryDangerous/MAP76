@@ -16,10 +16,13 @@ import { StringUtils } from '@/utils/stringUtils.js';
 
 import { QuestList } from '@/components/QuestsPanel.js';
 
-import { ActionButtonConfig } from '@/components/ui/ButtonGroup.js';
-import { FloatingCard } from '@/components/ui/FloatingCard.js';
-import { StatusItemList } from '@/components/ui/StatusItemList.js';
-import { startVaultBoyAnimation, stopVaultBoyAnimation } from '@/components/ui/VaultBoy.js';
+import {
+    FloatingCard,
+    StatusItemList,
+    startVaultBoyAnimation,
+    stopVaultBoyAnimation,
+    type ActionButtonConfig
+} from '@/ui/index.js';
 
 let floatingCard: FloatingCard | null = null;
 let scrollRafId: number | null = null;

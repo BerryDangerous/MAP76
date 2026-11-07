@@ -19,9 +19,7 @@ import { StringUtils } from '@/utils/stringUtils.js';
 
 import { QuestCard } from '@/components/QuestCard.js';
 
-import { CollapsiblePanel } from '@/components/ui/CollapsiblePanel.js';
-import { CustomScrollbar } from '@/components/ui/Scrollbar.js';
-import { TabBar } from '@/components/ui/TabBar.js';
+import { CollapsiblePanel, CustomScrollbar, TabBar } from '@/ui/index.js';
 
 export type QuestFilterTab = 'ALL' | 'MAIN' | 'SIDE' | 'MISC';
 export type QuestSortMode = 'RECENT' | 'ALPHABETICAL' | 'ACTIVE';

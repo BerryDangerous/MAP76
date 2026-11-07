@@ -27,9 +27,7 @@ import { QuestCard } from '@/components/QuestCard.js';
 import { QuestList } from '@/components/QuestsPanel.js';
 import { SettlementCard } from '@/components/SettlementCard.js';
 
-import { CollapsiblePanel } from '@/components/ui/CollapsiblePanel.js';
-import { CustomScrollbar } from '@/components/ui/Scrollbar.js';
-import { SearchBox } from '@/components/ui/SearchBox.js';
+import { CollapsiblePanel, CustomScrollbar, SearchBox } from '@/ui/index.js';
 
 export interface SearchPanelState {
     isCollapsed: boolean;

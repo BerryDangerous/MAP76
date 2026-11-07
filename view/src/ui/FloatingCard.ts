@@ -3,7 +3,7 @@ import { KeybindsSystem } from '@/systems/keybindManager.js';
 import { LayoutManager, Corner } from '@/systems/layoutManager.js';
 import { SoundService } from '@/services/soundService.js';
 
-import { ActionButtonGroup, ActionButtonConfig } from '@/components/ui/ButtonGroup.js';
+import { ActionButtonGroup, ActionButtonConfig } from '@/ui/ButtonGroup.js';
 
 export interface FloatingCardOptions {
     id: string;

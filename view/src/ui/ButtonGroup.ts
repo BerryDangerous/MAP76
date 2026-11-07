@@ -1,7 +1,7 @@
 import { KeybindsSystem } from '@/systems/keybindManager.js';
 import { SoundService } from '@/services/soundService.js';
 
-import { Button, ButtonConfig } from '@/components/ui/Button.js';
+import { Button, ButtonConfig } from '@/ui/Button.js';
 
 export type ActionButtonConfig = ButtonConfig;
 
