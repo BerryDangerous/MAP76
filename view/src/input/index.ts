@@ -2,6 +2,7 @@ export { FocusManager, type FocusComponent, type FocusChangeListener } from './f
 export { KeybindsSystem, DEFAULT_KEYMAP, DEFAULT_LABELS } from './keybindManager.js';
 export { FocusStack } from './focusStack.js';
 export { InputRouter, InputRouterSystem, type CloseMapHandler } from './inputRouter.js';
+export { CursorManager, cursorManager } from './cursor.js';
 export {
     KeyAction,
     FocusOwner,

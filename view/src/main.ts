@@ -6,7 +6,7 @@ import { initializeF4SEBindings, EngineBridge } from '@/core/bridge.js';
 import { appSettings, requestSettings } from '@/core/settings.js';
 import { domainState } from '@/core/state/index.js';
 
-import { FocusManager, InputRouter } from '@/input/index.js';
+import { FocusManager, InputRouter, cursorManager } from '@/input/index.js';
 import { LayoutManager } from '@/systems/layoutManager.js';
 import { ModalManager } from '@/systems/modalManager.js';
 import { OverlayManager } from '@/managers/overlayManager.js';
@@ -281,55 +281,9 @@ window.addEventListener('settingsUpdated', () => {
     SearchPanel.render?.();
 });
 
-function initCustomCursor() {
-    const cursor = document.createElement('img');
-    cursor.id = 'custom-cursor';
-    cursor.src = 'assets/cursor.svg'; 
-    document.body.appendChild(cursor);
-
-    let cursorFramePending = false;
-    let lastClientX = 0;
-    let lastClientY = 0;
-    let lastTarget: HTMLElement | null = null;
-
-    window.addEventListener('mousemove', (e: MouseEvent) => {
-        lastClientX = e.clientX;
-        lastClientY = e.clientY;
-        lastTarget = e.target as HTMLElement;
-
-        if (!cursorFramePending) {
-            cursorFramePending = true;
-            requestAnimationFrame(() => {
-                cursorFramePending = false;
-
-                cursor.style.left = `${lastClientX}px`;
-                cursor.style.top = `${lastClientY}px`;
-                if (cursor.style.display !== 'block') {
-                    cursor.style.display = 'block';
-                }
-
-                if (lastTarget) {
-                    const mapElements = ['map-bg', 'map-bg-container', 'map-viewport', 'marker-layer', 'supply-lines-layer'];
-                    const isMapHover = mapElements.includes(lastTarget.id) || lastTarget.closest('.marker-container') !== null || lastTarget.closest('#map-bg-container') !== null;
-                    const desiredCursor = isMapHover ? 'assets/cursor2.svg' : 'assets/cursor.svg';
-
-                    if (cursor.getAttribute('src') !== desiredCursor) {
-                        cursor.setAttribute('src', desiredCursor);
-                        cursor.classList.toggle('map', isMapHover);
-                    }
-                }
-            });
-        }
-    });
-
-    document.addEventListener('mouseleave', () => {
-        cursor.style.display = 'none';
-    });
-}
-
 window.addEventListener('DOMContentLoaded', () => {
     injectSVGFilters();
-    initCustomCursor();
+    cursorManager.init();
 
     const viewportElement = document.getElementById('map-viewport');
     if (viewportElement) {
