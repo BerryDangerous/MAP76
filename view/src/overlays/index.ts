@@ -16,7 +16,7 @@ export {
     type SettlementDataWithRatings,
     type SettlementResolvedRatings
 } from './domain/settlementRules.js';
-export { SearchEngine } from './domain/searchEngine.js';
+export { SearchEngine, searchEntities } from './domain/searchEngine.js';
 export { SearchUtils } from './domain/searchUtils.js';
 export * from './domain/types.js';
 export * from './positioning.js';
