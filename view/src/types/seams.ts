@@ -209,6 +209,16 @@ export type ControlActionHint = KeyAction | { readonly action: KeyAction; readon
 export type ControlActionDef = ControlActionHint; // Backward-compatibility alias
 
 /**
+ * Rich action metadata representing available controls and their presentation state.
+ */
+export interface ActionDef {
+    readonly action: KeyAction;
+    readonly label?: string;
+    readonly active?: boolean;
+    readonly disabled?: boolean;
+}
+
+/**
  * Standard focus owner identifiers representing UI layers in the FocusStack.
  */
 export const FocusOwner = {
@@ -235,7 +245,7 @@ export interface InputReceiver {
     /**
      * Unique identifier for this receiver in the FocusStack.
      */
-    readonly id: FocusOwner;
+    readonly id: FocusOwner | string;
 
     /**
      * Handles a semantic action dispatched from the InputRouter.
@@ -243,6 +253,12 @@ export interface InputReceiver {
      * @returns True if the action was consumed; false if dropped.
      */
     handleAction(action: KeyAction): boolean;
+
+    /**
+     * Optional handler for continuous actions dispatched on keyup / button release.
+     * Implemented by receivers tracking hold states (e.g. MapInputReceiver for ZOOM_IN/OUT).
+     */
+    handleActionRelease?(action: KeyAction): boolean;
 
     /**
      * Lifecycle callback triggered when this receiver gains active focus.
@@ -253,11 +269,12 @@ export interface InputReceiver {
      * Lifecycle callback triggered when this receiver loses active focus.
      * @param newFocusId The ID of the component gaining focus, if known.
      */
-    onFocusLost?(newFocusId?: FocusOwner): void;
+    onFocusLost?(newFocusId?: FocusOwner | string): void;
 
     /**
      * Provides action hints for the bottom ControlBar while this receiver is focused.
      */
+    getAvailableActions?(): ActionDef[];
     getAvailableControls?(): ControlActionHint[];
 }
 

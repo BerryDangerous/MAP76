@@ -1,7 +1,7 @@
 import { appSettings } from '@/core/settings.js';
 import { domainState } from '@/core/state/index.js';
+import { FocusManager, FocusOwner, InputRouter, KeyAction, KeybindsSystem, type ControlActionDef } from '@/input/index.js';
 
-import { FocusManager, type FocusOwner, KeybindsSystem, type KeyAction, type ControlActionDef } from '@/input/index.js';
 
 import { mapSurface } from '@/map/index.js';
 
@@ -36,10 +36,13 @@ export class ControlBar {
     public static render(focus: FocusOwner) {
         if (!this.container) return;
         
+        const activeReceiver = InputRouter.getActiveReceiver();
         const activeComponent = FocusManager.getActiveComponent();
         let actions: ControlActionDef[];
         
-        if (activeComponent && activeComponent.getAvailableControls) {
+        if (activeReceiver && activeReceiver.getAvailableControls) {
+            actions = activeReceiver.getAvailableControls();
+        } else if (activeComponent && activeComponent.getAvailableControls) {
             actions = activeComponent.getAvailableControls();
         } else if (focus === 'MAP') {
             actions = ['OPEN_SETTINGS', 'NAV_BACK', 'PLACE_MARKER', 'ZOOM_IN', 'ZOOM_OUT', 'PAN_MOUSE'];
