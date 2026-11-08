@@ -6,13 +6,13 @@ import { initializeF4SEBindings, EngineBridge } from '@/core/bridge.js';
 import { appSettings, requestSettings } from '@/core/settings.js';
 import { domainState } from '@/core/state/index.js';
 
-import { FocusManager, KeybindsSystem } from '@/input/index.js';
+import { FocusManager, InputRouter } from '@/input/index.js';
 import { LayoutManager } from '@/systems/layoutManager.js';
 import { ModalManager } from '@/systems/modalManager.js';
 import { OverlayManager } from '@/managers/overlayManager.js';
 import { SoundService } from '@/services/soundService.js';
 
-import { mapSurface, MapSurface } from '@/map/index.js';
+import { mapSurface, MapSurface, mapInputReceiver } from '@/map/index.js';
 
 import { ControlBar } from '@/components/ControlsBar.js';
 import { CustomMarkerCard } from '@/components/CustomMarkerCard.js';
@@ -360,147 +360,11 @@ window.addEventListener('DOMContentLoaded', () => {
         window.requestFreshMapData(""); 
     }
 
-    KeybindsSystem.initGlobalListeners((e: KeyboardEvent) => {
-        if (e.type === 'keydown') {
-            if (e.key === 'Escape' || e.code === 'Escape' || e.keyCode === 27) {
-                e.preventDefault();
-                e.stopPropagation();
-                return;
-            }
-
-            if (KeybindsSystem.isAction(e, 'CLOSE_MAP')) {
-                if (e.repeat) {
-                    e.preventDefault();
-                    return;
-                }
-                console.log('Closing map via CLOSE_MAP action...');
-                e.preventDefault();
-                resetUIState();
-                onMapClosed();
-                EngineBridge.closeMap();
-                return;
-            }
-
-            if (KeybindsSystem.isAction(e, 'NAV_BACK')) {
-                console.log('[KeyHandler] Focus is MAP. Closing map via NAV_BACK');
-                e.preventDefault();
-                resetUIState();
-                onMapClosed();
-                EngineBridge.closeMap();
-                return;
-            }
-
-            if (KeybindsSystem.isAction(e, 'OPEN_SETTINGS')) {
-                SettingsMenu.toggle();
-                return;
-            }
-
-            if (FocusManager.getFocus() === 'MAP') {
-                if (KeybindsSystem.isAction(e, 'ZOOM_IN')) {
-                    if (!e.repeat) SoundService.playMapZoom();
-                    mapSurface.setZoomHold('in');
-                    return;
-                }
-                if (KeybindsSystem.isAction(e, 'ZOOM_OUT')) {
-                    if (!e.repeat) SoundService.playMapZoom();
-                    mapSurface.setZoomHold('out');
-                    return;
-                }
-                if (KeybindsSystem.isAction(e, 'CENTER_CAMERA')) {
-                    e.preventDefault();
-                    SoundService.playMapZoom();
-                    if (domainState.player) {
-                        mapSurface.saveCurrentWorldViewport();
-                        domainState.setSelectedWorldspace(null);
-                        if (domainState.lastPayload) {
-                            mapSurface.render(true);
-                        }
-                        if (domainState.player.active) {
-                            mapSurface.centerOnWorldCoords(domainState.player.x, domainState.player.y);
-                        }
-                    }
-                    return;
-                }
-                if (KeybindsSystem.isAction(e, 'SELECT')) {
-                    if (mapSurface.activateHoveredMarker()) {
-                        return;
-                    }
-                }
-                if (KeybindsSystem.isAction(e, 'PLACE_MARKER')) {
-                    mapSurface.triggerCustomMarkerPlacement();
-                    return;
-                }
-                if (KeybindsSystem.isAction(e, 'PREV_WORLD') || KeybindsSystem.isAction(e, 'NEXT_WORLD')) {
-                    if (!domainState.lastPayload || !domainState.lastPayload.worldspaces) return;
-                    
-                    const wsKeys = Object.keys(domainState.lastPayload.worldspaces).map(k => parseInt(k, 10));
-                    if (wsKeys.length <= 1) return;
-
-                    wsKeys.sort((a, b) => {
-                        const getPriority = (id: number) => {
-                            if (id === 60) return 0; // Commonwealth
-                            if (id === 100673807) return 1; // Nuka-World
-                            if (id === 50334479) return 2; // The Island
-                            return 3;
-                        };
-                        const pA = getPriority(a);
-                        const pB = getPriority(b);
-                        if (pA !== pB) return pA - pB;
-
-                        const nameA = domainState.lastPayload!.worldspaces![a].fullName.toLowerCase();
-                        const nameB = domainState.lastPayload!.worldspaces![b].fullName.toLowerCase();
-                        return nameA.localeCompare(nameB);
-                    });
-
-                    const currentIdx = wsKeys.indexOf(domainState.getActiveWorldspaceID());
-                    let nextIdx = 0;
-                    if (KeybindsSystem.isAction(e, 'PREV_WORLD')) {
-                        nextIdx = currentIdx > 0 ? currentIdx - 1 : wsKeys.length - 1;
-                    } else {
-                        nextIdx = currentIdx < wsKeys.length - 1 ? currentIdx + 1 : 0;
-                    }
-                    SoundService.playMapOpen();
-                    mapSurface.switchWorldspace(wsKeys[nextIdx]);
-                    return;
-                }
-
-                const questCorner = QuestList.getState().dockCorner;
-                const workshopCorner = LocationsList.getState().dockCorner;
-                const searchCorner = SearchPanel.getState().dockCorner;
-                
-                const questConfig = LayoutManager.getCornerConfig(questCorner);
-                const workshopConfig = LayoutManager.getCornerConfig(workshopCorner);
-                const searchConfig = LayoutManager.getCornerConfig(searchCorner);
-
-                if (KeybindsSystem.isPanelExpandKey(e, questConfig.expandKey)) {
-                    QuestList.expand();
-                } else if (KeybindsSystem.isPanelExpandKey(e, workshopConfig.expandKey)) {
-                    LocationsList.expand();
-                } else if (KeybindsSystem.isPanelExpandKey(e, searchConfig.expandKey)) {
-                    SearchPanel.expand();
-                } else if (KeybindsSystem.isAction(e, 'TOGGLE_SUPPLY_LINES')) {
-                    if (mapSurface.hasSupplyLines()) {
-                        mapSurface.toggleSupplyLines();
-                        if (domainState.lastPayload) {
-                            mapSurface.render();
-                        }
-                        window.dispatchEvent(new Event('settingsUpdated'));
-                    }
-                }
-            }
-        } else if (e.type === 'keyup') {
-            if (KeybindsSystem.isAction(e, 'ZOOM_IN') || KeybindsSystem.isAction(e, 'ZOOM_OUT')) {
-                mapSurface.setZoomHold(null);
-            }
-            if (e.key === 'Escape' || e.code === 'Escape' || e.keyCode === 27) {
-                e.preventDefault();
-                e.stopPropagation();
-                console.log('Closing map via Escape keyup...');
-                resetUIState();
-                onMapClosed();
-                EngineBridge.closeMap();
-                return;
-            }
-        }
+    InputRouter.init();
+    InputRouter.setCloseMapHandler(() => {
+        resetUIState();
+        onMapClosed();
+        EngineBridge.closeMap();
     });
+    InputRouter.push(mapInputReceiver);
 });
