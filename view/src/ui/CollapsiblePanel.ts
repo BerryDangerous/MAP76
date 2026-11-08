@@ -1,5 +1,5 @@
 import { KeybindsSystem } from '@/input/index.js';
-import { LayoutManager, Corner } from '@/systems/layoutManager.js';
+import { getCornerConfig, Corner } from '@/overlays/positioning.js';
 import { SoundService } from '@/services/soundService.js';
 
 export interface CollapsiblePanelOptions {
@@ -65,7 +65,7 @@ export class CollapsiblePanel {
     public updateGlyph(): void {
         const icon = this.options.panelElement.querySelector('.cp-btn-icon');
         if (icon) {
-            const config = LayoutManager.getCornerConfig(this.dockCorner);
+            const config = getCornerConfig(this.dockCorner);
             const rawGlyph = this.isCollapsed ? config.expandGlyph : config.collapseGlyph;
             icon.textContent = KeybindsSystem.getPanelGlyph(rawGlyph);
         }

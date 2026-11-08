@@ -6,7 +6,7 @@ import { appSettings } from '@/core/settings.js';
 import { domainState } from '@/core/state/index.js';
 import { FocusManager, KeybindsSystem } from '@/input/index.js';
 
-import { LayoutManager, Corner } from '@/systems/layoutManager.js';
+import { anchorToCorner, getCornerConfig, Corner } from '@/overlays/positioning.js';
 import { SelectableListController } from '@/systems/listController.js';
 import { OverlayManager } from '@/managers/overlayManager.js';
 import { SoundService } from '@/services/soundService.js';
@@ -285,7 +285,7 @@ export const QuestList = {
 
     handleKeyDown(e: KeyboardEvent): boolean {
         if (questListState.isCollapsed) {
-            const config = LayoutManager.getCornerConfig(questListState.dockCorner);
+            const config = getCornerConfig(questListState.dockCorner);
             if (KeybindsSystem.isPanelExpandKey(e, config.expandKey)) {
                 this.expand();
                 return true;
@@ -294,7 +294,7 @@ export const QuestList = {
         }
 
         const quests = this.getVisibleQuests();
-        const config = LayoutManager.getCornerConfig(questListState.dockCorner);
+        const config = getCornerConfig(questListState.dockCorner);
         if (KeybindsSystem.isPanelCollapseKey(e, config.collapseKey)) {
             this.collapse();
             return true;
@@ -471,7 +471,7 @@ export const QuestList = {
         const container = document.getElementById('quest-list-panel');
         if (!container) return;
 
-        LayoutManager.anchorToCorner(container, questListState.dockCorner);
+        anchorToCorner(container, questListState.dockCorner);
 
         if (!isLayoutMounted) {
             this.mountLayout(container);

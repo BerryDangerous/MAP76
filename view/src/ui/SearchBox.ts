@@ -1,6 +1,6 @@
 import { t } from '@/core/i18n.js';
 import { KeybindsSystem } from '@/input/index.js';
-import { LayoutManager } from '@/systems/layoutManager.js';
+import { anchorCardToPanel } from '@/overlays/positioning.js';
 import { SoundService } from '@/services/soundService.js';
 
 export interface SearchBoxOptions {
@@ -135,7 +135,7 @@ export class SearchBox {
                                 const searchPanel = document.getElementById('search-panel');
                                 if (searchPanel) {
                                     const dockCorner = (searchPanel.getAttribute('data-dock') as any) || 'top-left';
-                                    LayoutManager.anchorToPanel(host, searchPanel, dockCorner, 10);
+                                    anchorCardToPanel(host, searchPanel, dockCorner, 10);
                                 }
                             }
                         }

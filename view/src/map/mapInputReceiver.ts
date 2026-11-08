@@ -1,6 +1,6 @@
 import { ControlActionDef, FocusOwner, InputReceiver, InputRouter, KeyAction } from '@/input/index.js';
 import { domainState } from '@/core/state/index.js';
-import { LayoutManager } from '@/systems/layoutManager.js';
+import { getCornerConfig } from '@/overlays/positioning.js';
 import { SoundService } from '@/services/soundService.js';
 import { QuestList, LocationsList, SearchPanel } from '@/overlays/index.js';
 import { SettingsMenu } from '@/components/SettingsMenu.js';
@@ -164,7 +164,7 @@ export class MapInputReceiver implements InputReceiver {
         ];
 
         for (const { panel, corner } of panels) {
-            const config = LayoutManager.getCornerConfig(corner);
+            const config = getCornerConfig(corner);
             if (config.expandKey === expandKey) {
                 panel.expand();
                 return true;

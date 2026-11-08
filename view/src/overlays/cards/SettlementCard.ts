@@ -7,7 +7,7 @@ import { t } from '@/core/i18n.js';
 
 import { FocusManager, KeybindsSystem, type ControlActionDef } from '@/input/index.js';
 import { AssetManager } from '@/systems/assetManager.js';
-import { Corner } from '@/systems/layoutManager.js';
+import { Corner } from '@/overlays/positioning.js';
 import { OverlayManager } from '@/managers/overlayManager.js';
 import { SoundService } from '@/services/soundService.js';
 

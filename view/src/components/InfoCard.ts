@@ -1,6 +1,6 @@
 import { PlayerData } from '@/types/map.js';
 import { FrameTickPayload } from '@/types/payloads.js';
-import { LayoutManager } from '@/systems/layoutManager.js';
+import { anchorToCorner } from '@/overlays/positioning.js';
 
 export const InfoCard = {
     init(player?: PlayerData): void {
@@ -18,7 +18,7 @@ export const InfoCard = {
                     <span class="info-value" id="info-caps">0</span>
                 </div>
             `;
-            LayoutManager.anchorToCorner(card, 'bottom-right', { bottom: 50, right: 20 });
+            anchorToCorner(card, 'bottom-right', { bottom: 50, right: 20 });
         }
 
         const capsEl = document.getElementById('info-caps');

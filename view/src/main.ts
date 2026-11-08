@@ -7,7 +7,6 @@ import { appSettings, requestSettings } from '@/core/settings.js';
 import { domainState } from '@/core/state/index.js';
 
 import { FocusManager, InputRouter, cursorManager } from '@/input/index.js';
-import { LayoutManager } from '@/systems/layoutManager.js';
 import { ModalManager } from '@/systems/modalManager.js';
 import { OverlayManager } from '@/managers/overlayManager.js';
 import { SoundService } from '@/services/soundService.js';

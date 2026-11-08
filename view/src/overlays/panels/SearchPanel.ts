@@ -8,7 +8,7 @@ import { getWorldspaceName } from '@/core/state/worldspaces.js';
 import { FocusManager, KeybindsSystem } from '@/input/index.js';
 
 import { AssetManager } from '@/systems/assetManager.js';
-import { LayoutManager, Corner } from '@/systems/layoutManager.js';
+import { anchorToCorner, getCornerConfig, Corner } from '@/overlays/positioning.js';
 import { SelectableListController } from '@/systems/listController.js';
 import { SearchEngine } from '@/overlays/domain/searchEngine.js';
 import { OverlayManager } from '@/managers/overlayManager.js';
@@ -282,7 +282,7 @@ export const SearchPanel = {
 
     handleKeyDown(e: KeyboardEvent): boolean {
         if (searchPanelState.isCollapsed) {
-            const config = LayoutManager.getCornerConfig(searchPanelState.dockCorner);
+            const config = getCornerConfig(searchPanelState.dockCorner);
             if (KeybindsSystem.isPanelExpandKey(e, config.expandKey)) {
                 this.expand();
                 return true;
@@ -326,7 +326,7 @@ export const SearchPanel = {
             return true;
         }
 
-        const config = LayoutManager.getCornerConfig(searchPanelState.dockCorner);
+        const config = getCornerConfig(searchPanelState.dockCorner);
         if (KeybindsSystem.isPanelCollapseKey(e, config.collapseKey)) {
             this.collapse();
             return true;
@@ -521,7 +521,7 @@ export const SearchPanel = {
         const container = document.getElementById('search-panel');
         if (!container) return;
 
-        LayoutManager.anchorToCorner(container, searchPanelState.dockCorner);
+        anchorToCorner(container, searchPanelState.dockCorner);
 
         if (!isLayoutMounted) {
             this.mountLayout(container);

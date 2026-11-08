@@ -19,3 +19,4 @@ export {
 export { SearchEngine } from './domain/searchEngine.js';
 export { SearchUtils } from './domain/searchUtils.js';
 export * from './domain/types.js';
+export * from './positioning.js';

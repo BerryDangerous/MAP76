@@ -1,6 +1,12 @@
+import { ScreenAnchor } from '@/types/seams.js';
 import { FocusManager, KeybindsSystem } from '@/input/index.js';
-import { LayoutManager, Corner } from '@/systems/layoutManager.js';
 import { SoundService } from '@/services/soundService.js';
+import {
+    Corner,
+    anchorCardToPanel,
+    anchorCardToScreen,
+    anchorCardToCoordinates
+} from '@/overlays/positioning.js';
 
 import { Card } from './Card.js';
 import { ActionButtonGroup, ActionButtonConfig } from './ButtonGroup.js';
@@ -10,6 +16,7 @@ export interface FloatingCardOptions {
     title: string;
     bodyHtml?: string;
     buttons?: ActionButtonConfig[];
+    screenAnchor?: ScreenAnchor;
     anchorMarker?: HTMLElement | null;
     coords?: { x: number, y: number };
     referencePanel?: HTMLElement | null;
@@ -98,7 +105,13 @@ export class FloatingCard {
     public updatePosition(): void {
         if (!this.cardElement || this.cardElement.style.display === 'none') return;
 
-        if (this.options.anchorMarker) {
+        if (this.options.screenAnchor) {
+            anchorCardToScreen(this.cardElement, this.options.screenAnchor, { gap: 20, padding: 10 });
+        } else if (this.options.referencePanel && this.options.dockCorner) {
+            anchorCardToPanel(this.cardElement, this.options.referencePanel, this.options.dockCorner, 10);
+        } else if (this.options.coords) {
+            anchorCardToCoordinates(this.cardElement, this.options.coords.x, this.options.coords.y, undefined, { gap: 20, padding: 10 });
+        } else if (this.options.anchorMarker) {
             let anchor = this.options.anchorMarker;
             if (!anchor.isConnected) {
                 const formId = anchor.dataset.formId;
@@ -121,11 +134,9 @@ export class FloatingCard {
                     return;
                 }
             }
-            LayoutManager.anchorToElement(this.cardElement, anchor, { gap: 20, padding: 10 });
-        } else if (this.options.coords) {
-            LayoutManager.anchorToCoords(this.cardElement, this.options.coords.x, this.options.coords.y, undefined, { gap: 20, padding: 10 });
-        } else if (this.options.referencePanel && this.options.dockCorner) {
-            LayoutManager.anchorToPanel(this.cardElement, this.options.referencePanel, this.options.dockCorner, 10);
+            const svgEl = anchor.querySelector('svg');
+            const mRect = svgEl ? svgEl.getBoundingClientRect() : anchor.getBoundingClientRect();
+            anchorCardToCoordinates(this.cardElement, mRect.left + (mRect.width / 2), mRect.top + (mRect.height / 2), mRect, { gap: 20, padding: 10 });
         }
     }
 
