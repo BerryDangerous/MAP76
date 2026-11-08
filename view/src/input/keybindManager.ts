@@ -1,32 +1,8 @@
+import { KeyAction } from '@/types/seams.js';
 import { t } from '@/core/i18n.js';
 import { appSettings } from '@/core/settings.js';
-import { FocusManager } from './focusManager.js';
-export type KeyAction =
-    | 'NAV_UP'
-    | 'NAV_DOWN'
-    | 'NAV_LEFT'
-    | 'NAV_RIGHT'
-    | 'NAV_BACK'
-    | 'TAB_PREV'
-    | 'TAB_NEXT'
-    | 'SELECT'
-    | 'COLLAPSE'
-    | 'CLOSE_MAP'
-    | 'PLACE_MARKER'
-    | 'ZOOM_IN'
-    | 'ZOOM_OUT'
-    | 'PAN_MOUSE'
-    | 'CENTER_CAMERA'
-    | 'CENTER_ITEM'
-    | 'OPEN_SETTINGS'
-    | 'OPEN_MENU'
-    | 'RESET_DEFAULTS'
-    | 'TOGGLE_ACTIVE'
-    | 'TOGGLE_SUPPLY_LINES'
-    | 'PREV_WORLD'
-    | 'NEXT_WORLD'
-    | 'SORT'
-    | 'CHANGE_LAYOUT';
+
+export type { KeyAction };
 
 export const DEFAULT_KEYMAP: Record<KeyAction, string[]> = {
     NAV_UP: ['ArrowUp', 'Gamepad_Up'],
@@ -86,7 +62,6 @@ export const DEFAULT_LABELS: Record<KeyAction, string> = {
 
 export class KeybindsSystem {
     private static keymap: Record<KeyAction, string[]> = { ...DEFAULT_KEYMAP };
-    private static activeModalHandler: ((e: KeyboardEvent) => void) | null = null;
     
     public static isControllerActive: boolean = false;
     public static controllerStyle: number = 0; // 0 = Xbox, 1 = PlayStation
@@ -139,11 +114,7 @@ export class KeybindsSystem {
     private static lastPressedTime: Record<string, number> = {};
     private static lastThumbstickNavTime: number = 0;
 
-    public static setActiveModalHandler(handler: ((e: KeyboardEvent) => void) | null) {
-        this.activeModalHandler = handler;
-    }
-
-    public static initGlobalListeners(globalFallback: (e: KeyboardEvent) => void): void {
+    public static initGamepadTracking(): void {
         window.addEventListener('prisma-controller-action', ((e: CustomEvent) => {
             if (!this.isControllerActive) {
                 this.isControllerActive = true;
@@ -197,54 +168,14 @@ export class KeybindsSystem {
                 window.dispatchEvent(new Event('controlsUpdated'));
             }
         });
+    }
 
-        window.addEventListener('keydown', (e: KeyboardEvent) => {
-            if (this.activeModalHandler) {
-                this.activeModalHandler(e);
-                return;
-            }
-
-            const activeEl = document.activeElement as HTMLElement;
-            const isInputFocused = activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA');
-
-            if (isInputFocused) {
-                const navKeys = ['Escape', 'Enter', 'Tab', 'ArrowUp', 'ArrowDown'];
-                if (!navKeys.includes(e.key) && !e.key.startsWith('Gamepad_')) {
-                    return;
-                }
-            }
-
-            const handledByFocus = FocusManager.handleKeyDown(e);
-            if (handledByFocus) {
-                e.preventDefault();
-                return;
-            }
-
-            if (globalFallback) {
-                globalFallback(e);
-            }
-
-            e.preventDefault();
-        });
-
-        window.addEventListener('keyup', (e: KeyboardEvent) => {
-            if (!e.key.startsWith('Gamepad_') && this.isControllerActive) {
-                this.isControllerActive = false;
-                document.body.classList.remove('controller-active');
-                window.dispatchEvent(new Event('controlsUpdated'));
-            }
-
-            const handledByFocus = FocusManager.handleKeyUp(e);
-            if (handledByFocus) {
-                e.preventDefault();
-                e.stopPropagation();
-                return;
-            }
-
-            if (globalFallback) {
-                globalFallback(e);
-            }
-        });
+    public static handleKeyUp(e: KeyboardEvent): void {
+        if (!e.key.startsWith('Gamepad_') && this.isControllerActive) {
+            this.isControllerActive = false;
+            document.body.classList.remove('controller-active');
+            window.dispatchEvent(new Event('controlsUpdated'));
+        }
     }
 
     public static isAction(e: KeyboardEvent, action: KeyAction): boolean {
@@ -259,6 +190,9 @@ export class KeybindsSystem {
             if (k === key) return true;
             if (key && k.toLowerCase() === key.toLowerCase()) return true;
             if (code && k === code) return true;
+            // Engine & Platform Constraints: Ultralight WebKit runtime omits standard KeyboardEvent.code
+            // or KeyboardEvent.key on certain synthetic and Win32 engine messages. Preserving legacy
+            // keyCode fallbacks (27=Escape, 9=Tab, 32=Space) is mandatory to prevent dropped inputs.
             if (k === 'Escape' && (code === 'Escape' || keyCode === 27 || key?.toLowerCase() === 'escape')) return true;
             if (k === 'Tab' && (code === 'Tab' || keyCode === 9 || key?.toLowerCase() === 'tab')) return true;
             if (k === ' ' && (code === 'Space' || keyCode === 32 || key === ' ')) return true;

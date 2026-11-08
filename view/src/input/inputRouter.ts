@@ -117,12 +117,24 @@ export class InputRouterSystem {
         if (this.initialized || typeof window === 'undefined') return;
         this.initialized = true;
 
-        KeybindsSystem.initGlobalListeners(
-            (e: KeyboardEvent) => this.handleKeyDown(e)
-        );
+        KeybindsSystem.initGamepadTracking();
+
+        window.addEventListener('keydown', (e: KeyboardEvent) => {
+            if (this.isTypingInTextInput(e)) {
+                return;
+            }
+
+            this.handleKeyDown(e);
+            e.preventDefault();
+        });
 
         window.addEventListener('keyup', (e: KeyboardEvent) => {
-            this.handleKeyUp(e);
+            KeybindsSystem.handleKeyUp(e);
+            const handled = this.handleKeyUp(e);
+            if (handled) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
         });
     }
 
