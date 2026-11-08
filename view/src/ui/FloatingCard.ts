@@ -1,6 +1,4 @@
 import { ScreenAnchor } from '@/types/seams.js';
-import { FocusManager, KeybindsSystem } from '@/input/index.js';
-import { SoundService } from '@/services/soundService.js';
 import {
     Corner,
     anchorCardToPanel,
@@ -22,8 +20,6 @@ export interface FloatingCardOptions {
     referencePanel?: HTMLElement | null;
     dockCorner?: Corner;
     onButtonSelectionChange?: (index: number) => void;
-    returnFocusId?: string;
-    onNavBack?: () => void;
 }
 
 export class FloatingCard {
@@ -168,65 +164,6 @@ export class FloatingCard {
             } else {
                 this.options.referencePanel.classList.remove('dimmed');
             }
-        }
-    }
-
-    public handleKeyDown(e: KeyboardEvent): boolean {
-        const { dockCorner, returnFocusId, onNavBack } = this.options;
-
-        const isRightDocked = dockCorner ? dockCorner.startsWith('top-right') || dockCorner.startsWith('bottom-right') : false;
-
-        if ((isRightDocked && (KeybindsSystem.isAction(e, 'NAV_RIGHT') || e.key === 'ArrowRight')) ||
-            (!isRightDocked && (KeybindsSystem.isAction(e, 'NAV_LEFT') || e.key === 'ArrowLeft'))) {
-            if (returnFocusId) {
-                FocusManager.setFocus(returnFocusId);
-                SoundService.playFocus();
-                return true;
-            }
-        }
-
-        if (KeybindsSystem.isAction(e, 'NAV_BACK')) {
-            if (returnFocusId && this.options.referencePanel) {
-                FocusManager.setFocus(returnFocusId);
-                SoundService.playFocus();
-            } else {
-                if (onNavBack) {
-                    onNavBack();
-                } else {
-                    this.close();
-                    if (returnFocusId) {
-                        FocusManager.setFocus(returnFocusId);
-                    } else {
-                        FocusManager.setFocus('MAP');
-                    }
-                }
-            }
-            return true;
-        }
-
-        if (e.key === 'ArrowDown' || KeybindsSystem.isAction(e, 'NAV_DOWN')) {
-            this.card.navigateNext();
-            this.notifyButtonSelectionChange();
-            return true;
-        }
-
-        if (e.key === 'ArrowUp' || KeybindsSystem.isAction(e, 'NAV_UP')) {
-            this.card.navigatePrev();
-            this.notifyButtonSelectionChange();
-            return true;
-        }
-
-        if (e.key === 'Enter' || e.key === ' ' || KeybindsSystem.isAction(e, 'SELECT')) {
-            this.card.triggerSelected();
-            return true;
-        }
-
-        return false;
-    }
-
-    private notifyButtonSelectionChange(): void {
-        if (this.options.onButtonSelectionChange) {
-            this.options.onButtonSelectionChange(this.card.getButtonGroup().getSelectedIndex());
         }
     }
 

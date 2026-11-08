@@ -81,18 +81,6 @@ export class TabBar<T = string> {
         }
     }
 
-    public handleKeyDown(e: KeyboardEvent): boolean {
-        if (KeybindsSystem.isAction(e, 'TAB_NEXT')) {
-            this.nextTab();
-            return true;
-        }
-        if (KeybindsSystem.isAction(e, 'TAB_PREV')) {
-            this.prevTab();
-            return true;
-        }
-        return false;
-    }
-
     public render(): void {
         if (!this.container) return;
 

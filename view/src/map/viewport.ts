@@ -3,7 +3,6 @@ import { appSettings } from '@/core/settings.js';
 import { domainState } from '@/core/state/index.js';
 import { FocusManager } from '@/input/index.js';
 
-import { OverlayManager } from '@/managers/overlayManager.js';
 import { SoundService } from '@/services/soundService.js';
 
 import { viewportState } from '@/map/viewportState.js';
@@ -383,7 +382,7 @@ export const MapViewport = {
                 if (Math.abs(e.clientX - dragStartX) > 5 || Math.abs(e.clientY - dragStartY) > 5) {
                     if (!viewportState.wasDragged) {
                         viewportState.wasDragged = true;
-                        OverlayManager.dismissAll();
+                        this._surface?.events.emit('panStart', undefined);
                     }
                 }
                 this._pendingDrag = { clientX: e.clientX, clientY: e.clientY };

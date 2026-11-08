@@ -7,7 +7,6 @@ import { t } from '@/core/i18n.js';
 import { FocusOwner, InputReceiver, InputRouter, KeyAction, type ControlActionHint } from '@/input/index.js';
 import { AssetManager } from '@/systems/assetManager.js';
 import { Corner } from '@/overlays/positioning.js';
-import { OverlayManager } from '@/managers/overlayManager.js';
 import { SoundService } from '@/services/soundService.js';
 import { mapSurface } from '@/map/index.js';
 import { LocationsList } from '@/overlays/panels/LocationsPanel.js';
@@ -23,7 +22,15 @@ export class SettlementCardController implements InputReceiver {
     public canFastTravel: boolean = false;
     public activeDockCorner: Corner | null = null;
 
+    public onClose: (() => void) | null = null;
+    public onNavBack: (() => boolean) | null = null;
+    public onFastTravel: ((formId: number, name: string) => void) | null = null;
+
     private instance: FloatingCard | null = null;
+
+    public getElement(): HTMLElement | null {
+        return this.instance?.getElement() ?? null;
+    }
 
     public init(): void {
         InputRouter.register(this);
@@ -33,8 +40,10 @@ export class SettlementCardController implements InputReceiver {
         switch (action) {
             case KeyAction.NAV_BACK:
                 SoundService.playFocus();
+                if (this.onNavBack?.()) {
+                    return true;
+                }
                 this.close();
-                InputRouter.pop();
                 return true;
 
             case KeyAction.NAV_UP:
@@ -136,8 +145,6 @@ export class SettlementCardController implements InputReceiver {
         referencePanel?: HTMLElement,
         dockCorner?: Corner,
         takeFocus: boolean = true,
-        returnFocusId?: string,
-        onNavBack?: () => void,
         screenAnchor?: ScreenAnchor
     ): void {
         if (this.activeAnchorMarker && this.activeAnchorMarker !== anchorMarker) {
@@ -169,8 +176,6 @@ export class SettlementCardController implements InputReceiver {
                 anchorMarker: this.activeAnchorMarker,
                 referencePanel: referencePanel,
                 dockCorner: dockCorner,
-                returnFocusId: returnFocusId,
-                onNavBack: onNavBack,
                 onButtonSelectionChange: () => this.updateButtonSelection()
             });
         } else {
@@ -181,25 +186,11 @@ export class SettlementCardController implements InputReceiver {
                 screenAnchor: screenAnchor,
                 anchorMarker: this.activeAnchorMarker,
                 referencePanel: referencePanel,
-                dockCorner: dockCorner,
-                returnFocusId: returnFocusId,
-                onNavBack: onNavBack
+                dockCorner: dockCorner
             });
         }
 
         this.instance.open(this.activeAnchorMarker || undefined, referencePanel, dockCorner);
-        OverlayManager.openCard('SETTLEMENT_CARD', {
-            cardElement: this.instance.getElement(),
-            referencePanel: referencePanel || null,
-            onDismiss: () => this.close(),
-            takeFocus: takeFocus,
-            returnFocusId: returnFocusId
-        });
-
-        if (takeFocus) {
-            InputRouter.push(this);
-        }
-
         this.updateButtonSelection();
     }
 
@@ -214,14 +205,15 @@ export class SettlementCardController implements InputReceiver {
             el.classList.remove('menu-active');
             el.classList.remove('hide-tooltip-override');
             this.activeAnchorMarker = null;
-            mapSurface.updateViewportTransform();
         }
 
         if (this.instance) {
             this.instance.close();
         }
 
-        OverlayManager.notifyCardClosed('SETTLEMENT_CARD');
+        if (this.onClose) {
+            this.onClose();
+        }
     }
 
     public positionNearMarker(): void {
@@ -324,7 +316,7 @@ export class SettlementCardController implements InputReceiver {
                 label: t('markers.controls.fastTravel'),
                 action: () => {
                     if (this.activeMarkerFormId !== null) {
-                        mapSurface.requestFastTravel(this.activeMarkerFormId, settlement.name);
+                        this.onFastTravel?.(this.activeMarkerFormId, settlement.name);
                     }
                 }
             });
@@ -395,10 +387,9 @@ export function renderSettlementCardContent(
     referencePanel?: HTMLElement,
     dockCorner?: Corner,
     takeFocus: boolean = true,
-    returnFocusId?: string,
-    onNavBack?: () => void
+    screenAnchor?: ScreenAnchor
 ): void {
-    settlementCard.open(settlement, markerFormId, canFastTravel, markerEl, referencePanel, dockCorner, takeFocus, returnFocusId, onNavBack);
+    settlementCard.open(settlement, markerFormId, canFastTravel, markerEl, referencePanel, dockCorner, takeFocus, screenAnchor);
 }
 
 window.addEventListener('languageChanged', () => {

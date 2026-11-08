@@ -8,15 +8,12 @@ import { FocusOwner, InputReceiver, InputRouter, KeyAction, KeybindsSystem, type
 
 import { anchorToCorner, getCornerConfig, Corner } from '@/overlays/positioning.js';
 import { SelectableListController } from '@/systems/listController.js';
-import { OverlayManager } from '@/managers/overlayManager.js';
 import { SoundService } from '@/services/soundService.js';
 
 import { mapSurface } from '@/map/index.js';
 
 import { QuestUtils } from '@/overlays/domain/questRules.js';
 import { StringUtils } from '@/utils/stringUtils.js';
-
-import { QuestCard } from '@/overlays/cards/QuestCard.js';
 
 import { CollapsiblePanel, CustomScrollbar, TabBar } from '@/ui/index.js';
 
@@ -52,14 +49,10 @@ const listController = new SelectableListController<QuestItem>({
         if (selectedQuest) {
             questListState.selectedQuestId = selectedQuest.formId ?? selectedQuest.questName;
             QuestList.notifyQuestFocused(selectedQuest);
-
-            OverlayManager.scheduleDockedCard(() => {
-                const container = document.getElementById('quest-list-panel');
-                QuestCard.open(selectedQuest, undefined, container || undefined, questListState.dockCorner, false, 'QUEST_LIST', () => QuestList.collapse());
-            });
+            QuestList.onSelectionChange?.(selectedQuest);
         } else {
             questListState.selectedQuestId = null;
-            OverlayManager.cancelScheduledCard();
+            QuestList.onSelectionChange?.(null);
             QuestList.closeCards();
         }
 
@@ -96,7 +89,7 @@ const listController = new SelectableListController<QuestItem>({
         }
 
         listController.setSelectedIndex(index, false);
-        OverlayManager.flushScheduledCard();
+        QuestList.onFlushScheduledCard?.();
         if (quest) {
             QuestList.toggleQuestActive(quest);
         }
@@ -135,13 +128,18 @@ let customScrollbar: CustomScrollbar | null = null;
 let isLayoutMounted = false;
 
 export const QuestList = {
+    onExpanded: null as (() => void) | null,
+    onSelectionChange: null as ((quest: QuestItem | null) => void) | null,
+    onNavigateToDockedCard: null as (() => boolean) | null,
+    onRequestCloseCards: null as (() => void) | null,
+    onFlushScheduledCard: null as (() => void) | null,
+
     getState(): QuestListState {
         return questListState;
     },
 
     closeCards(): void {
-        const container = document.getElementById('quest-list-panel');
-        if (container) OverlayManager.dismissCardIfAnchoredTo(container);
+        this.onRequestCloseCards?.();
     },
 
     isSelectedQuestCompleted(): boolean {
@@ -161,6 +159,8 @@ export const QuestList = {
     expand(targetRelativeOffset: number | null = null): void {
         if (!questListState.isCollapsed) return;
         questListState.isCollapsed = false;
+
+        this.onExpanded?.();
 
         (this as any)._ignoreHover = true;
         setTimeout(() => { (this as any)._ignoreHover = false; }, 200);
@@ -238,10 +238,7 @@ export const QuestList = {
 
             case KeyAction.NAV_LEFT:
                 if (isRightDocked) {
-                    if (QuestCard.isOpen()) {
-                        OverlayManager.flushScheduledCard();
-                        InputRouter.push(FocusOwner.QUEST_CARD);
-                        SoundService.playFocus();
+                    if (this.onNavigateToDockedCard?.()) {
                         return true;
                     }
                 } else {
@@ -253,10 +250,7 @@ export const QuestList = {
 
             case KeyAction.NAV_RIGHT:
                 if (!isRightDocked) {
-                    if (QuestCard.isOpen()) {
-                        OverlayManager.flushScheduledCard();
-                        InputRouter.push(FocusOwner.QUEST_CARD);
-                        SoundService.playFocus();
+                    if (this.onNavigateToDockedCard?.()) {
                         return true;
                     }
                 } else {
@@ -305,10 +299,8 @@ export const QuestList = {
             }
 
             case KeyAction.SELECT: {
-                OverlayManager.flushScheduledCard();
-                if (QuestCard.isOpen()) {
-                    InputRouter.push(FocusOwner.QUEST_CARD);
-                    SoundService.playFocus();
+                if (this.onNavigateToDockedCard?.()) {
+                    return true;
                 }
                 return true;
             }
@@ -317,7 +309,7 @@ export const QuestList = {
                 const selected = listController.getSelectedItem();
                 if (selected && !QuestUtils.isQuestCompleted(selected)) {
                     SoundService.playShowOnMap();
-                    QuestCard.open(selected, undefined, undefined, questListState.dockCorner, false, 'QUEST_LIST', () => this.collapse());
+                    this.onSelectionChange?.(selected);
                     const firstTarget = selected.objectives?.find(o => o.targets && o.targets.length > 0)?.targets[0];
                     if (firstTarget) {
                         mapSurface.centerOnTarget(firstTarget.worldspace, firstTarget.x, firstTarget.y, firstTarget.z);
@@ -376,11 +368,6 @@ export const QuestList = {
         ]);
 
         InputRouter.register(this);
-
-        const container = document.getElementById('quest-list-panel');
-        if (container) {
-            OverlayManager.registerPanel('QUEST_LIST', container, () => this.collapse());
-        }
 
         window.addEventListener('languageChanged', () => {
             this.reloadLocales();

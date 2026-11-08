@@ -6,7 +6,6 @@ import { getWorldspaceName } from '@/core/state/worldspaces.js';
 import { AssetManager } from '@/systems/assetManager.js';
 import { anchorToCorner, getCornerConfig, Corner } from '@/overlays/positioning.js';
 import { SelectableListController } from '@/systems/listController.js';
-import { OverlayManager } from '@/managers/overlayManager.js';
 import { SoundService } from '@/services/soundService.js';
 
 import { mapSurface } from '@/map/index.js';
@@ -15,8 +14,6 @@ import { SettlementDataWithRatings, getWorkshopIconType, getWorkshopBadgesHtml, 
 import { StringUtils } from '@/utils/stringUtils.js';
 import { POIMarker } from '@/types/markers.js';
 import { FocusOwner, InputReceiver, InputRouter, KeyAction, KeybindsSystem, type ControlActionHint } from '@/input/index.js';
-
-import { MarkerCard, SettlementCard } from '@/overlays/index.js';
 
 import { CollapsiblePanel, CustomScrollbar, TabBar } from '@/ui/index.js';
 
@@ -69,12 +66,10 @@ const listController = new SelectableListController<LocationListItem>({
         if (selectedItem && selectedItem.type !== 'divider') {
             locationsListState.selectedItemKey = selectedItem.key;
             LocationsList.notifyItemFocused(selectedItem);
-            OverlayManager.scheduleDockedCard(() => {
-                LocationsList.openCardForItem(selectedItem);
-            });
+            LocationsList.onSelectionChange?.(selectedItem);
         } else {
             locationsListState.selectedItemKey = null;
-            OverlayManager.cancelScheduledCard();
+            LocationsList.onSelectionChange?.(null);
             LocationsList.closeCards();
         }
 
@@ -111,7 +106,7 @@ const listController = new SelectableListController<LocationListItem>({
 
         if (item && item.type !== 'divider') {
             listController.setSelectedIndex(index, false);
-            OverlayManager.flushScheduledCard();
+            LocationsList.onFlushScheduledCard?.();
             LocationsList.notifyItemFocused(item);
         }
     },
@@ -138,13 +133,18 @@ let customScrollbar: CustomScrollbar | null = null;
 let isLayoutMounted = false;
 
 export const LocationsList = {
+    onExpanded: null as (() => void) | null,
+    onSelectionChange: null as ((item: LocationListItem | null) => void) | null,
+    onNavigateToDockedCard: null as (() => boolean) | null,
+    onRequestCloseCards: null as (() => void) | null,
+    onFlushScheduledCard: null as (() => void) | null,
+
     getState(): LocationsListState {
         return locationsListState;
     },
 
     closeCards(): void {
-        const container = document.getElementById('locations-list-panel');
-        if (container) OverlayManager.dismissCardIfAnchoredTo(container);
+        this.onRequestCloseCards?.();
     },
 
     setFilterTab(tab: LocationFilterTab): void {
@@ -158,6 +158,8 @@ export const LocationsList = {
     expand(targetRelativeOffset: number | null = null): void {
         if (!locationsListState.isCollapsed) return;
         locationsListState.isCollapsed = false;
+
+        this.onExpanded?.();
 
         (this as any)._ignoreHover = true;
         setTimeout(() => { (this as any)._ignoreHover = false; }, 200);
@@ -238,8 +240,7 @@ export const LocationsList = {
                 return true;
 
             case KeyAction.NAV_LEFT:
-                if (isRightDocked) {
-                    this.focusDockedCard();
+                if (isRightDocked && this.onNavigateToDockedCard?.()) {
                     return true;
                 } else {
                     this.collapse();
@@ -248,8 +249,7 @@ export const LocationsList = {
                 }
 
             case KeyAction.NAV_RIGHT:
-                if (!isRightDocked) {
-                    this.focusDockedCard();
+                if (!isRightDocked && this.onNavigateToDockedCard?.()) {
                     return true;
                 } else {
                     this.collapse();
@@ -324,14 +324,7 @@ export const LocationsList = {
     },
 
     focusDockedCard(): void {
-        OverlayManager.flushScheduledCard();
-        if (SettlementCard.isOpen()) {
-            InputRouter.push(FocusOwner.SETTLEMENT_CARD);
-            SoundService.playFocus();
-        } else if (MarkerCard.isOpen()) {
-            InputRouter.push(FocusOwner.MARKER_CARD);
-            SoundService.playFocus();
-        }
+        this.onNavigateToDockedCard?.();
     },
 
     getAvailableControls(): ControlActionHint[] {
@@ -374,11 +367,6 @@ export const LocationsList = {
 
         InputRouter.register(this);
 
-        const container = document.getElementById('locations-list-panel');
-        if (container) {
-            OverlayManager.registerPanel('WORKSHOP_LIST', container, () => this.collapse());
-        }
-
         window.addEventListener('languageChanged', () => {
             this.reloadLocales();
         });
@@ -416,32 +404,6 @@ export const LocationsList = {
                 }
             } else {
                 mapSurface.clearSavedViewport(appSettings.focusMarkerOnSelection);
-            }
-        }
-    },
-
-    openCardForItem(item: LocationListItem): void {
-        if (item.type === 'divider') return;
-
-        const container = document.getElementById('locations-list-panel') || undefined;
-        const returnFocusId = 'WORKSHOP_LIST';
-        const onNavBack = () => this.collapse();
-
-        if (item.type === 'favorite') {
-            const marker = item.marker;
-            SettlementCard.close();
-            MarkerCard.open(marker.name, marker.formId, marker.canFastTravel, undefined, container, locationsListState.dockCorner, false, returnFocusId, onNavBack);
-        } else if (item.type === 'workshop') {
-            const workshop = item.data;
-            const marker = domainState.lastPayload?.markers?.find(m => m.formId === workshop.markerFormId);
-            const canFastTravel = marker ? marker.canFastTravel : workshop.owned;
-
-            if (workshop.vassal) {
-                SettlementCard.close();
-                MarkerCard.open(workshop.name, workshop.markerFormId, canFastTravel, undefined, container, locationsListState.dockCorner, false, returnFocusId, onNavBack);
-            } else {
-                MarkerCard.close();
-                SettlementCard.open(workshop, workshop.markerFormId, canFastTravel, undefined, container, locationsListState.dockCorner, false, returnFocusId, onNavBack);
             }
         }
     },

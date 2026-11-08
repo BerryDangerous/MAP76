@@ -8,10 +8,9 @@ import { domainState } from '@/core/state/index.js';
 
 import { FocusManager, InputRouter, cursorManager } from '@/input/index.js';
 import { ModalManager } from '@/systems/modalManager.js';
-import { OverlayManager } from '@/managers/overlayManager.js';
 import { SoundService } from '@/services/soundService.js';
-
 import { mapSurface, MapSurface, mapInputReceiver } from '@/map/index.js';
+import { overlayCoordinator } from '@/overlays/index.js';
 
 import { ControlBar } from '@/components/ControlsBar.js';
 import { InfoBar } from '@/components/InfoBar.js';
@@ -48,8 +47,14 @@ let mapClosedFlag = true;
 let pendingFastTravel: { formId: number; name: string } | null = null;
 
 function wireMapEventsToCards(surface: MapSurface) {
+    overlayCoordinator.setFastTravelHandler((formId, name) => {
+        surface.requestFastTravel(formId, name);
+    });
+
     surface.events.on('viewportChange', () => {
-        FloatingCard.repositionAll();
+        if (overlayCoordinator.getActiveCardId()) {
+            FloatingCard.repositionAll();
+        }
     });
 
     surface.events.on('worldspaceChange', (payload) => {
@@ -57,64 +62,16 @@ function wireMapEventsToCards(surface: MapSurface) {
     });
 
     surface.events.on('markerSelect', (payload) => {
-        SoundService.playFocus();
         mapSurface.clearSavedViewport(false);
-
-        switch (payload.kind) {
-            case MarkerKind.QUEST: {
-                let matchingQuest = domainState.quests.get(payload.questFormId);
-                if (!matchingQuest) {
-                    for (const q of domainState.quests.values()) {
-                        if (q.formId === payload.questFormId) {
-                            matchingQuest = q;
-                            break;
-                        }
-                    }
-                }
-                if (matchingQuest) {
-                    const anchorEl = document.querySelector(`.quest-marker[data-form-id="${payload.questFormId}"]`) as HTMLElement | null;
-                    QuestCard.open(matchingQuest, anchorEl || undefined);
-                }
-                break;
-            }
-            case MarkerKind.CUSTOM: {
-                const anchorEl = document.querySelector('.custom-marker') as HTMLElement | null;
-                CustomMarkerCard.open({ anchorMarker: anchorEl });
-                break;
-            }
-            case MarkerKind.POI: {
-                const targetMarker = domainState.markers.get(payload.formId);
-                const anchorEl = document.querySelector(`.marker-container[data-form-id="${payload.formId}"]`) as HTMLElement | null;
-                const canTravel = targetMarker ? (targetMarker.canFastTravel || targetMarker.discovered) : false;
-
-                let ownedSettlement: SettlementData | undefined;
-                for (const w of domainState.settlements.values()) {
-                    if (w.owned && (w.markerFormId === payload.formId || w.formId === payload.formId || w.locationFormId === payload.formId)) {
-                        ownedSettlement = w;
-                        break;
-                    }
-                }
-
-                if (ownedSettlement) {
-                    renderSettlementCardContent(document.body, ownedSettlement, payload.formId, canTravel, anchorEl || undefined);
-                } else if (targetMarker) {
-                    MarkerCard.open(targetMarker.name, payload.formId, canTravel, anchorEl || undefined);
-                }
-                break;
-            }
-            case MarkerKind.POWER_ARMOR: {
-                break;
-            }
-        }
+        overlayCoordinator.handleMarkerSelect(payload);
     });
 
     surface.events.on('emptyMapClick', (payload) => {
-        CustomMarkerCard.open({
-            gameCoords: payload.worldCoordinates,
-            pageCoords: payload.screenCoordinates,
-            worldspaceId: payload.worldspaceId
-        });
-        FocusManager.setFocus('CUSTOM_MARKER_CARD');
+        overlayCoordinator.handleEmptyMapClick(payload);
+    });
+
+    surface.events.on('panStart', () => {
+        overlayCoordinator.dismissActiveCard();
     });
 
     surface.events.on('fastTravelRequest', (payload) => {
@@ -131,11 +88,7 @@ function wireMapEventsToCards(surface: MapSurface) {
             showFastTravelConfirmationModal(name, () => {
                 mapSurface.prepareForFastTravel(formId);
                 EngineBridge.requestFastTravel(formId);
-                if (FocusManager.getFocus() === 'MARKER_CARD') {
-                    MarkerCard.close();
-                } else if (FocusManager.getFocus() === 'SETTLEMENT_CARD') {
-                    SettlementCard.close();
-                }
+                overlayCoordinator.dismissActiveCard();
             });
         } else {
             showFastTravelErrorModal(detail.status);
@@ -214,14 +167,8 @@ export function setInitialWorldspace(worldspaceId: number, editorId: string): vo
 
 export function resetUIState(): void {
     mapSurface.setSupplyLinesActive(false);
-    CustomMarkerCard.close();
+    overlayCoordinator.dismissAll();
     ModalManager.close();
-    QuestCard.close();
-    SettlementCard.close();
-    MarkerCard.close();
-    QuestList.collapse();
-    LocationsList.collapse();
-    SearchPanel.collapse();
     SettingsMenu.forceClose();
 }
 
@@ -300,7 +247,7 @@ window.addEventListener('DOMContentLoaded', () => {
         wireMapEventsToCards(mapSurface);
     }
 
-    OverlayManager.init();
+    overlayCoordinator.init();
     SettingsMenu.init();
     ControlBar.init();
     InfoBar.init();

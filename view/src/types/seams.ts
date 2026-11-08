@@ -167,6 +167,7 @@ export interface MapEvents {
     readonly fastTravelRequest: FastTravelRequestPayload;
     readonly viewportChange: ViewportTransformPayload;
     readonly worldspaceChange: WorldspaceChangePayload;
+    readonly panStart: void;
 }
 
 /**

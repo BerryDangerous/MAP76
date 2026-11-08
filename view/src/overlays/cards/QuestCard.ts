@@ -4,7 +4,6 @@ import { toggleQuestActive, makeOnlyQuestActive } from '@/core/bridge.js';
 import { t } from '@/core/i18n.js';
 import { FocusOwner, InputReceiver, InputRouter, KeyAction, type ControlActionHint } from '@/input/index.js';
 import { Corner } from '@/overlays/positioning.js';
-import { OverlayManager } from '@/managers/overlayManager.js';
 import { SoundService } from '@/services/soundService.js';
 import { mapSurface } from '@/map/index.js';
 import { QuestList } from '@/overlays/panels/QuestsPanel.js';
@@ -25,8 +24,15 @@ export class QuestCardController implements InputReceiver {
     public activeAnchorMarker: HTMLElement | null = null;
     public activeDockCorner: Corner | null = null;
 
+    public onClose: (() => void) | null = null;
+    public onNavBack: (() => boolean) | null = null;
+
     private instance: FloatingCard | null = null;
     private scrollRafId: number | null = null;
+
+    public getElement(): HTMLElement | null {
+        return this.instance?.getElement() ?? null;
+    }
 
     public init(): void {
         InputRouter.register(this);
@@ -36,8 +42,10 @@ export class QuestCardController implements InputReceiver {
         switch (action) {
             case KeyAction.NAV_BACK:
                 SoundService.playFocus();
+                if (this.onNavBack?.()) {
+                    return true;
+                }
                 this.close();
-                InputRouter.pop();
                 return true;
 
             case KeyAction.NAV_UP:
@@ -137,8 +145,6 @@ export class QuestCardController implements InputReceiver {
         referencePanel?: HTMLElement,
         dockCorner?: Corner,
         takeFocus: boolean = true,
-        returnFocusId?: string,
-        onNavBack?: () => void,
         screenAnchor?: ScreenAnchor
     ): void {
         if (this.activeAnchorMarker && this.activeAnchorMarker !== anchorMarker) {
@@ -168,8 +174,6 @@ export class QuestCardController implements InputReceiver {
                 anchorMarker: this.activeAnchorMarker,
                 referencePanel: questListContainer,
                 dockCorner: dockCornerToUse,
-                returnFocusId: returnFocusId,
-                onNavBack: onNavBack,
                 onButtonSelectionChange: () => this.updateButtonSelection()
             });
         } else {
@@ -180,21 +184,11 @@ export class QuestCardController implements InputReceiver {
                 screenAnchor: screenAnchor,
                 anchorMarker: this.activeAnchorMarker,
                 referencePanel: questListContainer,
-                dockCorner: dockCornerToUse,
-                returnFocusId: returnFocusId,
-                onNavBack: onNavBack
+                dockCorner: dockCornerToUse
             });
         }
 
         this.instance.open(this.activeAnchorMarker || undefined, questListContainer, dockCornerToUse);
-
-        OverlayManager.openCard('QUEST_CARD', {
-            cardElement: this.instance.getElement(),
-            referencePanel: questListContainer,
-            onDismiss: () => this.close(),
-            takeFocus: takeFocus,
-            returnFocusId: returnFocusId
-        });
 
         const cardEl = this.instance.getElement();
         if (cardEl) {
@@ -254,7 +248,9 @@ export class QuestCardController implements InputReceiver {
             this.instance.close();
         }
 
-        OverlayManager.notifyCardClosed('QUEST_CARD');
+        if (this.onClose) {
+            this.onClose();
+        }
     }
 
     public updateButtonSelection(): void {

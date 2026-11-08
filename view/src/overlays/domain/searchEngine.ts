@@ -194,7 +194,3 @@ export function searchEntities(query: string): SearchResult[] {
     results.sort((a, b) => b.score - a.score);
     return results;
 }
-
-export const SearchEngine = {
-    search: searchEntities
-};

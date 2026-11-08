@@ -10,16 +10,14 @@ import { FocusOwner, InputReceiver, InputRouter, KeyAction, KeybindsSystem, type
 import { AssetManager } from '@/systems/assetManager.js';
 import { anchorToCorner, getCornerConfig, Corner } from '@/overlays/positioning.js';
 import { SelectableListController } from '@/systems/listController.js';
-import { OverlayManager } from '@/managers/overlayManager.js';
 import { SoundService } from '@/services/soundService.js';
 
 import { mapSurface } from '@/map/index.js';
 
-import { CustomMarkerCard, MarkerCard, QuestCard, SettlementCard } from '@/overlays/index.js';
 import { QuestList, QuestUtils } from '@/overlays/index.js';
 import { StringUtils } from '@/utils/stringUtils.js';
 
-import { SearchEngine } from '@/overlays/domain/searchEngine.js';
+import { searchEntities } from '@/overlays/domain/searchEngine.js';
 import { SearchUtils } from '@/overlays/domain/searchUtils.js';
 
 import { CollapsiblePanel, CustomScrollbar, SearchBox } from '@/ui/index.js';
@@ -52,9 +50,7 @@ const listController = new SelectableListController<SearchResult>({
         if (searchPanelState.isCollapsed) return;
 
         if (selectedResult) {
-            OverlayManager.scheduleDockedCard(() => {
-                SearchPanel.openCardForResult(selectedResult);
-            });
+            SearchPanel.onSelectionChange?.(selectedResult);
             if (selectedResult.markerCoords) {
                 if (appSettings.focusMarkerOnSelection) {
                     mapSurface.centerOnTarget(
@@ -68,7 +64,7 @@ const listController = new SelectableListController<SearchResult>({
                 mapSurface.clearSavedViewport(appSettings.focusMarkerOnSelection);
             }
         } else {
-            OverlayManager.cancelScheduledCard();
+            SearchPanel.onSelectionChange?.(null);
             SearchPanel.closeCards();
             mapSurface.clearSavedViewport(appSettings.focusMarkerOnSelection);
         }
@@ -96,7 +92,7 @@ const listController = new SelectableListController<SearchResult>({
         }
 
         listController.setSelectedIndex(index, true, true);
-        OverlayManager.flushScheduledCard();
+        SearchPanel.onFlushScheduledCard?.();
     },
     onItemHover: (result, index) => {
         if ((SearchPanel as any)._ignoreHover) return;
@@ -112,6 +108,12 @@ const listController = new SelectableListController<SearchResult>({
 });
 
 export const SearchPanel = {
+    onExpanded: null as (() => void) | null,
+    onSelectionChange: null as ((result: SearchResult | null) => void) | null,
+    onNavigateToDockedCard: null as (() => boolean) | null,
+    onRequestCloseCards: null as (() => void) | null,
+    onFlushScheduledCard: null as (() => void) | null,
+
     getState(): SearchPanelState {
         return searchPanelState;
     },
@@ -134,6 +136,8 @@ export const SearchPanel = {
     expand(): void {
         if (!searchPanelState.isCollapsed) return;
         searchPanelState.isCollapsed = false;
+
+        this.onExpanded?.();
 
         (this as any)._ignoreHover = true;
         setTimeout(() => { (this as any)._ignoreHover = false; }, 200);
@@ -188,32 +192,7 @@ export const SearchPanel = {
     },
 
     closeCards(): void {
-        const container = document.getElementById('search-panel');
-        if (container) {
-            OverlayManager.dismissCardIfAnchoredTo(container);
-        }
-    },
-
-    openCardForResult(result: SearchResult): void {
-        const container = document.getElementById('search-panel');
-        if (!container) return;
-
-        const returnFocusId = 'SEARCH_PANEL';
-        const onNavBack = () => this.collapse();
-
-        if (result.type === 'marker') {
-            const m = result.originalRef;
-            MarkerCard.open(m.name, m.formId, m.canFastTravel, undefined, container, searchPanelState.dockCorner, false, returnFocusId, onNavBack);
-        } else if (result.type === 'quest') {
-            const q = result.originalRef;
-            QuestCard.open(q, undefined, container, searchPanelState.dockCorner, false, returnFocusId, onNavBack);
-        } else if (result.type === 'workshop') {
-            const w = result.originalRef;
-            const marker = domainState.markers.get(w.markerFormId ?? w.formId ?? w.locationFormId ?? 0);
-            const canFastTravel = marker ? marker.canFastTravel : w.owned;
-            const markerFormId = marker ? marker.formId : w.markerFormId;
-            SettlementCard.open(w, markerFormId, canFastTravel, undefined, container, searchPanelState.dockCorner, false, returnFocusId, onNavBack);
-        }
+        this.onRequestCloseCards?.();
     },
 
     id: FocusOwner.SEARCH_PANEL,
@@ -262,8 +241,7 @@ export const SearchPanel = {
                 return true;
 
             case KeyAction.NAV_LEFT:
-                if (isRightDocked) {
-                    this.focusDockedCard();
+                if (isRightDocked && this.onNavigateToDockedCard?.()) {
                     return true;
                 } else {
                     this.collapse();
@@ -272,8 +250,7 @@ export const SearchPanel = {
                 }
 
             case KeyAction.NAV_RIGHT:
-                if (!isRightDocked) {
-                    this.focusDockedCard();
+                if (!isRightDocked && this.onNavigateToDockedCard?.()) {
                     return true;
                 } else {
                     this.collapse();
@@ -345,15 +322,7 @@ export const SearchPanel = {
     },
 
     focusDockedCard(): void {
-        OverlayManager.flushScheduledCard();
-        const selected = listController.getSelectedItem();
-        if (selected) {
-            if (selected.type === 'marker' && MarkerCard.isOpen()) InputRouter.push(FocusOwner.MARKER_CARD);
-            else if (selected.type === 'quest' && QuestCard.isOpen()) InputRouter.push(FocusOwner.QUEST_CARD);
-            else if (selected.type === 'workshop' && SettlementCard.isOpen()) InputRouter.push(FocusOwner.SETTLEMENT_CARD);
-            else if (selected.type === 'customMarker' && CustomMarkerCard.isOpen()) InputRouter.push(FocusOwner.CUSTOM_MARKER_CARD);
-            SoundService.playFocus();
-        }
+        this.onNavigateToDockedCard?.();
     },
 
     getAvailableControls(): ControlActionHint[] {
@@ -399,11 +368,6 @@ export const SearchPanel = {
 
     init(): void {
         InputRouter.register(this);
-
-        const container = document.getElementById('search-panel');
-        if (container) {
-            OverlayManager.registerPanel('SEARCH_PANEL', container, () => this.collapse());
-        }
 
         window.addEventListener('languageChanged', () => {
             this.reloadLocales();
@@ -494,7 +458,7 @@ export const SearchPanel = {
         if (!searchPanelState.searchTerm) {
             searchPanelState.results = [];
         } else {
-            searchPanelState.results = SearchEngine.search(searchPanelState.searchTerm);
+            searchPanelState.results = searchEntities(searchPanelState.searchTerm);
         }
         
         listController.setSelectedIndex(searchPanelState.results.length > 0 ? 0 : -1, false, false);

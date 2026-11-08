@@ -1,8 +1,8 @@
+import { ScreenAnchor } from '@/types/seams.js';
 import { domainState } from '@/core/state/index.js';
 import { setCustomMarker, removeCustomMarker } from '@/core/bridge.js';
 import { t } from '@/core/i18n.js';
 import { FocusOwner, InputReceiver, InputRouter, KeyAction, type ControlActionHint } from '@/input/index.js';
-import { OverlayManager } from '@/managers/overlayManager.js';
 import { SoundService } from '@/services/soundService.js';
 import { mapSurface } from '@/map/index.js';
 import { FloatingCard, type ActionButtonConfig } from '@/ui/index.js';
@@ -15,7 +15,14 @@ export class CustomMarkerCardController implements InputReceiver {
     public activeAnchorMarker: HTMLElement | null = null;
     public activeWorldspaceId: number | undefined = undefined;
 
+    public onClose: (() => void) | null = null;
+    public onNavBack: (() => boolean) | null = null;
+
     private instance: FloatingCard | null = null;
+
+    public getElement(): HTMLElement | null {
+        return this.instance?.getElement() ?? null;
+    }
 
     public init(): void {
         InputRouter.register(this);
@@ -25,8 +32,10 @@ export class CustomMarkerCardController implements InputReceiver {
         switch (action) {
             case KeyAction.NAV_BACK:
                 SoundService.playFocus();
+                if (this.onNavBack?.()) {
+                    return true;
+                }
                 this.close();
-                InputRouter.pop();
                 return true;
 
             case KeyAction.NAV_UP:
@@ -93,8 +102,8 @@ export class CustomMarkerCardController implements InputReceiver {
         gameCoords?: { x: number; y: number } | null;
         pageCoords?: { x: number; y: number } | null;
         worldspaceId?: number;
-        returnFocusId?: string;
-        onNavBack?: () => void;
+        screenAnchor?: ScreenAnchor;
+        anchor?: ScreenAnchor;
     }): void {
         this.activeAnchorMarker = options.anchorMarker || null;
         this.activeCoords = options.pageCoords || null;
@@ -122,10 +131,9 @@ export class CustomMarkerCardController implements InputReceiver {
             id: 'custom-marker-card-panel',
             title: title,
             buttons: buttons,
+            screenAnchor: options.screenAnchor || options.anchor,
             anchorMarker: this.activeAnchorMarker || null,
-            coords: this.activeCoords || undefined,
-            returnFocusId: options.returnFocusId,
-            onNavBack: options.onNavBack
+            coords: this.activeCoords || undefined
         };
 
         if (!this.instance) {
@@ -135,15 +143,6 @@ export class CustomMarkerCardController implements InputReceiver {
         }
 
         this.instance.open(this.activeAnchorMarker || undefined);
-        OverlayManager.openCard('CUSTOM_MARKER_CARD', {
-            cardElement: this.instance.getElement(),
-            referencePanel: null,
-            onDismiss: () => this.close(),
-            takeFocus: true,
-            returnFocusId: options.returnFocusId
-        });
-
-        InputRouter.push(this);
     }
 
     public buildButtons(isClickingExisting: boolean, hasExistingMarker: boolean): ActionButtonConfig[] {
@@ -200,7 +199,9 @@ export class CustomMarkerCardController implements InputReceiver {
             this.instance.close();
         }
 
-        OverlayManager.notifyCardClosed('CUSTOM_MARKER_CARD');
+        if (this.onClose) {
+            this.onClose();
+        }
     }
 
     public isOpen(): boolean {
