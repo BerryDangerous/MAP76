@@ -5,26 +5,22 @@ import { ASSET_ICON_POWER_ARMOR, ASSET_ICON_CUSTOM_MARKER } from '@/core/constan
 import { appSettings } from '@/core/settings.js';
 import { domainState } from '@/core/state/index.js';
 import { getWorldspaceName } from '@/core/state/worldspaces.js';
-import { FocusManager, KeybindsSystem } from '@/input/index.js';
+import { FocusOwner, InputReceiver, InputRouter, KeyAction, KeybindsSystem, type ControlActionHint } from '@/input/index.js';
 
 import { AssetManager } from '@/systems/assetManager.js';
 import { anchorToCorner, getCornerConfig, Corner } from '@/overlays/positioning.js';
 import { SelectableListController } from '@/systems/listController.js';
-import { SearchEngine } from '@/overlays/domain/searchEngine.js';
 import { OverlayManager } from '@/managers/overlayManager.js';
 import { SoundService } from '@/services/soundService.js';
 
 import { mapSurface } from '@/map/index.js';
 
-import { QuestUtils } from '@/overlays/domain/questRules.js';
-import { SearchUtils } from '@/overlays/domain/searchUtils.js';
+import { CustomMarkerCard, MarkerCard, QuestCard, SettlementCard } from '@/overlays/index.js';
+import { QuestList, QuestUtils } from '@/overlays/index.js';
 import { StringUtils } from '@/utils/stringUtils.js';
 
-import { CustomMarkerCard } from '@/overlays/cards/CustomMarkerCard.js';
-import { MarkerCard } from '@/overlays/cards/MarkerCard.js';
-import { QuestCard } from '@/overlays/cards/QuestCard.js';
-import { QuestList } from '@/overlays/panels/QuestsPanel.js';
-import { SettlementCard } from '@/overlays/cards/SettlementCard.js';
+import { SearchEngine } from '@/overlays/domain/searchEngine.js';
+import { SearchUtils } from '@/overlays/domain/searchUtils.js';
 
 import { CollapsiblePanel, CustomScrollbar, SearchBox } from '@/ui/index.js';
 
@@ -81,13 +77,13 @@ const listController = new SelectableListController<SearchResult>({
             customScrollbar.updateThumbPosition();
         }
 
-        FocusManager.triggerControlsUpdate();
+        InputRouter.notifyActionsChanged();
     },
     onItemClick: (result, index) => {
         const container = document.getElementById('search-panel');
         if (!container) return;
 
-        FocusManager.setFocus('SEARCH_PANEL');
+        InputRouter.push(FocusOwner.SEARCH_PANEL);
 
         if (index === -2) {
             SearchPanel.collapse();
@@ -146,7 +142,7 @@ export const SearchPanel = {
             collapsiblePanel.setCollapsed(false);
         }
 
-        FocusManager.setFocus('SEARCH_PANEL');
+        InputRouter.push(FocusOwner.SEARCH_PANEL);
         this.render();
 
         if (searchBox) {
@@ -177,8 +173,8 @@ export const SearchPanel = {
         this.closeCards();
         mapSurface.clearSavedViewport(appSettings.resetViewportOnPanelCollapse);
         
-        if (FocusManager.getFocus() === 'SEARCH_PANEL') {
-            FocusManager.setFocus('MAP');
+        if (InputRouter.getFocus() === FocusOwner.SEARCH_PANEL) {
+            InputRouter.pop();
         }
         this.render();
     },
@@ -213,53 +209,196 @@ export const SearchPanel = {
             QuestCard.open(q, undefined, container, searchPanelState.dockCorner, false, returnFocusId, onNavBack);
         } else if (result.type === 'workshop') {
             const w = result.originalRef;
-            const marker = domainState.lastPayload?.markers.find(m => m.formId === w.markerFormId || m.formId === w.formId || m.formId === w.locationFormId);
+            const marker = domainState.markers.get(w.markerFormId ?? w.formId ?? w.locationFormId ?? 0);
             const canFastTravel = marker ? marker.canFastTravel : w.owned;
             const markerFormId = marker ? marker.formId : w.markerFormId;
             SettlementCard.open(w, markerFormId, canFastTravel, undefined, container, searchPanelState.dockCorner, false, returnFocusId, onNavBack);
         }
     },
 
-    init(): void {
-        FocusManager.register({
-            id: 'SEARCH_PANEL',
-            getAvailableControls: () => {
-                const controls: import('@/input/index.js').ControlActionDef[] = ['NAV_BACK', 'NAV_UP', 'NAV_DOWN', 'PAN_MOUSE'];
-                if (searchBox?.isFocused()) {
-                    if (KeybindsSystem.isControllerActive && window.PrismaOSK && window.PrismaOSK.isOpen()) {
-                        controls.push({ action: 'CHANGE_LAYOUT', label: t('controls.actions.layout', { defaultValue: 'Layouts' }) });
-                        controls.push({ action: 'RESET_DEFAULTS', label: t('search.clear', { defaultValue: 'Clear' }) });
-                    }
-                    return controls;
+    id: FocusOwner.SEARCH_PANEL,
+
+    handleAction(action: KeyAction): boolean {
+        if (searchPanelState.isCollapsed) return false;
+
+        const inputIsFocused = searchBox ? searchBox.isFocused() : false;
+        const results = this.getVisibleResults();
+        const isRightDocked = searchPanelState.dockCorner.includes('right');
+
+        if (inputIsFocused) {
+            if (KeybindsSystem.isControllerActive && window.PrismaOSK && window.PrismaOSK.isOpen()) {
+                if (action === KeyAction.RESET_DEFAULTS) {
+                    if (searchBox) searchBox.clear();
+                    SoundService.playCancel();
+                }
+                return true;
+            }
+            if (action === KeyAction.NAV_DOWN) {
+                if (results.length > 0) {
+                    searchBox?.blur();
+                    SoundService.playFocus();
+                    listController.setSelectedIndex(0, true, true);
+                }
+                return true;
+            }
+            if (action === KeyAction.NAV_BACK) {
+                searchBox?.blur();
+                if (results.length > 0) {
+                    SoundService.playFocus();
+                    listController.setSelectedIndex(0, true, true);
+                } else {
+                    SoundService.playNavBack();
+                }
+                return true;
+            }
+            return true;
+        }
+
+        switch (action) {
+            case KeyAction.NAV_BACK:
+            case KeyAction.COLLAPSE:
+                this.collapse();
+                SoundService.playFocus();
+                return true;
+
+            case KeyAction.NAV_LEFT:
+                if (isRightDocked) {
+                    this.focusDockedCard();
+                    return true;
+                } else {
+                    this.collapse();
+                    SoundService.playFocus();
+                    return true;
                 }
 
-                const selected = listController.getSelectedItem();
-                if (selected) {
-                    if (selected.type === 'quest') {
-                        const isCompleted = QuestUtils.isQuestCompleted(selected.originalRef);
-                        if (!isCompleted) {
-                            controls.push('TOGGLE_ACTIVE');
-                            if (QuestUtils.hasActiveTargets(selected.originalRef)) {
-                                controls.push('CENTER_ITEM');
-                            }
+            case KeyAction.NAV_RIGHT:
+                if (!isRightDocked) {
+                    this.focusDockedCard();
+                    return true;
+                } else {
+                    this.collapse();
+                    SoundService.playFocus();
+                    return true;
+                }
+
+            case KeyAction.NAV_DOWN:
+                if (results.length > 0) {
+                    listController.navigateNext();
+                }
+                return true;
+
+            case KeyAction.NAV_UP:
+                if (results.length > 0) {
+                    if (listController.getSelectedIndex() <= 0) {
+                        if (searchBox) {
+                            searchBox.focus();
+                            SoundService.playFocus();
+                            const el = searchBox.getInputElement();
+                            const len = el.value.length;
+                            el.setSelectionRange(len, len);
                         }
                     } else {
-                        controls.push({ action: 'CENTER_ITEM', label: t('markers.controls.centerMarker') });
+                        listController.navigatePrev();
                     }
                 }
-                controls.push('SELECT');
-                return controls;
-            },
-            handleKeyDown: (e: KeyboardEvent) => this.handleKeyDown(e),
-            onFocusGained: () => {
-                const container = document.getElementById('search-panel');
-                if (container) { container.classList.add('focused'); container.classList.add('collapsible-panel'); }
-            },
-            onFocusLost: (newFocusId?: string) => {
-                const container = document.getElementById('search-panel');
-                if (container) container.classList.remove('focused');
+                return true;
+
+            case KeyAction.TOGGLE_ACTIVE: {
+                const selected = listController.getSelectedItem();
+                if (selected && selected.type === 'quest') {
+                    QuestList.toggleQuestActive(selected.originalRef);
+                    this.performSearch();
+                }
+                return true;
             }
-        });
+
+            case KeyAction.SELECT:
+                this.focusDockedCard();
+                return true;
+
+            case KeyAction.CENTER_ITEM: {
+                const selected = listController.getSelectedItem();
+                if (selected) {
+                    SoundService.playShowOnMap();
+                    if (selected.markerCoords) {
+                        mapSurface.centerOnTarget(
+                            selected.markerCoords.worldspace ?? domainState.getActiveWorldspaceID(),
+                            selected.markerCoords.x,
+                            selected.markerCoords.y,
+                            selected.markerCoords.z ?? 0
+                        );
+                    } else if (selected.type === 'quest') {
+                        const markerId = selected.originalRef.formId ?? selected.originalRef.questName;
+                        const markerContainer = document.querySelector(`.marker-container[data-form-id="${markerId}"]`) ||
+                                                document.querySelector(`.marker-container[data-display-name="${markerId}"]`);
+                        if (markerContainer) {
+                            mapSurface.centerOnElement(markerContainer as HTMLElement);
+                        }
+                    }
+                }
+                return true;
+            }
+
+            default:
+                return false;
+        }
+    },
+
+    focusDockedCard(): void {
+        OverlayManager.flushScheduledCard();
+        const selected = listController.getSelectedItem();
+        if (selected) {
+            if (selected.type === 'marker' && MarkerCard.isOpen()) InputRouter.push(FocusOwner.MARKER_CARD);
+            else if (selected.type === 'quest' && QuestCard.isOpen()) InputRouter.push(FocusOwner.QUEST_CARD);
+            else if (selected.type === 'workshop' && SettlementCard.isOpen()) InputRouter.push(FocusOwner.SETTLEMENT_CARD);
+            else if (selected.type === 'customMarker' && CustomMarkerCard.isOpen()) InputRouter.push(FocusOwner.CUSTOM_MARKER_CARD);
+            SoundService.playFocus();
+        }
+    },
+
+    getAvailableControls(): ControlActionHint[] {
+        const controls: ControlActionHint[] = [KeyAction.NAV_BACK, KeyAction.NAV_UP, KeyAction.NAV_DOWN, KeyAction.PAN_MOUSE];
+        if (searchBox?.isFocused()) {
+            if (KeybindsSystem.isControllerActive && window.PrismaOSK && window.PrismaOSK.isOpen()) {
+                controls.push({ action: KeyAction.CHANGE_LAYOUT, label: t('controls.actions.layout', { defaultValue: 'Layouts' }) });
+                controls.push({ action: KeyAction.RESET_DEFAULTS, label: t('search.clear', { defaultValue: 'Clear' }) });
+            }
+            return controls;
+        }
+
+        const selected = listController.getSelectedItem();
+        if (selected) {
+            if (selected.type === 'quest') {
+                const isCompleted = QuestUtils.isQuestCompleted(selected.originalRef);
+                if (!isCompleted) {
+                    controls.push(KeyAction.TOGGLE_ACTIVE);
+                    if (QuestUtils.hasActiveTargets(selected.originalRef)) {
+                        controls.push(KeyAction.CENTER_ITEM);
+                    }
+                }
+            } else {
+                controls.push({ action: KeyAction.CENTER_ITEM, label: t('markers.controls.centerMarker') });
+            }
+        }
+        controls.push(KeyAction.SELECT);
+        return controls;
+    },
+
+    onFocusGained(): void {
+        const container = document.getElementById('search-panel');
+        if (container) {
+            container.classList.add('focused');
+            container.classList.add('collapsible-panel');
+        }
+    },
+
+    onFocusLost(): void {
+        const container = document.getElementById('search-panel');
+        if (container) container.classList.remove('focused');
+    },
+
+    init(): void {
+        InputRouter.register(this);
 
         const container = document.getElementById('search-panel');
         if (container) {
@@ -278,161 +417,6 @@ export const SearchPanel = {
         if (container) {
             this.render();
         }
-    },
-
-    handleKeyDown(e: KeyboardEvent): boolean {
-        if (searchPanelState.isCollapsed) {
-            const config = getCornerConfig(searchPanelState.dockCorner);
-            if (KeybindsSystem.isPanelExpandKey(e, config.expandKey)) {
-                this.expand();
-                return true;
-            }
-            return false;
-        }
-
-        const inputIsFocused = searchBox ? searchBox.isFocused() : false;
-        const results = this.getVisibleResults();
-
-        if (inputIsFocused) {
-            if (KeybindsSystem.isControllerActive && window.PrismaOSK && window.PrismaOSK.isOpen()) {
-                if (KeybindsSystem.isAction(e, 'RESET_DEFAULTS')) {
-                    e.preventDefault();
-                    if (searchBox) searchBox.clear();
-                    SoundService.playCancel();
-                }
-                return true;
-            }
-            if (KeybindsSystem.isAction(e, 'NAV_DOWN')) {
-                if (results.length > 0) {
-                    searchBox?.blur();
-                    SoundService.playFocus();
-                    listController.setSelectedIndex(0, true, true);
-                }
-                return true;
-            }
-            if (KeybindsSystem.isAction(e, 'NAV_BACK')) {
-                e.preventDefault();
-                searchBox?.blur();
-                
-                if (results.length > 0) {
-                    SoundService.playFocus();
-                    listController.setSelectedIndex(0, true, true);
-                } else {
-                    SoundService.playNavBack();
-                }
-                
-                return true;
-            }
-            return true;
-        }
-
-        const config = getCornerConfig(searchPanelState.dockCorner);
-        if (KeybindsSystem.isPanelCollapseKey(e, config.collapseKey)) {
-            this.collapse();
-            return true;
-        }
-
-        const isRightDocked = searchPanelState.dockCorner.includes('right');
-        if (KeybindsSystem.isAction(e, 'SELECT') || (isRightDocked ? KeybindsSystem.isAction(e, 'NAV_LEFT') : KeybindsSystem.isAction(e, 'NAV_RIGHT'))) {
-            OverlayManager.flushScheduledCard();
-            const selected = listController.getSelectedItem();
-            if (selected) {
-                if (selected.type === 'marker' && MarkerCard.isOpen()) FocusManager.setFocus('MARKER_CARD');
-                else if (selected.type === 'quest' && QuestCard.isOpen()) FocusManager.setFocus('QUEST_CARD');
-                else if (selected.type === 'workshop' && SettlementCard.isOpen()) FocusManager.setFocus('SETTLEMENT_CARD');
-                else if (selected.type === 'customMarker' && CustomMarkerCard.isOpen()) FocusManager.setFocus('CUSTOM_MARKER_CARD');
-                SoundService.playFocus();
-            }
-            return true;
-        }
-
-        if (KeybindsSystem.isAction(e, 'NAV_DOWN')) {
-            if (results.length > 0) {
-                listController.navigateNext();
-            }
-            return true;
-        }
-
-        if (KeybindsSystem.isAction(e, 'NAV_UP')) {
-            if (results.length > 0) {
-                if (listController.getSelectedIndex() <= 0) {
-                    if (searchBox) {
-                        searchBox.focus();
-                        SoundService.playFocus();
-                        const el = searchBox.getInputElement();
-                        const len = el.value.length;
-                        el.setSelectionRange(len, len);
-                    }
-                } else {
-                    listController.navigatePrev();
-                }
-            } else {
-                if (searchBox) {
-                    searchBox.focus();
-                    SoundService.playFocus();
-                    const el = searchBox.getInputElement();
-                    const len = el.value.length;
-                    el.setSelectionRange(len, len);
-                }
-            }
-            return true;
-        }
-        
-        if (KeybindsSystem.isAction(e, 'TOGGLE_ACTIVE')) {
-            const selected = listController.getSelectedItem();
-            if (selected && selected.type === 'quest') {
-                QuestList.toggleQuestActive(selected.originalRef);
-            }
-            return true;
-        }
-        
-        if (KeybindsSystem.isAction(e, 'NAV_BACK')) {
-            this.collapse();
-            return true;
-        }
-
-
-
-        if (KeybindsSystem.isAction(e, 'CENTER_ITEM')) {
-            const selected = listController.getSelectedItem();
-            if (selected) {
-                SoundService.playShowOnMap();
-                if (selected.markerCoords) {
-                    mapSurface.centerOnTarget(
-                        selected.markerCoords.worldspace ?? domainState.getActiveWorldspaceID(),
-                        selected.markerCoords.x,
-                        selected.markerCoords.y,
-                        0
-                    );
-                } else if (selected.type === 'quest') {
-                    const markerId = selected.originalRef.formId ?? selected.originalRef.questName;
-                    const markerContainer = document.querySelector(`.marker-container[data-form-id="${markerId}"]`) ||
-                                            document.querySelector(`.marker-container[data-display-name="${markerId}"]`);
-                    if (markerContainer) {
-                        mapSurface.centerOnElement(markerContainer as HTMLElement);
-                    }
-                }
-            }
-            return true;
-        }
-
-        if (e.key.length === 1 && !e.ctrlKey && !e.altKey && !e.metaKey) {
-            if (searchBox) {
-                e.preventDefault();
-                searchBox.focus(false);
-                const el = searchBox.getInputElement();
-                el.value = el.value + e.key;
-                
-                setTimeout(() => {
-                    const len = el.value.length;
-                    el.setSelectionRange(len, len);
-                    el.dispatchEvent(new Event('input', { bubbles: true }));
-                }, 10);
-                return true;
-            }
-        }
-
-        return false;
     },
 
     getVisibleResults(): SearchResult[] {
@@ -485,19 +469,19 @@ export const SearchPanel = {
                 onFocus: () => {
                     const panelEl = document.getElementById('search-panel');
                     if (panelEl) panelEl.setAttribute('data-input-focused', 'true');
-                    if (FocusManager.getFocus() !== 'SEARCH_PANEL') {
-                        FocusManager.setFocus('SEARCH_PANEL');
+                    if (InputRouter.getFocus() !== FocusOwner.SEARCH_PANEL) {
+                        InputRouter.push(FocusOwner.SEARCH_PANEL);
                     }
                     this.closeCards();
                     mapSurface.clearSavedViewport(appSettings.resetViewportOnPanelCollapse);
                     this.updateSelection(false);
-                    FocusManager.triggerControlsUpdate();
+                    InputRouter.notifyActionsChanged();
                 },
                 onBlur: () => {
                     const panelEl = document.getElementById('search-panel');
                     if (panelEl) panelEl.setAttribute('data-input-focused', 'false');
                     this.updateSelection(false);
-                    FocusManager.triggerControlsUpdate();
+                    InputRouter.notifyActionsChanged();
                 }
             });
         }

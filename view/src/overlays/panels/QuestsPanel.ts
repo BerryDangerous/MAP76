@@ -4,7 +4,7 @@ import { t } from '@/core/i18n.js';
 import { toggleQuestActive } from '@/core/bridge.js';
 import { appSettings } from '@/core/settings.js';
 import { domainState } from '@/core/state/index.js';
-import { FocusManager, KeybindsSystem } from '@/input/index.js';
+import { FocusOwner, InputReceiver, InputRouter, KeyAction, KeybindsSystem, type ControlActionHint } from '@/input/index.js';
 
 import { anchorToCorner, getCornerConfig, Corner } from '@/overlays/positioning.js';
 import { SelectableListController } from '@/systems/listController.js';
@@ -67,13 +67,13 @@ const listController = new SelectableListController<QuestItem>({
             customScrollbar.updateThumbPosition();
         }
 
-        FocusManager.triggerControlsUpdate();
+        InputRouter.notifyActionsChanged();
     },
     onItemClick: (quest, index) => {
         const container = document.getElementById('quest-list-panel');
         if (!container) return;
 
-        FocusManager.setFocus('QUEST_LIST');
+        InputRouter.push(FocusOwner.QUEST_LIST);
 
         if (index === -2) {
             QuestList.collapse();
@@ -184,7 +184,7 @@ export const QuestList = {
 
         listController.setSelectedIndex(targetIndex, false, false);
 
-        FocusManager.setFocus('QUEST_LIST');
+        InputRouter.push(FocusOwner.QUEST_LIST);
         this.render();
         this.updateSelection(false);
 
@@ -207,8 +207,8 @@ export const QuestList = {
 
         this.closeCards();
         mapSurface.clearSavedViewport(appSettings.resetViewportOnPanelCollapse);
-        if (FocusManager.getFocus() === 'QUEST_LIST') {
-            FocusManager.setFocus('MAP');
+        if (InputRouter.getFocus() === FocusOwner.QUEST_LIST) {
+            InputRouter.pop();
         }
         this.render();
     },
@@ -221,6 +221,152 @@ export const QuestList = {
         }
     },
 
+    id: FocusOwner.QUEST_LIST,
+
+    handleAction(action: KeyAction): boolean {
+        if (questListState.isCollapsed) return false;
+
+        const quests = this.getVisibleQuests();
+        const isRightDocked = questListState.dockCorner.includes('right');
+
+        switch (action) {
+            case KeyAction.NAV_BACK:
+            case KeyAction.COLLAPSE:
+                this.collapse();
+                SoundService.playFocus();
+                return true;
+
+            case KeyAction.NAV_LEFT:
+                if (isRightDocked) {
+                    if (QuestCard.isOpen()) {
+                        OverlayManager.flushScheduledCard();
+                        InputRouter.push(FocusOwner.QUEST_CARD);
+                        SoundService.playFocus();
+                        return true;
+                    }
+                } else {
+                    this.collapse();
+                    SoundService.playFocus();
+                    return true;
+                }
+                return true;
+
+            case KeyAction.NAV_RIGHT:
+                if (!isRightDocked) {
+                    if (QuestCard.isOpen()) {
+                        OverlayManager.flushScheduledCard();
+                        InputRouter.push(FocusOwner.QUEST_CARD);
+                        SoundService.playFocus();
+                        return true;
+                    }
+                } else {
+                    this.collapse();
+                    SoundService.playFocus();
+                    return true;
+                }
+                return true;
+
+            case KeyAction.TAB_PREV:
+                tabBar.prevTab();
+                return true;
+
+            case KeyAction.TAB_NEXT:
+                tabBar.nextTab();
+                return true;
+
+            case KeyAction.NAV_DOWN:
+                if (quests.length > 0) {
+                    listController.navigateNext();
+                }
+                return true;
+
+            case KeyAction.NAV_UP:
+                if (quests.length > 0) {
+                    listController.navigatePrev();
+                }
+                return true;
+
+            case KeyAction.TOGGLE_ACTIVE: {
+                const selectedQuest = listController.getSelectedItem();
+                if (selectedQuest) {
+                    this.toggleQuestActive(selectedQuest);
+                }
+                return true;
+            }
+
+            case KeyAction.SORT: {
+                const modes: QuestSortMode[] = ['RECENT', 'ALPHABETICAL', 'ACTIVE'];
+                const nextIdx = (modes.indexOf(questListState.sortMode) + 1) % modes.length;
+                questListState.sortMode = modes[nextIdx];
+                SoundService.playFocus();
+                this.render();
+                InputRouter.notifyActionsChanged();
+                return true;
+            }
+
+            case KeyAction.SELECT: {
+                OverlayManager.flushScheduledCard();
+                if (QuestCard.isOpen()) {
+                    InputRouter.push(FocusOwner.QUEST_CARD);
+                    SoundService.playFocus();
+                }
+                return true;
+            }
+
+            case KeyAction.CENTER_ITEM: {
+                const selected = listController.getSelectedItem();
+                if (selected && !QuestUtils.isQuestCompleted(selected)) {
+                    SoundService.playShowOnMap();
+                    QuestCard.open(selected, undefined, undefined, questListState.dockCorner, false, 'QUEST_LIST', () => this.collapse());
+                    const firstTarget = selected.objectives?.find(o => o.targets && o.targets.length > 0)?.targets[0];
+                    if (firstTarget) {
+                        mapSurface.centerOnTarget(firstTarget.worldspace, firstTarget.x, firstTarget.y, firstTarget.z);
+                    }
+                }
+                return true;
+            }
+
+            default:
+                return false;
+        }
+    },
+
+    getAvailableControls(): ControlActionHint[] {
+        const sortLabel = `${t('controls.actions.sort')} (${t(`quests.sortMode.${questListState.sortMode.toLowerCase()}`)})`;
+        const controls: ControlActionHint[] = [
+            KeyAction.NAV_BACK,
+            KeyAction.NAV_UP,
+            KeyAction.NAV_DOWN,
+            KeyAction.PAN_MOUSE,
+            { action: KeyAction.SORT, label: sortLabel }
+        ];
+        const selected = listController.getSelectedItem();
+        if (selected) {
+            const isCompleted = QuestUtils.isQuestCompleted(selected);
+            if (!isCompleted) {
+                controls.push(KeyAction.TOGGLE_ACTIVE);
+                if (QuestUtils.hasActiveTargets(selected)) {
+                    controls.push(KeyAction.CENTER_ITEM);
+                }
+            }
+        }
+        controls.push(KeyAction.SELECT);
+        return controls;
+    },
+
+    onFocusGained(): void {
+        const container = document.getElementById('quest-list-panel');
+        if (container) {
+            container.classList.add('focused');
+            container.classList.add('collapsible-panel');
+        }
+    },
+
+    onFocusLost(): void {
+        const container = document.getElementById('quest-list-panel');
+        if (container) container.classList.remove('focused');
+    },
+
     init(): void {
         tabBar.updateTabs([
             { id: 'ALL', label: t('quests.tabs.all') },
@@ -229,34 +375,7 @@ export const QuestList = {
             { id: 'MISC', label: t('quests.tabs.misc') }
         ]);
 
-        FocusManager.register({
-            id: 'QUEST_LIST',
-            getAvailableControls: () => {
-                const sortLabel = `${t('controls.actions.sort')} (${t(`quests.sortMode.${questListState.sortMode.toLowerCase()}`)})`;
-                const controls: import('@/input/index.js').ControlActionDef[] = ['NAV_BACK', 'NAV_UP', 'NAV_DOWN', 'PAN_MOUSE', { action: 'SORT', label: sortLabel }];
-                const selected = listController.getSelectedItem();
-                if (selected) {
-                    const isCompleted = QuestUtils.isQuestCompleted(selected);
-                    if (!isCompleted) {
-                        controls.push('TOGGLE_ACTIVE');
-                        if (QuestUtils.hasActiveTargets(selected)) {
-                            controls.push('CENTER_ITEM');
-                        }
-                    }
-                }
-                controls.push('SELECT');
-                return controls;
-            },
-            handleKeyDown: (e: KeyboardEvent) => this.handleKeyDown(e),
-            onFocusGained: () => {
-                const container = document.getElementById('quest-list-panel');
-                if (container) { container.classList.add('focused'); container.classList.add('collapsible-panel'); }
-            },
-            onFocusLost: (newFocusId?: string) => {
-                const container = document.getElementById('quest-list-panel');
-                if (container) container.classList.remove('focused');
-            }
-        });
+        InputRouter.register(this);
 
         const container = document.getElementById('quest-list-panel');
         if (container) {
@@ -281,90 +400,6 @@ export const QuestList = {
             ]);
             this.render();
         }
-    },
-
-    handleKeyDown(e: KeyboardEvent): boolean {
-        if (questListState.isCollapsed) {
-            const config = getCornerConfig(questListState.dockCorner);
-            if (KeybindsSystem.isPanelExpandKey(e, config.expandKey)) {
-                this.expand();
-                return true;
-            }
-            return false;
-        }
-
-        const quests = this.getVisibleQuests();
-        const config = getCornerConfig(questListState.dockCorner);
-        if (KeybindsSystem.isPanelCollapseKey(e, config.collapseKey)) {
-            this.collapse();
-            return true;
-        }
-
-        const isRightDocked = questListState.dockCorner.includes('right');
-        if (KeybindsSystem.isAction(e, 'SELECT') || (isRightDocked ? KeybindsSystem.isAction(e, 'NAV_LEFT') : KeybindsSystem.isAction(e, 'NAV_RIGHT'))) {
-            OverlayManager.flushScheduledCard();
-            if (QuestCard.isOpen()) {
-                FocusManager.setFocus('QUEST_CARD');
-                SoundService.playFocus();
-            }
-            return true;
-        }
-
-        if (tabBar.handleKeyDown(e)) {
-            return true;
-        }
-
-        if (KeybindsSystem.isAction(e, 'NAV_DOWN')) {
-            if (quests.length > 0) {
-                listController.navigateNext();
-            }
-            return true;
-        }
-
-        if (KeybindsSystem.isAction(e, 'NAV_UP')) {
-            if (quests.length > 0) {
-                listController.navigatePrev();
-            }
-            return true;
-        }
-
-        if (KeybindsSystem.isAction(e, 'TOGGLE_ACTIVE')) {
-            const selectedQuest = listController.getSelectedItem();
-            if (selectedQuest) {
-                this.toggleQuestActive(selectedQuest);
-            }
-            return true;
-        }
-
-        if (KeybindsSystem.isAction(e, 'SORT')) {
-            const modes: QuestSortMode[] = ['RECENT', 'ALPHABETICAL', 'ACTIVE'];
-            const nextIdx = (modes.indexOf(questListState.sortMode) + 1) % modes.length;
-            questListState.sortMode = modes[nextIdx];
-            SoundService.playFocus();
-            this.render();
-            FocusManager.triggerControlsUpdate();
-            return true;
-        }
-
-        if (KeybindsSystem.isAction(e, 'NAV_BACK')) {
-            this.collapse();
-            return true;
-        }
-
-        if (KeybindsSystem.isAction(e, 'CENTER_ITEM')) {
-            const selected = listController.getSelectedItem();
-            if (selected && !QuestUtils.isQuestCompleted(selected)) {
-                SoundService.playShowOnMap();
-                QuestCard.open(selected, undefined, undefined, questListState.dockCorner, false, 'QUEST_LIST', () => QuestList.collapse());
-                const firstTarget = selected.objectives?.find(o => o.targets && o.targets.length > 0)?.targets[0];
-                if (firstTarget) {
-                    mapSurface.centerOnTarget(firstTarget.worldspace, firstTarget.x, firstTarget.y, firstTarget.z);
-                }
-            }
-            return true;
-        }
-
-        return false;
     },
 
     toggleQuestActive(quest: QuestItem): void {

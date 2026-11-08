@@ -1,4 +1,3 @@
-import { KeybindsSystem } from '@/input/index.js';
 import { SoundService } from '@/services/soundService.js';
 
 export interface ListNavigationOptions<T> {
@@ -92,18 +91,6 @@ export class SelectableListController<T> {
         if (this.selectedIndex === 0) return;
         const prevIndex = this.selectedIndex < 0 ? 0 : this.selectedIndex - 1;
         this.setSelectedIndex(prevIndex);
-    }
-
-    public handleKeyDown(e: KeyboardEvent): boolean {
-        if (KeybindsSystem.isAction(e, 'NAV_DOWN')) {
-            this.navigateNext();
-            return true;
-        }
-        if (KeybindsSystem.isAction(e, 'NAV_UP')) {
-            this.navigatePrev();
-            return true;
-        }
-        return false;
     }
 
     public bindEventDelegation(): void {
