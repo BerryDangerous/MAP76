@@ -1,20 +1,15 @@
+import { ScreenAnchor } from '@/types/seams.js';
 import { QuestItem } from '@/types/quests.js';
-
 import { toggleQuestActive, makeOnlyQuestActive } from '@/core/bridge.js';
 import { t } from '@/core/i18n.js';
-import { FocusManager, KeybindsSystem, type ControlActionDef } from '@/input/index.js';
-
+import { FocusOwner, InputReceiver, InputRouter, KeyAction, type ControlActionHint } from '@/input/index.js';
 import { Corner } from '@/overlays/positioning.js';
 import { OverlayManager } from '@/managers/overlayManager.js';
 import { SoundService } from '@/services/soundService.js';
-
 import { mapSurface } from '@/map/index.js';
-
+import { QuestList } from '@/overlays/panels/QuestsPanel.js';
 import { QuestUtils } from '@/overlays/domain/questRules.js';
 import { StringUtils } from '@/utils/stringUtils.js';
-
-import { QuestList } from '@/overlays/panels/QuestsPanel.js';
-
 import {
     FloatingCard,
     StatusItemList,
@@ -23,71 +18,129 @@ import {
     type ActionButtonConfig
 } from '@/ui/index.js';
 
-let floatingCard: FloatingCard | null = null;
-let scrollRafId: number | null = null;
+export class QuestCardController implements InputReceiver {
+    public readonly id = FocusOwner.QUEST_CARD;
 
-export const QuestCard = {
-    activeQuest: null as QuestItem | null,
-    activeAnchorMarker: null as HTMLElement | null,
+    public activeQuest: QuestItem | null = null;
+    public activeAnchorMarker: HTMLElement | null = null;
+    public activeDockCorner: Corner | null = null;
 
-    init(): void {
-        FocusManager.register({
-            id: 'QUEST_CARD',
-            getAvailableControls: () => {
-                const controls: ControlActionDef[] = ['NAV_BACK'];
-                const buttons = QuestCard.activeQuest ? QuestCard.buildButtonConfigs(QuestCard.activeQuest) : [];
-                if (buttons.length > 1) {
-                    controls.push('NAV_UP', 'NAV_DOWN');
-                }
-                controls.push('PAN_MOUSE');
-                if (QuestCard.activeAnchorMarker === null && QuestCard.activeQuest && !QuestUtils.isQuestCompleted(QuestCard.activeQuest)) {
-                    if (QuestUtils.hasActiveTargets(QuestCard.activeQuest)) {
-                        controls.push({ action: 'CENTER_ITEM', label: t('quests.controls.centerObjective') });
-                    }
-                }
-                if (buttons.length > 0) {
-                    controls.push('SELECT');
-                }
-                return controls;
-            },
-            handleKeyDown: (e: KeyboardEvent) => this.handleKeyDown(e),
-            onFocusGained: () => {
-                const card = document.getElementById('quest-card-panel');
-                if (card) card.classList.add('focused');
-                if (floatingCard) {
-                    floatingCard.setReferencePanelDimmed(true);
-                    floatingCard.getButtonGroup().setSelectedIndex(0);
-                }
-                this.updateButtonSelection();
-            },
-            onFocusLost: (newFocusId?: string) => {
-                const card = document.getElementById('quest-card-panel');
-                if (card) card.classList.remove('focused');
-                if (floatingCard) {
-                    floatingCard.setReferencePanelDimmed(false);
-                }
-                this.updateButtonSelection();
-            }
-        });
-    },
+    private instance: FloatingCard | null = null;
+    private scrollRafId: number | null = null;
 
-    handleKeyDown(e: KeyboardEvent): boolean {
-        if (KeybindsSystem.isAction(e, 'CENTER_ITEM')) {
-            if (this.activeAnchorMarker === null && this.activeQuest && !QuestUtils.isQuestCompleted(this.activeQuest)) {
-                if (QuestUtils.hasActiveTargets(this.activeQuest)) {
-                    SoundService.playShowOnMap();
-                    const firstTarget = this.activeQuest.objectives?.find(o => o.targets && o.targets.length > 0)?.targets[0];
-                    if (firstTarget) {
-                        mapSurface.centerOnTarget(firstTarget.worldspace, firstTarget.x, firstTarget.y, firstTarget.z);
-                    }
+    public init(): void {
+        InputRouter.register(this);
+    }
+
+    public handleAction(action: KeyAction): boolean {
+        switch (action) {
+            case KeyAction.NAV_BACK:
+                SoundService.playFocus();
+                this.close();
+                InputRouter.pop();
+                return true;
+
+            case KeyAction.NAV_UP:
+                if (this.instance) {
+                    this.instance.getButtonGroup().navigatePrev();
+                    this.updateButtonSelection();
+                }
+                return true;
+
+            case KeyAction.NAV_DOWN:
+                if (this.instance) {
+                    this.instance.getButtonGroup().navigateNext();
+                    this.updateButtonSelection();
+                }
+                return true;
+
+            case KeyAction.SELECT:
+                if (this.instance) {
+                    this.instance.getButtonGroup().triggerSelected();
+                }
+                return true;
+
+            case KeyAction.NAV_RIGHT:
+                if (this.activeDockCorner?.includes('right')) {
+                    SoundService.playFocus();
+                    InputRouter.pop();
                     return true;
                 }
+                return true;
+
+            case KeyAction.NAV_LEFT:
+                if (this.activeDockCorner && !this.activeDockCorner.includes('right')) {
+                    SoundService.playFocus();
+                    InputRouter.pop();
+                    return true;
+                }
+                return true;
+
+            case KeyAction.CENTER_ITEM:
+                if (this.activeAnchorMarker === null && this.activeQuest && !QuestUtils.isQuestCompleted(this.activeQuest)) {
+                    if (QuestUtils.hasActiveTargets(this.activeQuest)) {
+                        SoundService.playShowOnMap();
+                        const firstTarget = this.activeQuest.objectives?.find(o => o.targets && o.targets.length > 0)?.targets[0];
+                        if (firstTarget) {
+                            mapSurface.centerOnTarget(firstTarget.worldspace, firstTarget.x, firstTarget.y, firstTarget.z);
+                        }
+                        return true;
+                    }
+                }
+                return false;
+
+            default:
+                return false;
+        }
+    }
+
+    public getAvailableControls(): ControlActionHint[] {
+        const controls: ControlActionHint[] = [KeyAction.NAV_BACK];
+        const buttons = this.activeQuest ? this.buildButtonConfigs(this.activeQuest) : [];
+        if (buttons.length > 1) {
+            controls.push(KeyAction.NAV_UP, KeyAction.NAV_DOWN);
+        }
+        controls.push(KeyAction.PAN_MOUSE);
+        if (this.activeAnchorMarker === null && this.activeQuest && !QuestUtils.isQuestCompleted(this.activeQuest)) {
+            if (QuestUtils.hasActiveTargets(this.activeQuest)) {
+                controls.push({ action: KeyAction.CENTER_ITEM, label: t('quests.controls.centerObjective') });
             }
         }
-        return floatingCard ? floatingCard.handleKeyDown(e) : false;
-    },
+        if (buttons.length > 0) {
+            controls.push(KeyAction.SELECT);
+        }
+        return controls;
+    }
 
-    open(quest: QuestItem, anchorMarker?: HTMLElement, referencePanel?: HTMLElement, dockCorner?: Corner, takeFocus: boolean = true, returnFocusId?: string, onNavBack?: () => void): void {
+    public onFocusGained(): void {
+        const card = document.getElementById('quest-card-panel');
+        if (card) card.classList.add('focused');
+        if (this.instance) {
+            this.instance.setReferencePanelDimmed(true);
+            this.instance.getButtonGroup().setSelectedIndex(0);
+        }
+        this.updateButtonSelection();
+    }
+
+    public onFocusLost(): void {
+        const card = document.getElementById('quest-card-panel');
+        if (card) card.classList.remove('focused');
+        if (this.instance) {
+            this.instance.setReferencePanelDimmed(false);
+        }
+        this.updateButtonSelection();
+    }
+
+    public open(
+        quest: QuestItem,
+        anchorMarker?: HTMLElement,
+        referencePanel?: HTMLElement,
+        dockCorner?: Corner,
+        takeFocus: boolean = true,
+        returnFocusId?: string,
+        onNavBack?: () => void,
+        screenAnchor?: ScreenAnchor
+    ): void {
         if (this.activeAnchorMarker && this.activeAnchorMarker !== anchorMarker) {
             this.activeAnchorMarker.classList.remove('menu-active');
             this.activeAnchorMarker.classList.remove('hide-tooltip-override');
@@ -103,13 +156,15 @@ export const QuestCard = {
 
         const questListContainer = referencePanel || document.getElementById('quest-list-panel');
         const dockCornerToUse = dockCorner || QuestList.getState().dockCorner;
+        this.activeDockCorner = referencePanel ? dockCornerToUse : null;
 
-        if (!floatingCard) {
-            floatingCard = new FloatingCard({
+        if (!this.instance) {
+            this.instance = new FloatingCard({
                 id: 'quest-card-panel',
                 title: quest.questName,
                 bodyHtml: this.buildBodyHtml(quest),
                 buttons: this.buildButtonConfigs(quest),
+                screenAnchor: screenAnchor,
                 anchorMarker: this.activeAnchorMarker,
                 referencePanel: questListContainer,
                 dockCorner: dockCornerToUse,
@@ -118,10 +173,11 @@ export const QuestCard = {
                 onButtonSelectionChange: () => this.updateButtonSelection()
             });
         } else {
-            floatingCard.update({
+            this.instance.update({
                 title: quest.questName,
                 bodyHtml: this.buildBodyHtml(quest),
                 buttons: this.buildButtonConfigs(quest),
+                screenAnchor: screenAnchor,
                 anchorMarker: this.activeAnchorMarker,
                 referencePanel: questListContainer,
                 dockCorner: dockCornerToUse,
@@ -130,17 +186,17 @@ export const QuestCard = {
             });
         }
 
-        floatingCard.open(this.activeAnchorMarker, questListContainer, dockCornerToUse);
+        this.instance.open(this.activeAnchorMarker || undefined, questListContainer, dockCornerToUse);
 
         OverlayManager.openCard('QUEST_CARD', {
-            cardElement: floatingCard.getElement(),
+            cardElement: this.instance.getElement(),
             referencePanel: questListContainer,
             onDismiss: () => this.close(),
             takeFocus: takeFocus,
             returnFocusId: returnFocusId
         });
 
-        const cardEl = floatingCard.getElement();
+        const cardEl = this.instance.getElement();
         if (cardEl) {
             const vbCanvas = cardEl.querySelector('#quest-card-vaultboy-canvas') as HTMLCanvasElement | null;
             if (vbCanvas && quest.vaultBoyKey) {
@@ -148,38 +204,43 @@ export const QuestCard = {
             } else {
                 stopVaultBoyAnimation();
             }
-            if (scrollRafId !== null) {
-                cancelAnimationFrame(scrollRafId);
-                scrollRafId = null;
+
+            if (this.scrollRafId !== null) {
+                cancelAnimationFrame(this.scrollRafId);
             }
-            scrollRafId = requestAnimationFrame(() => {
-                scrollRafId = null;
-                const objListEl = cardEl.querySelector('.status-item-list') as HTMLElement | null;
-                if (objListEl && objListEl.isConnected) {
+            this.scrollRafId = requestAnimationFrame(() => {
+                this.scrollRafId = null;
+                const objListEl = cardEl.querySelector('.status-item-list');
+                if (objListEl) {
                     objListEl.scrollTop = objListEl.scrollHeight;
                 }
             });
         }
 
-        this.updateButtonSelection();
-    },
-
-    positionNearMarker(marker: HTMLElement): void {
-        if (floatingCard) {
-            floatingCard.updatePosition();
+        if (takeFocus) {
+            InputRouter.push(this);
         }
-    },
 
-    isOpen(): boolean {
-        return !!floatingCard && floatingCard.isOpen();
-    },
+        this.updateButtonSelection();
+    }
 
-    close(): void {
+    public positionNearMarker(): void {
+        if (this.instance) {
+            this.instance.updatePosition();
+        }
+    }
+
+    public isOpen(): boolean {
+        return !!this.instance && this.instance.isOpen();
+    }
+
+    public close(): void {
         stopVaultBoyAnimation();
+        this.activeDockCorner = null;
 
-        if (scrollRafId !== null) {
-            cancelAnimationFrame(scrollRafId);
-            scrollRafId = null;
+        if (this.scrollRafId !== null) {
+            cancelAnimationFrame(this.scrollRafId);
+            this.scrollRafId = null;
         }
 
         if (this.activeAnchorMarker) {
@@ -189,22 +250,22 @@ export const QuestCard = {
             mapSurface.updateViewportTransform();
         }
 
-        if (floatingCard) {
-            floatingCard.close();
+        if (this.instance) {
+            this.instance.close();
         }
 
         OverlayManager.notifyCardClosed('QUEST_CARD');
-    },
+    }
 
-    updateButtonSelection(): void {
-        if (!floatingCard) return;
+    public updateButtonSelection(): void {
+        if (!this.instance) return;
 
-        const card = floatingCard.getElement();
+        const card = this.instance.getElement();
         if (!card) return;
 
-        const isCardFocused = FocusManager.getFocus() === 'QUEST_CARD';
+        const isCardFocused = InputRouter.getFocus() === FocusOwner.QUEST_CARD;
         const buttons = card.querySelectorAll('.fc-action-btn');
-        const selectedIdx = floatingCard.getButtonGroup().getSelectedIndex();
+        const selectedIdx = this.instance.getButtonGroup().getSelectedIndex();
 
         buttons.forEach((btn, idx) => {
             if (isCardFocused && idx === selectedIdx) {
@@ -213,9 +274,9 @@ export const QuestCard = {
                 btn.classList.remove('selected');
             }
         });
-    },
+    }
 
-    buildBodyHtml(quest: QuestItem): string {
+    public buildBodyHtml(quest: QuestItem): string {
         const hasJournal = Boolean(quest.journal && quest.journal.trim().length > 0);
         const journalText = hasJournal ? quest.journal.trim() : '';
 
@@ -255,13 +316,12 @@ export const QuestCard = {
             ${journalSectionHtml}
             ${objectivesSectionHtml}
         `;
-    },
+    }
 
-    buildButtonConfigs(quest: QuestItem): ActionButtonConfig[] {
+    public buildButtonConfigs(quest: QuestItem): ActionButtonConfig[] {
         const isCompleted = QuestUtils.isQuestCompleted(quest);
 
-        return isCompleted ? [
-        ] : [
+        return isCompleted ? [] : [
             {
                 id: 'toggleActive',
                 label: t('quests.controls.toggleActive'),
@@ -286,10 +346,13 @@ export const QuestCard = {
             }
         ];
     }
-};
+}
+
+export const questCard = new QuestCardController();
+export const QuestCard = questCard;
 
 window.addEventListener('languageChanged', () => {
-    if (QuestCard.isOpen() && QuestCard.activeQuest) {
-        QuestCard.open(QuestCard.activeQuest, QuestCard.activeAnchorMarker || undefined, undefined, undefined, false);
+    if (questCard.isOpen() && questCard.activeQuest) {
+        questCard.open(questCard.activeQuest, questCard.activeAnchorMarker || undefined, undefined, undefined, false);
     }
 });

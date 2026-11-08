@@ -1,69 +1,97 @@
+import { domainState } from '@/core/state/index.js';
 import { setCustomMarker, removeCustomMarker } from '@/core/bridge.js';
 import { t } from '@/core/i18n.js';
-
-import { FocusManager, KeybindsSystem, type ControlActionDef } from '@/input/index.js';
+import { FocusOwner, InputReceiver, InputRouter, KeyAction, type ControlActionHint } from '@/input/index.js';
 import { OverlayManager } from '@/managers/overlayManager.js';
 import { SoundService } from '@/services/soundService.js';
-
 import { mapSurface } from '@/map/index.js';
-
 import { FloatingCard, type ActionButtonConfig } from '@/ui/index.js';
 
-let customMarkerCardInstance: FloatingCard | null = null;
+export class CustomMarkerCardController implements InputReceiver {
+    public readonly id = FocusOwner.CUSTOM_MARKER_CARD;
 
-export const CustomMarkerCard = {
-    activeCoords: null as { x: number, y: number } | null,
-    activeGameCoords: null as { x: number, y: number } | null,
-    activeAnchorMarker: null as HTMLElement | null,
-    activeWorldspaceId: undefined as number | undefined,
+    public activeCoords: { x: number; y: number } | null = null;
+    public activeGameCoords: { x: number; y: number } | null = null;
+    public activeAnchorMarker: HTMLElement | null = null;
+    public activeWorldspaceId: number | undefined = undefined;
 
-    init(): void {
-        FocusManager.register({
-            id: 'CUSTOM_MARKER_CARD',
-            getAvailableControls: () => {
-                const controls: ControlActionDef[] = ['NAV_BACK', 'NAV_UP', 'NAV_DOWN', 'PAN_MOUSE'];
-                if (CustomMarkerCard.activeAnchorMarker === null && (CustomMarkerCard.activeGameCoords || CustomMarkerCard.activeCoords)) {
-                    controls.push({ action: 'CENTER_ITEM', label: t('markers.controls.centerMarker') });
-                }
-                controls.push('SELECT');
-                return controls;
-            },
-            handleKeyDown: (e: KeyboardEvent) => this.handleKeyDown(e),
-            onFocusGained: () => {
-                const card = document.getElementById('custom-marker-card-panel');
-                if (card) card.classList.add('focused');
-                if (customMarkerCardInstance) {
-                    customMarkerCardInstance.setReferencePanelDimmed(true);
-                    customMarkerCardInstance.getButtonGroup().setSelectedIndex(0);
-                }
-            },
-            onFocusLost: () => {
-                const card = document.getElementById('custom-marker-card-panel');
-                if (card) card.classList.remove('focused');
-                if (customMarkerCardInstance) {
-                    customMarkerCardInstance.setReferencePanelDimmed(false);
-                }
-            }
-        });
-    },
+    private instance: FloatingCard | null = null;
 
-    handleKeyDown(e: KeyboardEvent): boolean {
-        if (KeybindsSystem.isAction(e, 'CENTER_ITEM')) {
-            if (this.activeAnchorMarker === null && (this.activeGameCoords || this.activeCoords)) {
-                SoundService.playShowOnMap();
-                if (this.activeGameCoords) {
-                    mapSurface.centerOnWorldCoords(this.activeGameCoords.x, this.activeGameCoords.y);
+    public init(): void {
+        InputRouter.register(this);
+    }
+
+    public handleAction(action: KeyAction): boolean {
+        switch (action) {
+            case KeyAction.NAV_BACK:
+                SoundService.playFocus();
+                this.close();
+                InputRouter.pop();
+                return true;
+
+            case KeyAction.NAV_UP:
+                if (this.instance) {
+                    this.instance.getButtonGroup().navigatePrev();
                 }
                 return true;
-            }
-        }
-        return customMarkerCardInstance ? customMarkerCardInstance.handleKeyDown(e) : false;
-    },
 
-    open(options: {
+            case KeyAction.NAV_DOWN:
+                if (this.instance) {
+                    this.instance.getButtonGroup().navigateNext();
+                }
+                return true;
+
+            case KeyAction.SELECT:
+                if (this.instance) {
+                    this.instance.getButtonGroup().triggerSelected();
+                }
+                return true;
+
+            case KeyAction.CENTER_ITEM:
+                if (this.activeAnchorMarker === null && (this.activeGameCoords || this.activeCoords)) {
+                    SoundService.playShowOnMap();
+                    if (this.activeGameCoords) {
+                        mapSurface.centerOnWorldCoords(this.activeGameCoords.x, this.activeGameCoords.y);
+                    }
+                    return true;
+                }
+                return false;
+
+            default:
+                return false;
+        }
+    }
+
+    public getAvailableControls(): ControlActionHint[] {
+        const controls: ControlActionHint[] = [KeyAction.NAV_BACK, KeyAction.NAV_UP, KeyAction.NAV_DOWN, KeyAction.PAN_MOUSE];
+        if (this.activeAnchorMarker === null && (this.activeGameCoords || this.activeCoords)) {
+            controls.push({ action: KeyAction.CENTER_ITEM, label: t('markers.controls.centerMarker') });
+        }
+        controls.push(KeyAction.SELECT);
+        return controls;
+    }
+
+    public onFocusGained(): void {
+        const card = document.getElementById('custom-marker-card-panel');
+        if (card) card.classList.add('focused');
+        if (this.instance) {
+            this.instance.setReferencePanelDimmed(true);
+            this.instance.getButtonGroup().setSelectedIndex(0);
+        }
+    }
+
+    public onFocusLost(): void {
+        const card = document.getElementById('custom-marker-card-panel');
+        if (card) card.classList.remove('focused');
+        if (this.instance) {
+            this.instance.setReferencePanelDimmed(false);
+        }
+    }
+
+    public open(options: {
         anchorMarker?: HTMLElement | null;
-        gameCoords?: { x: number, y: number } | null;
-        pageCoords?: { x: number, y: number } | null;
+        gameCoords?: { x: number; y: number } | null;
+        pageCoords?: { x: number; y: number } | null;
         worldspaceId?: number;
         returnFocusId?: string;
         onNavBack?: () => void;
@@ -74,7 +102,7 @@ export const CustomMarkerCard = {
         this.activeWorldspaceId = options.worldspaceId;
 
         const isClickingExisting = Boolean(this.activeAnchorMarker);
-        const hasExistingMarker = Boolean(document.querySelector('.custom-marker'));
+        const hasExistingMarker = Boolean(domainState.lastPayload?.custom_marker);
 
         let title = t('markers.customMarker.placePrompt');
         if (isClickingExisting) {
@@ -100,23 +128,25 @@ export const CustomMarkerCard = {
             onNavBack: options.onNavBack
         };
 
-        if (!customMarkerCardInstance) {
-            customMarkerCardInstance = new FloatingCard(cardConfig);
+        if (!this.instance) {
+            this.instance = new FloatingCard(cardConfig);
         } else {
-            customMarkerCardInstance.update(cardConfig);
+            this.instance.update(cardConfig);
         }
 
-        customMarkerCardInstance.open(this.activeAnchorMarker || undefined);
+        this.instance.open(this.activeAnchorMarker || undefined);
         OverlayManager.openCard('CUSTOM_MARKER_CARD', {
-            cardElement: customMarkerCardInstance.getElement(),
+            cardElement: this.instance.getElement(),
             referencePanel: null,
             onDismiss: () => this.close(),
             takeFocus: true,
             returnFocusId: options.returnFocusId
         });
-    },
 
-    buildButtons(isClickingExisting: boolean, hasExistingMarker: boolean): ActionButtonConfig[] {
+        InputRouter.push(this);
+    }
+
+    public buildButtons(isClickingExisting: boolean, hasExistingMarker: boolean): ActionButtonConfig[] {
         const buttons: ActionButtonConfig[] = [];
 
         if (!isClickingExisting) {
@@ -152,9 +182,9 @@ export const CustomMarkerCard = {
         });
 
         return buttons;
-    },
+    }
 
-    close(): void {
+    public close(): void {
         if (this.activeAnchorMarker) {
             this.activeAnchorMarker.classList.remove('menu-active');
             this.activeAnchorMarker.classList.remove('is-hovered');
@@ -166,25 +196,28 @@ export const CustomMarkerCard = {
         this.activeCoords = null;
         this.activeGameCoords = null;
 
-        if (customMarkerCardInstance) {
-            customMarkerCardInstance.close();
+        if (this.instance) {
+            this.instance.close();
         }
 
         OverlayManager.notifyCardClosed('CUSTOM_MARKER_CARD');
-    },
-
-    isOpen(): boolean {
-        return customMarkerCardInstance ? customMarkerCardInstance.isOpen() : false;
     }
-};
+
+    public isOpen(): boolean {
+        return this.instance ? this.instance.isOpen() : false;
+    }
+}
+
+export const customMarkerCard = new CustomMarkerCardController();
+export const CustomMarkerCard = customMarkerCard;
 
 window.addEventListener('languageChanged', () => {
-    if (CustomMarkerCard.isOpen()) {
-        CustomMarkerCard.open({
-            anchorMarker: CustomMarkerCard.activeAnchorMarker,
-            gameCoords: CustomMarkerCard.activeGameCoords,
-            pageCoords: CustomMarkerCard.activeCoords,
-            worldspaceId: CustomMarkerCard.activeWorldspaceId
+    if (customMarkerCard.isOpen()) {
+        customMarkerCard.open({
+            anchorMarker: customMarkerCard.activeAnchorMarker,
+            gameCoords: customMarkerCard.activeGameCoords,
+            pageCoords: customMarkerCard.activeCoords,
+            worldspaceId: customMarkerCard.activeWorldspaceId
         });
     }
 });

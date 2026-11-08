@@ -1,4 +1,3 @@
-import { KeybindsSystem } from '@/input/index.js';
 import { SoundService } from '@/services/soundService.js';
 
 import { Button, ButtonConfig } from '@/ui/Button.js';
@@ -84,25 +83,6 @@ export class ActionButtonGroup {
             SoundService.playAccept();
             current.action();
         }
-    }
-
-    public handleKeyDown(e: KeyboardEvent): boolean {
-        const nextAction = this.layout === 'row' ? 'NAV_RIGHT' : 'NAV_DOWN';
-        const prevAction = this.layout === 'row' ? 'NAV_LEFT' : 'NAV_UP';
-
-        if (KeybindsSystem.isAction(e, nextAction)) {
-            this.navigateNext();
-            return true;
-        }
-        if (KeybindsSystem.isAction(e, prevAction)) {
-            this.navigatePrev();
-            return true;
-        }
-        if (KeybindsSystem.isAction(e, 'SELECT')) {
-            this.triggerSelected();
-            return true;
-        }
-        return false;
     }
 
     public render(): void {
