@@ -4,8 +4,6 @@ import { domainState } from '@/core/state/index.js';
 import { getWorldspaceName } from '@/core/state/worldspaces.js';
 
 import { AssetManager } from '@/systems/assetManager.js';
-import { FocusManager } from '@/systems/focusManager.js';
-import { KeybindsSystem } from '@/systems/keybindManager.js';
 import { LayoutManager, Corner } from '@/systems/layoutManager.js';
 import { SelectableListController } from '@/systems/listController.js';
 import { OverlayManager } from '@/managers/overlayManager.js';
@@ -16,6 +14,7 @@ import { mapSurface } from '@/map/index.js';
 import { SettlementDataWithRatings, getWorkshopIconType, getWorkshopBadgesHtml, getWorkshopSubtitle, calculateSettlementRatings } from '@/utils/settlementUtils.js';
 import { StringUtils } from '@/utils/stringUtils.js';
 import { POIMarker } from '@/types/markers.js';
+import { FocusManager, KeybindsSystem } from '@/input/index.js';
 
 import { MarkerCard } from '@/components/MarkerCard.js';
 import { SettlementCard } from '@/components/SettlementCard.js';
@@ -234,7 +233,7 @@ export const LocationsList = {
         FocusManager.register({
             id: 'WORKSHOP_LIST',
             getAvailableControls: () => {
-                const controls: import('../systems/focusManager.js').ControlActionDef[] = ['NAV_BACK', 'NAV_UP', 'NAV_DOWN', 'PAN_MOUSE'];
+                const controls: import('@/input/index.js').ControlActionDef[] = ['NAV_BACK', 'NAV_UP', 'NAV_DOWN', 'PAN_MOUSE'];
                 
                 if (locationsListState.currentTab === 'WORKSHOPS') {
                     const sortLabel = `${t('controls.actions.sort')} (${t(`locations.sortMode.${locationsListState.sortMode.toLowerCase()}`)})`;

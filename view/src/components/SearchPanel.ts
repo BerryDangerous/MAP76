@@ -5,10 +5,9 @@ import { ASSET_ICON_POWER_ARMOR, ASSET_ICON_CUSTOM_MARKER } from '@/core/constan
 import { appSettings } from '@/core/settings.js';
 import { domainState } from '@/core/state/index.js';
 import { getWorldspaceName } from '@/core/state/worldspaces.js';
+import { FocusManager, KeybindsSystem } from '@/input/index.js';
 
 import { AssetManager } from '@/systems/assetManager.js';
-import { FocusManager } from '@/systems/focusManager.js';
-import { KeybindsSystem } from '@/systems/keybindManager.js';
 import { LayoutManager, Corner } from '@/systems/layoutManager.js';
 import { SelectableListController } from '@/systems/listController.js';
 import { SearchEngine } from '@/systems/searchEngine.js';
@@ -225,7 +224,7 @@ export const SearchPanel = {
         FocusManager.register({
             id: 'SEARCH_PANEL',
             getAvailableControls: () => {
-                const controls: import('../systems/focusManager.js').ControlActionDef[] = ['NAV_BACK', 'NAV_UP', 'NAV_DOWN', 'PAN_MOUSE'];
+                const controls: import('@/input/index.js').ControlActionDef[] = ['NAV_BACK', 'NAV_UP', 'NAV_DOWN', 'PAN_MOUSE'];
                 if (searchBox?.isFocused()) {
                     if (KeybindsSystem.isControllerActive && window.PrismaOSK && window.PrismaOSK.isOpen()) {
                         controls.push({ action: 'CHANGE_LAYOUT', label: t('controls.actions.layout', { defaultValue: 'Layouts' }) });

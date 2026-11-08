@@ -6,8 +6,7 @@ import { initializeF4SEBindings, EngineBridge } from '@/core/bridge.js';
 import { appSettings, requestSettings } from '@/core/settings.js';
 import { domainState } from '@/core/state/index.js';
 
-import { FocusManager } from '@/systems/focusManager.js';
-import { KeybindsSystem } from '@/systems/keybindManager.js';
+import { FocusManager, KeybindsSystem } from '@/input/index.js';
 import { LayoutManager } from '@/systems/layoutManager.js';
 import { ModalManager } from '@/systems/modalManager.js';
 import { OverlayManager } from '@/managers/overlayManager.js';

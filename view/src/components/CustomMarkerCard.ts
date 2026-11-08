@@ -1,10 +1,9 @@
 import { setCustomMarker, removeCustomMarker } from '@/core/bridge.js';
+import { t } from '@/core/i18n.js';
 
-import { FocusManager } from '@/systems/focusManager.js';
-import { KeybindsSystem } from '@/systems/keybindManager.js';
+import { FocusManager, KeybindsSystem, type ControlActionDef } from '@/input/index.js';
 import { OverlayManager } from '@/managers/overlayManager.js';
 import { SoundService } from '@/services/soundService.js';
-import { t } from '@/core/i18n.js';
 
 import { mapSurface } from '@/map/index.js';
 
@@ -22,7 +21,7 @@ export const CustomMarkerCard = {
         FocusManager.register({
             id: 'CUSTOM_MARKER_CARD',
             getAvailableControls: () => {
-                const controls: import('../systems/focusManager.js').ControlActionDef[] = ['NAV_BACK', 'NAV_UP', 'NAV_DOWN', 'PAN_MOUSE'];
+                const controls: ControlActionDef[] = ['NAV_BACK', 'NAV_UP', 'NAV_DOWN', 'PAN_MOUSE'];
                 if (CustomMarkerCard.activeAnchorMarker === null && (CustomMarkerCard.activeGameCoords || CustomMarkerCard.activeCoords)) {
                     controls.push({ action: 'CENTER_ITEM', label: t('markers.controls.centerMarker') });
                 }

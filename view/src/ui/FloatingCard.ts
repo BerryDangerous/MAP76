@@ -1,5 +1,4 @@
-import { FocusManager } from '@/systems/focusManager.js';
-import { KeybindsSystem } from '@/systems/keybindManager.js';
+import { FocusManager, KeybindsSystem } from '@/input/index.js';
 import { LayoutManager, Corner } from '@/systems/layoutManager.js';
 import { SoundService } from '@/services/soundService.js';
 

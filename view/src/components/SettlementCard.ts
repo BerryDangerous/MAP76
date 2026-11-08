@@ -3,21 +3,20 @@ import { SettlementData } from '@/types/payloads.js';
 import { domainState } from '@/core/state/index.js';
 import { getWorldspaceName, isSameWorldspace } from '@/core/state/worldspaces.js';
 import { toggleFavoriteLocation, setCustomMarker } from '@/core/bridge.js';
+import { t } from '@/core/i18n.js';
 
+import { FocusManager, KeybindsSystem, type ControlActionDef } from '@/input/index.js';
 import { AssetManager } from '@/systems/assetManager.js';
-import { FocusManager } from '@/systems/focusManager.js';
-import { LocationsList } from './WorkshopsPanel.js';
-import { KeybindsSystem } from '@/systems/keybindManager.js';
 import { Corner } from '@/systems/layoutManager.js';
 import { OverlayManager } from '@/managers/overlayManager.js';
 import { SoundService } from '@/services/soundService.js';
 
 import { mapSurface } from '@/map/index.js';
 
-import { calculateSettlementRatings, SettlementDataWithRatings } from '@/utils/settlementUtils.js';
-import { t } from '@/core/i18n.js';
-
+import { LocationsList } from './WorkshopsPanel.js';
 import { FloatingCard, type ActionButtonConfig } from '@/ui/index.js';
+
+import { calculateSettlementRatings, SettlementDataWithRatings } from '@/utils/settlementUtils.js';
 
 let settlementCardInstance: FloatingCard | null = null;
 
@@ -31,7 +30,7 @@ export const SettlementCard = {
         FocusManager.register({
             id: 'SETTLEMENT_CARD',
             getAvailableControls: () => {
-                const controls: import('../systems/focusManager.js').ControlActionDef[] = ['NAV_BACK'];
+                const controls: ControlActionDef[] = ['NAV_BACK'];
                 const buttons = SettlementCard.activeSettlement ? SettlementCard.buildButtonConfigs(SettlementCard.activeSettlement) : [];
                 if (buttons.length > 1) {
                     controls.push('NAV_UP', 'NAV_DOWN');

@@ -1,6 +1,6 @@
 import { t } from '@/core/i18n.js';
+import { KeybindsSystem } from '@/input/index.js';
 import { SettingsControl } from '@/ui/SettingsRow.js';
-import { KeybindsSystem } from '@/systems/keybindManager.js';
 import { SoundService } from '@/services/soundService.js';
 
 export class Toggle implements SettingsControl {

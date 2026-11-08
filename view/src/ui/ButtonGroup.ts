@@ -1,4 +1,4 @@
-import { KeybindsSystem } from '@/systems/keybindManager.js';
+import { KeybindsSystem } from '@/input/index.js';
 import { SoundService } from '@/services/soundService.js';
 
 import { Button, ButtonConfig } from '@/ui/Button.js';

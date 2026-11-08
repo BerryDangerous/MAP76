@@ -4,9 +4,8 @@ import { t } from '@/core/i18n.js';
 import { toggleQuestActive } from '@/core/bridge.js';
 import { appSettings } from '@/core/settings.js';
 import { domainState } from '@/core/state/index.js';
+import { FocusManager, KeybindsSystem } from '@/input/index.js';
 
-import { FocusManager } from '@/systems/focusManager.js';
-import { KeybindsSystem } from '@/systems/keybindManager.js';
 import { LayoutManager, Corner } from '@/systems/layoutManager.js';
 import { SelectableListController } from '@/systems/listController.js';
 import { OverlayManager } from '@/managers/overlayManager.js';
@@ -234,7 +233,7 @@ export const QuestList = {
             id: 'QUEST_LIST',
             getAvailableControls: () => {
                 const sortLabel = `${t('controls.actions.sort')} (${t(`quests.sortMode.${questListState.sortMode.toLowerCase()}`)})`;
-                const controls: import('../systems/focusManager.js').ControlActionDef[] = ['NAV_BACK', 'NAV_UP', 'NAV_DOWN', 'PAN_MOUSE', { action: 'SORT', label: sortLabel }];
+                const controls: import('@/input/index.js').ControlActionDef[] = ['NAV_BACK', 'NAV_UP', 'NAV_DOWN', 'PAN_MOUSE', { action: 'SORT', label: sortLabel }];
                 const selected = listController.getSelectedItem();
                 if (selected) {
                     const isCompleted = QuestUtils.isQuestCompleted(selected);

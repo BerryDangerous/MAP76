@@ -1,4 +1,4 @@
-import { FocusManager } from '@/systems/focusManager.js';
+import { FocusManager } from '@/input/index.js';
 
 interface ActiveCard {
     id: string;

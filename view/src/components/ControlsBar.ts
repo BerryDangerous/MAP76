@@ -1,8 +1,7 @@
 import { appSettings } from '@/core/settings.js';
 import { domainState } from '@/core/state/index.js';
 
-import { FocusManager, FocusOwner } from '@/systems/focusManager.js';
-import { KeybindsSystem, KeyAction } from '@/systems/keybindManager.js';
+import { FocusManager, type FocusOwner, KeybindsSystem, type KeyAction, type ControlActionDef } from '@/input/index.js';
 
 import { mapSurface } from '@/map/index.js';
 
@@ -38,7 +37,7 @@ export class ControlBar {
         if (!this.container) return;
         
         const activeComponent = FocusManager.getActiveComponent();
-        let actions: import('../systems/focusManager.js').ControlActionDef[];
+        let actions: ControlActionDef[];
         
         if (activeComponent && activeComponent.getAvailableControls) {
             actions = activeComponent.getAvailableControls();

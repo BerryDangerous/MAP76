@@ -1,8 +1,8 @@
 import { GameBounds } from '@/types/map.js';
 import { appSettings } from '@/core/settings.js';
 import { domainState } from '@/core/state/index.js';
+import { FocusManager } from '@/input/index.js';
 
-import { FocusManager } from '@/systems/focusManager.js';
 import { OverlayManager } from '@/managers/overlayManager.js';
 import { SoundService } from '@/services/soundService.js';
 

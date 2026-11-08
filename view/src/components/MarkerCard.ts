@@ -1,17 +1,15 @@
 import { domainState } from '@/core/state/index.js';
 import { toggleFavoriteLocation, setCustomMarker } from '@/core/bridge.js';
+import { t } from '@/core/i18n.js';
 
-import { FocusManager } from '@/systems/focusManager.js';
-import { LocationsList } from './WorkshopsPanel.js';
-import { KeybindsSystem } from '@/systems/keybindManager.js';
+import { FocusManager, KeybindsSystem, type ControlActionDef } from '@/input/index.js';
 import { Corner } from '@/systems/layoutManager.js';
 import { OverlayManager } from '@/managers/overlayManager.js';
 import { SoundService } from '@/services/soundService.js';
 
-import { t } from '@/core/i18n.js';
-
 import { mapSurface } from '@/map/index.js';
 
+import { LocationsList } from './WorkshopsPanel.js';
 import { FloatingCard, type ActionButtonConfig } from '@/ui/index.js';
 
 let markerCardInstance: FloatingCard | null = null;
@@ -26,7 +24,7 @@ export const MarkerCard = {
         FocusManager.register({
             id: 'MARKER_CARD',
             getAvailableControls: () => {
-                const controls: import('../systems/focusManager.js').ControlActionDef[] = ['NAV_BACK'];
+                const controls: ControlActionDef[] = ['NAV_BACK'];
                 const buttons = MarkerCard.buildButtonConfigs();
                 if (buttons.length > 1) {
                     controls.push('NAV_UP', 'NAV_DOWN');

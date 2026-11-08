@@ -1,5 +1,5 @@
 import { ActionButtonGroup, type ButtonConfig } from '@/ui/index.js';
-import { KeybindsSystem } from '@/systems/keybindManager.js';
+import { KeybindsSystem } from '@/input/index.js';
 
 export interface ModalConfig {
     text: string;

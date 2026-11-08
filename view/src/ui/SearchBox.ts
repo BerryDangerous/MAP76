@@ -1,5 +1,5 @@
 import { t } from '@/core/i18n.js';
-import { KeybindsSystem } from '@/systems/keybindManager.js';
+import { KeybindsSystem } from '@/input/index.js';
 import { LayoutManager } from '@/systems/layoutManager.js';
 import { SoundService } from '@/services/soundService.js';
 

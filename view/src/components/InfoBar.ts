@@ -4,9 +4,8 @@ import { t } from '@/core/i18n.js';
 
 import { domainState } from '@/core/state/index.js';
 import { getWorldspaceName } from '@/core/state/worldspaces.js';
+import { FocusManager, KeybindsSystem } from '@/input/index.js';
 
-import { FocusManager } from '@/systems/focusManager.js';
-import { KeybindsSystem } from '@/systems/keybindManager.js';
 
 
 export class InfoBar {

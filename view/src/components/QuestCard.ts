@@ -2,9 +2,8 @@ import { QuestItem } from '@/types/quests.js';
 
 import { toggleQuestActive, makeOnlyQuestActive } from '@/core/bridge.js';
 import { t } from '@/core/i18n.js';
+import { FocusManager, KeybindsSystem, type ControlActionDef } from '@/input/index.js';
 
-import { FocusManager } from '@/systems/focusManager.js';
-import { KeybindsSystem } from '@/systems/keybindManager.js';
 import { Corner } from '@/systems/layoutManager.js';
 import { OverlayManager } from '@/managers/overlayManager.js';
 import { SoundService } from '@/services/soundService.js';
@@ -35,7 +34,7 @@ export const QuestCard = {
         FocusManager.register({
             id: 'QUEST_CARD',
             getAvailableControls: () => {
-                const controls: import('../systems/focusManager.js').ControlActionDef[] = ['NAV_BACK'];
+                const controls: ControlActionDef[] = ['NAV_BACK'];
                 const buttons = QuestCard.activeQuest ? QuestCard.buildButtonConfigs(QuestCard.activeQuest) : [];
                 if (buttons.length > 1) {
                     controls.push('NAV_UP', 'NAV_DOWN');

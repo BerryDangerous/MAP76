@@ -4,8 +4,6 @@ import { appSettings, updateSettings, getDefaultSettings, AppSettings } from '@/
 import { domainState } from '@/core/state/index.js';
 
 import { AssetManager } from '@/systems/assetManager.js';
-import { FocusManager, FocusOwner } from '@/systems/focusManager.js';
-import { KeybindsSystem } from '@/systems/keybindManager.js';
 import { SoundService } from '@/services/soundService.js';
 
 import { mapSurface } from '@/map/index.js';
@@ -20,6 +18,7 @@ import {
     type SettingsControl
 } from '@/ui/index.js';
 import { t } from '@/core/i18n.js';
+import { FocusManager, FocusOwner, KeybindsSystem } from '@/input/index.js';
 
 export const SETTINGS_TABS = ['DISPLAY', 'GAMEPLAY', 'MAPS', 'DEBUG'] as const;
 export type SettingsTab = (typeof SETTINGS_TABS)[number];
@@ -157,7 +156,7 @@ export const SettingsMenu = {
 
         FocusManager.register({
             id: 'SETTINGS_MENU',
-            getAvailableControls: () => ['NAV_BACK', 'RESET_DEFAULTS'] as import('../systems/focusManager.js').ControlActionDef[],
+            getAvailableControls: () => ['NAV_BACK', 'RESET_DEFAULTS'] as import('@/input/index.js').ControlActionDef[],
             handleKeyDown: (e) => {
                 const activeEl = document.activeElement as HTMLElement;
                 const isFocusedOnTab = activeEl?.classList.contains('settings-tab');

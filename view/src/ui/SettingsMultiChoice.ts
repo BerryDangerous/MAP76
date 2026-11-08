@@ -1,5 +1,5 @@
+import { KeybindsSystem } from '@/input/index.js';
 import { SettingsControl } from '@/ui/SettingsRow.js';
-import { KeybindsSystem } from '@/systems/keybindManager.js';
 import { SoundService } from '@/services/soundService.js';
 
 export class MultiChoice<T> implements SettingsControl {

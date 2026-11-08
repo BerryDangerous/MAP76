@@ -1,5 +1,5 @@
+import { KeybindsSystem } from '@/input/index.js';
 import { LayoutManager, Corner } from '@/systems/layoutManager.js';
-import { KeybindsSystem } from '@/systems/keybindManager.js';
 import { SoundService } from '@/services/soundService.js';
 
 export interface CollapsiblePanelOptions {
