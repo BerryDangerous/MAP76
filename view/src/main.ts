@@ -15,16 +15,19 @@ import { SoundService } from '@/services/soundService.js';
 import { mapSurface, MapSurface, mapInputReceiver } from '@/map/index.js';
 
 import { ControlBar } from '@/components/ControlsBar.js';
-import { CustomMarkerCard } from '@/components/CustomMarkerCard.js';
 import { InfoBar } from '@/components/InfoBar.js';
 import { InfoCard } from '@/components/InfoCard.js';
-import { MarkerCard } from '@/components/MarkerCard.js';
-import { QuestCard } from '@/components/QuestCard.js';
-import { QuestList } from '@/components/QuestsPanel.js';
-import { SearchPanel } from '@/components/SearchPanel.js';
+import {
+    CustomMarkerCard,
+    MarkerCard,
+    QuestCard,
+    QuestList,
+    SearchPanel,
+    SettlementCard,
+    renderSettlementCardContent,
+    LocationsList
+} from '@/overlays/index.js';
 import { SettingsMenu } from '@/components/SettingsMenu.js';
-import { SettlementCard, renderSettlementCardContent } from '@/components/SettlementCard.js';
-import { LocationsList } from '@/components/WorkshopsPanel.js';
 import { showFastTravelConfirmationModal, showFastTravelErrorModal } from '@/components/Modals.js';
 import { FloatingCard } from '@/ui/index.js';
 

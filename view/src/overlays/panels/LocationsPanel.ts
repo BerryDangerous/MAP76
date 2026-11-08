@@ -11,13 +11,13 @@ import { SoundService } from '@/services/soundService.js';
 
 import { mapSurface } from '@/map/index.js';
 
-import { SettlementDataWithRatings, getWorkshopIconType, getWorkshopBadgesHtml, getWorkshopSubtitle, calculateSettlementRatings } from '@/utils/settlementUtils.js';
+import { SettlementDataWithRatings, getWorkshopIconType, getWorkshopBadgesHtml, getWorkshopSubtitle, calculateSettlementRatings } from '@/overlays/domain/settlementRules.js';
 import { StringUtils } from '@/utils/stringUtils.js';
 import { POIMarker } from '@/types/markers.js';
 import { FocusManager, KeybindsSystem } from '@/input/index.js';
 
-import { MarkerCard } from '@/components/MarkerCard.js';
-import { SettlementCard } from '@/components/SettlementCard.js';
+import { MarkerCard } from '@/overlays/cards/MarkerCard.js';
+import { SettlementCard } from '@/overlays/cards/SettlementCard.js';
 
 import { CollapsiblePanel, CustomScrollbar, TabBar } from '@/ui/index.js';
 

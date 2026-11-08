@@ -2,9 +2,7 @@ import { ControlActionDef, FocusOwner, InputReceiver, InputRouter, KeyAction } f
 import { domainState } from '@/core/state/index.js';
 import { LayoutManager } from '@/systems/layoutManager.js';
 import { SoundService } from '@/services/soundService.js';
-import { QuestList } from '@/components/QuestsPanel.js';
-import { LocationsList } from '@/components/WorkshopsPanel.js';
-import { SearchPanel } from '@/components/SearchPanel.js';
+import { QuestList, LocationsList, SearchPanel } from '@/overlays/index.js';
 import { SettingsMenu } from '@/components/SettingsMenu.js';
 import { mapSurface } from './mapSurface.js';
 

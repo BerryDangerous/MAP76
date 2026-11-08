@@ -1,14 +1,14 @@
 import { POIMarker, CustomMarker, PowerArmorMarker } from '@/types/markers.js';
 import { SettlementData } from '@/types/payloads.js';
 import { QuestItem } from '@/types/quests.js';
-import { SearchResult, SearchResultType } from '@/types/search.js';
+import { SearchResult, SearchResultType } from './types.js';
 
 import { domainState } from '@/core/state/index.js';
 import { getWorldspaceName } from '@/core/state/worldspaces.js';
 
-import { QuestUtils } from '@/utils/questUtils.js';
-import { SearchUtils } from '@/utils/searchUtils.js';
-import { getWorkshopIconType, getWorkshopBadgesHtml, getWorkshopSubtitle } from '@/utils/settlementUtils.js';
+import { QuestUtils } from './questRules.js';
+import { SearchUtils } from './searchUtils.js';
+import { getWorkshopIconType, getWorkshopBadgesHtml, getWorkshopSubtitle } from './settlementRules.js';
 import { t } from '@/core/i18n.js';
 
 export const SearchEngine = {

@@ -9,7 +9,7 @@ import { SoundService } from '@/services/soundService.js';
 
 import { mapSurface } from '@/map/index.js';
 
-import { LocationsList } from './WorkshopsPanel.js';
+import { LocationsList } from '@/overlays/panels/LocationsPanel.js';
 import { FloatingCard, type ActionButtonConfig } from '@/ui/index.js';
 
 let markerCardInstance: FloatingCard | null = null;

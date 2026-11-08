@@ -1,4 +1,4 @@
-import { SearchResult } from '@/types/search.js';
+import { SearchResult } from '@/overlays/domain/types.js';
 import { t } from '@/core/i18n.js';
 
 import { ASSET_ICON_POWER_ARMOR, ASSET_ICON_CUSTOM_MARKER } from '@/core/constants.js';
@@ -10,21 +10,21 @@ import { FocusManager, KeybindsSystem } from '@/input/index.js';
 import { AssetManager } from '@/systems/assetManager.js';
 import { LayoutManager, Corner } from '@/systems/layoutManager.js';
 import { SelectableListController } from '@/systems/listController.js';
-import { SearchEngine } from '@/systems/searchEngine.js';
+import { SearchEngine } from '@/overlays/domain/searchEngine.js';
 import { OverlayManager } from '@/managers/overlayManager.js';
 import { SoundService } from '@/services/soundService.js';
 
 import { mapSurface } from '@/map/index.js';
 
-import { QuestUtils } from '@/utils/questUtils.js';
-import { SearchUtils } from '@/utils/searchUtils.js';
+import { QuestUtils } from '@/overlays/domain/questRules.js';
+import { SearchUtils } from '@/overlays/domain/searchUtils.js';
 import { StringUtils } from '@/utils/stringUtils.js';
 
-import { CustomMarkerCard } from '@/components/CustomMarkerCard.js';
-import { MarkerCard } from '@/components/MarkerCard.js';
-import { QuestCard } from '@/components/QuestCard.js';
-import { QuestList } from '@/components/QuestsPanel.js';
-import { SettlementCard } from '@/components/SettlementCard.js';
+import { CustomMarkerCard } from '@/overlays/cards/CustomMarkerCard.js';
+import { MarkerCard } from '@/overlays/cards/MarkerCard.js';
+import { QuestCard } from '@/overlays/cards/QuestCard.js';
+import { QuestList } from '@/overlays/panels/QuestsPanel.js';
+import { SettlementCard } from '@/overlays/cards/SettlementCard.js';
 
 import { CollapsiblePanel, CustomScrollbar, SearchBox } from '@/ui/index.js';
 

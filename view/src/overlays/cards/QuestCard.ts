@@ -10,10 +10,10 @@ import { SoundService } from '@/services/soundService.js';
 
 import { mapSurface } from '@/map/index.js';
 
-import { QuestUtils } from '@/utils/questUtils.js';
+import { QuestUtils } from '@/overlays/domain/questRules.js';
 import { StringUtils } from '@/utils/stringUtils.js';
 
-import { QuestList } from '@/components/QuestsPanel.js';
+import { QuestList } from '@/overlays/panels/QuestsPanel.js';
 
 import {
     FloatingCard,

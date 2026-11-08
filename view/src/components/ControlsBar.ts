@@ -5,8 +5,7 @@ import { FocusManager, FocusOwner, InputRouter, KeyAction, KeybindsSystem, type 
 
 import { mapSurface } from '@/map/index.js';
 
-import { QuestList } from '@/components/QuestsPanel.js';
-import { SearchPanel } from '@/components/SearchPanel.js';
+import { QuestList, SearchPanel } from '@/overlays/index.js';
 
 export class ControlBar {
     private static container: HTMLElement | null = null;

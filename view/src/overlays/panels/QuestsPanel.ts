@@ -13,10 +13,10 @@ import { SoundService } from '@/services/soundService.js';
 
 import { mapSurface } from '@/map/index.js';
 
-import { QuestUtils } from '@/utils/questUtils.js';
+import { QuestUtils } from '@/overlays/domain/questRules.js';
 import { StringUtils } from '@/utils/stringUtils.js';
 
-import { QuestCard } from '@/components/QuestCard.js';
+import { QuestCard } from '@/overlays/cards/QuestCard.js';
 
 import { CollapsiblePanel, CustomScrollbar, TabBar } from '@/ui/index.js';
 
