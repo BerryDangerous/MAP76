@@ -658,9 +658,15 @@ body.controller-active .collapsible-panel .cp-collapse-btn:hover .cp-btn-icon {
     text-shadow: 1.5px 1.5px 0 var(--color-shadow-text);
 }
 
+body.has-active-focus .collapsible-panel:not(.focused),
 .collapsible-panel.dimmed {
     filter: brightness(0.4);
     transition: filter 0.15s ease;
+}
+
+body.has-active-focus .collapsible-panel:not(.focused):hover,
+.collapsible-panel.dimmed:hover {
+    filter: none;
 }
 
 body.compact-panels .collapsible-panel[data-collapsed="true"] {
@@ -1289,15 +1295,6 @@ body.compact-panels .collapsible-panel[data-collapsed="true"] > *:not(.cp-header
 }
 
 #search-panel[data-input-focused="true"] .cp-collapse-btn:hover {
-    opacity: 1;
-}
-
-body.has-active-focus .collapsible-panel:not(.focused) .cp-collapse-btn {
-    opacity: 0.4;
-    transition: opacity 0.15s ease;
-}
-
-body.has-active-focus .collapsible-panel:not(.focused) .cp-collapse-btn:hover {
     opacity: 1;
 }
 
