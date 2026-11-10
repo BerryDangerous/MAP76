@@ -25,7 +25,6 @@ import {
 } from '@/overlays/index.js';
 import { SettingsMenu } from '@/components/SettingsMenu.js';
 import { showFastTravelConfirmationModal, showFastTravelErrorModal } from '@/components/Modals.js';
-import { FloatingCard } from '@/ui/index.js';
 
 import { injectSVGFilters } from '@/utils/svgFilters.js';
 
@@ -47,12 +46,6 @@ let pendingFastTravel: { formId: number; name: string } | null = null;
 function wireMapEventsToCards(surface: MapSurface) {
     overlayCoordinator.setFastTravelHandler((formId, name) => {
         surface.requestFastTravel(formId, name);
-    });
-
-    surface.events.on('viewportChange', () => {
-        if (overlayCoordinator.getActiveCardId()) {
-            FloatingCard.repositionAll();
-        }
     });
 
     surface.events.on('worldspaceChange', (payload) => {

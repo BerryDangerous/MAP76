@@ -2,7 +2,7 @@ import { MarkerKind, MarkerSelectPayload, EmptyMapClickPayload, ScreenAnchor, Po
 import { SettlementData } from '@/types/payloads.js';
 import { QuestItem } from '@/types/quests.js';
 import { SearchResult } from '../domain/types.js';
-import { Corner } from '../positioning.js';
+import { Corner, anchorCardToScreen, anchorCardToCoordinates, anchorCardToPanel } from '../positioning.js';
 
 import { domainState } from '@/core/state/index.js';
 import { FocusOwner, InputRouter } from '@/input/index.js';
@@ -10,13 +10,24 @@ import { FocusOwner, InputRouter } from '@/input/index.js';
 import { SoundService } from '@/services/soundService.js';
 
 import { CustomMarkerCard } from '../cards/CustomMarkerCard.js';
-import { LocationCard, type LocationCardOpenOptions } from '../cards/LocationCard.js';
+import { LocationCard } from '../cards/LocationCard.js';
 import { QuestCard } from '../cards/QuestCard.js';
 import { QuestList } from '../panels/QuestsPanel.js';
 import { LocationsList, type LocationListItem } from '../panels/LocationsPanel.js';
 import { SearchPanel } from '../panels/SearchPanel.js';
 
 export type FastTravelHandler = (formId: number, name: string) => void;
+
+export interface OpenLocationCardOptions {
+    markerFormId: number;
+    title?: string;
+    canFastTravel?: boolean;
+    settlement?: SettlementData;
+    screenAnchor?: ScreenAnchor;
+    referencePanel?: HTMLElement;
+    dockCorner?: Corner;
+    takeFocus?: boolean;
+}
 
 export interface ActiveCardRegistration {
     id: FocusOwner;
@@ -194,6 +205,16 @@ export class OverlayCoordinator {
         const searchPanelEl = document.getElementById('search-panel');
         if (searchPanelEl) this.registerPanel(FocusOwner.SEARCH_PANEL, searchPanelEl, () => SearchPanel.collapse());
 
+        InputRouter.subscribe((newFocus: FocusOwner, prevFocus: FocusOwner) => {
+            if (this.activeCard && this.activeCard.referencePanel) {
+                if (newFocus === this.activeCard.id) {
+                    this.activeCard.referencePanel.classList.add('dimmed');
+                } else if (prevFocus === this.activeCard.id) {
+                    this.activeCard.referencePanel.classList.remove('dimmed');
+                }
+            }
+        });
+
         window.addEventListener('click', (e: MouseEvent) => {
             const targetNode = e.target as Node;
             const clickedInsideCard = this.activeCard?.element?.contains(targetNode) ?? false;
@@ -280,8 +301,13 @@ export class OverlayCoordinator {
         const previousCard = this.activeCard;
         this.activeCard = null;
 
-        if (previousCard && previousCard.id !== id) {
-            previousCard.onDismiss();
+        if (previousCard) {
+            if (previousCard.referencePanel && previousCard.referencePanel !== referencePanel) {
+                previousCard.referencePanel.classList.remove('dimmed');
+            }
+            if (previousCard.id !== id) {
+                previousCard.onDismiss();
+            }
         }
 
         for (const panel of this.expandedPanels.values()) {
@@ -297,17 +323,25 @@ export class OverlayCoordinator {
             onDismiss
         };
 
-        if (takeFocus && InputRouter.peek()?.id !== id) {
-            if (previousCard && InputRouter.peek()?.id === previousCard.id) {
-                InputRouter.replace(id);
-            } else {
-                InputRouter.push(id);
+        if (takeFocus) {
+            if (this.activeCard.referencePanel) {
+                this.activeCard.referencePanel.classList.add('dimmed');
+            }
+            if (InputRouter.peek()?.id !== id) {
+                if (previousCard && InputRouter.peek()?.id === previousCard.id) {
+                    InputRouter.replace(id);
+                } else {
+                    InputRouter.push(id);
+                }
             }
         }
     }
 
     private handleCardClosed(id: FocusOwner): void {
         if (this.activeCard && this.activeCard.id === id) {
+            if (this.activeCard.referencePanel) {
+                this.activeCard.referencePanel.classList.remove('dimmed');
+            }
             this.activeCard = null;
             InputRouter.remove(id);
         }
@@ -339,6 +373,9 @@ export class OverlayCoordinator {
 
         const cardToDismiss = this.activeCard;
         this.activeCard = null;
+        if (cardToDismiss.referencePanel) {
+            cardToDismiss.referencePanel.classList.remove('dimmed');
+        }
         cardToDismiss.onDismiss();
 
         InputRouter.remove(cardToDismiss.id);
@@ -383,12 +420,29 @@ export class OverlayCoordinator {
         return this.activeCard ? this.activeCard.id : null;
     }
 
-    public openLocationCard(options: LocationCardOpenOptions): void {
+    public openLocationCard(options: OpenLocationCardOptions): void {
         const takeFocus = options.takeFocus ?? true;
         this.prepareCardPresentation(FocusOwner.LOCATION_CARD, options.referencePanel, () => LocationCard.close(), takeFocus);
-        LocationCard.open({ ...options, takeFocus });
+        LocationCard.open({
+            markerFormId: options.markerFormId,
+            title: options.title,
+            canFastTravel: options.canFastTravel,
+            settlement: options.settlement,
+            dockCorner: options.referencePanel ? options.dockCorner : undefined,
+            takeFocus
+        });
+        const cardEl = LocationCard.getElement();
         if (this.activeCard) {
-            this.activeCard.element = LocationCard.getElement();
+            this.activeCard.element = cardEl;
+        }
+        if (cardEl) {
+            if (options.screenAnchor) {
+                LocationCard.setAnchored(true);
+                anchorCardToScreen(cardEl, options.screenAnchor, { gap: 20, padding: 10 });
+            } else if (options.referencePanel && options.dockCorner) {
+                LocationCard.setAnchored(false);
+                anchorCardToPanel(cardEl, options.referencePanel, options.dockCorner, 10);
+            }
         }
     }
 
@@ -399,10 +453,25 @@ export class OverlayCoordinator {
         dockCorner?: Corner,
         takeFocus: boolean = true
     ): void {
+        const resolvedCorner = referencePanel ? (dockCorner ?? QuestList.getState().dockCorner) : undefined;
         this.prepareCardPresentation(FocusOwner.QUEST_CARD, referencePanel, () => QuestCard.close(), takeFocus);
-        QuestCard.open(quest, undefined, referencePanel, dockCorner, takeFocus, anchor);
+        QuestCard.open({
+            quest,
+            dockCorner: resolvedCorner,
+            takeFocus
+        });
+        const cardEl = QuestCard.getElement();
         if (this.activeCard) {
-            this.activeCard.element = QuestCard.getElement();
+            this.activeCard.element = cardEl;
+        }
+        if (cardEl) {
+            if (anchor) {
+                QuestCard.setAnchored(true);
+                anchorCardToScreen(cardEl, anchor, { gap: 20, padding: 10 });
+            } else if (referencePanel && resolvedCorner) {
+                QuestCard.setAnchored(false);
+                anchorCardToPanel(cardEl, referencePanel, resolvedCorner, 10);
+            }
         }
     }
 
@@ -414,13 +483,22 @@ export class OverlayCoordinator {
     }): void {
         this.prepareCardPresentation(FocusOwner.CUSTOM_MARKER_CARD, null, () => CustomMarkerCard.close());
         CustomMarkerCard.open({
+            isExistingMarkerClick: Boolean(options.anchor),
             gameCoords: options.gameCoords,
-            pageCoords: options.pageCoords,
-            worldspaceId: options.worldspaceId,
-            screenAnchor: options.anchor
+            worldspaceId: options.worldspaceId
         });
+        const cardEl = CustomMarkerCard.getElement();
         if (this.activeCard) {
-            this.activeCard.element = CustomMarkerCard.getElement();
+            this.activeCard.element = cardEl;
+        }
+        if (cardEl) {
+            if (options.anchor) {
+                CustomMarkerCard.setAnchored(true);
+                anchorCardToScreen(cardEl, options.anchor, { gap: 20, padding: 10 });
+            } else if (options.pageCoords) {
+                CustomMarkerCard.setAnchored(true);
+                anchorCardToCoordinates(cardEl, options.pageCoords.x, options.pageCoords.y, undefined, { gap: 20, padding: 10 });
+            }
         }
     }
 

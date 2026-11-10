@@ -6,7 +6,6 @@ export {
 } from './ButtonGroup.js';
 export { Card, type CardConfig } from './Card.js';
 export { CollapsiblePanel, type CollapsiblePanelOptions } from './CollapsiblePanel.js';
-export { FloatingCard, type FloatingCardOptions } from './FloatingCard.js';
 export { CustomScrollbar, type CustomScrollbarOptions } from './Scrollbar.js';
 export { SearchBox, type SearchBoxOptions } from './SearchBox.js';
 export {

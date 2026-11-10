@@ -1,37 +1,52 @@
-import { ScreenAnchor } from '@/types/seams.js';
 import { QuestItem } from '@/types/quests.js';
-import { toggleQuestActive, makeOnlyQuestActive } from '@/core/bridge.js';
-import { t } from '@/core/i18n.js';
 import { FocusOwner, InputReceiver, InputRouter, KeyAction, type ControlActionHint } from '@/input/index.js';
 import { Corner } from '@/overlays/positioning.js';
+import { QuestUtils } from '@/overlays/domain/questRules.js';
+
+import { toggleQuestActive, makeOnlyQuestActive } from '@/core/bridge.js';
+import { t } from '@/core/i18n.js';
+
 import { SoundService } from '@/services/soundService.js';
 import { mapSurface } from '@/map/index.js';
-import { QuestList } from '@/overlays/panels/QuestsPanel.js';
-import { QuestUtils } from '@/overlays/domain/questRules.js';
-import { StringUtils } from '@/utils/stringUtils.js';
+
 import {
-    FloatingCard,
+    Card,
     StatusItemList,
     startVaultBoyAnimation,
     stopVaultBoyAnimation,
     type ActionButtonConfig
 } from '@/ui/index.js';
 
+import { StringUtils } from '@/utils/stringUtils.js';
+
+export interface QuestCardOpenOptions {
+    quest: QuestItem;
+    dockCorner?: Corner;
+    takeFocus?: boolean;
+}
+
 export class QuestCardController implements InputReceiver {
     public readonly id = FocusOwner.QUEST_CARD;
 
     public activeQuest: QuestItem | null = null;
-    public activeAnchorMarker: HTMLElement | null = null;
     public activeDockCorner: Corner | null = null;
 
     public onClose: (() => void) | null = null;
     public onNavBack: (() => boolean) | null = null;
 
-    private instance: FloatingCard | null = null;
+    private card: Card | null = null;
     private scrollRafId: number | null = null;
 
+    public isDocked(): boolean {
+        return this.activeDockCorner !== null;
+    }
+
     public getElement(): HTMLElement | null {
-        return this.instance?.getElement() ?? null;
+        return this.card?.element ?? null;
+    }
+
+    public setAnchored(anchored: boolean): void {
+        this.card?.setAnchored(anchored);
     }
 
     public init(): void {
@@ -49,22 +64,22 @@ export class QuestCardController implements InputReceiver {
                 return true;
 
             case KeyAction.NAV_UP:
-                if (this.instance) {
-                    this.instance.getButtonGroup().navigatePrev();
+                if (this.card) {
+                    this.card.navigatePrev();
                     this.updateButtonSelection();
                 }
                 return true;
 
             case KeyAction.NAV_DOWN:
-                if (this.instance) {
-                    this.instance.getButtonGroup().navigateNext();
+                if (this.card) {
+                    this.card.navigateNext();
                     this.updateButtonSelection();
                 }
                 return true;
 
             case KeyAction.SELECT:
-                if (this.instance) {
-                    this.instance.getButtonGroup().triggerSelected();
+                if (this.card) {
+                    this.card.triggerSelected();
                 }
                 return true;
 
@@ -85,7 +100,7 @@ export class QuestCardController implements InputReceiver {
                 return true;
 
             case KeyAction.CENTER_ITEM:
-                if (this.activeAnchorMarker === null && this.activeQuest && !QuestUtils.isQuestCompleted(this.activeQuest)) {
+                if (this.isDocked() && this.activeQuest && !QuestUtils.isQuestCompleted(this.activeQuest)) {
                     if (QuestUtils.hasActiveTargets(this.activeQuest)) {
                         SoundService.playShowOnMap();
                         const firstTarget = this.activeQuest.objectives?.find(o => o.targets && o.targets.length > 0)?.targets[0];
@@ -109,7 +124,7 @@ export class QuestCardController implements InputReceiver {
             controls.push(KeyAction.NAV_UP, KeyAction.NAV_DOWN);
         }
         controls.push(KeyAction.PAN_MOUSE);
-        if (this.activeAnchorMarker === null && this.activeQuest && !QuestUtils.isQuestCompleted(this.activeQuest)) {
+        if (this.isDocked() && this.activeQuest && !QuestUtils.isQuestCompleted(this.activeQuest)) {
             if (QuestUtils.hasActiveTargets(this.activeQuest)) {
                 controls.push({ action: KeyAction.CENTER_ITEM, label: t('quests.controls.centerObjective') });
             }
@@ -121,76 +136,54 @@ export class QuestCardController implements InputReceiver {
     }
 
     public onFocusGained(): void {
-        const card = document.getElementById('quest-card-panel');
-        if (card) card.classList.add('focused');
-        if (this.instance) {
-            this.instance.setReferencePanelDimmed(true);
-            this.instance.getButtonGroup().setSelectedIndex(0);
+        this.card?.setFocused(true);
+        if (this.card) {
+            this.card.getButtonGroup().setSelectedIndex(0);
         }
         this.updateButtonSelection();
     }
 
     public onFocusLost(): void {
-        const card = document.getElementById('quest-card-panel');
-        if (card) card.classList.remove('focused');
-        if (this.instance) {
-            this.instance.setReferencePanelDimmed(false);
-        }
+        this.card?.setFocused(false);
         this.updateButtonSelection();
     }
 
-    public open(
-        quest: QuestItem,
-        anchorMarker?: HTMLElement,
-        referencePanel?: HTMLElement,
-        dockCorner?: Corner,
-        takeFocus: boolean = true,
-        screenAnchor?: ScreenAnchor
-    ): void {
-        if (this.activeAnchorMarker && this.activeAnchorMarker !== anchorMarker) {
-            this.activeAnchorMarker.classList.remove('menu-active');
-            this.activeAnchorMarker.classList.remove('hide-tooltip-override');
-        }
+    public isOpen(): boolean {
+        return !!this.card && this.card.isOpen();
+    }
+
+    public open(options: QuestCardOpenOptions): void {
+        const quest = options.quest;
+        const dockCorner = options.dockCorner;
+        const takeFocus = options.takeFocus ??  true;
 
         this.activeQuest = quest;
-        this.activeAnchorMarker = anchorMarker || null;
+        this.activeDockCorner = dockCorner ?? null;
 
-        if (anchorMarker) {
-            anchorMarker.classList.add('menu-active');
-            anchorMarker.classList.add('hide-tooltip-override');
-        }
+        const title = quest.questName;
+        const bodyHtml = this.buildBodyHtml(quest);
+        const buttons = this.buildButtonConfigs(quest);
 
-        const questListContainer = referencePanel || document.getElementById('quest-list-panel');
-        const dockCornerToUse = dockCorner || QuestList.getState().dockCorner;
-        this.activeDockCorner = referencePanel ? dockCornerToUse : null;
-
-        if (!this.instance) {
-            this.instance = new FloatingCard({
+        if (!this.card) {
+            this.card = new Card({
                 id: 'quest-card-panel',
-                title: quest.questName,
-                bodyHtml: this.buildBodyHtml(quest),
-                buttons: this.buildButtonConfigs(quest),
-                screenAnchor: screenAnchor,
-                anchorMarker: this.activeAnchorMarker,
-                referencePanel: questListContainer,
-                dockCorner: dockCornerToUse,
+                title: title,
+                bodyHtml: bodyHtml,
+                buttons: buttons,
                 onButtonSelectionChange: () => this.updateButtonSelection()
             });
+            this.card.mount();
         } else {
-            this.instance.update({
-                title: quest.questName,
-                bodyHtml: this.buildBodyHtml(quest),
-                buttons: this.buildButtonConfigs(quest),
-                screenAnchor: screenAnchor,
-                anchorMarker: this.activeAnchorMarker,
-                referencePanel: questListContainer,
-                dockCorner: dockCornerToUse
+            this.card.update({
+                title: title,
+                bodyHtml: bodyHtml,
+                buttons: buttons
             });
         }
 
-        this.instance.open(this.activeAnchorMarker || undefined, questListContainer, dockCornerToUse);
+        this.card.show();
 
-        const cardEl = this.instance.getElement();
+        const cardEl = this.card.element;
         if (cardEl) {
             const vbCanvas = cardEl.querySelector('#quest-card-vaultboy-canvas') as HTMLCanvasElement | null;
             if (vbCanvas && quest.vaultBoyKey) {
@@ -218,16 +211,6 @@ export class QuestCardController implements InputReceiver {
         this.updateButtonSelection();
     }
 
-    public positionNearMarker(): void {
-        if (this.instance) {
-            this.instance.updatePosition();
-        }
-    }
-
-    public isOpen(): boolean {
-        return !!this.instance && this.instance.isOpen();
-    }
-
     public close(): void {
         stopVaultBoyAnimation();
         this.activeDockCorner = null;
@@ -237,15 +220,8 @@ export class QuestCardController implements InputReceiver {
             this.scrollRafId = null;
         }
 
-        if (this.activeAnchorMarker) {
-            this.activeAnchorMarker.classList.remove('menu-active');
-            this.activeAnchorMarker.classList.remove('hide-tooltip-override');
-            this.activeAnchorMarker = null;
-            mapSurface.updateViewportTransform();
-        }
-
-        if (this.instance) {
-            this.instance.close();
+        if (this.card) {
+            this.card.hide();
         }
 
         if (this.onClose) {
@@ -254,14 +230,14 @@ export class QuestCardController implements InputReceiver {
     }
 
     public updateButtonSelection(): void {
-        if (!this.instance) return;
+        if (!this.card) return;
 
-        const card = this.instance.getElement();
+        const card = this.card.element;
         if (!card) return;
 
         const isCardFocused = InputRouter.getFocus() === FocusOwner.QUEST_CARD;
         const buttons = card.querySelectorAll('.fc-action-btn');
-        const selectedIdx = this.instance.getButtonGroup().getSelectedIndex();
+        const selectedIdx = this.card.getButtonGroup().getSelectedIndex();
 
         buttons.forEach((btn, idx) => {
             if (isCardFocused && idx === selectedIdx) {
@@ -325,7 +301,11 @@ export class QuestCardController implements InputReceiver {
                     if (quest.formId !== undefined) {
                         quest.isTracked = !quest.isTracked;
                         toggleQuestActive(quest.formId);
-                        this.open(quest, this.activeAnchorMarker || undefined);
+                        this.open({
+                            quest,
+                            dockCorner: this.activeDockCorner || undefined,
+                            takeFocus: true
+                        });
                     }
                 }
             },
@@ -336,7 +316,11 @@ export class QuestCardController implements InputReceiver {
                     if (quest.formId !== undefined) {
                         quest.isTracked = true;
                         makeOnlyQuestActive(quest.formId);
-                        this.open(quest, this.activeAnchorMarker || undefined);
+                        this.open({
+                            quest,
+                            dockCorner: this.activeDockCorner || undefined,
+                            takeFocus: true
+                        });
                     }
                 }
             }
@@ -349,6 +333,10 @@ export const QuestCard = questCard;
 
 window.addEventListener('languageChanged', () => {
     if (questCard.isOpen() && questCard.activeQuest) {
-        questCard.open(questCard.activeQuest, questCard.activeAnchorMarker || undefined, undefined, undefined, false);
+        questCard.open({
+            quest: questCard.activeQuest,
+            dockCorner: questCard.activeDockCorner || undefined,
+            takeFocus: false
+        });
     }
 });

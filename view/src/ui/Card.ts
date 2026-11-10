@@ -29,6 +29,7 @@ export class Card {
 
         this.element = document.createElement('div');
         this.element.className = 'floating-card';
+        this.element.style.display = 'none';
         if (this.config.id) {
             this.element.id = this.config.id;
         }
@@ -118,7 +119,33 @@ export class Card {
         this.buttonGroup.triggerSelected();
     }
 
-    public mount(parent: HTMLElement): HTMLElement {
+    public setAnchored(anchored: boolean): void {
+        if (anchored) {
+            this.element.setAttribute('data-anchored', 'true');
+        } else {
+            this.element.removeAttribute('data-anchored');
+        }
+    }
+
+    public setFocused(focused: boolean): void {
+        this.element.classList.toggle('focused', focused);
+    }
+
+    public show(): void {
+        this.element.style.display = 'flex';
+    }
+
+    public hide(): void {
+        this.element.style.display = 'none';
+        this.setAnchored(false);
+        this.setFocused(false);
+    }
+
+    public isOpen(): boolean {
+        return this.element.style.display !== 'none' && Boolean(this.element.parentElement);
+    }
+
+    public mount(parent: HTMLElement = document.body): HTMLElement {
         if (!this.element.parentElement || this.element.parentElement !== parent) {
             parent.appendChild(this.element);
         }

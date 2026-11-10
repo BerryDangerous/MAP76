@@ -1,27 +1,39 @@
-import { ScreenAnchor } from '@/types/seams.js';
+import { Point2D } from '@/types/seams.js';
+import { FocusOwner, InputReceiver, InputRouter, KeyAction, type ControlActionHint } from '@/input/index.js';
+
 import { domainState } from '@/core/state/index.js';
 import { setCustomMarker, removeCustomMarker } from '@/core/bridge.js';
 import { t } from '@/core/i18n.js';
-import { FocusOwner, InputReceiver, InputRouter, KeyAction, type ControlActionHint } from '@/input/index.js';
+
 import { SoundService } from '@/services/soundService.js';
 import { mapSurface } from '@/map/index.js';
-import { FloatingCard, type ActionButtonConfig } from '@/ui/index.js';
+
+import { Card, type ActionButtonConfig } from '@/ui/index.js';
+
+export interface CustomMarkerCardOpenOptions {
+    isExistingMarkerClick?: boolean;
+    gameCoords?: Point2D | null;
+    worldspaceId?: number;
+}
 
 export class CustomMarkerCardController implements InputReceiver {
     public readonly id = FocusOwner.CUSTOM_MARKER_CARD;
 
-    public activeCoords: { x: number; y: number } | null = null;
-    public activeGameCoords: { x: number; y: number } | null = null;
-    public activeAnchorMarker: HTMLElement | null = null;
+    public isExistingMarkerClick: boolean = false;
+    public activeGameCoords: Point2D | null = null;
     public activeWorldspaceId: number | undefined = undefined;
 
     public onClose: (() => void) | null = null;
     public onNavBack: (() => boolean) | null = null;
 
-    private instance: FloatingCard | null = null;
+    private card: Card | null = null;
 
     public getElement(): HTMLElement | null {
-        return this.instance?.getElement() ?? null;
+        return this.card?.element ?? null;
+    }
+
+    public setAnchored(anchored: boolean): void {
+        this.card?.setAnchored(anchored);
     }
 
     public init(): void {
@@ -39,29 +51,27 @@ export class CustomMarkerCardController implements InputReceiver {
                 return true;
 
             case KeyAction.NAV_UP:
-                if (this.instance) {
-                    this.instance.getButtonGroup().navigatePrev();
+                if (this.card) {
+                    this.card.navigatePrev();
                 }
                 return true;
 
             case KeyAction.NAV_DOWN:
-                if (this.instance) {
-                    this.instance.getButtonGroup().navigateNext();
+                if (this.card) {
+                    this.card.navigateNext();
                 }
                 return true;
 
             case KeyAction.SELECT:
-                if (this.instance) {
-                    this.instance.getButtonGroup().triggerSelected();
+                if (this.card) {
+                    this.card.triggerSelected();
                 }
                 return true;
 
             case KeyAction.CENTER_ITEM:
-                if (this.activeAnchorMarker === null && (this.activeGameCoords || this.activeCoords)) {
+                if (this.activeGameCoords) {
                     SoundService.playShowOnMap();
-                    if (this.activeGameCoords) {
-                        mapSurface.centerOnWorldCoords(this.activeGameCoords.x, this.activeGameCoords.y);
-                    }
+                    mapSurface.centerOnWorldCoords(this.activeGameCoords.x, this.activeGameCoords.y);
                     return true;
                 }
                 return false;
@@ -73,7 +83,7 @@ export class CustomMarkerCardController implements InputReceiver {
 
     public getAvailableControls(): ControlActionHint[] {
         const controls: ControlActionHint[] = [KeyAction.NAV_BACK, KeyAction.NAV_UP, KeyAction.NAV_DOWN, KeyAction.PAN_MOUSE];
-        if (this.activeAnchorMarker === null && (this.activeGameCoords || this.activeCoords)) {
+        if (this.activeGameCoords) {
             controls.push({ action: KeyAction.CENTER_ITEM, label: t('markers.controls.centerMarker') });
         }
         controls.push(KeyAction.SELECT);
@@ -81,36 +91,22 @@ export class CustomMarkerCardController implements InputReceiver {
     }
 
     public onFocusGained(): void {
-        const card = document.getElementById('custom-marker-card-panel');
-        if (card) card.classList.add('focused');
-        if (this.instance) {
-            this.instance.setReferencePanelDimmed(true);
-            this.instance.getButtonGroup().setSelectedIndex(0);
+        this.card?.setFocused(true);
+        if (this.card) {
+            this.card.getButtonGroup().setSelectedIndex(0);
         }
     }
 
     public onFocusLost(): void {
-        const card = document.getElementById('custom-marker-card-panel');
-        if (card) card.classList.remove('focused');
-        if (this.instance) {
-            this.instance.setReferencePanelDimmed(false);
-        }
+        this.card?.setFocused(false);
     }
 
-    public open(options: {
-        anchorMarker?: HTMLElement | null;
-        gameCoords?: { x: number; y: number } | null;
-        pageCoords?: { x: number; y: number } | null;
-        worldspaceId?: number;
-        screenAnchor?: ScreenAnchor;
-        anchor?: ScreenAnchor;
-    }): void {
-        this.activeAnchorMarker = options.anchorMarker || null;
-        this.activeCoords = options.pageCoords || null;
+    public open(options: CustomMarkerCardOpenOptions): void {
+        this.isExistingMarkerClick = Boolean(options.isExistingMarkerClick);
         this.activeGameCoords = options.gameCoords || null;
         this.activeWorldspaceId = options.worldspaceId;
 
-        const isClickingExisting = Boolean(this.activeAnchorMarker);
+        const isClickingExisting = this.isExistingMarkerClick;
         const hasExistingMarker = Boolean(domainState.lastPayload?.custom_marker);
 
         let title = t('markers.customMarker.placePrompt');
@@ -120,29 +116,23 @@ export class CustomMarkerCardController implements InputReceiver {
             title = t('markers.customMarker.movePrompt');
         }
 
-        if (this.activeAnchorMarker) {
-            this.activeAnchorMarker.classList.add('menu-active');
-            this.activeAnchorMarker.classList.add('hide-tooltip-override');
-        }
-
         const buttons = this.buildButtons(isClickingExisting, hasExistingMarker);
 
-        const cardConfig = {
-            id: 'custom-marker-card-panel',
-            title: title,
-            buttons: buttons,
-            screenAnchor: options.screenAnchor || options.anchor,
-            anchorMarker: this.activeAnchorMarker || null,
-            coords: this.activeCoords || undefined
-        };
-
-        if (!this.instance) {
-            this.instance = new FloatingCard(cardConfig);
+        if (!this.card) {
+            this.card = new Card({
+                id: 'custom-marker-card-panel',
+                title: title,
+                buttons: buttons
+            });
+            this.card.mount();
         } else {
-            this.instance.update(cardConfig);
+            this.card.update({
+                title: title,
+                buttons: buttons
+            });
         }
 
-        this.instance.open(this.activeAnchorMarker || undefined);
+        this.card.show();
     }
 
     public buildButtons(isClickingExisting: boolean, hasExistingMarker: boolean): ActionButtonConfig[] {
@@ -184,19 +174,12 @@ export class CustomMarkerCardController implements InputReceiver {
     }
 
     public close(): void {
-        if (this.activeAnchorMarker) {
-            this.activeAnchorMarker.classList.remove('menu-active');
-            this.activeAnchorMarker.classList.remove('is-hovered');
-            this.activeAnchorMarker.classList.remove('hide-tooltip-override');
-            this.activeAnchorMarker = null;
-            mapSurface.updateViewportTransform();
-        }
-
-        this.activeCoords = null;
+        this.isExistingMarkerClick = false;
         this.activeGameCoords = null;
+        this.activeWorldspaceId = undefined;
 
-        if (this.instance) {
-            this.instance.close();
+        if (this.card) {
+            this.card.hide();
         }
 
         if (this.onClose) {
@@ -205,7 +188,7 @@ export class CustomMarkerCardController implements InputReceiver {
     }
 
     public isOpen(): boolean {
-        return this.instance ? this.instance.isOpen() : false;
+        return !!this.card && this.card.isOpen();
     }
 }
 
@@ -215,9 +198,8 @@ export const CustomMarkerCard = customMarkerCard;
 window.addEventListener('languageChanged', () => {
     if (customMarkerCard.isOpen()) {
         customMarkerCard.open({
-            anchorMarker: customMarkerCard.activeAnchorMarker,
+            isExistingMarkerClick: customMarkerCard.isExistingMarkerClick,
             gameCoords: customMarkerCard.activeGameCoords,
-            pageCoords: customMarkerCard.activeCoords,
             worldspaceId: customMarkerCard.activeWorldspaceId
         });
     }
