@@ -168,12 +168,6 @@ export class InputRouterSystem {
             }
         }
 
-        const legacyReceiver = activeReceiver as { handleKeyUp?: (e: KeyboardEvent) => boolean } | undefined;
-        if (legacyReceiver?.handleKeyUp && legacyReceiver.handleKeyUp(e)) {
-            e.preventDefault();
-            return true;
-        }
-
         return false;
     }
 
@@ -207,11 +201,6 @@ export class InputRouterSystem {
             return true;
         }
 
-        const legacyReceiver = activeReceiver as { handleKeyDown?: (e: KeyboardEvent) => boolean };
-        if (legacyReceiver.handleKeyDown?.(e)) {
-            return true;
-        }
-
         if (activeReceiver.id === FocusOwner.MAP) {
             this.triggerCloseMap();
             return true;
@@ -231,12 +220,6 @@ export class InputRouterSystem {
                 e.preventDefault();
                 return true;
             }
-        }
-
-        const legacyReceiver = activeReceiver as { handleKeyDown?: (e: KeyboardEvent) => boolean };
-        if (legacyReceiver.handleKeyDown?.(e)) {
-            e.preventDefault();
-            return true;
         }
 
         return true;

@@ -18,7 +18,7 @@ import {
     type SettingsControl
 } from '@/ui/index.js';
 import { t } from '@/core/i18n.js';
-import { FocusOwner, InputRouter, KeyAction, KeybindsSystem, ControllerStyle } from '@/input/index.js';
+import { FocusOwner, InputRouter, KeyAction, ControllerStyle } from '@/input/index.js';
 
 export const SETTINGS_TABS = ['DISPLAY', 'GAMEPLAY', 'MAPS', 'DEBUG'] as const;
 export type SettingsTab = (typeof SETTINGS_TABS)[number];
@@ -41,7 +41,7 @@ export const SettingsMenu = {
     tabsContainer: null as HTMLElement | null,
     listContainer: null as HTMLElement | null,
     activeTab: 'DISPLAY' as SettingsTab,
-    pendingCloseKey: null as string | null,
+    pendingCloseAction: null as KeyAction | null,
 
     init() {
         this.container = document.createElement('div');
@@ -157,39 +157,27 @@ export const SettingsMenu = {
         InputRouter.register({
             id: FocusOwner.SETTINGS_MENU,
             getAvailableControls: () => [KeyAction.NAV_BACK, KeyAction.RESET_DEFAULTS],
-            handleAction: (_action: KeyAction) => false,
-            handleKeyDown: (e: KeyboardEvent) => {
+            handleAction: (action: KeyAction) => {
                 const activeEl = document.activeElement as HTMLElement;
                 const isFocusedOnTab = activeEl?.classList.contains('settings-tab');
 
                 if (activeEl?.classList.contains('settings-row')) {
                     const controlEntry = this.controls.find(c => c.row.getElement() === activeEl);
-                    if (controlEntry) {
-                        if (controlEntry.row.control.handleKey(e)) {
-                            return true;
-                        }
+                    if (controlEntry && controlEntry.row.control.handleAction(action)) {
+                        return true;
                     }
                 }
 
-                if (KeybindsSystem.isAction(e, 'NAV_BACK')) {
+                if (action === KeyAction.NAV_BACK || action === KeyAction.CLOSE_MAP || action === KeyAction.OPEN_MENU) {
                     if (!isFocusedOnTab) {
-                        e.preventDefault();
                         this.focusActiveTab();
                         return true;
-                    } else {
-                        e.preventDefault();
-                        this.pendingCloseKey = e.key || e.code || String(e.keyCode);
-                        return true;
                     }
-                }
-
-                if (e.key === 'Escape' || KeybindsSystem.isAction(e, 'CLOSE_MAP')) {
-                    e.preventDefault();
-                    this.pendingCloseKey = e.key || e.code || String(e.keyCode);
+                    this.pendingCloseAction = action;
                     return true;
                 }
 
-                if (KeybindsSystem.isAction(e, 'RESET_DEFAULTS')) {
+                if (action === KeyAction.RESET_DEFAULTS) {
                     showConfirmationModal("Restore default settings?\nThis cannot be undone.", () => {
                         updateSettings(getDefaultSettings());
                         this.updateUIFromSettings();
@@ -197,16 +185,16 @@ export const SettingsMenu = {
                     return true;
                 }
 
-                if (KeybindsSystem.isAction(e, 'NAV_DOWN') || KeybindsSystem.isAction(e, 'NAV_UP')) {
+                if (action === KeyAction.NAV_DOWN || action === KeyAction.NAV_UP) {
                     if (activeEl?.classList.contains('settings-row') || activeEl?.classList.contains('settings-tab')) {
-                        const target = KeybindsSystem.isAction(e, 'NAV_DOWN') ? activeEl.nextElementSibling : activeEl.previousElementSibling;
+                        const target = action === KeyAction.NAV_DOWN ? activeEl.nextElementSibling : activeEl.previousElementSibling;
                         if (target) (target as HTMLElement).focus();
                         return true;
                     }
                 }
 
                 if (activeEl?.classList.contains('settings-tab')) {
-                    if (KeybindsSystem.isAction(e, 'NAV_RIGHT') || KeybindsSystem.isAction(e, 'SELECT')) {
+                    if (action === KeyAction.NAV_RIGHT || action === KeyAction.SELECT) {
                         this.focusFirstItemInList();
                         return true;
                     }
@@ -214,16 +202,13 @@ export const SettingsMenu = {
 
                 return false;
             },
-            handleKeyUp: (e: KeyboardEvent) => {
-                const currentKey = e.key || e.code || String(e.keyCode);
-                if (this.pendingCloseKey === currentKey) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    this.pendingCloseKey = null;
+            handleActionRelease: (action: KeyAction) => {
+                if (this.pendingCloseAction === action) {
+                    this.pendingCloseAction = null;
                     this.handleCloseRequest();
                     return true;
                 }
-                this.pendingCloseKey = null;
+                this.pendingCloseAction = null;
                 return false;
             }
         });

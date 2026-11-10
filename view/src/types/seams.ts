@@ -262,16 +262,6 @@ export interface InputReceiver {
     handleActionRelease?(action: KeyAction): boolean;
 
     /**
-     * Optional raw keyboard event handler for specialized input surfaces.
-     */
-    handleKeyDown?(e: KeyboardEvent): boolean;
-
-    /**
-     * Optional raw keyboard event handler for key release.
-     */
-    handleKeyUp?(e: KeyboardEvent): boolean;
-
-    /**
      * Lifecycle callback triggered when this receiver gains active focus.
      */
     onFocusGained?(): void;

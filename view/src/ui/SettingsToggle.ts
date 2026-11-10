@@ -1,5 +1,5 @@
+import { KeyAction } from '@/types/seams.js';
 import { t } from '@/core/i18n.js';
-import { KeybindsSystem } from '@/input/index.js';
 import { SettingsControl } from '@/ui/SettingsRow.js';
 import { SoundService } from '@/services/soundService.js';
 
@@ -79,8 +79,8 @@ export class Toggle implements SettingsControl {
         return this.container;
     }
 
-    public handleKey(e: KeyboardEvent): boolean {
-        if (KeybindsSystem.isAction(e, 'NAV_LEFT') || KeybindsSystem.isAction(e, 'NAV_RIGHT') || KeybindsSystem.isAction(e, 'SELECT')) {
+    public handleAction(action: KeyAction): boolean {
+        if (action === KeyAction.NAV_LEFT || action === KeyAction.NAV_RIGHT || action === KeyAction.SELECT) {
             this.toggle();
             return true;
         }

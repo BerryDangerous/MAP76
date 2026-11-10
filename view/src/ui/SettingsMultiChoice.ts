@@ -1,4 +1,4 @@
-import { KeybindsSystem } from '@/input/index.js';
+import { KeyAction } from '@/types/seams.js';
 import { SettingsControl } from '@/ui/SettingsRow.js';
 import { SoundService } from '@/services/soundService.js';
 
@@ -102,11 +102,11 @@ export class MultiChoice<T> implements SettingsControl {
         return this.container;
     }
 
-    public handleKey(e: KeyboardEvent): boolean {
-        if (KeybindsSystem.isAction(e, 'NAV_LEFT')) {
+    public handleAction(action: KeyAction): boolean {
+        if (action === KeyAction.NAV_LEFT) {
             this.prev();
             return true;
-        } else if (KeybindsSystem.isAction(e, 'NAV_RIGHT') || KeybindsSystem.isAction(e, 'SELECT')) {
+        } else if (action === KeyAction.NAV_RIGHT || action === KeyAction.SELECT) {
             this.next();
             return true;
         }

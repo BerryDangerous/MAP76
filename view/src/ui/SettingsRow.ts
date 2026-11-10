@@ -1,9 +1,10 @@
+import { KeyAction } from '@/types/seams.js';
 import { SoundService } from '@/services/soundService.js';
 
 export interface SettingsControl {
     getElement(): HTMLElement;
     setValue(val: any): void;
-    handleKey(e: KeyboardEvent): boolean;
+    handleAction(action: KeyAction): boolean;
 }
 
 export class SettingsRow {
