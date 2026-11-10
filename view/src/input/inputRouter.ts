@@ -1,6 +1,7 @@
 import { KeyAction, FocusOwner, InputReceiver, FocusChangeListener } from './types.js';
 import { FocusStack } from './focusStack.js';
-import { KeybindsSystem } from './keybindManager.js';
+import { isAction } from './keymap.js';
+import { gamepadBridge } from './gamepadBridge.js';
 
 export type CloseMapHandler = () => void;
 
@@ -117,7 +118,7 @@ export class InputRouterSystem {
         if (this.initialized || typeof window === 'undefined') return;
         this.initialized = true;
 
-        KeybindsSystem.initGamepadTracking();
+        gamepadBridge.init();
 
         window.addEventListener('keydown', (e: KeyboardEvent) => {
             if (this.isTypingInTextInput(e)) {
@@ -129,7 +130,7 @@ export class InputRouterSystem {
         });
 
         window.addEventListener('keyup', (e: KeyboardEvent) => {
-            KeybindsSystem.handleKeyUp(e);
+            gamepadBridge.handleKeyUp(e);
             const handled = this.handleKeyUp(e);
             if (handled) {
                 e.preventDefault();
@@ -194,8 +195,8 @@ export class InputRouterSystem {
     private isMenuExitKey(e: KeyboardEvent): boolean {
         return e.key === 'Escape' ||
                e.code === 'Escape' ||
-               KeybindsSystem.isAction(e, KeyAction.OPEN_MENU) ||
-               KeybindsSystem.isAction(e, KeyAction.NAV_BACK);
+               isAction(e, KeyAction.OPEN_MENU) ||
+               isAction(e, KeyAction.NAV_BACK);
     }
 
     private handleMenuExit(e: KeyboardEvent, activeReceiver: InputReceiver): boolean {
@@ -242,7 +243,7 @@ export class InputRouterSystem {
     }
 
     private getMatchingActions(e: KeyboardEvent): KeyAction[] {
-        return ALL_KEY_ACTIONS.filter(action => KeybindsSystem.isAction(e, action));
+        return ALL_KEY_ACTIONS.filter(action => isAction(e, action));
     }
 }
 

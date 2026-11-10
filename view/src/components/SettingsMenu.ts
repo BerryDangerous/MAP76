@@ -18,7 +18,7 @@ import {
     type SettingsControl
 } from '@/ui/index.js';
 import { t } from '@/core/i18n.js';
-import { FocusManager, FocusOwner, KeybindsSystem } from '@/input/index.js';
+import { FocusManager, FocusOwner, KeybindsSystem, ControllerStyle } from '@/input/index.js';
 
 export const SETTINGS_TABS = ['DISPLAY', 'GAMEPLAY', 'MAPS', 'DEBUG'] as const;
 export type SettingsTab = (typeof SETTINGS_TABS)[number];
@@ -134,8 +134,8 @@ export const SettingsMenu = {
         registerControl('gamepadMapHoldSeconds', t('settings.labels.gamepadMapHoldSeconds', { defaultValue: 'Hold Menu Button to Open Map' }), 'GAMEPLAY', gamepadHoldMulti);
 
         const controllerStyleOptions = [
-            { label: t('settings.options.xbox', { defaultValue: 'Xbox' }), value: 0 },
-            { label: t('settings.options.playstation', { defaultValue: 'PlayStation' }), value: 1 }
+            { label: t('settings.options.xbox', { defaultValue: 'Xbox' }), value: ControllerStyle.XBOX },
+            { label: t('settings.options.playstation', { defaultValue: 'PlayStation' }), value: ControllerStyle.PLAYSTATION }
         ];
         const controllerStyleMulti = new MultiChoice(controllerStyleOptions, appSettings.controllerStyle, (val) => { 
             updateSettings({ controllerStyle: val }); 
