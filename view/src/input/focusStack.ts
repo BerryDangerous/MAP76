@@ -87,7 +87,7 @@ export class FocusStack {
         return this.stack.length > 0 ? this.stack[this.stack.length - 1] : undefined;
     }
 
-    public remove(id: FocusOwner | string): boolean {
+    public remove(id: FocusOwner): boolean {
         const index = this.stack.findIndex(r => r.id === id);
         if (index === -1) {
             return false;
@@ -134,11 +134,11 @@ export class FocusStack {
         return () => this.listeners.delete(listener);
     }
 
-    public notify(newFocus: FocusOwner | string, oldFocus: FocusOwner | string): void {
+    public notify(newFocus: FocusOwner, oldFocus: FocusOwner): void {
         this.listeners.forEach(listener => listener(newFocus, oldFocus));
     }
 
-    private updateBodyFocusClass(focusId: FocusOwner | string): void {
+    private updateBodyFocusClass(focusId: FocusOwner): void {
         if (typeof document === 'undefined') return;
         if (focusId === FocusOwner.MAP) {
             document.body.classList.remove('has-active-focus');

@@ -210,8 +210,12 @@ export const LocationsList = {
         this.closeCards();
         mapSurface.clearSavedViewport(appSettings.resetViewportOnPanelCollapse);
 
-        if (InputRouter.getFocus() === FocusOwner.WORKSHOP_LIST) {
-            InputRouter.pop();
+        InputRouter.remove(FocusOwner.WORKSHOP_LIST);
+
+        const container = document.getElementById('locations-list-panel');
+        if (container) {
+            container.classList.remove('focused');
+            container.classList.remove('dimmed');
         }
         this.render();
     },

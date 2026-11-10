@@ -4,7 +4,7 @@ import { t } from '@/core/i18n.js';
 
 import { domainState } from '@/core/state/index.js';
 import { getWorldspaceName } from '@/core/state/worldspaces.js';
-import { FocusManager, KeybindsSystem } from '@/input/index.js';
+import { FocusOwner, InputRouter, KeybindsSystem } from '@/input/index.js';
 
 
 
@@ -25,9 +25,9 @@ export class InfoBar {
 
         if (this.settingsContainer) {
             this.settingsContainer.innerHTML = `<span style="display: flex; align-items: center; gap: 4px;">${KeybindsSystem.getControlHtml('OPEN_MENU')}</span>`;
-            FocusManager.subscribe((newFocus) => {
+            InputRouter.subscribe((newFocus) => {
                 if (this.settingsContainer) {
-                    this.settingsContainer.style.display = newFocus === 'MAP' ? '' : 'none';
+                    this.settingsContainer.style.display = newFocus === FocusOwner.MAP ? '' : 'none';
                 }
             });
         }

@@ -207,8 +207,13 @@ export const QuestList = {
 
         this.closeCards();
         mapSurface.clearSavedViewport(appSettings.resetViewportOnPanelCollapse);
-        if (InputRouter.getFocus() === FocusOwner.QUEST_LIST) {
-            InputRouter.pop();
+
+        InputRouter.remove(FocusOwner.QUEST_LIST);
+
+        const container = document.getElementById('quest-list-panel');
+        if (container) {
+            container.classList.remove('focused');
+            container.classList.remove('dimmed');
         }
         this.render();
     },

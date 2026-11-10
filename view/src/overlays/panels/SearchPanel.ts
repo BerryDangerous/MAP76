@@ -177,8 +177,12 @@ export const SearchPanel = {
         this.closeCards();
         mapSurface.clearSavedViewport(appSettings.resetViewportOnPanelCollapse);
         
-        if (InputRouter.getFocus() === FocusOwner.SEARCH_PANEL) {
-            InputRouter.pop();
+        InputRouter.remove(FocusOwner.SEARCH_PANEL);
+
+        const container = document.getElementById('search-panel');
+        if (container) {
+            container.classList.remove('focused');
+            container.classList.remove('dimmed');
         }
         this.render();
     },

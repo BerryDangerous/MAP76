@@ -1,7 +1,7 @@
 import { GameBounds } from '@/types/map.js';
 import { appSettings } from '@/core/settings.js';
 import { domainState } from '@/core/state/index.js';
-import { FocusManager } from '@/input/index.js';
+import { FocusOwner, InputRouter } from '@/input/index.js';
 
 import { SoundService } from '@/services/soundService.js';
 
@@ -398,7 +398,7 @@ export const MapViewport = {
             const now = performance.now();
             const isControllerActive = document.body.classList.contains('controller-active');
 
-            if (isControllerActive && FocusManager.getFocus() === 'MAP') {
+            if (isControllerActive && InputRouter.getFocus() === FocusOwner.MAP) {
                 const edgeThresholdX = window.innerWidth * 0.02;
                 const edgeThresholdY = window.innerHeight * 0.02;
                 let panDx = 0;
@@ -443,7 +443,7 @@ export const MapViewport = {
         }
 
         container.addEventListener('wheel', (e: WheelEvent) => {
-            if (FocusManager.getFocus() !== 'MAP') return;
+            if (InputRouter.getFocus() !== FocusOwner.MAP) return;
             e.preventDefault();
 
             let deltaY = e.deltaY;

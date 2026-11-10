@@ -6,7 +6,7 @@ import { initializeF4SEBindings, EngineBridge } from '@/core/bridge.js';
 import { appSettings, requestSettings } from '@/core/settings.js';
 import { domainState } from '@/core/state/index.js';
 
-import { FocusManager, InputRouter, cursorManager } from '@/input/index.js';
+import { InputRouter, cursorManager } from '@/input/index.js';
 import { ModalManager } from '@/systems/modalManager.js';
 import { SoundService } from '@/services/soundService.js';
 import { mapSurface, MapSurface, mapInputReceiver } from '@/map/index.js';
@@ -186,7 +186,7 @@ initializeF4SEBindings(async (payload: F4SEMapPayload) => {
     MarkerCard.init();
     CustomMarkerCard.init();
     SearchPanel.init();
-    ControlBar.render(FocusManager.getFocus());
+    ControlBar.render(InputRouter.getFocus());
 });
 
 window.addEventListener('FrameTick', (e: Event) => {

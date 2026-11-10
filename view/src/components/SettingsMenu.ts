@@ -18,7 +18,7 @@ import {
     type SettingsControl
 } from '@/ui/index.js';
 import { t } from '@/core/i18n.js';
-import { FocusManager, FocusOwner, KeybindsSystem, ControllerStyle } from '@/input/index.js';
+import { FocusOwner, InputRouter, KeyAction, KeybindsSystem, ControllerStyle } from '@/input/index.js';
 
 export const SETTINGS_TABS = ['DISPLAY', 'GAMEPLAY', 'MAPS', 'DEBUG'] as const;
 export type SettingsTab = (typeof SETTINGS_TABS)[number];
@@ -154,10 +154,11 @@ export const SettingsMenu = {
         document.body.appendChild(this.backdrop);
         document.body.appendChild(this.container);
 
-        FocusManager.register({
-            id: 'SETTINGS_MENU',
-            getAvailableControls: () => ['NAV_BACK', 'RESET_DEFAULTS'] as import('@/input/index.js').ControlActionDef[],
-            handleKeyDown: (e) => {
+        InputRouter.register({
+            id: FocusOwner.SETTINGS_MENU,
+            getAvailableControls: () => [KeyAction.NAV_BACK, KeyAction.RESET_DEFAULTS],
+            handleAction: (_action: KeyAction) => false,
+            handleKeyDown: (e: KeyboardEvent) => {
                 const activeEl = document.activeElement as HTMLElement;
                 const isFocusedOnTab = activeEl?.classList.contains('settings-tab');
 
@@ -213,7 +214,7 @@ export const SettingsMenu = {
 
                 return false;
             },
-            handleKeyUp: (e) => {
+            handleKeyUp: (e: KeyboardEvent) => {
                 const currentKey = e.key || e.code || String(e.keyCode);
                 if (this.pendingCloseKey === currentKey) {
                     e.preventDefault();
@@ -409,8 +410,8 @@ export const SettingsMenu = {
         document.body.classList.add('settings-open');
         this.isOpen = true;
 
-        this.previousFocus = FocusManager.getFocus();
-        FocusManager.setFocus('SETTINGS_MENU');
+        this.previousFocus = InputRouter.getFocus();
+        InputRouter.push(FocusOwner.SETTINGS_MENU);
         this.focusActiveTab();
     },
 
@@ -422,7 +423,7 @@ export const SettingsMenu = {
         this.isOpen = false;
         
         if (this.previousFocus) {
-            FocusManager.setFocus(this.previousFocus);
+            InputRouter.push(this.previousFocus);
         }
     },
 

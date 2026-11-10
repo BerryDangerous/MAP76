@@ -65,6 +65,9 @@ export class FloatingCard {
     }
 
     public update(options: Partial<FloatingCardOptions>): void {
+        if (options.referencePanel !== undefined && options.referencePanel !== this.options.referencePanel) {
+            this.setReferencePanelDimmed(false);
+        }
         this.options = { ...this.options, ...options };
         if (!this.cardElement) {
             this.mount();
@@ -79,7 +82,12 @@ export class FloatingCard {
         if (!this.cardElement) return;
 
         if (anchorMarker !== undefined) this.options.anchorMarker = anchorMarker;
-        if (referencePanel !== undefined) this.options.referencePanel = referencePanel;
+        if (referencePanel !== undefined) {
+            if (referencePanel !== this.options.referencePanel) {
+                this.setReferencePanelDimmed(false);
+            }
+            this.options.referencePanel = referencePanel;
+        }
         if (dockCorner !== undefined) this.options.dockCorner = dockCorner;
 
         if (this.options.anchorMarker || this.options.coords) {
@@ -138,6 +146,7 @@ export class FloatingCard {
 
     public close(): void {
         FloatingCard.activeCards.delete(this);
+        this.setReferencePanelDimmed(false);
         if (this.options.anchorMarker) {
             if (this.options.anchorMarker.isConnected) {
                 this.options.anchorMarker.classList.remove('menu-active');

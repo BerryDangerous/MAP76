@@ -1,6 +1,6 @@
 import { KeyAction, FocusOwner as SeamFocusOwner, InputReceiver, ActionDef, ControlActionDef, ControlActionHint } from '@/types/seams.js';
 
-export type FocusOwner = SeamFocusOwner | string;
+export type FocusOwner = SeamFocusOwner;
 export const FocusOwner = {
     MAP: 'MAP',
     MARKER_CARD: 'MARKER_CARD',

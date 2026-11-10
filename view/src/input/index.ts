@@ -1,4 +1,4 @@
-export { FocusManager, type FocusComponent, type FocusChangeListener } from './focusManager.js';
+export { type FocusChangeListener } from './types.js';
 export { FocusStack } from './focusStack.js';
 export { InputRouter, InputRouterSystem, type CloseMapHandler } from './inputRouter.js';
 export { CursorManager, cursorManager } from './cursor.js';

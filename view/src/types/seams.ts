@@ -246,7 +246,7 @@ export interface InputReceiver {
     /**
      * Unique identifier for this receiver in the FocusStack.
      */
-    readonly id: FocusOwner | string;
+    readonly id: FocusOwner;
 
     /**
      * Handles a semantic action dispatched from the InputRouter.
@@ -262,6 +262,16 @@ export interface InputReceiver {
     handleActionRelease?(action: KeyAction): boolean;
 
     /**
+     * Optional raw keyboard event handler for specialized input surfaces.
+     */
+    handleKeyDown?(e: KeyboardEvent): boolean;
+
+    /**
+     * Optional raw keyboard event handler for key release.
+     */
+    handleKeyUp?(e: KeyboardEvent): boolean;
+
+    /**
      * Lifecycle callback triggered when this receiver gains active focus.
      */
     onFocusGained?(): void;
@@ -270,7 +280,7 @@ export interface InputReceiver {
      * Lifecycle callback triggered when this receiver loses active focus.
      * @param newFocusId The ID of the component gaining focus, if known.
      */
-    onFocusLost?(newFocusId?: FocusOwner | string): void;
+    onFocusLost?(newFocusId?: FocusOwner): void;
 
     /**
      * Provides action hints for the bottom ControlBar while this receiver is focused.

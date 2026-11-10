@@ -35,7 +35,7 @@ const ALL_KEY_ACTIONS: KeyAction[] = [
 
 export class InputRouterSystem {
     private readonly stack = new FocusStack();
-    private readonly receivers = new Map<string, InputReceiver>();
+    private readonly receivers = new Map<FocusOwner, InputReceiver>();
     private closeMapHandler: CloseMapHandler | null = null;
     private initialized = false;
 
@@ -51,12 +51,12 @@ export class InputRouterSystem {
         this.receivers.set(receiver.id, receiver);
     }
 
-    public unregister(id: FocusOwner | string): void {
+    public unregister(id: FocusOwner): void {
         this.receivers.delete(id);
         this.stack.remove(id);
     }
 
-    public push(target: InputReceiver | FocusOwner | string): void {
+    public push(target: InputReceiver | FocusOwner): void {
         if (typeof target === 'string') {
             const receiver = this.receivers.get(target);
             if (receiver) {
@@ -70,7 +70,7 @@ export class InputRouterSystem {
         }
     }
 
-    public replace(target: InputReceiver | FocusOwner | string): void {
+    public replace(target: InputReceiver | FocusOwner): void {
         if (typeof target === 'string') {
             const receiver = this.receivers.get(target);
             if (receiver) {
@@ -88,7 +88,7 @@ export class InputRouterSystem {
         return this.stack.pop();
     }
 
-    public remove(id: FocusOwner | string): boolean {
+    public remove(id: FocusOwner): boolean {
         return this.stack.remove(id);
     }
 
@@ -96,7 +96,7 @@ export class InputRouterSystem {
         return this.stack.peek();
     }
 
-    public getFocus(): FocusOwner | string {
+    public getFocus(): FocusOwner {
         return this.stack.peek()?.id ?? FocusOwner.MAP;
     }
 
