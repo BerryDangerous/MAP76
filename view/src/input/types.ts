@@ -3,8 +3,7 @@ import { KeyAction, FocusOwner as SeamFocusOwner, InputReceiver, ActionDef, Cont
 export type FocusOwner = SeamFocusOwner;
 export const FocusOwner = {
     MAP: 'MAP',
-    MARKER_CARD: 'MARKER_CARD',
-    SETTLEMENT_CARD: 'SETTLEMENT_CARD',
+    LOCATION_CARD: 'LOCATION_CARD',
     CUSTOM_MARKER_CARD: 'CUSTOM_MARKER_CARD',
     QUEST_CARD: 'QUEST_CARD',
     QUEST_LIST: 'QUEST_LIST',

@@ -1,5 +1,9 @@
-export { MarkerCard, markerCard, MarkerCardController } from './cards/MarkerCard.js';
-export { SettlementCard, settlementCard, SettlementCardController, renderSettlementCardContent } from './cards/SettlementCard.js';
+export {
+    LocationCard,
+    locationCard,
+    LocationCardController,
+    type LocationCardOpenOptions
+} from './cards/LocationCard.js';
 export { QuestCard, questCard, QuestCardController } from './cards/QuestCard.js';
 export { CustomMarkerCard, customMarkerCard, CustomMarkerCardController } from './cards/CustomMarkerCard.js';
 

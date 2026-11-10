@@ -1,19 +1,45 @@
 import { ScreenAnchor } from '@/types/seams.js';
-import { domainState } from '@/core/state/index.js';
-import { toggleFavoriteLocation, setCustomMarker } from '@/core/bridge.js';
-import { t } from '@/core/i18n.js';
+import { SettlementData } from '@/types/payloads.js';
 import { FocusOwner, InputReceiver, InputRouter, KeyAction, type ControlActionHint } from '@/input/index.js';
 import { Corner } from '@/overlays/positioning.js';
+
+import { domainState } from '@/core/state/index.js';
+import { getWorldspaceName } from '@/core/state/worldspaces.js';
+import { toggleFavoriteLocation, setCustomMarker } from '@/core/bridge.js';
+import { t } from '@/core/i18n.js';
+
+import { AssetManager } from '@/systems/assetManager.js';
 import { SoundService } from '@/services/soundService.js';
 import { mapSurface } from '@/map/index.js';
+
 import { LocationsList } from '@/overlays/panels/LocationsPanel.js';
 import { FloatingCard, type ActionButtonConfig } from '@/ui/index.js';
 
-export class MarkerCardController implements InputReceiver {
-    public readonly id = FocusOwner.MARKER_CARD;
+import { calculateSettlementRatings, SettlementDataWithRatings } from '@/overlays/domain/settlementRules.js';
+
+export interface LocationCardOpenOptions {
+    markerFormId: number;
+    title?: string;
+    canFastTravel?: boolean;
+    settlement?: SettlementData;
+    anchorMarker?: HTMLElement;
+    screenAnchor?: ScreenAnchor;
+    referencePanel?: HTMLElement;
+    dockCorner?: Corner;
+    takeFocus?: boolean;
+}
+
+/**
+ * Unified Location Detail Card controller.
+ * Handles floating detail presentation for both standard POI markers and
+ * player settlement workshops with dynamic resource simulation metrics.
+ */
+export class LocationCardController implements InputReceiver {
+    public readonly id = FocusOwner.LOCATION_CARD;
 
     public activeMarkerFormId: number | null = null;
     public activeMarkerName: string = '';
+    public activeSettlement: SettlementData | null = null;
     public activeAnchorMarker: HTMLElement | null = null;
     public canFastTravel: boolean = false;
     public activeDockCorner: Corner | null = null;
@@ -111,7 +137,7 @@ export class MarkerCardController implements InputReceiver {
     }
 
     public onFocusGained(): void {
-        const card = document.getElementById('marker-card-panel');
+        const card = document.getElementById('location-card-panel');
         if (card) card.classList.add('focused');
         if (this.instance) {
             this.instance.setReferencePanelDimmed(true);
@@ -121,7 +147,7 @@ export class MarkerCardController implements InputReceiver {
     }
 
     public onFocusLost(): void {
-        const card = document.getElementById('marker-card-panel');
+        const card = document.getElementById('location-card-panel');
         if (card) card.classList.remove('focused');
         if (this.instance) {
             this.instance.setReferencePanelDimmed(false);
@@ -129,16 +155,26 @@ export class MarkerCardController implements InputReceiver {
         this.updateButtonSelection();
     }
 
-    public open(
-        title: string,
-        markerFormId: number,
-        canFastTravel: boolean,
-        anchorMarker?: HTMLElement,
-        referencePanel?: HTMLElement,
-        dockCorner?: Corner,
-        takeFocus: boolean = true,
-        screenAnchor?: ScreenAnchor
-    ): void {
+    public updatePosition(): void {
+        if (this.instance) {
+            this.instance.updatePosition();
+        }
+    }
+
+    public isOpen(): boolean {
+        return !!this.instance && this.instance.isOpen();
+    }
+
+    public open(options: LocationCardOpenOptions): void {
+        const title = options.title ?? options.settlement?.name ?? '';
+        const markerFormId = options.markerFormId;
+        const canFastTravel = options.canFastTravel ?? false;
+        const anchorMarker = options.anchorMarker;
+        const referencePanel = options.referencePanel;
+        const dockCorner = options.dockCorner;
+        const takeFocus = options.takeFocus ?? true;
+        const screenAnchor = options.screenAnchor;
+
         if (this.activeAnchorMarker && this.activeAnchorMarker !== anchorMarker) {
             this.activeAnchorMarker.classList.remove('menu-active');
             this.activeAnchorMarker.classList.remove('hide-tooltip-override');
@@ -146,6 +182,7 @@ export class MarkerCardController implements InputReceiver {
 
         this.activeMarkerName = title;
         this.activeMarkerFormId = markerFormId;
+        this.activeSettlement = options.settlement ?? null;
         this.canFastTravel = canFastTravel;
         this.activeAnchorMarker = anchorMarker || null;
         this.activeDockCorner = referencePanel ? (dockCorner ?? null) : null;
@@ -156,11 +193,13 @@ export class MarkerCardController implements InputReceiver {
         }
 
         const buttons = this.buildButtonConfigs();
+        const bodyHtml = this.activeSettlement ? this.buildBodyHtml(this.activeSettlement) : '';
 
         if (!this.instance) {
             this.instance = new FloatingCard({
-                id: 'marker-card-panel',
+                id: 'location-card-panel',
                 title: title,
+                bodyHtml: bodyHtml,
                 buttons: buttons,
                 screenAnchor: screenAnchor,
                 anchorMarker: this.activeAnchorMarker,
@@ -171,7 +210,7 @@ export class MarkerCardController implements InputReceiver {
         } else {
             this.instance.update({
                 title: title,
-                bodyHtml: '',
+                bodyHtml: bodyHtml,
                 buttons: buttons,
                 screenAnchor: screenAnchor,
                 anchorMarker: this.activeAnchorMarker,
@@ -180,21 +219,34 @@ export class MarkerCardController implements InputReceiver {
             });
         }
 
-        this.instance.open(this.activeAnchorMarker || undefined, referencePanel, dockCorner);
-        this.updateButtonSelection();
+        const panelEl = this.instance.getElement();
+        if (panelEl) {
+            panelEl.classList.toggle('has-settlement', Boolean(this.activeSettlement));
+        }
+
+        if (!this.activeAnchorMarker && this.activeMarkerFormId !== null) {
+            const reconnected = document.querySelector(`.marker-container[data-form-id="${this.activeMarkerFormId}"]`) as HTMLElement | null;
+            if (reconnected) {
+                this.activeAnchorMarker = reconnected;
+                this.activeAnchorMarker.classList.add('menu-active');
+                this.activeAnchorMarker.classList.add('hide-tooltip-override');
+            }
+        }
+
+        this.instance.open(this.activeAnchorMarker || undefined);
+
+        if (takeFocus) {
+            InputRouter.push(this);
+        } else {
+            this.updateButtonSelection();
+        }
     }
 
     public close(): void {
         this.activeDockCorner = null;
         if (this.activeAnchorMarker) {
-            let el = this.activeAnchorMarker;
-            if (!el.isConnected && this.activeMarkerFormId !== null) {
-                const reconnected = document.querySelector(`.marker-container[data-form-id="${this.activeMarkerFormId}"]`) as HTMLElement | null;
-                if (reconnected) el = reconnected;
-            }
-            el.classList.remove('menu-active');
-            el.classList.remove('is-hovered');
-            el.classList.remove('hide-tooltip-override');
+            this.activeAnchorMarker.classList.remove('menu-active');
+            this.activeAnchorMarker.classList.remove('hide-tooltip-override');
             this.activeAnchorMarker = null;
             mapSurface.updateViewportTransform();
         }
@@ -208,25 +260,15 @@ export class MarkerCardController implements InputReceiver {
         }
     }
 
-    public positionNearMarker(): void {
-        if (this.instance) {
-            this.instance.updatePosition();
-        }
-    }
-
-    public isOpen(): boolean {
-        return !!this.instance && this.instance.isOpen();
-    }
-
     public updateButtonSelection(): void {
         if (!this.instance) return;
 
         const card = this.instance.getElement();
         if (!card) return;
 
-        const isCardFocused = InputRouter.getFocus() === FocusOwner.MARKER_CARD;
-        const buttons = card.querySelectorAll('.fc-action-btn');
+        const isCardFocused = InputRouter.getFocus() === this.id;
         const selectedIdx = this.instance.getButtonGroup().getSelectedIndex();
+        const buttons = card.querySelectorAll('.fc-action-btn');
 
         buttons.forEach((btn, idx) => {
             if (isCardFocused && idx === selectedIdx) {
@@ -235,6 +277,67 @@ export class MarkerCardController implements InputReceiver {
                 btn.classList.remove('selected');
             }
         });
+    }
+
+    public buildBodyHtml(settlement: SettlementDataWithRatings): string {
+        const foodSvg = AssetManager.getIconSvg('workshop-metric-food');
+        const waterSvg = AssetManager.getIconSvg('workshop-metric-water');
+        const bedsSvg = AssetManager.getIconSvg('workshop-metric-beds');
+        const powerSvg = AssetManager.getIconSvg('workshop-metric-power');
+        const defenseSvg = AssetManager.getIconSvg('workshop-metric-defense');
+        const populationSvg = AssetManager.getIconSvg('workshop-metric-population');
+        const happinessSvg = AssetManager.getIconSvg('workshop-metric-happiness');
+
+        const alertSvg = AssetManager.getIconSvg('workshop-alert');
+        const increasingSvg = AssetManager.getIconSvg('workshop-increasing');
+
+        const resolvedRatings = calculateSettlementRatings(settlement);
+
+        const renderMetricItem = (iconSvg: string, val: number | string, rating: number) => {
+            let statusIcon = '';
+            if (rating < 0) {
+                statusIcon = `<span class="wc-status-badge icon-wrapper">${alertSvg}</span>`;
+            } else if (rating > 0) {
+                statusIcon = `<span class="wc-status-badge icon-wrapper">${increasingSvg}</span>`;
+            }
+
+            return `
+                <div class="wc-stat-item">
+                    <span class="wc-stat-icon icon-wrapper">${iconSvg}</span>
+                    <span class="wc-stat-value">${val}</span>
+                    ${statusIcon}
+                </div>
+            `;
+        };
+
+        let locationSectionHtml = '';
+        const wsFullName = getWorldspaceName(settlement.worldspace);
+        if (wsFullName) {
+            locationSectionHtml = `
+            <div class="fc-section">
+                <div class="fc-section-box">
+                    <div class="fc-section-title">${t('settlements.card.location')}</div>
+                    <div class="fc-section-text">${wsFullName}</div>
+                </div>
+            </div>`;
+        }
+
+        return `
+            <div class="fc-section">
+                <div class="fc-section-box wc-stats-box">
+                    <div class="wc-stats-grid">
+                        ${renderMetricItem(peopleSvg || populationSvg, settlement.population, resolvedRatings.population)}
+                        ${renderMetricItem(foodSvg, settlement.food, resolvedRatings.food)}
+                        ${renderMetricItem(waterSvg, settlement.water, resolvedRatings.water)}
+                        ${renderMetricItem(powerSvg, settlement.power, resolvedRatings.power)}
+                        ${renderMetricItem(defenseSvg, settlement.defense, resolvedRatings.defense)}
+                        ${renderMetricItem(bedsSvg, settlement.beds, resolvedRatings.beds)}
+                        ${renderMetricItem(happinessSvg, `${settlement.happiness}%`, resolvedRatings.happiness)}
+                    </div>
+                </div>
+            </div>
+            ${locationSectionHtml}
+        `;
     }
 
     public buildButtonConfigs(): ActionButtonConfig[] {
@@ -269,15 +372,14 @@ export class MarkerCardController implements InputReceiver {
                         toggleFavoriteLocation(this.activeMarkerFormId);
                         domainState.toggleFavoriteLocation(this.activeMarkerFormId);
 
-                        this.open(
-                            this.activeMarkerName,
-                            this.activeMarkerFormId,
-                            this.canFastTravel,
-                            this.activeAnchorMarker || undefined,
-                            undefined,
-                            undefined,
-                            false
-                        );
+                        this.open({
+                            markerFormId: this.activeMarkerFormId,
+                            title: this.activeMarkerName,
+                            canFastTravel: this.canFastTravel,
+                            settlement: this.activeSettlement || undefined,
+                            anchorMarker: this.activeAnchorMarker || undefined,
+                            takeFocus: false
+                        });
 
                         LocationsList.render();
                     }
@@ -298,23 +400,25 @@ export class MarkerCardController implements InputReceiver {
                 }
             }
         });
+
         return buttons;
     }
 }
 
-export const markerCard = new MarkerCardController();
-export const MarkerCard = markerCard;
+const peopleSvg = AssetManager.getIconSvg('workshop-metric-people') || AssetManager.getIconSvg('workshop-metric-population');
+
+export const locationCard = new LocationCardController();
+export const LocationCard = locationCard;
 
 window.addEventListener('languageChanged', () => {
-    if (markerCard.isOpen() && markerCard.activeMarkerFormId !== null) {
-        markerCard.open(
-            markerCard.activeMarkerName,
-            markerCard.activeMarkerFormId,
-            markerCard.canFastTravel,
-            markerCard.activeAnchorMarker || undefined,
-            undefined,
-            undefined,
-            false
-        );
+    if (locationCard.isOpen() && locationCard.activeMarkerFormId !== null) {
+        locationCard.open({
+            markerFormId: locationCard.activeMarkerFormId,
+            title: locationCard.activeMarkerName,
+            canFastTravel: locationCard.canFastTravel,
+            settlement: locationCard.activeSettlement || undefined,
+            anchorMarker: locationCard.activeAnchorMarker || undefined,
+            takeFocus: false
+        });
     }
 });

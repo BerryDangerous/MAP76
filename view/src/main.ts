@@ -17,12 +17,10 @@ import { InfoBar } from '@/components/InfoBar.js';
 import { InfoCard } from '@/components/InfoCard.js';
 import {
     CustomMarkerCard,
-    MarkerCard,
+    LocationCard,
     QuestCard,
     QuestList,
     SearchPanel,
-    SettlementCard,
-    renderSettlementCardContent,
     LocationsList
 } from '@/overlays/index.js';
 import { SettingsMenu } from '@/components/SettingsMenu.js';
@@ -182,8 +180,7 @@ initializeF4SEBindings(async (payload: F4SEMapPayload) => {
     QuestList.init();
     LocationsList.init();
     QuestCard.init();
-    SettlementCard.init();
-    MarkerCard.init();
+    LocationCard.init();
     CustomMarkerCard.init();
     SearchPanel.init();
     ControlBar.render(InputRouter.getFocus());

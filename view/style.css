@@ -1640,12 +1640,7 @@ body.settings-open #player-layer {
     max-width: 500px;
 }
 
-#settlement-card-panel {
-    min-width: 280px;
-    max-width: 400px;
-}
-
-#marker-card-panel {
+#location-card-panel {
     min-width: 260px;
     max-width: 400px;
 }
@@ -1655,7 +1650,7 @@ body.settings-open #player-layer {
     max-width: 450px;
 }
 
-#marker-card-panel .fc-header,
+#location-card-panel:not(.has-settlement) .fc-header,
 #custom-marker-card-panel .fc-header {
     justify-content: center;
 }

@@ -10,9 +10,8 @@ import { FocusOwner, InputRouter } from '@/input/index.js';
 import { SoundService } from '@/services/soundService.js';
 
 import { CustomMarkerCard } from '../cards/CustomMarkerCard.js';
-import { MarkerCard } from '../cards/MarkerCard.js';
+import { LocationCard, type LocationCardOpenOptions } from '../cards/LocationCard.js';
 import { QuestCard } from '../cards/QuestCard.js';
-import { SettlementCard } from '../cards/SettlementCard.js';
 import { QuestList } from '../panels/QuestsPanel.js';
 import { LocationsList, type LocationListItem } from '../panels/LocationsPanel.js';
 import { SearchPanel } from '../panels/SearchPanel.js';
@@ -47,13 +46,9 @@ export class OverlayCoordinator {
     private fastTravelHandler: FastTravelHandler | null = null;
 
     constructor() {
-        MarkerCard.onClose = () => this.handleCardClosed(FocusOwner.MARKER_CARD);
-        MarkerCard.onNavBack = () => this.handleCardNavBack(FocusOwner.MARKER_CARD);
-        MarkerCard.onFastTravel = (formId, name) => this.requestFastTravel(formId, name);
-
-        SettlementCard.onClose = () => this.handleCardClosed(FocusOwner.SETTLEMENT_CARD);
-        SettlementCard.onNavBack = () => this.handleCardNavBack(FocusOwner.SETTLEMENT_CARD);
-        SettlementCard.onFastTravel = (formId, name) => this.requestFastTravel(formId, name);
+        LocationCard.onClose = () => this.handleCardClosed(FocusOwner.LOCATION_CARD);
+        LocationCard.onNavBack = () => this.handleCardNavBack(FocusOwner.LOCATION_CARD);
+        LocationCard.onFastTravel = (formId, name) => this.requestFastTravel(formId, name);
 
         QuestCard.onClose = () => this.handleCardClosed(FocusOwner.QUEST_CARD);
         QuestCard.onNavBack = () => this.handleCardNavBack(FocusOwner.QUEST_CARD);
@@ -98,16 +93,27 @@ export class OverlayCoordinator {
                     const dockCorner = LocationsList.getState().dockCorner;
                     if (item.type === 'favorite') {
                         const marker = item.marker;
-                        this.openMarkerCard(marker.name, marker.formId, marker.canFastTravel, undefined, container || undefined, dockCorner, false);
+                        this.openLocationCard({
+                            markerFormId: marker.formId,
+                            title: marker.name,
+                            canFastTravel: marker.canFastTravel,
+                            referencePanel: container || undefined,
+                            dockCorner,
+                            takeFocus: false
+                        });
                     } else if (item.type === 'workshop') {
                         const workshop = item.data;
                         const marker = domainState.markers.get(workshop.markerFormId);
                         const canFastTravel = marker ? marker.canFastTravel : workshop.owned;
-                        if (workshop.vassal) {
-                            this.openMarkerCard(workshop.name, workshop.markerFormId, canFastTravel, undefined, container || undefined, dockCorner, false);
-                        } else {
-                            this.showSettlementDetails(workshop, workshop.markerFormId, canFastTravel, undefined, container || undefined, dockCorner, false);
-                        }
+                        this.openLocationCard({
+                            markerFormId: workshop.markerFormId,
+                            title: workshop.name,
+                            canFastTravel,
+                            settlement: workshop.vassal ? undefined : workshop,
+                            referencePanel: container || undefined,
+                            dockCorner,
+                            takeFocus: false
+                        });
                     } else {
                         this.dismissActiveCard();
                     }
@@ -132,7 +138,14 @@ export class OverlayCoordinator {
                     const dockCorner = SearchPanel.getState().dockCorner;
                     if (result.type === 'marker') {
                         const m = result.originalRef;
-                        this.openMarkerCard(m.name, m.formId, m.canFastTravel, undefined, container || undefined, dockCorner, false);
+                        this.openLocationCard({
+                            markerFormId: m.formId,
+                            title: m.name,
+                            canFastTravel: m.canFastTravel,
+                            referencePanel: container || undefined,
+                            dockCorner,
+                            takeFocus: false
+                        });
                     } else if (result.type === 'quest') {
                         const q = result.originalRef;
                         this.showQuestDetails(q, undefined, container || undefined, dockCorner, false);
@@ -141,7 +154,15 @@ export class OverlayCoordinator {
                         const marker = domainState.markers.get(w.markerFormId ?? w.formId ?? w.locationFormId ?? 0);
                         const canFastTravel = marker ? marker.canFastTravel : w.owned;
                         const markerFormId = marker ? marker.formId : w.markerFormId;
-                        this.showSettlementDetails(w, markerFormId ?? 0, canFastTravel, undefined, container || undefined, dockCorner, false);
+                        this.openLocationCard({
+                            markerFormId: markerFormId ?? 0,
+                            title: w.name,
+                            canFastTravel,
+                            settlement: w,
+                            referencePanel: container || undefined,
+                            dockCorner,
+                            takeFocus: false
+                        });
                     } else {
                         this.dismissActiveCard();
                     }
@@ -165,13 +186,13 @@ export class OverlayCoordinator {
 
     public init(): void {
         const questPanelEl = document.getElementById('quest-list-panel');
-        if (questPanelEl) this.registerPanel('QUEST_LIST', questPanelEl, () => QuestList.collapse());
+        if (questPanelEl) this.registerPanel(FocusOwner.QUEST_LIST, questPanelEl, () => QuestList.collapse());
 
         const locPanelEl = document.getElementById('locations-list-panel');
-        if (locPanelEl) this.registerPanel('WORKSHOP_LIST', locPanelEl, () => LocationsList.collapse());
+        if (locPanelEl) this.registerPanel(FocusOwner.WORKSHOP_LIST, locPanelEl, () => LocationsList.collapse());
 
         const searchPanelEl = document.getElementById('search-panel');
-        if (searchPanelEl) this.registerPanel('SEARCH_PANEL', searchPanelEl, () => SearchPanel.collapse());
+        if (searchPanelEl) this.registerPanel(FocusOwner.SEARCH_PANEL, searchPanelEl, () => SearchPanel.collapse());
 
         window.addEventListener('click', (e: MouseEvent) => {
             const targetNode = e.target as Node;
@@ -339,16 +360,15 @@ export class OverlayCoordinator {
         this.dismissCard();
         this.collapseAllPanels();
 
-        const overlayFocuses: readonly FocusOwner[] = [
-            FocusOwner.MARKER_CARD,
+        const overlayFocuses: readonly string[] = [
+            FocusOwner.LOCATION_CARD,
             FocusOwner.QUEST_CARD,
-            FocusOwner.SETTLEMENT_CARD,
             FocusOwner.CUSTOM_MARKER_CARD,
             FocusOwner.QUEST_LIST,
             FocusOwner.WORKSHOP_LIST,
             FocusOwner.SEARCH_PANEL
         ];
-        while (overlayFocuses.includes(InputRouter.getFocus() as FocusOwner)) {
+        while (overlayFocuses.includes(InputRouter.getFocus())) {
             InputRouter.pop();
         }
     }
@@ -363,19 +383,12 @@ export class OverlayCoordinator {
         return this.activeCard ? this.activeCard.id : null;
     }
 
-    public openMarkerCard(
-        title: string,
-        markerFormId: number,
-        canFastTravel: boolean,
-        anchor?: ScreenAnchor,
-        referencePanel?: HTMLElement,
-        dockCorner?: Corner,
-        takeFocus: boolean = true
-    ): void {
-        this.prepareCardPresentation(FocusOwner.MARKER_CARD, referencePanel, () => MarkerCard.close(), takeFocus);
-        MarkerCard.open(title, markerFormId, canFastTravel, undefined, referencePanel, dockCorner, takeFocus, anchor);
+    public openLocationCard(options: LocationCardOpenOptions): void {
+        const takeFocus = options.takeFocus ?? true;
+        this.prepareCardPresentation(FocusOwner.LOCATION_CARD, options.referencePanel, () => LocationCard.close(), takeFocus);
+        LocationCard.open({ ...options, takeFocus });
         if (this.activeCard) {
-            this.activeCard.element = MarkerCard.getElement();
+            this.activeCard.element = LocationCard.getElement();
         }
     }
 
@@ -390,22 +403,6 @@ export class OverlayCoordinator {
         QuestCard.open(quest, undefined, referencePanel, dockCorner, takeFocus, anchor);
         if (this.activeCard) {
             this.activeCard.element = QuestCard.getElement();
-        }
-    }
-
-    public showSettlementDetails(
-        settlement: SettlementData,
-        markerFormId: number,
-        canFastTravel: boolean,
-        anchor?: ScreenAnchor,
-        referencePanel?: HTMLElement,
-        dockCorner?: Corner,
-        takeFocus: boolean = true
-    ): void {
-        this.prepareCardPresentation(FocusOwner.SETTLEMENT_CARD, referencePanel, () => SettlementCard.close(), takeFocus);
-        SettlementCard.open(settlement, markerFormId, canFastTravel, undefined, referencePanel, dockCorner, takeFocus, anchor);
-        if (this.activeCard) {
-            this.activeCard.element = SettlementCard.getElement();
         }
     }
 
@@ -457,11 +454,13 @@ export class OverlayCoordinator {
                     }
                 }
 
-                if (ownedSettlement) {
-                    this.showSettlementDetails(ownedSettlement, payload.formId, canTravel, payload.anchor);
-                } else if (targetMarker) {
-                    this.openMarkerCard(targetMarker.name, payload.formId, canTravel, payload.anchor);
-                }
+                this.openLocationCard({
+                    markerFormId: payload.formId,
+                    title: ownedSettlement ? ownedSettlement.name : targetMarker?.name,
+                    canFastTravel: canTravel,
+                    settlement: ownedSettlement,
+                    screenAnchor: payload.anchor
+                });
                 break;
             }
             case MarkerKind.POWER_ARMOR: {
