@@ -16,9 +16,13 @@ namespace MAP76::Hooks
         {
             if (wParam == Constants::Input::KEY_M)
             {
+                bool isRepeat = (lParam & (1 << 30)) != 0;
                 if (!UI::State::g_mapIsOpen.load() && !UI::IsPlayerInMenuMode())
                 {
-                    UI::ToggleMAP76();
+                    if (!isRepeat)
+                    {
+                        UI::ToggleMAP76();
+                    }
                     return 0;
                 }
             }

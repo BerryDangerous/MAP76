@@ -370,6 +370,10 @@ window.addEventListener('DOMContentLoaded', () => {
             }
 
             if (KeybindsSystem.isAction(e, 'CLOSE_MAP')) {
+                if (e.repeat) {
+                    e.preventDefault();
+                    return;
+                }
                 console.log('Closing map via CLOSE_MAP action...');
                 e.preventDefault();
                 resetUIState();
