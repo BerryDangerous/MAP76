@@ -14,6 +14,7 @@ export interface AppSettings {
     writePayloadToFile: boolean;
     showWorkshopInfoLog: boolean;
     gamepadPanSensitivity: number;
+    gamepadMapHoldSeconds: number;
     controllerStyle: number;
     preferredMapConfigs: Record<string, string>;
     language: string;
@@ -35,6 +36,7 @@ export const defaultSettings: AppSettings = {
     writePayloadToFile: false,
     showWorkshopInfoLog: false,
     gamepadPanSensitivity: 0.5,
+    gamepadMapHoldSeconds: 0,
     controllerStyle: 0,
     preferredMapConfigs: {},
     language: "",

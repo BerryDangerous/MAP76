@@ -26,12 +26,16 @@
       "gamepadCursorSpeed": "ゲームパッドのカーソル速度",
       "gamepadPanSensitivity": "ゲームパッドのマップスクロール感度",
       "compactPanels": "コンパクトパネル",
-      "centerOnPlayerWhenOpened": "開いたときにプレイヤーを中心に"
+      "centerOnPlayerWhenOpened": "開いたときにプレイヤーを中心に",
+      "gamepadMapHoldSeconds": "メニューボタン長押しでマップを開く"
     },
     "options": {
       "none": "なし",
       "xbox": "Xbox",
-      "playstation": "PlayStation"
+      "playstation": "PlayStation",
+      "hold250ms": "250ms",
+      "hold500ms": "500ms",
+      "hold1s": "1秒"
     },
     "languageName": "日本語"
   },

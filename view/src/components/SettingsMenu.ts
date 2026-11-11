@@ -122,6 +122,15 @@ export const SettingsMenu = {
         const panSensitivitySlider = new Slider(appSettings.gamepadPanSensitivity, 0.05, 2.0, 0.05, (val) => { updateSettings({ gamepadPanSensitivity: val }); });
         registerControl('gamepadPanSensitivity', t('settings.labels.gamepadPanSensitivity'), 'GAMEPLAY', panSensitivitySlider);
 
+        const gamepadHoldOptions = [
+            { label: t('settings.options.none', { defaultValue: 'NONE' }), value: 0 },
+            { label: t('settings.options.hold250ms', { defaultValue: '250ms' }), value: 0.25 },
+            { label: t('settings.options.hold500ms', { defaultValue: '500ms' }), value: 0.5 },
+            { label: t('settings.options.hold1s', { defaultValue: '1s' }), value: 1 }
+        ];
+        const gamepadHoldMulti = new MultiChoice(gamepadHoldOptions, appSettings.gamepadMapHoldSeconds, (val) => { updateSettings({ gamepadMapHoldSeconds: val }); });
+        registerControl('gamepadMapHoldSeconds', t('settings.labels.gamepadMapHoldSeconds', { defaultValue: 'Hold Menu Button to Open Map' }), 'GAMEPLAY', gamepadHoldMulti);
+
         const controllerStyleOptions = [
             { label: t('settings.options.xbox', { defaultValue: 'Xbox' }), value: 0 },
             { label: t('settings.options.playstation', { defaultValue: 'PlayStation' }), value: 1 }

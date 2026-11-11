@@ -26,12 +26,16 @@
       "gamepadCursorSpeed": "Velocidad del cursor del control",
       "gamepadPanSensitivity": "Sensibilidad de desplazamiento del mapa con control",
       "compactPanels": "Paneles Compactos",
-      "centerOnPlayerWhenOpened": "Centrar en el jugador al abrir"
+      "centerOnPlayerWhenOpened": "Centrar en el jugador al abrir",
+      "gamepadMapHoldSeconds": "Mantener botón de menú para abrir mapa"
     },
     "options": {
       "none": "NINGUNO",
       "xbox": "Xbox",
-      "playstation": "PlayStation"
+      "playstation": "PlayStation",
+      "hold250ms": "250 ms",
+      "hold500ms": "500 ms",
+      "hold1s": "1 s"
     },
     "languageName": "Español (México)"
   },

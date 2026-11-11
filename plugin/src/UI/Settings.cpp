@@ -12,6 +12,7 @@ namespace MAP76::UI {
     bool Settings::centerOnPlayerWhenOpened = true;
     float Settings::gamepadCursorSpeed = 1200.0f;
     float Settings::gamepadPanSensitivity = 0.5f;
+    float Settings::gamepadMapHoldSeconds = 0.0f;
 
     std::string Settings::GetConfigPath() {
         return "Data/F4SE/Plugins/MAP76.json";
@@ -58,6 +59,16 @@ namespace MAP76::UI {
             gamepadPanSensitivity = data["gamepadPanSensitivity"].get<float>();
         } else {
             data["gamepadPanSensitivity"] = gamepadPanSensitivity;
+        }
+
+        if (data.contains("gamepadMapHoldSeconds") && data["gamepadMapHoldSeconds"].is_number()) {
+            gamepadMapHoldSeconds = data["gamepadMapHoldSeconds"].get<float>();
+            if (gamepadMapHoldSeconds < 0.0f) {
+                gamepadMapHoldSeconds = 0.0f;
+                data["gamepadMapHoldSeconds"] = gamepadMapHoldSeconds;
+            }
+        } else {
+            data["gamepadMapHoldSeconds"] = gamepadMapHoldSeconds;
         }
     }
 

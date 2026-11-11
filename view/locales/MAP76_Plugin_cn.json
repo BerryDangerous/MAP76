@@ -26,12 +26,16 @@
       "gamepadCursorSpeed": "手柄光标速度",
       "gamepadPanSensitivity": "手柄地图边缘平移灵敏度",
       "compactPanels": "紧凑面板",
-      "centerOnPlayerWhenOpened": "打开时以玩家为中心"
+      "centerOnPlayerWhenOpened": "打开时以玩家为中心",
+      "gamepadMapHoldSeconds": "长按菜单键打开地图"
     },
     "options": {
       "none": "无",
       "xbox": "Xbox",
-      "playstation": "PlayStation"
+      "playstation": "PlayStation",
+      "hold250ms": "250毫秒",
+      "hold500ms": "500毫秒",
+      "hold1s": "1秒"
     },
     "languageName": "简体中文"
   },

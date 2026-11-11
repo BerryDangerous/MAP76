@@ -21,6 +21,38 @@ namespace MAP76::Hooks
     using PerformInputProcessing_t = void (*)(RE::MenuControls *, const RE::InputEvent *);
     REL::Relocation<PerformInputProcessing_t> g_originalPerformInputProcessing;
 
+    namespace
+    {
+        struct StartHoldState
+        {
+            bool active{false};
+            bool openedMap{false};
+            std::chrono::steady_clock::time_point pressedAt{};
+
+            void Reset() noexcept
+            {
+                active = false;
+                openedMap = false;
+            }
+        };
+
+        StartHoldState g_startHoldState;
+
+        void QueueOpenPauseMenu()
+        {
+            if (auto *task = F4SE::GetTaskInterface())
+            {
+                task->AddUITask([]()
+                {
+                    if (auto *msgQ = RE::UIMessageQueue::GetSingleton())
+                    {
+                        msgQ->AddMessage(RE::BSFixedString("PauseMenu"), RE::UI_MESSAGE_TYPE::kShow);
+                    }
+                });
+            }
+        }
+    }
+
     bool IsGamepadStartEvent(const RE::ButtonEvent *a_event)
     {
         if (a_event->device != RE::INPUT_DEVICE::kGamepad)
@@ -54,6 +86,66 @@ namespace MAP76::Hooks
         mutEvent->disabled = true;
     }
 
+    bool HandleActiveStartHold(const RE::ButtonEvent *a_event)
+    {
+        if (!g_startHoldState.active)
+        {
+            return false;
+        }
+
+        if (!a_event->QPressed())
+        {
+            const bool alreadyOpenedMap = g_startHoldState.openedMap;
+            g_startHoldState.Reset();
+            if (!alreadyOpenedMap && !MAP76::UI::State::g_mapIsOpen.load() && !MAP76::UI::IsPlayerInMenuMode())
+            {
+                QueueOpenPauseMenu();
+            }
+            NeuterButtonEvent(a_event);
+            return true;
+        }
+
+        if (a_event->QJustPressed())
+        {
+            // Missed the previous release event; clear stale hold and evaluate as a fresh press.
+            g_startHoldState.Reset();
+            return false;
+        }
+
+        if (!g_startHoldState.openedMap)
+        {
+            if (MAP76::UI::State::g_mapIsOpen.load() || MAP76::UI::IsPlayerInMenuMode())
+            {
+                g_startHoldState.Reset();
+            }
+            else
+            {
+                const float holdSeconds = MAP76::UI::Settings::gamepadMapHoldSeconds > 0.0f
+                    ? MAP76::UI::Settings::gamepadMapHoldSeconds
+                    : 0.0f;
+                const float elapsedSecs = std::chrono::duration<float>(
+                    std::chrono::steady_clock::now() - g_startHoldState.pressedAt).count();
+                if (elapsedSecs >= holdSeconds)
+                {
+                    g_startHoldState.openedMap = true;
+                    if (auto *task = F4SE::GetTaskInterface())
+                    {
+                        task->AddUITask([]()
+                        {
+                            if (!MAP76::UI::State::g_mapIsOpen.load())
+                            {
+                                MAP76::UI::ToggleMAP76();
+                            }
+                        });
+                    }
+                }
+            }
+        }
+
+        NeuterButtonEvent(a_event);
+        return true;
+    }
+
     void HandleInterceptedStartButton(const RE::ButtonEvent *a_event)
     {
         if (MAP76::UI::State::g_waitingToOpenPauseMenu.load())
@@ -61,23 +153,19 @@ namespace MAP76::Hooks
             if (!a_event->QPressed())
             {
                 MAP76::UI::State::g_waitingToOpenPauseMenu.store(false);
-                if (auto *task = F4SE::GetTaskInterface())
-                {
-                    task->AddUITask([]()
-                    {
-                        if (auto *msgQ = RE::UIMessageQueue::GetSingleton())
-                        {
-                            msgQ->AddMessage(RE::BSFixedString("PauseMenu"), RE::UI_MESSAGE_TYPE::kShow);
-                        }
-                    });
-                }
+                QueueOpenPauseMenu();
             }
             NeuterButtonEvent(a_event);
             return;
         }
 
-        bool shouldIntercept = MAP76::UI::State::g_mapIsOpen.load() || !MAP76::UI::IsPlayerInMenuMode();
-        if (!shouldIntercept)
+        if (HandleActiveStartHold(a_event))
+        {
+            return;
+        }
+
+        const bool isMapOpen = MAP76::UI::State::g_mapIsOpen.load();
+        if (!isMapOpen && MAP76::UI::IsPlayerInMenuMode())
         {
             return;
         }
@@ -88,21 +176,43 @@ namespace MAP76::Hooks
             return;
         }
 
-        if (auto *task = F4SE::GetTaskInterface())
+        if (isMapOpen)
         {
-            if (MAP76::UI::State::g_mapIsOpen.load())
+            if (auto *task = F4SE::GetTaskInterface())
             {
                 task->AddUITask([]()
-                                {
+                {
                     if (MAP76::UI::State::g_mapIsOpen.load())
+                    {
                         MAP76::UI::ToggleMAP76();
-                        
-                    MAP76::UI::State::g_waitingToOpenPauseMenu.store(true); });
+                    }
+
+                    MAP76::UI::State::g_waitingToOpenPauseMenu.store(true);
+                });
             }
-            else
+            NeuterButtonEvent(a_event);
+            return;
+        }
+
+        const float holdSeconds = MAP76::UI::Settings::gamepadMapHoldSeconds > 0.0f
+            ? MAP76::UI::Settings::gamepadMapHoldSeconds
+            : 0.0f;
+
+        if (holdSeconds > 0.0f)
+        {
+            g_startHoldState.active = true;
+            g_startHoldState.openedMap = false;
+            g_startHoldState.pressedAt = std::chrono::steady_clock::now();
+        }
+        else if (auto *task = F4SE::GetTaskInterface())
+        {
+            task->AddUITask([]()
             {
-                task->AddUITask([]() { MAP76::UI::ToggleMAP76(); });
-            }
+                if (!MAP76::UI::State::g_mapIsOpen.load())
+                {
+                    MAP76::UI::ToggleMAP76();
+                }
+            });
         }
 
         NeuterButtonEvent(a_event);
@@ -119,6 +229,10 @@ namespace MAP76::Hooks
                 if (connectEvent->device == RE::INPUT_DEVICE::kGamepad)
                 {
                     isGamepad = connectEvent->connected;
+                    if (!connectEvent->connected)
+                    {
+                        g_startHoldState.Reset();
+                    }
                 }
             }
             else if (event->eventType != RE::INPUT_EVENT_TYPE::kMouseMove &&

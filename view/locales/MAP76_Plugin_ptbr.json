@@ -26,12 +26,16 @@
       "gamepadCursorSpeed": "Velocidade do Cursor no Controle",
       "gamepadPanSensitivity": "Sensibilidade de Movimento nas Bordas do Mapa",
       "compactPanels": "Painéis Compactos",
-      "centerOnPlayerWhenOpened": "Centralizar no jogador ao abrir"
+      "centerOnPlayerWhenOpened": "Centralizar no jogador ao abrir",
+      "gamepadMapHoldSeconds": "Segurar Botão Menu para Abrir o Mapa"
     },
     "options": {
       "none": "NENHUM",
       "xbox": "Xbox",
-      "playstation": "PlayStation"
+      "playstation": "PlayStation",
+      "hold250ms": "250ms",
+      "hold500ms": "500ms",
+      "hold1s": "1s"
     },
     "languageName": "Português (Brasil)"
   },

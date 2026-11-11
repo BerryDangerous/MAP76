@@ -26,12 +26,16 @@
       "gamepadCursorSpeed": "Скорость курсора геймпада",
       "gamepadPanSensitivity": "Чувствительность панорамирования карты",
       "compactPanels": "Компактные панели",
-      "centerOnPlayerWhenOpened": "Центрировать на игроке при открытии"
+      "centerOnPlayerWhenOpened": "Центрировать на игроке при открытии",
+      "gamepadMapHoldSeconds": "Удерживать кнопку меню для открытия карты"
     },
     "options": {
       "none": "НЕТ",
       "xbox": "Xbox",
-      "playstation": "PlayStation"
+      "playstation": "PlayStation",
+      "hold250ms": "250 мс",
+      "hold500ms": "500 мс",
+      "hold1s": "1 с"
     },
     "languageName": "Русский"
   },

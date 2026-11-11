@@ -17,6 +17,7 @@ namespace MAP76::UI {
         static bool centerOnPlayerWhenOpened;
         static float gamepadCursorSpeed;
         static float gamepadPanSensitivity;
+        static float gamepadMapHoldSeconds;
         
     private:
         static nlohmann::json data;
