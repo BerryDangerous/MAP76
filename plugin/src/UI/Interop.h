@@ -40,8 +40,8 @@ namespace MAP76::UI
     void ToggleMAP76();
 
     /**
-     * @brief Checks if any native Fallout 4 menu or console is currently active.
-     * @return True if player is in menu mode or a vanilla menu is open.
+     * @brief Checks if any interactive Fallout 4 menu, workbench, scope, or text entry mode is currently active.
+     * @return True if opening the map overlay should be suppressed.
      */
     bool IsPlayerInMenuMode();
 

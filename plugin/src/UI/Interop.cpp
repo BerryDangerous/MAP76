@@ -11,10 +11,12 @@
 #include "UI/Settings.h"
 #include "Engine/FavoritesManager.h"
 #include "Engine/Player.h"
+#include <array>
 #include <thread>
 #include <chrono>
 #include <filesystem>
 #include <format>
+#include <string_view>
 #include "RE/S/Setting.h"
 #include "RE/U/UIUtils.h"
 #include "RE/I/IMenu.h"
@@ -119,6 +121,47 @@ namespace MAP76::UI
             if (auto* controlMap = RE::ControlMap::GetSingleton()) {
                 controlMap->SetTextEntryMode(false);
             }
+        }
+
+        bool IsPassiveOverlayMenu(const RE::BSFixedString &a_menuName)
+        {
+            static constexpr std::array kPassiveMenus = {
+                "HUDMenu"sv,
+                "PowerArmorHUDMenu"sv,
+                "ButtonBarMenu"sv,
+                "PromptMenu"sv,
+                "VignetteMenu"sv,
+                "FaderMenu"sv,
+                "SafeZoneMenu"sv,
+                "CursorMenu"sv,
+            };
+
+            for (const auto name : kPassiveMenus)
+            {
+                if (a_menuName == name)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        bool IsInteractiveMenu(const RE::IMenu &a_menu) noexcept
+        {
+            using Flag = RE::UI_MENU_FLAGS;
+            if (a_menu.menuFlags.any(
+                    Flag::kPausesGame,
+                    Flag::kUsesCursor,
+                    Flag::kUsesMenuContext,
+                    Flag::kModal,
+                    Flag::kDisablePauseMenu,
+                    Flag::kInventoryItemMenu,
+                    Flag::kAssignCursorToRenderer))
+            {
+                return true;
+            }
+
+            return a_menu.inputContext.get() != RE::UserEvents::INPUT_CONTEXT_ID::kNone;
         }
 
         void HandleConsoleMessage(PrismaView, PRISMA_UI_FLAT_API::ConsoleMessageLevel level, const char *message)
@@ -632,34 +675,39 @@ namespace MAP76::UI
     {
         auto *ui = RE::UI::GetSingleton();
         if (!ui)
+        {
             return false;
+        }
 
-        if (ui->GetMenuOpen("Console") ||
-            ui->GetMenuOpen("PipboyMenu") ||
-            ui->GetMenuOpen("WorkshopMenu") ||
-            ui->GetMenuOpen("ContainerMenu") ||
-            ui->GetMenuOpen("CraftingMenu") ||
-            ui->GetMenuOpen("LockpickingMenu") ||
-            ui->GetMenuOpen("ExamineMenu") ||
-            ui->GetMenuOpen("LoadingMenu") ||
-            ui->GetMenuOpen("TerminalMenu") ||
-            ui->GetMenuOpen("VATSMenu") ||
-            ui->GetMenuOpen("SitSleepMenu") ||
-            ui->GetMenuOpen("DialogueMenu") ||
-            ui->GetMenuOpen("BarterMenu") ||
-            ui->GetMenuOpen("PauseMenu") ||
-            ui->GetMenuOpen("MessageMenu") ||
-            ui->GetMenuOpen("SleepWaitMenu") ||
-            ui->GetMenuOpen("LevelUpMenu") ||
-            ui->GetMenuOpen("SpecialMenu") ||
-            ui->GetMenuOpen("NameMenu"))
+        if (ui->menuMode > 0 || ui->closingAllMenus)
         {
             return true;
         }
 
-        if (ui->menuMode > 0)
+        if (auto *controlMap = RE::ControlMap::GetSingleton(); controlMap && controlMap->byTextEntryCount > 0)
         {
             return true;
+        }
+
+        // ui->itemMenuMode is excluded because Quick-Loot increments it during normal gameplay.
+        RE::BSAutoReadLock lock{RE::UI::GetMenuMapRWLock()};
+        for (const auto &entry : ui->menuMap)
+        {
+            const auto &menu = entry.second.menu;
+            if (!menu || !menu->OnStack())
+            {
+                continue;
+            }
+
+            if (IsPassiveOverlayMenu(entry.first))
+            {
+                continue;
+            }
+
+            if (IsInteractiveMenu(*menu))
+            {
+                return true;
+            }
         }
 
         return false;
