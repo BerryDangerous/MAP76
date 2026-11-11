@@ -73,6 +73,50 @@ target(project_name)
         target:set("version", plugin_version)
     end)
 
+    before_build(function(target)
+        import("core.base.semver")
+        import("core.project.project")
+
+        local version_str = target:version() or "0.0.0"
+        local ver = semver.new(version_str)
+        local cfg = target:data("commonlib.plugin.config") or {}
+        local vars = {
+            COMMONLIB_PLUGIN_AUTHOR         = cfg.author or "",
+            COMMONLIB_PLUGIN_CONTACT        = cfg.contact or "",
+            COMMONLIB_PLUGIN_DESCRIPTION    = cfg.description or "",
+            COMMONLIB_PLUGIN_LICENSE        = (target:license() or "Unknown") .. " License",
+            COMMONLIB_PLUGIN_NAME           = cfg.name or target:name(),
+            COMMONLIB_PLUGIN_VERSION        = version_str,
+            COMMONLIB_PLUGIN_VERSION_MAJOR  = tostring(ver:major()),
+            COMMONLIB_PLUGIN_VERSION_MINOR  = tostring(ver:minor()),
+            COMMONLIB_PLUGIN_VERSION_PATCH  = tostring(ver:patch()),
+            COMMONLIB_PROJECT_NAME          = project.name() or "",
+            COMMONLIB_PROJECT_VERSION       = version_str,
+            COMMONLIB_PROJECT_VERSION_MAJOR = tostring(ver:major()),
+            COMMONLIB_PROJECT_VERSION_MINOR = tostring(ver:minor()),
+            COMMONLIB_PROJECT_VERSION_PATCH = tostring(ver:patch()),
+        }
+
+        local configdir = target:configdir()
+        local templates = {
+            {
+                tmpl = path.join(target:scriptdir(), "lib/commonlibf4/res/commonlibf4-plugin.cpp.in"),
+                out  = path.join(configdir, "commonlibf4-plugin.cpp"),
+            },
+            {
+                tmpl = path.join(target:scriptdir(), "lib/commonlibf4/lib/commonlib-shared/res/commonlib-plugin.rc.in"),
+                out  = path.join(configdir, "commonlib-plugin.rc"),
+            },
+        }
+
+        for _, entry in ipairs(templates) do
+            local rendered = io.readfile(entry.tmpl):gsub("%${([%w_]+)}", vars)
+            if not os.isfile(entry.out) or io.readfile(entry.out) ~= rendered then
+                io.writefile(entry.out, rendered)
+            end
+        end
+    end)
+
     add_rules("commonlibf4.plugin", {
         name    = project_name,
         author  = author,
