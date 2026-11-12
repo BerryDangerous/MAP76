@@ -9,6 +9,10 @@ export async function initI18n(initialGameLanguage?: string) {
     window.dispatchEvent(new Event('languageChanged'));
 }
 
+export function getCurrentLocale(): string {
+    return (window.PrismaL10N?.locale || 'en').trim().toLowerCase();
+}
+
 export function t(key: string, options?: any): string {
     if (window.PrismaL10N && window.PrismaL10N.t) {
         return window.PrismaL10N.t(key, options);

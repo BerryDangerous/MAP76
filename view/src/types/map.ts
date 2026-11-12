@@ -35,9 +35,12 @@ export interface MapPosition {
 }
 
 export interface MapConfig {
+    version?: number;
     configID?: string;
     worldspaceEditorID?: string;
-    mapName: string;
+    mapName?: string;
+    mapName_en?: string;
+    [key: `mapName_${string}`]: string | undefined;
     worldspaceID: number;
     texturePath: string;
     gutters?: MapGutters;

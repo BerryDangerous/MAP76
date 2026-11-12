@@ -31,7 +31,7 @@ import { injectSVGFilters } from '@/utils/svgFilters.js';
 const globalConfig = window.DEFAULT_COMMONWEALTH_CONFIG;
 if (globalConfig) {
     mapSurface.setWorldspaceConfig(globalConfig.worldspaceID, globalConfig);
-    console.log(`[Init] Overrode layout using global config: ${globalConfig.mapName}`);
+    console.log(`[Init] Overrode layout using global config: ${globalConfig.mapName ?? globalConfig.mapName_en ?? globalConfig.configID ?? 'Unknown'}`);
 } else {
     console.log('[Init] Using built-in hardcoded map configuration fallback.');
 }

@@ -1,6 +1,76 @@
 import { AssetPayload, MapConfig } from '@/types/map.js';
+
 import { ENGINE_MARKER_TYPES, DEFAULT_BLANK_CONFIG } from '@/core/constants.js';
+import { getCurrentLocale } from '@/core/i18n.js';
 import { appSettings } from '@/core/settings.js';
+
+/**
+ * Resolves the localized display name for a map configuration, falling back
+ * through active locale, English (`mapName_en`), legacy `mapName`, any
+ * available `mapName_*` translation, and finally identifier fallbacks.
+ */
+export function getMapConfigName(config: MapConfig, locale?: string): string {
+    const activeLocale = (locale ?? getCurrentLocale()).trim().toLowerCase();
+    const record = config as unknown as Record<string, unknown>;
+
+    const findTranslatedName = (langCode: string): string | undefined => {
+        if (!langCode) return undefined;
+        const normalized = langCode.replace(/[-_]/g, '');
+        const candidates = new Set([
+            `mapName_${langCode}`,
+            `mapName_${normalized}`,
+            `mapName_${langCode.split(/[-_]/)[0]}`
+        ]);
+
+        for (const key of candidates) {
+            const val = record[key];
+            if (typeof val === 'string' && val.trim().length > 0) {
+                return val;
+            }
+        }
+
+        for (const [key, val] of Object.entries(record)) {
+            if (typeof val !== 'string' || val.trim().length === 0) continue;
+            const lowerKey = key.toLowerCase();
+            if (!lowerKey.startsWith('mapname_')) continue;
+            const suffix = lowerKey.slice('mapname_'.length);
+            if (suffix === langCode || suffix.replace(/[-_]/g, '') === normalized) {
+                return val;
+            }
+        }
+
+        return undefined;
+    };
+
+    const localized = findTranslatedName(activeLocale);
+    if (localized) return localized;
+
+    if (activeLocale !== 'en') {
+        const english = findTranslatedName('en');
+        if (english) return english;
+    }
+
+    if (typeof config.mapName === 'string' && config.mapName.trim().length > 0) {
+        return config.mapName;
+    }
+
+    for (const [key, val] of Object.entries(record)) {
+        if (key.toLowerCase().startsWith('mapname_') && typeof val === 'string' && val.trim().length > 0) {
+            return val;
+        }
+    }
+
+    return config.configID || config.worldspaceEditorID || 'Custom Worldspace';
+}
+
+/** Returns true when the map configuration represents a worldspace's default style. */
+export function isDefaultMapConfig(config: MapConfig): boolean {
+    const name = config.mapName_en || config.mapName;
+    return Boolean(
+        name?.toLowerCase() === 'default' ||
+        config.configID?.toLowerCase().includes('default')
+    );
+}
 
 export const AssetManager = {
     mapConfigs: {} as Record<string, MapConfig>,
@@ -8,10 +78,19 @@ export const AssetManager = {
     imageCache: new Map<string, HTMLImageElement>(),
 
     init(payload: AssetPayload) {
-        this.mapConfigs = payload.mapConfigs || {};
-        
-        for (const [key, config] of Object.entries(this.mapConfigs)) {
+        this.mapConfigs = {};
+        const rawConfigs = payload.mapConfigs || {};
+        const fileVersion = typeof (rawConfigs as Record<string, unknown>).version === 'number'
+            ? (rawConfigs as Record<string, unknown>).version as number
+            : undefined;
+
+        for (const [key, config] of Object.entries(rawConfigs)) {
+            if (key === 'version' || typeof config !== 'object' || config === null) continue;
+            if (fileVersion !== undefined && config.version === undefined) {
+                config.version = fileVersion;
+            }
             config.configID = key;
+            this.mapConfigs[key] = config;
         }
 
         if (this.mapConfigs['FarHarbor_Default'] && !this.mapConfigs['DLC03FarHarbor_Default']) {
@@ -139,14 +218,7 @@ export const AssetManager = {
             return cId === searchID || cleanCId === cleanSearchID || cId.includes(searchID) || searchID.includes(cId);
         };
 
-        const isDefaultConfig = (c: MapConfig) => {
-            return Boolean(
-                c.configID?.toLowerCase().includes('default') || 
-                c.mapName?.toLowerCase() === 'default'
-            );
-        };
-
-        const defaultFallback = allConfigs.find(c => matchesEditorID(c) && isDefaultConfig(c));
+        const defaultFallback = allConfigs.find(c => matchesEditorID(c) && isDefaultMapConfig(c));
         if (defaultFallback) return defaultFallback;
         
         const anyFallback = allConfigs.find(c => matchesEditorID(c));

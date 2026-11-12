@@ -3,7 +3,7 @@ import { MapConfig } from '@/types/map.js';
 import { appSettings, updateSettings, getDefaultSettings, AppSettings } from '@/core/settings.js';
 import { domainState } from '@/core/state/index.js';
 
-import { AssetManager } from '@/systems/assetManager.js';
+import { AssetManager, getMapConfigName, isDefaultMapConfig } from '@/systems/assetManager.js';
 import { SoundService } from '@/services/soundService.js';
 
 import { mapSurface } from '@/map/index.js';
@@ -307,12 +307,12 @@ export const SettingsMenu = {
         }
 
         const options = configs.map(config => ({
-            label: config.mapName,
-            value: config.configID || ws.editorID
+            label: getMapConfigName(config),
+            value: config.configID || ws.editorID,
+            isDefault: isDefaultMapConfig(config)
         })).sort((a, b) => a.label.localeCompare(b.label));
 
-        let defaultOption = options.find(o => o.label.toLowerCase() === 'default');
-        if (!defaultOption) defaultOption = options[0];
+        const defaultOption = options.find(o => o.isDefault) || options[0];
 
         const initialValue = appSettings.preferredMapConfigs[ws.editorID] || defaultOption.value;
 

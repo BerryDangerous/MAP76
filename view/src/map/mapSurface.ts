@@ -8,7 +8,7 @@ import { appSettings } from '@/core/settings.js';
 import { domainState } from '@/core/state/index.js';
 import { getWorldspaceEditorID, isSameWorldspace } from '@/core/state/worldspaces.js';
 
-import { AssetManager } from '@/systems/assetManager.js';
+import { AssetManager, getMapConfigName, isDefaultMapConfig } from '@/systems/assetManager.js';
 import { SoundService } from '@/services/soundService.js';
 
 import { screenToGameCoords, gameToMapCoords } from '@/map/coordinates.js';
@@ -65,6 +65,7 @@ export class MapSurface {
     constructor(events?: TypedEventEmitter<MapEvents>) {
         this.events = events ?? new TypedEventEmitter<MapEvents>();
         this._activeConfig = {
+            version: 1,
             mapName: "Commonwealth",
             worldspaceID: 60,
             texturePath: "assets/maps/commonwealth/default.png",
@@ -130,11 +131,7 @@ export class MapSurface {
                         isStale = true;
                     }
                 } else {
-                    const isDefault = Boolean(
-                        cached.configID?.toLowerCase().includes('default') || 
-                        cached.mapName?.toLowerCase() === 'default'
-                    );
-                    if (!isDefault) {
+                    if (!isDefaultMapConfig(cached)) {
                         isStale = true;
                     }
                 }
@@ -161,7 +158,7 @@ export class MapSurface {
                 ...DEFAULT_BLANK_CONFIG,
                 ...preferred,
                 worldspaceID,
-                mapName: preferred.mapName || worldspaceEditorID,
+                mapName: getMapConfigName(preferred) || worldspaceEditorID,
                 gutters: finalGutters,
                 imageDimensions: preferred.imageDimensions,
                 imageGuttersPixels: preferred.imageGuttersPixels

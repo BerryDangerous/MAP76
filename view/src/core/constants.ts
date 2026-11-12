@@ -121,7 +121,9 @@ export const DEFAULT_MAP_GUTTERS = {
 }
 
 export const DEFAULT_BLANK_CONFIG = {
+    version: 1,
     mapName: "Custom Worldspace",
+    mapName_en: "Custom Worldspace",
     worldspaceID: 0,
     texturePath: "assets/maps/blank.svg",
     imageDimensions: {

@@ -68,8 +68,11 @@ export function initMockData(): void {
                 const res = await fetch(`/${jsonPath}`);
                 if (res.ok) {
                     const parsed = await res.json();
+                    const fileVersion = typeof parsed.version === 'number' ? parsed.version : undefined;
                     for (const [key, val] of Object.entries(parsed)) {
+                        if (key === 'version' || typeof val !== 'object' || val === null) continue;
                         mockAssetPayload.mapConfigs[key] = {
+                            ...(fileVersion !== undefined ? { version: fileVersion } : {}),
                             ...(val as any),
                             configID: key
                         };

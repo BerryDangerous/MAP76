@@ -318,8 +318,19 @@ namespace MAP76::UI::Payload
                             {
                                 try {
                                     nlohmann::json parsed = nlohmann::json::parse(file);
-                                    for (auto& [key, val] : parsed.items()) {
-                                        mapConfigs[key] = val;
+                                    if (parsed.is_object()) {
+                                        nlohmann::json fileVersion;
+                                        if (parsed.contains("version") && parsed["version"].is_number()) {
+                                            fileVersion = parsed["version"];
+                                        }
+                                        for (auto& [key, val] : parsed.items()) {
+                                            if (key != "version" && val.is_object()) {
+                                                if (!fileVersion.is_null() && !val.contains("version")) {
+                                                    val["version"] = fileVersion;
+                                                }
+                                                mapConfigs[key] = val;
+                                            }
+                                        }
                                     }
                                 } catch (const std::exception& e) {
                                     REX::ERROR("Failed to parse JSON config {}: {}", entry.path().string(), e.what());
