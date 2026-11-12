@@ -114,7 +114,7 @@ namespace MAP76::Hooks
 
         if (!g_startHoldState.openedMap)
         {
-            if (MAP76::UI::State::g_mapIsOpen.load() || MAP76::UI::IsPlayerInMenuMode())
+            if (MAP76::UI::State::g_mapIsOpen.load() || MAP76::UI::IsPlayerInMenuMode() || !MAP76::UI::CanOpenPipboyMap())
             {
                 g_startHoldState.Reset();
             }
@@ -165,7 +165,7 @@ namespace MAP76::Hooks
         }
 
         const bool isMapOpen = MAP76::UI::State::g_mapIsOpen.load();
-        if (!isMapOpen && MAP76::UI::IsPlayerInMenuMode())
+        if (!isMapOpen && (MAP76::UI::IsPlayerInMenuMode() || !MAP76::UI::CanOpenPipboyMap(a_event->QJustPressed())))
         {
             return;
         }

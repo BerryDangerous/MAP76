@@ -10,6 +10,7 @@ namespace MAP76::UI {
     bool Settings::showWorkshopInfoLog = false;
     bool Settings::skipSurvivalFastTravelCheck = false;
     bool Settings::centerOnPlayerWhenOpened = true;
+    bool Settings::requirePipboyToOpenMap = true;
     float Settings::gamepadCursorSpeed = 1200.0f;
     float Settings::gamepadPanSensitivity = 0.5f;
     float Settings::gamepadMapHoldSeconds = 0.0f;
@@ -47,6 +48,12 @@ namespace MAP76::UI {
             centerOnPlayerWhenOpened = data["centerOnPlayerWhenOpened"].get<bool>();
         } else {
             data["centerOnPlayerWhenOpened"] = centerOnPlayerWhenOpened;
+        }
+
+        if (data.contains("requirePipboyToOpenMap") && data["requirePipboyToOpenMap"].is_boolean()) {
+            requirePipboyToOpenMap = data["requirePipboyToOpenMap"].get<bool>();
+        } else {
+            data["requirePipboyToOpenMap"] = requirePipboyToOpenMap;
         }
 
         if (data.contains("gamepadCursorSpeed") && data["gamepadCursorSpeed"].is_number()) {

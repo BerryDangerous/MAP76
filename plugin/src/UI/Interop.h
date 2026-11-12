@@ -46,6 +46,13 @@ namespace MAP76::UI
     bool IsPlayerInMenuMode();
 
     /**
+     * @brief Checks whether opening the Pip-Boy map is currently permitted by settings and engine state.
+     * @param a_logFailure When true, logs diagnostic details if opening is blocked.
+     * @return True if the map may be opened (always true when requirePipboyToOpenMap is disabled).
+     */
+    bool CanOpenPipboyMap(bool a_logFailure = false);
+
+    /**
      * @brief Callback executed when the HTML DOM is fully ready.
      * @param view Active PrismaView handle.
      */

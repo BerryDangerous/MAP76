@@ -11,6 +11,7 @@ export interface AppSettings {
     compactPanels: boolean;
     hideInactiveQuestMarkers: boolean;
     centerOnPlayerWhenOpened: boolean;
+    requirePipboyToOpenMap: boolean;
     writePayloadToFile: boolean;
     showWorkshopInfoLog: boolean;
     gamepadPanSensitivity: number;
@@ -33,6 +34,7 @@ export const defaultSettings: AppSettings = {
     compactPanels: false,
     hideInactiveQuestMarkers: false,
     centerOnPlayerWhenOpened: true,
+    requirePipboyToOpenMap: true,
     writePayloadToFile: false,
     showWorkshopInfoLog: false,
     gamepadPanSensitivity: 0.5,

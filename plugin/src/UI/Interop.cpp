@@ -23,6 +23,7 @@
 #include "RE/U/UIMessageQueue.h"
 #include "RE/B/BSInputEnableManager.h"
 #include "RE/B/BSInputEnableLayer.h"
+#include "RE/O/OtherInputEvents.h"
 #include "RE/U/UserEvents.h"
 #include "RE/C/ControlMap.h"
 #include "REX/W32/OLE32.h"
@@ -713,6 +714,53 @@ namespace MAP76::UI
         return false;
     }
 
+    bool CanOpenPipboyMap(bool a_logFailure)
+    {
+        if (!Settings::requirePipboyToOpenMap)
+        {
+            return true;
+        }
+
+        auto *inputManager = RE::BSInputEnableManager::GetSingleton();
+        if (!inputManager)
+        {
+            if (a_logFailure)
+            {
+                REX::INFO("MAP76: Map open blocked by Pip-Boy gate (inputManager=false)");
+            }
+            return false;
+        }
+
+        // CommonLibF4 places BSInputEnableManager::cacheLock at 0x10C due to empty-base padding
+        // after BSTSingletonSDM, shifting the cached/forced flag fields 4 bytes early relative to
+        // Fallout4.exe (cacheLock=0x110, cachedInputUserEventsFlags=0x118, cachedOtherInputEventsFlags=0x11C).
+        const auto base = reinterpret_cast<std::uintptr_t>(inputManager);
+        auto &cacheLock = *reinterpret_cast<RE::BSSpinLock *>(base + 0x110);
+        const auto &cachedUserFlags =
+            *reinterpret_cast<const REX::TEnumSet<RE::UserEvents::USER_EVENT_FLAG, std::uint32_t> *>(base + 0x118);
+        const auto &cachedOtherFlags =
+            *reinterpret_cast<const REX::TEnumSet<RE::OtherInputEvents::OTHER_EVENT_FLAG, std::uint32_t> *>(base + 0x11C);
+
+        RE::BSAutoLock cacheLocker(cacheLock);
+        const bool menuEnabled = cachedUserFlags.any(RE::UserEvents::USER_EVENT_FLAG::kMenu);
+        const bool mainFourEnabled = cachedUserFlags.any(RE::UserEvents::USER_EVENT_FLAG::kMainFour);
+        const bool journalTabsEnabled = cachedOtherFlags.any(RE::OtherInputEvents::OTHER_EVENT_FLAG::kJournalTabs);
+
+        const bool allowed = menuEnabled && mainFourEnabled && journalTabsEnabled;
+        if (!allowed && a_logFailure)
+        {
+            REX::INFO(
+                "MAP76: Map open blocked by Pip-Boy gate (kMenu={}, kMainFour={}, kJournalTabs={}, cachedUser={:#010x}, cachedOther={:#010x})",
+                menuEnabled,
+                mainFourEnabled,
+                journalTabsEnabled,
+                cachedUserFlags.underlying(),
+                cachedOtherFlags.underlying());
+        }
+
+        return allowed;
+    }
+
     void ToggleMAP76()
     {
         if (!State::g_coreApi || !State::g_view)
@@ -724,6 +772,10 @@ namespace MAP76::UI
 
         if (isOpening)
         {
+            if (!CanOpenPipboyMap(true))
+            {
+                return;
+            }
             if (State::g_coreApi)
             {
                 using VH = PRISMA_UI_FLAT_API::ViewHealth;
