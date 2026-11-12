@@ -1,5 +1,10 @@
 #include "PCH.h"
+#include <algorithm>
+#include <cctype>
 #include <filesystem>
+#include <fstream>
+#include <string>
+#include <string_view>
 #include "Engine/MapData.h"
 #include "UI/Interop.h"
 #include "UI/IconOverrides.h"
@@ -8,6 +13,113 @@
 #include "Engine/FavoritesManager.h"
 #include "Engine/QuestManager.h"
 #include "Engine/VaultBoy.h"
+
+namespace
+{
+    constexpr std::string_view PRISMA_INI_PATH = "Data/F4SE/Plugins/PrismaUI_F4.ini";
+
+    bool g_disabledForGpuRendering = false;
+    bool g_shownGpuDisabledMessage = false;
+
+    std::string_view TrimAscii(std::string_view a_sv) noexcept
+    {
+        while (!a_sv.empty() && std::isspace(static_cast<unsigned char>(a_sv.front()))) {
+            a_sv.remove_prefix(1);
+        }
+        while (!a_sv.empty() && std::isspace(static_cast<unsigned char>(a_sv.back()))) {
+            a_sv.remove_suffix(1);
+        }
+        return a_sv;
+    }
+
+    std::string ToLowerAscii(std::string_view a_sv)
+    {
+        std::string out(a_sv);
+        std::transform(out.begin(), out.end(), out.begin(), [](unsigned char c) {
+            return static_cast<char>(std::tolower(c));
+        });
+        return out;
+    }
+
+    /**
+     * @brief Checks PrismaUI_F4.ini for [GPU] bAcceleratedRendering=1.
+     */
+    bool IsPrismaAcceleratedRenderingEnabled()
+    {
+        std::ifstream file(std::filesystem::path{PRISMA_INI_PATH});
+        if (!file.is_open()) {
+            return false;
+        }
+
+        std::string line;
+        std::string currentSection;
+        bool isFirstLine = true;
+
+        while (std::getline(file, line)) {
+            std::string_view view = line;
+            if (isFirstLine) {
+                isFirstLine = false;
+                if (view.size() >= 3 &&
+                    static_cast<unsigned char>(view[0]) == 0xEF &&
+                    static_cast<unsigned char>(view[1]) == 0xBB &&
+                    static_cast<unsigned char>(view[2]) == 0xBF) {
+                    view.remove_prefix(3);
+                }
+            }
+
+            if (const auto commentPos = view.find_first_of(";#"); commentPos != std::string_view::npos) {
+                view = view.substr(0, commentPos);
+            }
+            view = TrimAscii(view);
+            if (view.empty()) {
+                continue;
+            }
+
+            if (view.front() == '[' && view.back() == ']') {
+                currentSection = ToLowerAscii(TrimAscii(view.substr(1, view.size() - 2)));
+                continue;
+            }
+
+            if (!currentSection.empty() && currentSection != "gpu") {
+                continue;
+            }
+
+            const auto eqPos = view.find('=');
+            if (eqPos == std::string_view::npos) {
+                continue;
+            }
+
+            const std::string key = ToLowerAscii(TrimAscii(view.substr(0, eqPos)));
+            if (key != "bacceleratedrendering") {
+                continue;
+            }
+
+            const std::string val = ToLowerAscii(TrimAscii(view.substr(eqPos + 1)));
+            return val == "1" || val == "true";
+        }
+
+        return false;
+    }
+
+    void ShowGpuDisabledMessageBox()
+    {
+        if (auto* msgManager = RE::MessageMenuManager::GetSingleton()) {
+            msgManager->Create(
+                "MAP76 Disabled",
+                "MAP76 does not currently support PrismaUI GPU rendering and was disabled.\n\n"
+                "Please open Data/F4SE/Plugins/PrismaUI_F4.ini, change bAcceleratedRendering to 0, and restart the game.",
+                nullptr,
+                RE::WARNING_TYPES::kDefault,
+                "OK",
+                nullptr,
+                nullptr,
+                nullptr,
+                true);
+        } else {
+            REX::ERROR("MAP76: MessageMenuManager unavailable; could not show GPU rendering warning box.");
+        }
+    }
+}
 
 /**
  * @brief F4SE messaging listener callback.
@@ -19,6 +131,12 @@ void OnF4SEMessage(F4SE::MessagingInterface::Message *a_msg)
     {
     case F4SE::MessagingInterface::kGameDataReady:
     {
+        if (IsPrismaAcceleratedRenderingEnabled()) {
+            g_disabledForGpuRendering = true;
+            REX::WARN("MAP76: Disabled because bAcceleratedRendering=1 in {}. Change it to 0 and restart the game.", PRISMA_INI_PATH);
+            break;
+        }
+
         REX::INFO("MAP76: Game data ready. Requesting PrismaUI API...");
         MAP76::UI::State::g_coreApi = new PRISMA_UI_FLAT_API::CoreAPI();
         MAP76::UI::State::g_viewApi = new PRISMA_UI_FLAT_API::ViewAPI();
@@ -66,6 +184,15 @@ void OnF4SEMessage(F4SE::MessagingInterface::Message *a_msg)
     }
     case F4SE::MessagingInterface::kPostLoadGame:
     case F4SE::MessagingInterface::kNewGame:
+        if (g_disabledForGpuRendering)
+        {
+            if (!g_shownGpuDisabledMessage)
+            {
+                g_shownGpuDisabledMessage = true;
+                ShowGpuDisabledMessageBox();
+            }
+            break;
+        }
         if (MAP76::UI::State::g_coreApi && MAP76::UI::State::g_view == 0)
         {
             MAP76::UI::Initialize();
