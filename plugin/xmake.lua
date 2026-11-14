@@ -32,7 +32,13 @@ if is_host("linux") then
         local msvc, msvc_base = latest(msvc_wine_path .. "/VC/Tools/MSVC")
         local kit, kit_base = latest(msvc_wine_path .. "/Windows Kits/10/Include")
 
-        check(sdk, sdk_base, "/x64/rc.exe", "Resource compiler (rc.exe)", true, function(p) set_config("mrc", "wine " .. p) end)
+        if os.isfile(msvc_wine_path .. "/bin/x64/rc.exe") then
+            set_config("mrc", msvc_wine_path .. "/bin/x64/rc.exe")
+        elseif os.isfile(msvc_wine_path .. "/bin/x64/rc") then
+            set_config("mrc", msvc_wine_path .. "/bin/x64/rc")
+        else
+            check(sdk, sdk_base, "/x64/rc.exe", "Resource compiler (rc.exe)", true, function(p) set_config("mrc", "wine " .. p) end)
+        end
         check(msvc, msvc_base, "/include", "MSVC include directory", false, add_includedirs)
         check(kit, kit_base, "/um", "Windows SDK 'um' include path", false, add_includedirs)
         check(kit, kit_base, "/shared", "Windows SDK 'shared' include path", false, add_includedirs)
@@ -122,6 +128,7 @@ target(project_name)
         author  = author,
     })
 
+    set_pcxxheader("src/PCH.h")
     add_includedirs("src")
     add_files("src/**.cpp")
 
@@ -136,6 +143,6 @@ target(project_name)
             add_cxflags("/d1trimfile:" .. home .. "/", {force = true})
         end
         add_cxflags("/permissive-", "/wd4200", "/wd4201", "/wd4324")
-        add_syslinks("Version", "Ole32", "OleAut32", "User32", "bcrypt", "crypt32")
+        add_syslinks("version", "ole32", "oleaut32", "user32", "bcrypt", "crypt32")
         add_shflags("/PDBALTPATH:%_PDB%")
     end
