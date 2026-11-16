@@ -731,20 +731,11 @@ namespace MAP76::UI
             return false;
         }
 
-        // CommonLibF4 places BSInputEnableManager::cacheLock at 0x10C due to empty-base padding
-        // after BSTSingletonSDM, shifting the cached/forced flag fields 4 bytes early relative to
-        // Fallout4.exe (cacheLock=0x110, cachedInputUserEventsFlags=0x118, cachedOtherInputEventsFlags=0x11C).
-        const auto base = reinterpret_cast<std::uintptr_t>(inputManager);
-        auto &cacheLock = *reinterpret_cast<RE::BSSpinLock *>(base + 0x110);
-        const auto &cachedUserFlags =
-            *reinterpret_cast<const REX::TEnumSet<RE::UserEvents::USER_EVENT_FLAG, std::uint32_t> *>(base + 0x118);
-        const auto &cachedOtherFlags =
-            *reinterpret_cast<const REX::TEnumSet<RE::OtherInputEvents::OTHER_EVENT_FLAG, std::uint32_t> *>(base + 0x11C);
-
-        RE::BSAutoLock cacheLocker(cacheLock);
-        const bool menuEnabled = cachedUserFlags.any(RE::UserEvents::USER_EVENT_FLAG::kMenu);
-        const bool mainFourEnabled = cachedUserFlags.any(RE::UserEvents::USER_EVENT_FLAG::kMainFour);
-        const bool journalTabsEnabled = cachedOtherFlags.any(RE::OtherInputEvents::OTHER_EVENT_FLAG::kJournalTabs);
+        static_assert(offsetof(RE::BSInputEnableManager, cacheLock) == 0x110);
+        RE::BSAutoLock cacheLocker(inputManager->cacheLock);
+        const bool menuEnabled = inputManager->cachedInputUserEventsFlags.any(RE::UserEvents::USER_EVENT_FLAG::kMenu);
+        const bool mainFourEnabled = inputManager->cachedInputUserEventsFlags.any(RE::UserEvents::USER_EVENT_FLAG::kMainFour);
+        const bool journalTabsEnabled = inputManager->cachedOtherInputEventsFlags.any(RE::OtherInputEvents::OTHER_EVENT_FLAG::kJournalTabs);
 
         const bool allowed = menuEnabled && mainFourEnabled && journalTabsEnabled;
         if (!allowed && a_logFailure)
@@ -754,8 +745,8 @@ namespace MAP76::UI
                 menuEnabled,
                 mainFourEnabled,
                 journalTabsEnabled,
-                cachedUserFlags.underlying(),
-                cachedOtherFlags.underlying());
+                inputManager->cachedInputUserEventsFlags.underlying(),
+                inputManager->cachedOtherInputEventsFlags.underlying());
         }
 
         return allowed;

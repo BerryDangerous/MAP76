@@ -20,29 +20,6 @@ namespace MAP76::UI::Actions
 {
     namespace
     {
-        /**
-         * @brief Wrapper to queue fast travel, bypassing a CommonLibF4 compiler ABI mismatch.
-         *
-         * @details In CommonLibF4, the `PlayerCharacter::QueueFastTravel` signature passes the
-         * `ObjectRefHandle` parameter by value. However, because `ObjectRefHandle` contains
-         * non-trivial constructors/destructors, MSVC's x64 ABI mandates that it be passed by reference
-         * (via a pointer in the RDX register).
-         *
-         * Calling the header's by-value signature forces the compiler to pass the raw handle ID
-         * directly in the register. The engine then misinterprets this ID as a memory pointer,
-         * leading to a silent failure.
-         *
-         * This helper overrides the calling signature to force pass-by-reference (`const RE::ObjectRefHandle&`),
-         * aligning perfectly with what `Fallout4.exe` expects, while preserving version compatibility
-         * by using the native Address Library lookup.
-         */
-        void QueueFastTravel(RE::PlayerCharacter *a_player, const RE::ObjectRefHandle &a_marker, bool a_allowAutoSave)
-        {
-            using Func_t = void(RE::PlayerCharacter *, const RE::ObjectRefHandle &, bool);
-            static REL::Relocation<Func_t> func{RE::ID::PlayerCharacter::QueueFastTravel};
-            func(a_player, a_marker, a_allowAutoSave);
-        }
-
         bool IsScriptFastTravelBlocked()
         {
             auto *inputManager = RE::BSInputEnableManager::GetSingleton();
@@ -295,7 +272,10 @@ namespace MAP76::UI::Actions
                 }
 
                 auto *p = RE::PlayerCharacter::GetSingleton();
-                QueueFastTravel(p, markerRef->GetHandle(), true);
+                if (p)
+                {
+                    p->QueueFastTravel(markerRef->GetHandle(), true);
+                }
             });
         }
     }
