@@ -29,19 +29,10 @@ namespace MAP76::UI::Actions
             constexpr auto ftFlag = RE::OtherInputEvents::OTHER_EVENT_FLAG::kFastTravel;
 
             RE::BSAutoLock cacheLocker(inputManager->cacheLock);
-            if (inputManager->forceOtherInputEventsFlags.all(ftFlag))
+            if (inputManager->forceOtherInputEventsFlags.any(ftFlag))
                 return false;
 
-            RE::BSAutoLock layerLocker(inputManager->layerLock);
-            for (const auto &layer : inputManager->layers)
-            {
-                if (!layer.otherInputEvents.all(ftFlag))
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            return !inputManager->cachedOtherInputEventsFlags.any(ftFlag);
         }
 
         bool IsInteriorRestricted(RE::TESObjectCELL *parentCell)
