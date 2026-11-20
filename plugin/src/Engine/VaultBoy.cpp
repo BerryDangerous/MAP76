@@ -8,6 +8,7 @@
 #include <format>
 #include <fstream>
 #include <map>
+#include <memory>
 #include <set>
 #include <sstream>
 #include <string>
@@ -23,6 +24,8 @@ namespace MAP76::Engine::VaultBoy
     namespace
     {
         constexpr uint32_t CACHE_FORMAT_VERSION = 1;
+        constexpr std::size_t SWF_READ_CHUNK_SIZE = 8192;
+        constexpr std::size_t MAX_SWF_FILE_SIZE = 16u * 1024u * 1024u;
         const std::filesystem::path CACHE_DIR = "Data/F4SE/Plugins/MAP76/cache/vaultboys";
 
         /**
@@ -55,18 +58,44 @@ namespace MAP76::Engine::VaultBoy
         }
 
         /**
+         * @brief Isolated POD-only SEH wrapper around BSResourceNiBinaryStream::DoRead.
+         *        Prevents corrupted or unsupported BA2 archive entries from crashing the game.
+         */
+        bool TryReadStreamChunkSEH(
+            RE::BSResourceNiBinaryStream* a_stream,
+            uint8_t* a_buffer,
+            std::size_t a_bytesToRead,
+            std::size_t* a_outBytesRead,
+            DWORD* a_outExceptionCode) noexcept
+        {
+            __try {
+                *a_outBytesRead = a_stream->DoRead(a_buffer, a_bytesToRead);
+                return true;
+            } __except (EXCEPTION_EXECUTE_HANDLER) {
+                *a_outExceptionCode = GetExceptionCode();
+                *a_outBytesRead = 0;
+                return false;
+            }
+        }
+
+        /**
          * @brief Attempts to open a stream for the specified SWF path, trying both the direct
          *        path and the normalized "Interface/" prefixed path if necessary.
          */
-        bool TryOpenSwfStream(const std::string& a_path, std::size_t& a_outSize, std::string& a_outResolvedPath)
+        bool TryOpenSwfStream(
+            const std::string& a_path,
+            std::unique_ptr<RE::BSResourceNiBinaryStream>& a_outStream,
+            std::size_t& a_outSize,
+            std::string& a_outResolvedPath)
         {
             {
-                RE::BSResourceNiBinaryStream stream(a_path.c_str());
-                if (stream) {
+                auto stream = std::make_unique<RE::BSResourceNiBinaryStream>(a_path.c_str());
+                if (*stream) {
                     RE::NiBinaryStream::BufferInfo bufInfo{};
-                    stream.GetBufferInfo(bufInfo);
+                    stream->GetBufferInfo(bufInfo);
                     a_outSize = bufInfo.fileSize;
                     a_outResolvedPath = a_path;
+                    a_outStream = std::move(stream);
                     return true;
                 }
             }
@@ -76,12 +105,13 @@ namespace MAP76::Engine::VaultBoy
                 ? ("Interface/" + normalized)
                 : normalized;
 
-            RE::BSResourceNiBinaryStream stream(targetPath.c_str());
-            if (stream) {
+            auto stream = std::make_unique<RE::BSResourceNiBinaryStream>(targetPath.c_str());
+            if (*stream) {
                 RE::NiBinaryStream::BufferInfo bufInfo{};
-                stream.GetBufferInfo(bufInfo);
+                stream->GetBufferInfo(bufInfo);
                 a_outSize = bufInfo.fileSize;
                 a_outResolvedPath = targetPath;
+                a_outStream = std::move(stream);
                 return true;
             }
 
@@ -89,22 +119,45 @@ namespace MAP76::Engine::VaultBoy
         }
 
         /**
-         * @brief Reads the entire binary contents of a resolved SWF from the VFS into a vector.
+         * @brief Reads the entire binary contents of an open SWF stream in chunks with SEH protection.
          */
-        bool ReadSwfBinary(const std::string& a_resolvedPath, std::size_t a_fileSize, std::vector<uint8_t>& a_outBuffer)
+        bool ReadSwfBinary(
+            RE::BSResourceNiBinaryStream& a_stream,
+            const std::string& a_resolvedPath,
+            std::size_t a_fileSize,
+            std::vector<uint8_t>& a_outBuffer)
         {
-            if (a_fileSize == 0) {
+            if (a_fileSize == 0 || a_fileSize > MAX_SWF_FILE_SIZE || !a_stream) {
                 return false;
             }
 
-            RE::BSResourceNiBinaryStream stream(a_resolvedPath.c_str());
-            if (!stream) {
-                return false;
+            a_outBuffer.clear();
+            a_outBuffer.reserve(a_fileSize);
+
+            uint8_t chunk[SWF_READ_CHUNK_SIZE]{};
+            for (;;) {
+                std::size_t bytesRead = 0;
+                DWORD exceptionCode = 0;
+                if (!TryReadStreamChunkSEH(&a_stream, chunk, sizeof(chunk), &bytesRead, &exceptionCode)) {
+                    REX::WARN("MAP76: Caught SEH exception 0x{:08X} while reading SWF stream '{}'; skipping asset.",
+                        exceptionCode, a_resolvedPath);
+                    a_outBuffer.clear();
+                    return false;
+                }
+
+                if (bytesRead == 0) {
+                    break;
+                }
+
+                if (bytesRead > MAX_SWF_FILE_SIZE - a_outBuffer.size()) {
+                    a_outBuffer.clear();
+                    return false;
+                }
+
+                a_outBuffer.insert(a_outBuffer.end(), chunk, chunk + bytesRead);
             }
 
-            a_outBuffer.resize(a_fileSize);
-            const std::size_t bytesRead = stream.binary_read(a_outBuffer.data(), a_fileSize);
-            return bytesRead == a_fileSize;
+            return a_outBuffer.size() == a_fileSize;
         }
     }
 
@@ -125,12 +178,13 @@ namespace MAP76::Engine::VaultBoy
      * @return The serialized JSON string on success, or an empty string on failure.
      */
     static std::string ExtractAndCacheSwf(
+        RE::BSResourceNiBinaryStream& a_stream,
         const std::string& a_resolvedPath,
         std::size_t a_fileSize,
         const std::filesystem::path& a_cacheFilePath)
     {
         std::vector<uint8_t> swfBytes;
-        if (!ReadSwfBinary(a_resolvedPath, a_fileSize, swfBytes)) {
+        if (!ReadSwfBinary(a_stream, a_resolvedPath, a_fileSize, swfBytes)) {
             REX::WARN("MAP76: Failed to read SWF stream: {}", a_resolvedPath);
             return "";
         }
@@ -199,10 +253,11 @@ namespace MAP76::Engine::VaultBoy
         const auto extractStartTime = std::chrono::high_resolution_clock::now();
 
         for (const auto& rawPath : uniqueSwfPaths) {
+            std::unique_ptr<RE::BSResourceNiBinaryStream> stream;
             std::size_t fileSize = 0;
             std::string resolvedPath;
 
-            if (!TryOpenSwfStream(rawPath, fileSize, resolvedPath)) {
+            if (!TryOpenSwfStream(rawPath, stream, fileSize, resolvedPath)) {
                 stats.missingSwfs++;
                 continue;
             }
@@ -240,7 +295,7 @@ namespace MAP76::Engine::VaultBoy
                     stats.totalCacheBytes += cacheSize;
                 }
             } else {
-                std::string jsonStr = ExtractAndCacheSwf(resolvedPath, fileSize, cacheFilePath);
+                std::string jsonStr = ExtractAndCacheSwf(*stream, resolvedPath, fileSize, cacheFilePath);
                 if (!jsonStr.empty()) {
                     stats.newlyExtracted++;
                     stats.totalCacheBytes += jsonStr.size();
@@ -295,11 +350,12 @@ namespace MAP76::Engine::VaultBoy
             }
         }
 
+        std::unique_ptr<RE::BSResourceNiBinaryStream> stream;
         std::size_t fileSize = 0;
         std::string resolvedPath;
-        if (TryOpenSwfStream(a_key + ".swf", fileSize, resolvedPath) ||
-            TryOpenSwfStream("Interface/" + a_key + ".swf", fileSize, resolvedPath)) {
-            return ExtractAndCacheSwf(resolvedPath, fileSize, cacheFilePath);
+        if (TryOpenSwfStream(a_key + ".swf", stream, fileSize, resolvedPath) ||
+            TryOpenSwfStream("Interface/" + a_key + ".swf", stream, fileSize, resolvedPath)) {
+            return ExtractAndCacheSwf(*stream, resolvedPath, fileSize, cacheFilePath);
         }
 
         return "";
