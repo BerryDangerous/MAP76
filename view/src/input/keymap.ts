@@ -61,6 +61,8 @@ export const DEFAULT_LABELS: Record<KeyAction, string> = {
 const currentKeymap: Record<KeyAction, string[]> = { ...DEFAULT_KEYMAP };
 
 export function isAction(e: KeyboardEvent, action: KeyAction): boolean {
+    if (e.shiftKey || e.ctrlKey || e.altKey || e.metaKey) return false;
+
     const allowedKeys = currentKeymap[action];
     if (!allowedKeys) return false;
 

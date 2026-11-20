@@ -6,6 +6,18 @@
 #include "RE/U/UIMessageQueue.h"
 #include "RE/B/BSFixedString.h"
 
+namespace
+{
+    bool IsModifierKeyDown()
+    {
+        return (GetKeyState(VK_SHIFT) & 0x8000) != 0 ||
+               (GetKeyState(VK_CONTROL) & 0x8000) != 0 ||
+               (GetKeyState(VK_MENU) & 0x8000) != 0 ||
+               (GetKeyState(VK_LWIN) & 0x8000) != 0 ||
+               (GetKeyState(VK_RWIN) & 0x8000) != 0;
+    }
+}
+
 namespace MAP76::Hooks
 {
     LRESULT CALLBACK MAP76WindowProcessor(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -14,7 +26,7 @@ namespace MAP76::Hooks
 
         if (uMsg == WM_KEYDOWN)
         {
-            if (wParam == Constants::Input::KEY_M)
+            if (wParam == Constants::Input::KEY_M && !IsModifierKeyDown())
             {
                 bool isRepeat = (lParam & (1 << 30)) != 0;
                 if (!UI::State::g_mapIsOpen.load() && !UI::IsPlayerInMenuMode() && UI::CanOpenPipboyMap(!isRepeat))
