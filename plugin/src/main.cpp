@@ -7,6 +7,7 @@
 #include <string_view>
 #include "Engine/MapData.h"
 #include "UI/Interop.h"
+#include "UI/Settings.h"
 #include "UI/IconOverrides.h"
 #include "Hooks/WindowProc.h"
 #include "Hooks/MainUpdate.h"
@@ -131,10 +132,14 @@ void OnF4SEMessage(F4SE::MessagingInterface::Message *a_msg)
     {
     case F4SE::MessagingInterface::kGameDataReady:
     {
+        MAP76::UI::Settings::Load();
         if (IsPrismaAcceleratedRenderingEnabled()) {
-            g_disabledForGpuRendering = true;
-            REX::WARN("MAP76: Disabled because bAcceleratedRendering=1 in {}. Change it to 0 and restart the game.", PRISMA_INI_PATH);
-            break;
+            if (!MAP76::UI::Settings::allowGpuRendering) {
+                g_disabledForGpuRendering = true;
+                REX::WARN("MAP76: Disabled because bAcceleratedRendering=1 in {}. Change it to 0, or set allowGpuRendering to true in MAP76.json to override, and restart the game.", PRISMA_INI_PATH);
+                break;
+            }
+            REX::WARN("MAP76: PrismaUI GPU rendering is enabled (bAcceleratedRendering=1), but allowGpuRendering is true in MAP76.json. Proceeding anyway.");
         }
 
         REX::INFO("MAP76: Game data ready. Requesting PrismaUI API...");

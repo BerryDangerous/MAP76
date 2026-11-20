@@ -11,6 +11,7 @@ namespace MAP76::UI {
     bool Settings::skipSurvivalFastTravelCheck = false;
     bool Settings::centerOnPlayerWhenOpened = true;
     bool Settings::requirePipboyToOpenMap = true;
+    bool Settings::allowGpuRendering = false;
     float Settings::gamepadCursorSpeed = 1200.0f;
     float Settings::gamepadPanSensitivity = 0.5f;
     float Settings::gamepadMapHoldSeconds = 0.0f;
@@ -54,6 +55,12 @@ namespace MAP76::UI {
             requirePipboyToOpenMap = data["requirePipboyToOpenMap"].get<bool>();
         } else {
             data["requirePipboyToOpenMap"] = requirePipboyToOpenMap;
+        }
+
+        if (data.contains("allowGpuRendering") && data["allowGpuRendering"].is_boolean()) {
+            allowGpuRendering = data["allowGpuRendering"].get<bool>();
+        } else {
+            data["allowGpuRendering"] = allowGpuRendering;
         }
 
         if (data.contains("gamepadCursorSpeed") && data["gamepadCursorSpeed"].is_number()) {

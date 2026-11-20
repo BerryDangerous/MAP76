@@ -16,6 +16,7 @@ namespace MAP76::UI {
         static bool skipSurvivalFastTravelCheck;
         static bool centerOnPlayerWhenOpened;
         static bool requirePipboyToOpenMap;
+        static bool allowGpuRendering;
         static float gamepadCursorSpeed;
         static float gamepadPanSensitivity;
         static float gamepadMapHoldSeconds;
